@@ -1,0 +1,27 @@
+----------------------------------------------------------------
+xmega128a1
+sudo avrdude
+-p x128a1 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+90can32
+sudo avrdude
+-p c32 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+90can32_Bootloader
+sudo avrdude
+-p c32 -c avrisp2 -D -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+90can128
+sudo avrdude
+-p c128 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
