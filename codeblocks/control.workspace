@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="sonic_workspace">
+		<Project filename="../sonic_code_app/sonic_code_app.cbp" />
+		<Project filename="../control_code/control_code.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>

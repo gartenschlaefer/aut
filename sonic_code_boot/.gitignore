@@ -1,0 +1,8 @@
+*.depend
+*.eep
+*.fuse
+*.layout
+*.lock
+*.map
+*.sig
+.obj/
