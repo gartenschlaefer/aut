@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_layout_file>
-	<ActiveProject path="../sonic_code_app/sonic_code_app.cbp" />
+	<ActiveProject path="../control_code/control_code.cbp" />
 	<PreferredTarget name="Debug" />
 </CodeBlocks_workspace_layout_file>

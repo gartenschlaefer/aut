@@ -1,8 +1,7 @@
-*.depend
 *.eep
 *.fuse
-*.layout
 *.lock
 *.map
 *.sig
+*.hex
 .obj/

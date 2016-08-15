@@ -245,6 +245,8 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       }
       else if(Sonic_App(R_sreg) & DERR)   //NoUs
       {
+        Sonic_App(US_reset);
+        Sonic_App(D5_ini);
         state = 0;
         LCD_Sym_NoUS(page, _write);       //WriteNoUs
       }
@@ -256,14 +258,14 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       state = 2;
     }
     //------------------------------------------------NextShot
-    else if(state >= 2)							        //Wait2Init
+    else if(state >= 2)
     {
       if(TCF0_Wait_Query()) state++;		//2s
       //***SonicTime*2s - def:12
       if(state >= 12)
       {
-        Sonic_App(US_reset);        //UsReset
-        Sonic_App(D5_ini);				          //DistanceInit
+        Sonic_App(US_reset);
+        Sonic_App(D5_ini);
         state = 0;
       }
     }
