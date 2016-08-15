@@ -6,18 +6,9 @@
 		<Option pch_mode="2" />
 		<Option compiler="avr-gcc" />
 		<Build>
-			<Target title="Debug">
-				<Option output="bin/Debug/sonic_code_boot.elf" prefix_auto="1" extension_auto="0" />
-				<Option working_dir="" />
-				<Option object_output="obj/Debug/" />
-				<Option type="5" />
-				<Option compiler="avr-gcc" />
-				<Compiler>
-					<Add option="-g" />
-				</Compiler>
-			</Target>
 			<Target title="Release">
 				<Option output="sonic_code_boot" prefix_auto="1" extension_auto="1" />
+				<Option object_output=".obj" />
 				<Option type="0" />
 				<Option compiler="avr-gcc" />
 				<Compiler>
@@ -47,53 +38,32 @@
 		</ExtraCommands>
 		<Unit filename="basic_func.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
-		<Unit filename="basic_func.h">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="basic_func.h" />
 		<Unit filename="boot_app.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
-		<Unit filename="boot_app.h">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="boot_app.h" />
 		<Unit filename="boot_func.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
-		<Unit filename="boot_func.h">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="boot_func.h" />
 		<Unit filename="can_app.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
-		<Unit filename="can_app.h">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="can_app.h" />
 		<Unit filename="can_func.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
-		<Unit filename="can_func.h">
-			<Option target="Debug" />
-		</Unit>
-		<Unit filename="defines.h">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="can_func.h" />
+		<Unit filename="defines.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
 		<Unit filename="tc_func.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
 		</Unit>
-		<Unit filename="tc_func.h">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="tc_func.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

@@ -118,8 +118,6 @@ t_UScmd CAN_RxParser(t_UScmd state)
 		//------------------------------------------------AddressFilter
 		if(p_rx[1])
 		{
-// TODO (chris#1#): Add read Distance for safety jump back
-
 			//----------------------------------------------CommandParser
 			switch(p_rx[2])
 			{
@@ -139,6 +137,16 @@ t_UScmd CAN_RxParser(t_UScmd state)
             return _readProgram;}             break;
 
         case _sVersion: CAN_TXMOB_sVersion(); break;
+
+        case _setCanAddress:
+        case _oneShot:
+        case _5Shots:
+        case _startTemp:
+        case _readUSSREG:
+        case _readDistance:
+        case _readTemp:
+          Boot_Jump2App();                    break;
+
 				default:			                        break;
 			}
 		}

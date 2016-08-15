@@ -2,7 +2,7 @@
 *	Author:			  Christian Walter
 * ------------------------------------------------------------------
 * Project:		  UltraSonic
-*	Name:			    can_func.h
+*	Name:			    defines.h
 * ------------------------------------------------------------------
 *	µ-Controler:	AT90CAN128/32
 *	Compiler:		  avr-gcc (WINAVR 2010)

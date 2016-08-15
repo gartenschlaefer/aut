@@ -11,7 +11,7 @@
 *	Bootloader Functions Applications
 * ------------------------------------------------------------------
 *	Date:			    02.01.2016
-* lastChanges:
+* lastChanges:  15.08.2016
 \**********************************************************************/
 
 /* ===================================================================*
@@ -20,7 +20,7 @@
 
 //*-*Configuration
 
-#define SVERS         0x01    //SortwareVersion x.x
+#define SVERS         0x02    //SortwareVersion x.x
 #define SONIC_TYPE    0x02    //Boot-Type
 
 
