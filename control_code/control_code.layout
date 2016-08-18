@@ -1,29 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="can_app.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+	<File name="basic_func.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="7201" topLine="224" />
+			<Cursor1 position="2700" topLine="62" />
 		</Cursor>
 	</File>
-	<File name="lcd_sym.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+	<File name="lcd_app.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="49512" topLine="1687" />
-		</Cursor>
-	</File>
-	<File name="lcd_sym.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="5492" topLine="40" />
-		</Cursor>
-	</File>
-	<File name="basic_func.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2239" topLine="56" />
-		</Cursor>
-	</File>
-	<File name="sonic_app.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="6616" topLine="230" />
+			<Cursor1 position="4060" topLine="97" />
 		</Cursor>
 	</File>
 	<File name="defines.h" open="1" top="1" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -31,14 +16,59 @@
 			<Cursor1 position="979" topLine="10" />
 		</Cursor>
 	</File>
-	<File name="lcd_app.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3049" topLine="95" />
-		</Cursor>
-	</File>
 	<File name="main.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="24" />
+			<Cursor1 position="2581" topLine="55" />
+		</Cursor>
+	</File>
+	<File name="lcd_sym.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9509" topLine="315" />
+		</Cursor>
+	</File>
+	<File name="lcd_sym.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5492" topLine="40" />
+		</Cursor>
+	</File>
+	<File name="can_app.c" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="18214" topLine="575" />
+		</Cursor>
+	</File>
+	<File name="memory_app.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="204" />
+		</Cursor>
+	</File>
+	<File name="lcd_app.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="19815" topLine="666" />
+		</Cursor>
+	</File>
+	<File name="touch_app.c" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5739" topLine="198" />
+		</Cursor>
+	</File>
+	<File name="mpx_driver.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7008" topLine="235" />
+		</Cursor>
+	</File>
+	<File name="lcd_driver.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2812" topLine="71" />
+		</Cursor>
+	</File>
+	<File name="sonic_app.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7046" topLine="247" />
+		</Cursor>
+	</File>
+	<File name="port_func.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8234" topLine="320" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

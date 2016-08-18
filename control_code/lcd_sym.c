@@ -391,9 +391,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
           airSec = 0;
           break;
 
-        case ManualAir:
         case ManualCirc:
-          if(page == ManualAir)   page = ManualAirOff;    //Set2Off
           if(page == ManualCirc)  page = ManualCircOff;   //Set2Off
           MPX_ReadTank(ManualCirc, _exe);		              //MPX
           MPX_ReadTank(ManualCirc, _write);		            //MPX
@@ -402,9 +400,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
           airSec = 0;
           break;
 
-        case ManualAirOff:
         case ManualCircOff:
-          if(page == ManualAirOff)   page = ManualAir;  //Set2On
           if(page == ManualCircOff)  page = ManualCirc; //Set2On
           OUT_Set_Air();
           airMin = LCD_AutoRead_StartTime(page);	      //ReadOn
@@ -429,8 +425,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
     }
 
     //------------------------------------------------ManualReturn
-    if(page == ManualAir || page == ManualAirOff ||
-    page == ManualCirc || page == ManualCircOff)  return page;
+    if(page == ManualCirc || page == ManualCircOff) return page;
 
 		//------------------------------------------------WriteAutoVar
 		if((page == AutoCirc)	|| (page == AutoAir) ||
@@ -466,7 +461,6 @@ int LCD_AutoRead_StartTime(t_page page)
       sMin = MEM_EEPROM_ReadVar(ON_air);         break;
 
     case AutoAirOff:
-		case ManualAirOff:
       sMin = MEM_EEPROM_ReadVar(OFF_air);		    break;
 
 		default:																    break;

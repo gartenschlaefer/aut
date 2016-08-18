@@ -133,12 +133,13 @@ t_page LCD_AutoPage(t_page page)
 	if(page != sPage) LCD_AutoSet(page, p_min, p_sec);  //changePage
 
   //--------------------------------------------------LCDReset
-	if(lcdReset > 32000)										  //4000=30s
+	if(lcdReset > 32000)										//30s
 	{
 		lcdReset = 0;
 		LCD_Init();                          	//InitLCD
 		TCC0_wait_ms(2);						          //Wait
 		LCD_AutoSet_Symbol(page, aMin, aSec);	//ClearDisplay
+    LCD_MarkTextButton(Auto);
 	}
 	lcdReset++;
 
@@ -569,7 +570,7 @@ t_page LCD_ManualPage(t_page page)
 {
 	static int mMin = 5;
 	static int mSec = 0;
-
+  static int lcdReset = 0;
 	int *p_min;
 	int *p_sec;
 
@@ -592,8 +593,7 @@ t_page LCD_ManualPage(t_page page)
       page = LCD_ManualPage_Circ(page, p_min, p_sec); break;
 
 		case ManualAir:
-		case ManualAirOff:
-      page = LCD_ManualPage_Air(page, p_min, p_sec);  break;
+      page = LCD_ManualPage_Air(p_min, p_sec);  break;
 
 		case ManualSetDown:
       page = LCD_ManualPage_SetDown(p_min, p_sec);	  break;
@@ -619,6 +619,16 @@ t_page LCD_ManualPage(t_page page)
 
 	Watchdog_Restart();
 	LCD_Backlight(_exe);
+
+  //--------------------------------------------------LCDReset
+	if(lcdReset > 32000)										//30s
+	{
+		lcdReset = 0;
+		LCD_Init();                          	//InitLCD
+		TCC0_wait_ms(2);						          //Wait
+    LCD_MarkTextButton(Manual);
+	}
+	lcdReset++;
 	return page;
 }
 
@@ -665,7 +675,6 @@ t_page LCD_ManualPage_Circ(t_page page, int *p_min, int *p_sec)
 	if(page != ManualCirc && page != ManualCircOff)
 	{
 	  if(sPage == ManualCirc) OUT_Clr_Air();  //CloseIfOpen
-	  LCD_ClrSpace(17,118, 2, 5);             //Clr3Value
     LCD_ManualSet(page, p_min, p_sec);		  //nextPage
     return page;
   }
@@ -680,21 +689,18 @@ t_page LCD_ManualPage_Circ(t_page page, int *p_min, int *p_sec)
  * 						Manual Air
  * ------------------------------------------------------------------*/
 
-t_page LCD_ManualPage_Air(t_page page, int *p_min, int *p_sec)
+t_page LCD_ManualPage_Air(int *p_min, int *p_sec)
 {
-  t_page sPage = page;
+	t_page page = ManualAir;
 	page = Touch_ManualLinker(Touch_Matrix(), page);
   page = LCD_ManualCD(page, p_min, p_sec);     //CountDown
-	if(page != ManualAir && page != ManualAirOff)
+	if(page != ManualAir)
 	{
-	  if(sPage == ManualAir) OUT_Clr_Air();   //CloseIfOpen
-	  LCD_ClrSpace(17,118, 2, 5);             //Clr3Value
+	  OUT_Clr_Air();
     LCD_ManualSet(page, p_min, p_sec);	    //nextPage
     return page;
   }
-
 	LCD_WriteManualVar(*p_min, *p_sec);		      //Variables
-  page = LCD_Write_AirVar(page, *p_sec, _exe);	//WriteVar
 	return page;
 }
 
@@ -841,17 +847,17 @@ void LCD_ManualSet(t_page page, int *p_min, int *p_sec)
 		case ManualCirc:
 		  LCD_Write_AirVar(AutoCirc, 0, _init);
       OUT_Set_Air();
-      *p_min = 720;
+      *p_min = 60;
       *p_sec = 0;			break;
 
 		case ManualAir:
 		  LCD_Write_AirVar(AutoAir, 0, _init);
 		  OUT_Set_Air();
-      *p_min = 360;
+      *p_min = 60;
       *p_sec = 0;			break;
 
 		case ManualSetDown:
-		  *p_min = 90;
+		  *p_min = 60;
       *p_sec = 0;			break;
 
 		case ManualPumpOff:

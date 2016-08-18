@@ -40,7 +40,7 @@ typedef enum
 
 	ManualMain,			ManualPumpOff_On,
 	ManualCirc,	    ManualCircOff,
-	ManualAir,      ManualAirOff,
+	ManualAir,
 	ManualSetDown,	ManualPumpOff,
 	ManualMud,			ManualCompressor,
 	ManualPhosphor,	ManualInflowPump,
@@ -99,16 +99,16 @@ void 			LCD_Auto_Phosphor		(int rSec, t_FuncCmd cmd);
  * ------------------------------------------------------------------*/
 
 t_page LCD_ManualCD(t_page page, int *p_min, int *p_sec);
-t_page LCD_ManualPage_Main			(int *p_Min, int *p_Sec);
-t_page LCD_ManualPage_SetDown		(int *p_Min, int *p_Sec);
-t_page LCD_ManualPage_PumpOff		(int *p_Min, int *p_Sec);
-t_page LCD_ManualPage_Mud		  	(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_Main(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_SetDown(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_PumpOff(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_Mud(int *p_Min, int *p_Sec);
 t_page LCD_ManualPage_Compressor(int *p_Min, int *p_Sec);
-t_page LCD_ManualPage_Phosphor	(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_Phosphor(int *p_Min, int *p_Sec);
 t_page LCD_ManualPage_InflowPump(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_Air(int *p_Min, int *p_Sec);
+t_page LCD_ManualPage_Circ(t_page page, int *p_Min, int *p_Sec);
 
-t_page LCD_ManualPage_Circ	(t_page page, int *p_Min, int *p_Sec);
-t_page LCD_ManualPage_Air			  (t_page page, int *p_Min, int *p_Sec);
 
 
 /* ------------------------------------------------------------------*

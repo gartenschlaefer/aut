@@ -72,7 +72,6 @@ int main(void)
 			case ManualCirc:	      page = LCD_ManualPage(page);	break;
       case ManualCircOff:	    page = LCD_ManualPage(page);	break;
 			case ManualAir: 		    page = LCD_ManualPage(page);	break;
-			case ManualAirOff: 		  page = LCD_ManualPage(page);	break;
 			case ManualSetDown:		  page = LCD_ManualPage(page);	break;
 			case ManualPumpOff:		  page = LCD_ManualPage(page);	break;
 			case ManualPumpOff_On:	page = LCD_ManualPage(page);	break;

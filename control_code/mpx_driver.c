@@ -255,7 +255,7 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
   page == AutoMud)
   {
     if(page == ManualCirc || page == ManualCircOff ||
-    page == ManualAir || page == ManualAirOff)
+    page == ManualAir)
     {
       LCD_Sym_MPX(_mmbar, perP);    //Manual
       return page;

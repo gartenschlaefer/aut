@@ -10,13 +10,14 @@ LDLIBS     =
 
 #make submission zip
 release:
-	zip ./archiv/$(SUBMISSION)_S1.2.1.zip *.c *.h *.hex
+	zip ./archiv/$(SUBMISSION)_S1.2.2.zip *.hex
 
 #make clean
 clean:
 	rm -f ./*.o
 	rm -f ./*.o.d
 	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE).hex
 	rm -f ./*.eep
 	rm -f ./*.fuse
 	rm -f ./*.lock

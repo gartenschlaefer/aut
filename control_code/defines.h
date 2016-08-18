@@ -32,14 +32,14 @@
 //SoftwareVersion
 #define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
-#define SV3       1	      //-.-.x
+#define SV3       2	      //-.-.x
 
 //TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
-#define DEF_HOUR  0x18    //08:: = 0x08
-#define DEF_DAY   3       //Tag1 = Montag
-#define DEF_DATE  0x15    //04.x.x
+#define DEF_HOUR  0x20    //08:: = 0x08
+#define DEF_DAY   4       //Tag1 = Montag
+#define DEF_DATE  0x18    //04.x.x
 #define DEF_MONTH 0x08    //x.01.x
 #define DEF_YEAR  0x16    //x.x.2016
 
