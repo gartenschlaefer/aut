@@ -234,19 +234,22 @@ t_page LCD_AutoPage_Mud(int *p_min, int *p_sec)
 
 t_page LCD_AutoPage_Circ(t_page page, int *p_min, int *p_sec)
 {
-  t_page sPage = page;                           //SafeBack4ErrTreat
-  page = Error_Detection(page, *p_min, *p_sec);  //ErrorDet
-	page = LCD_Write_AirVar(page, *p_sec,  _exe);  //WriteVar
-  LCD_Auto_InflowPump(page, *p_sec, _exe);	    //InflowPump_exe
+  int min = *p_min;
+  int sec = *p_sec;
+
+  t_page sPage = page;                        //SafeBack4ErrTreat
+  page = Error_Detection(page, min, sec);     //ErrorDet
+	page = LCD_Write_AirVar(page, sec,  _exe);  //WriteVar
+  LCD_Auto_InflowPump(page, sec, _exe);	      //InflowPump_exe
 
 	if(Eval_CountDown(p_min, p_sec) && (page != ErrorTreat) &&
 	(!MEM_EEPROM_ReadVar(SENSOR_inTank) || LCD_Sym_NoUS(page, _check)))
 	{
-		LCD_Auto_InflowPump(page, 0, _reset);		//ResetIP
-		if(page == AutoCirc) OUT_Clr_Air();	    //ClearAir
-		return AutoAir;									        //NextAutoPage
+		LCD_Auto_InflowPump(page, 0, _reset);		  //ResetIP
+		if(page == AutoCirc) OUT_Clr_Air();	      //ClearAir
+		return AutoAir;									          //NextAutoPage
   }
-  if(page == ErrorTreat) page = sPage;      //SafeBack4ErrTreat
+  if(page == ErrorTreat) page = sPage;        //SafeBack4ErrTreat
 	return page;
 }
 
@@ -257,9 +260,12 @@ t_page LCD_AutoPage_Circ(t_page page, int *p_min, int *p_sec)
 
 t_page LCD_AutoPage_Air(t_page page, int *p_min, int *p_sec)
 {
-  page = Error_Detection(page, *p_min, *p_sec);  //ErrorDet
-	page = LCD_Write_AirVar(page, *p_sec, _exe);	//WriteVar
-  LCD_Auto_InflowPump(page, *p_sec, _exe);	    //InflowPump_exe
+  int min = *p_min;
+  int sec = *p_sec;
+
+  page = Error_Detection(page, min, sec);   //ErrorDet
+	page = LCD_Write_AirVar(page, sec, _exe);	//WriteVar
+  LCD_Auto_InflowPump(page, sec, _exe);	    //InflowPump_exe
 
 	if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
 	{
@@ -280,11 +286,11 @@ t_page LCD_AutoPage_Air(t_page page, int *p_min, int *p_sec)
  * 						Auto Inflow Pump
  * ------------------------------------------------------------------*/
 
-t_FuncCmd LCD_Auto_InflowPump(t_page page, int rSec, t_FuncCmd cmd)
+t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 {
 	static unsigned char ip_count = 0;
 	static unsigned char t_ip[3] = {0,0,0};	//Time[h=2:min=1:sec=0]
-	static t_FuncCmd ip_state= _off;		    //Init-Var
+	static t_FuncCmd ip_state = _off;		    //Init-Var
 
 	//--------------------------------------------------Init
 	if(cmd == _init)
@@ -340,7 +346,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int rSec, t_FuncCmd cmd)
 		if(ip_state == _on)
 		{
 		  if(page != AutoAir && page != AutoCirc){  //AllbutAir
-        LCD_SymbolAuto_IP(page, _on);           //posSymbols
+        LCD_SymbolAuto_IP(page, _off);          //symbols
 		    OUT_Clr_InflowPump();}                  //ClrIP
     }
 	}
@@ -379,18 +385,34 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int rSec, t_FuncCmd cmd)
 		if(page == AutoAirOff || page == AutoCircOff
     || page == ErrorTreat || ip_state == _off)
 		{
-      if(ip_count != rSec)
+      if(ip_count != sec)
       {
-        ip_count = rSec;
-        if(!t_ip[0]){                           //sec
-          if(t_ip[1] || t_ip[2])  t_ip[0] = 60; //hold-0:0:0
-          if((!t_ip[1]) && t_ip[2]){
+        ip_count = sec;
+        if(!t_ip[0])
+        {
+          if(t_ip[1] || t_ip[2])
+          {
+            t_ip[0] = 60; //hold-0:0:0
+          }
+          if((!t_ip[1]) && t_ip[2])
+          {
             t_ip[1] = 60;
-            if(t_ip[2]) t_ip[2]--;
-            LCD_WriteAutoVar_IP(0x06, t_ip);}   //WriteH
-          if(t_ip[1]) t_ip[1]--;
-          LCD_WriteAutoVar_IP(0x02, t_ip);}	    //WriteMin
-        if(t_ip[0]) t_ip[0]--;
+            if(t_ip[2])
+            {
+              t_ip[2]--;
+            }
+            LCD_WriteAutoVar_IP(0x06, t_ip);
+          }
+          if(t_ip[1])
+          {
+            t_ip[1]--;
+          }
+          LCD_WriteAutoVar_IP(0x02, t_ip);
+        }
+        if(t_ip[0])
+        {
+          t_ip[0]--;
+        }
         LCD_WriteAutoVar_IP(0x01, t_ip);		    //WriteSec
       }
     }
@@ -405,7 +427,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int rSec, t_FuncCmd cmd)
  * 						Auto Phosphor
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_Phosphor(int rSec, t_FuncCmd cmd)
+void LCD_Auto_Phosphor(int sec, t_FuncCmd cmd)
 {
 	static unsigned char pCount=0;
 	static unsigned char pMin= 0;
@@ -451,7 +473,7 @@ void LCD_Auto_Phosphor(int rSec, t_FuncCmd cmd)
 	//--------------------------------------------------Exe
 	else if(cmd ==_exe)
 	{
-		if(pCount != rSec){	pCount= rSec;							    //Counter
+		if(pCount != sec){	pCount= sec;							    //Counter
 							if(pSec<1){	pSec=60;	pMin--;
 										LCD_WriteValue2_MyFont(13,135, pMin);}
 							pSec--;
