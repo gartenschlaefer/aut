@@ -57,7 +57,7 @@ void LCD_Init(void)
 	LCD_LED_DIR;	  //LCD-On
   LCD_RST_DIR;    //LCD-ResetOutput
 	LCD_RST_OFF;		//Reset off
-	LCD_Rst();      //LCDReset
+	LCD_Rst();      //lcd_reset
 	while(LCD_SendCmd(LcdInitMacro, 11));	//Load Init
 }
 

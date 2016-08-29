@@ -90,10 +90,9 @@ void LCD_AutoText(void)
 	LCD_WriteMyFont(13, 93, 10);		//:-Ip
 	LCD_WriteMyFont(13, 143, 10);		//:-Ph
 
+  MCP7941_LCD_WriteTime(_init);
+  MCP7941_LCD_WriteDate();
 	MPX_ReadTank(AutoPage, _write);	//tank
-
-	MCP7941_LCD_WriteDate();
-	MCP7941_LCD_WriteTime(_init);
 	LCD_WriteValue5_MyFont(15,43, Eval_Comp_OpHours(_init));
 
 	LCD_WriteAuto_IP_Sensor();

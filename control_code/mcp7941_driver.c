@@ -252,9 +252,9 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
 
 void MCP7941_LCD_WriteDate(void)
 {
-	LCD_WriteMyFont			(0, 128, 11);		    //-
-	LCD_WriteMyFont			(0, 140, 11); 		  //-
-	LCD_WriteStringMyFont	(0, 144,"20"); 	  //20xx
+	LCD_WriteMyFont(0, 128, 11);		      //-
+	LCD_WriteMyFont(0, 140, 11); 		      //-
+	LCD_WriteStringMyFont(0, 144,"20");   //20xx
 
 	LCD_WriteValue2_MyFont(0,120, MCP7941_ReadTime(TIC_DATE));
 	LCD_WriteValue2_MyFont(0,132, MCP7941_ReadTime(TIC_MONTH));

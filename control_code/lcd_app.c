@@ -29,6 +29,7 @@
 #include "touch_driver.h"
 #include "mpx_driver.h"
 #include "mcp9800_driver.h"
+#include "mcp7941_driver.h"
 
 #include "error_func.h"
 #include "tc_func.h"
@@ -54,7 +55,7 @@ t_page LCD_AutoPage(t_page page)
 	static t_page			    sPage = START_PAGE;	  //Start-AutoPage
 	static int 				    aMin = 5;
 	static int	 			    aSec = 0;
-	static int				    lcdReset = 0;
+	static int				    lcd_reset = 0;
 	static unsigned char  initVar = 0;
 
 	int sMin;									//SaveTime
@@ -132,20 +133,30 @@ t_page LCD_AutoPage(t_page page)
 
 	if(page != sPage) LCD_AutoSet(page, p_min, p_sec);  //changePage
 
-  //--------------------------------------------------LCDReset
-	if(lcdReset > 32000)										//30s
+  //--------------------------------------------------lcd_reset
+	if(lcd_reset == 100)										//30s default: 32000
 	{
-		lcdReset = 0;
 		LCD_Init();                          	//InitLCD
 		TCC0_wait_ms(2);						          //Wait
-		//ClearDisplay
-		LCD_Clean();
-		LCD_AutoSet_Symbol(page, aMin, aSec);
+	}
+	else if(lcd_reset == 4000)
+  {
+    LCD_ClrSpace(0,0,4,160);
     if(!COMPANY)   LCD_Write_Purator(0,0);
     else LCD_Write_HECS(0,0);
+    MCP7941_LCD_WriteTime(_init);
+    MCP7941_LCD_WriteDate();
+  }
+  else if(lcd_reset == 8000)
+  {
+    LCD_AutoSet_Symbol(page, aMin, aSec);
+  }
+  else if(lcd_reset > 16000)
+  {
     LCD_MarkTextButton(Auto);
-	}
-	lcdReset++;
+    lcd_reset = 0;
+  }
+	lcd_reset++;
 
 	return page;
 }
@@ -585,8 +596,8 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 
 void LCD_AutoSet_Symbol(t_page page, int aMin, int aSec)
 {
-  //ClearActualSymbol
-  LCD_ClrSpace(5, 0, 5, 35);
+  //ClearActualSymbols
+  LCD_ClrSpace(5, 0, 14, 160);
 	switch(page)
 	{
 		case AutoPage:	  LCD_AutoSet_Page();							  break;
@@ -617,7 +628,7 @@ t_page LCD_ManualPage(t_page page)
 {
 	static int mMin = 5;
 	static int mSec = 0;
-  static int lcdReset = 0;
+  static int lcd_reset = 0;
 	int *p_min;
 	int *p_sec;
 
@@ -667,15 +678,15 @@ t_page LCD_ManualPage(t_page page)
 	Watchdog_Restart();
 	LCD_Backlight(_exe);
 
-  //--------------------------------------------------LCDReset
-	if(lcdReset > 32000)										//30s
+  //--------------------------------------------------lcd_reset
+	if(lcd_reset > 32000)										//30s
 	{
-		lcdReset = 0;
+		lcd_reset = 0;
 		LCD_Init();                          	//InitLCD
 		TCC0_wait_ms(2);						          //Wait
     LCD_MarkTextButton(Manual);
 	}
-	lcdReset++;
+	lcd_reset++;
 	return page;
 }
 
