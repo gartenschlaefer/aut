@@ -78,8 +78,6 @@ void LCD_AutoCountDown(unsigned char min, unsigned char sec)
 
 void LCD_AutoText(void)
 {
-	LCD_ClrSpace(5, 0, 5, 35);      //ClearActualSym
-
 	LCD_WriteMyFont(13, 57, 13);		//m
 	LCD_WriteMyFont(13, 61, 14);		//b
 	LCD_WriteMyFont(13, 65, 15);		//a
@@ -98,8 +96,7 @@ void LCD_AutoText(void)
 	MCP7941_LCD_WriteTime(_init);
 	LCD_WriteValue5_MyFont(15,43, Eval_Comp_OpHours(_init));
 
-	LCD_Auto_Phosphor(0, _set);			  //Phophor writeSymbol
-	LCD_WriteAuto_IP_Sensor();        //SensorSym
+	LCD_WriteAuto_IP_Sensor();
 	Sonic_ReadTank(AutoPage, _write); //Sonic
 }
 

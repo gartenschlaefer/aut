@@ -138,7 +138,11 @@ t_page LCD_AutoPage(t_page page)
 		lcdReset = 0;
 		LCD_Init();                          	//InitLCD
 		TCC0_wait_ms(2);						          //Wait
-		LCD_AutoSet_Symbol(page, aMin, aSec);	//ClearDisplay
+		//ClearDisplay
+		LCD_Clean();
+		LCD_AutoSet_Symbol(page, aMin, aSec);
+    if(!COMPANY)   LCD_Write_Purator(0,0);
+    else LCD_Write_HECS(0,0);
     LCD_MarkTextButton(Auto);
 	}
 	lcdReset++;
@@ -448,6 +452,24 @@ void LCD_Auto_Phosphor(int sec, t_FuncCmd cmd)
 		p_state= _off;
 	}
 
+  //--------------------------------------------------sym
+	else if(cmd == _sym)
+	{
+		switch(p_state)
+		{
+			case _on:
+        LCD_Write_Symbol_3(6, 134, n_phosphor);	break;
+
+			case _disabled:
+			case _off:
+        LCD_Write_Symbol_3(6, 134, p_phosphor);	break;
+
+			default:													break;
+		}
+		LCD_WriteValue2_MyFont(13,135, pMin);
+		LCD_WriteValue2_MyFont(13,147, pSec);
+	}
+
 	//--------------------------------------------------Set
 	else if(cmd == _set)
 	{
@@ -563,7 +585,8 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 
 void LCD_AutoSet_Symbol(t_page page, int aMin, int aSec)
 {
-  LCD_AutoText();
+  //ClearActualSymbol
+  LCD_ClrSpace(5, 0, 5, 35);
 	switch(page)
 	{
 		case AutoPage:	  LCD_AutoSet_Page();							  break;
@@ -579,7 +602,9 @@ void LCD_AutoSet_Symbol(t_page page, int aMin, int aSec)
 		case AutoCircOff:	LCD_Write_AirVar(page, 0, _write);	break;
 		default:													                    break;
 	}
-  LCD_Auto_InflowPump(page, 0, _sym);		  //InflowPumpSymbol
+  LCD_AutoText();
+  LCD_Auto_Phosphor(0, _sym);
+  LCD_Auto_InflowPump(page, 0, _sym);
 }
 
 

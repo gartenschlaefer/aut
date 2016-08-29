@@ -308,7 +308,7 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
     //------------------------------------------------Zone
 		else if(page == AutoZone)			//--Zone
 		{
-			if((mpxAv < (minP - 5)) || (mpxAv > (minP + 5)))  //ToMuchDiff
+			if((mpxAv < (minP - 5)) || (mpxAv > (minP + 5)))  //diff
 			  return AutoCirc;
 
 			MPX_LevelCal(_save);

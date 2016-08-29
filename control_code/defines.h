@@ -30,7 +30,7 @@
 #define MEM_INIT  0       //and LCD Calibration
 
 //SoftwareVersion
-#define SV1       1	      //x.-.-
+#define SV1       0	      //x.-.-
 #define SV2       2	      //-.x.-
 #define SV3       2	      //-.-.x
 
