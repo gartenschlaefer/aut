@@ -30,18 +30,18 @@
 #define MEM_INIT  0       //and LCD Calibration
 
 //SoftwareVersion
-#define SV1       0	      //x.-.-
+#define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
-#define SV3       2	      //-.-.x
+#define SV3       3	      //-.-.x
 
 //TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
-#define DEF_HOUR  0x20    //08:: = 0x08
-#define DEF_DAY   4       //Tag1 = Montag
-#define DEF_DATE  0x18    //04.x.x
-#define DEF_MONTH 0x08    //x.01.x
-#define DEF_YEAR  0x16    //x.x.2016
+#define DEF_HOUR  0x12    //08:: = 0x08
+#define DEF_DAY   7       //Tag1 = Montag
+#define DEF_DATE  0x04    //__.x.x
+#define DEF_MONTH 0x09    //x.__.x
+#define DEF_YEAR  0x16    //x.x.20__
 
 
 

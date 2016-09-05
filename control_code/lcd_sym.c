@@ -253,7 +253,6 @@ void LCD_WriteAuto_IP_Sensor(void)
 }
 
 
-
 /* ------------------------------------------------------------------*
  * 						AutoVar
  * ------------------------------------------------------------------*/
@@ -309,128 +308,6 @@ void LCD_WriteAutoVar_Comp(int min, int sec)
 
 	LCD_Auto_Phosphor(sec, _exe);					//Phosphor
 	MPX_ReadAverage(Auto, _exe);					//Preassure
-}
-
-
-
-
-/* ------------------------------------------------------------------*
- * 						Auto Air
- * ------------------------------------------------------------------*/
-
-t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
-{
-	static int	cOld = 0;
-	static int  airMin = 0;
-	static int  airSec = 0;
-
-	t_page cPage = AutoAir;
-
-	//--------------------------------------------------------Init
-	if(cmd == _init)
-	{
-		airMin = LCD_AutoRead_StartTime(page);	//Read On
-		airSec = 0;
-		//***AirTime
-		//airMin = 0;
-		//airSec = 10;
-		LCD_Auto_InflowPump(page, 0, _reset);   //ResetIP
-	}
-
-	//--------------------------------------------------------Set
-	else if(cmd == _set)
-	{
-		if(page == AutoAir || page == AutoCirc)	            OUT_Set_Air();
-    else if(page == AutoAirOff || page == AutoCircOff)  OUT_Clr_Air();
-	}
-
-	//--------------------------------------------------------WriteSym
-	else if(cmd == _write)
-	{
-    LCD_AutoAirSym(page);               //Symbols
-		LCD_AutoCountDown(airMin, airSec);  //CountDownVar
-	}
-
-  //--------------------------------------------------------exe
-	else if(cmd == _exe)
-	{
-    if(!airMin && !airSec)			//--Change2Off
-    {
-      switch(page)
-      {
-        case AutoAir:
-        case AutoCirc:
-          cPage = page;
-          page = MPX_ReadTank(page, _exe);			    //MPX
-          MPX_ReadTank(page, _write);					      //MPX
-          OUT_Clr_Air();						                //ClearAir
-          if(cPage != page){
-            LCD_Auto_InflowPump(page, 0, _reset);	  //IP-Reset
-            return page;}							              //NextPage
-
-          if(page == AutoAir)   page = AutoAirOff;  //Set2Off
-          if(page == AutoCirc)  page = AutoCircOff; //Set2Off
-          LCD_AutoAirSym(page);
-          LCD_Auto_InflowPump(page, 0, _set);				//IP-Set
-          airMin = LCD_AutoRead_StartTime(page);	  //Read Off
-          airSec = 0;
-          break;
-
-        case AutoAirOff:
-        case AutoCircOff:
-          LCD_Auto_InflowPump(page, 0, _reset);	      //IP-Reset
-          OUT_Set_Air();						                  //SetAir
-          if(page == AutoAirOff)   page = AutoAir;    //Set2On
-          if(page == AutoCircOff)  page = AutoCirc;   //Set2On
-          LCD_AutoAirSym(page);
-          airMin = LCD_AutoRead_StartTime(page);	    //Read On
-          airSec = 0;
-          break;
-
-        case ManualCirc:
-          if(page == ManualCirc)  page = ManualCircOff;   //Set2Off
-          MPX_ReadTank(ManualCirc, _exe);		              //MPX
-          MPX_ReadTank(ManualCirc, _write);		            //MPX
-          OUT_Clr_Air();						                      //ClearAir
-          airMin = LCD_AutoRead_StartTime(page);	        //Read Off
-          airSec = 0;
-          break;
-
-        case ManualCircOff:
-          if(page == ManualCircOff)  page = ManualCirc; //Set2On
-          OUT_Set_Air();
-          airMin = LCD_AutoRead_StartTime(page);	      //ReadOn
-          airSec = 0;
-          break;
-        default:						  break;
-			}
-		}
-
-		//------------------------------------------------CountDown
-		if(sec != cOld)
-		{
-		  cOld = sec;
-      if(!airSec && (page != ErrorTreat))
-      {
-        airSec = 60;
-        //***AirTime
-        //airSec = 10;
-        airMin--;
-      }
-      if(airSec)  airSec--;
-    }
-
-    //------------------------------------------------ManualReturn
-    if(page == ManualCirc || page == ManualCircOff) return page;
-
-		//------------------------------------------------WriteAutoVar
-		if((page == AutoCirc)	|| (page == AutoAir) ||
-		(page == ErrorTreat)){
-      LCD_WriteAutoVar_Comp(airMin, airSec);			//compVar
-      Eval_Oxygen(_count, airMin);}				        //CountOxygenHours
-    else LCD_WriteAutoVar(airMin, airSec);				//normalVar
-	}
-	return page;
 }
 
 
@@ -1653,10 +1530,13 @@ void LCD_OffValueNeg(unsigned char value)
 
 void LCD_MarkTextButton(t_textButtons text)
 {
-	unsigned char i=0;
-	for(i=0; i<4; i++)
+	unsigned char i = 0;
+	for(i = 0; i < 4; i++)
 	{
-		LCD_TextButton(i, 1);			//Write TextButtons
+		if(i != text)
+    {
+      LCD_TextButton(i, 1);			//Write TextButtons
+    }
 	}
 	LCD_TextButton(text, 0);
 }

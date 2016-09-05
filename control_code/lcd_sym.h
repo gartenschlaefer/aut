@@ -38,7 +38,6 @@ void LCD_WriteAuto_IP_Sensor(void);
 void LCD_WriteAutoVar(int min, int sec);
 void LCD_WriteAutoVar_Comp(int min, int sec);
 
-t_page LCD_Write_AirVar      (t_page	page, int sec, t_FuncCmd cmd);
 int LCD_AutoRead_StartTime(t_page page);
 void LCD_AutoAirSym        (t_page page);
 

@@ -90,6 +90,7 @@ t_page LCD_AutoPage_Mud		  (int *p_min, int *p_sec);
 t_page LCD_AutoPage_Circ    (t_page page, int *p_min, int *p_sec);
 t_page LCD_AutoPage_Air		  (t_page page, int *p_min, int *p_sec);
 
+t_page LCD_Write_AirVar(t_page	page, int sec, t_FuncCmd cmd);
 t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd);
 void LCD_Auto_Phosphor(int sec, t_FuncCmd cmd);
 

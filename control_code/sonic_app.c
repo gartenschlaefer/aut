@@ -262,7 +262,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     {
       if(TCF0_Wait_Query()) state++;		//2s
       //***SonicTime*2s - def:12
-      if(state >= 12)
+      if(state >= 16)
       {
         Sonic_App(US_reset);
         Sonic_App(D5_ini);
