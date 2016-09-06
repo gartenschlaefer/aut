@@ -165,8 +165,13 @@ void LCD_AutoSet_PumpOff(unsigned char min, unsigned char sec)
 {
 	LCD_Write_Symbol_1(5, 0, n_pumpOff);
 	if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
-	      LCD_Write_Symbol_2(6, 45, n_compressor);
-	else	LCD_Write_Symbol_2(6, 45, p_compressor);
+  {
+    LCD_Write_Symbol_2(6, 45, n_compressor);
+  }
+	else
+  {
+    LCD_Write_Symbol_2(6, 45, p_compressor);
+  }
 	LCD_AutoCountDown(min, sec);
 }
 
@@ -198,14 +203,17 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
 	unsigned char pump = 0;
 	pump =  MEM_EEPROM_ReadVar(PUMP_inflowPump);
 
-	if(cmd == _off)
+	if(cmd == _off || cmd == _disabled)
 	{
 		switch (pump)
 		{
 			case 0:
 			  LCD_Write_Symbol_1(5, 89, p_inflowPump);
         if(page == AutoAirOff || page == AutoCircOff)
-          LCD_Write_Symbol_2(6, 45, p_compressor); 	    break;
+        {
+          LCD_Write_Symbol_2(6, 45, p_compressor);
+        }
+        break;
 
 			case 1:		LCD_Write_Symbol_3(5, 90, p_pump);  		break;
 			case 2:		LCD_Write_Symbol_1(5, 90, p_pump2); 		break;
@@ -219,7 +227,10 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
 			case 0:
 			  LCD_Write_Symbol_1(5, 89, n_inflowPump);
         if(page == AutoAirOff || page == AutoCircOff)
-          LCD_Write_Symbol_2(6, 45, n_compressor);      break;
+        {
+          LCD_Write_Symbol_2(6, 45, n_compressor);
+        }
+        break;
 
 			case 1:		LCD_Write_Symbol_3(5, 90, n_pump);  		break;
 			case 2:		LCD_Write_Symbol_1(5, 90, n_pump2); 		break;
@@ -352,21 +363,23 @@ void LCD_AutoAirSym(t_page page)
   {
     case AutoCirc:
       LCD_Write_Symbol_2(6, 0, n_circulate);
-      LCD_Write_Symbol_2(6, 45, n_compressor);  break;
+      LCD_Write_Symbol_2(6, 45, n_compressor);
+      break;
 
     case AutoAir:
       LCD_Write_Symbol_2(6, 0, n_air);
-      LCD_Write_Symbol_2(6, 45, n_compressor);  break;
+      LCD_Write_Symbol_2(6, 45, n_compressor);
+      break;
 
     case AutoCircOff:
       LCD_Write_Symbol_2(6, 0, p_circulate);
-      if(!(LCD_Auto_InflowPump(page, 0, _state) == _on))    //IPOn?
-        LCD_Write_Symbol_2(6, 45, p_compressor);  break;
+      LCD_Write_Symbol_2(6, 45, p_compressor);
+      break;
 
     case AutoAirOff:
       LCD_Write_Symbol_2(6, 0, p_air);
-      if(!(LCD_Auto_InflowPump(page, 0, _state) == _on))    //IPOn?
-        LCD_Write_Symbol_2(6, 45, p_compressor);  break;
+      LCD_Write_Symbol_2(6, 45, p_compressor);
+      break;
 
     default:  break;
   }

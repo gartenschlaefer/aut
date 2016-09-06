@@ -513,7 +513,7 @@
 
 1470814823 c:\users\christian\git\aut\control_code\symbols.h
 
-1473062548 source:c:\users\christian\git\aut\control_code\lcd_sym.c
+1473195932 source:c:\users\christian\git\aut\control_code\lcd_sym.c
 	<avr/io.h>
 	"defines.h"
 	"lcd_driver.h"
@@ -649,7 +649,7 @@
 	"mcp7941_driver.h"
 	"tc_func.h"
 
-1470814823 source:c:\users\christian\git\aut\control_code\touch_app.c
+1473193572 source:c:\users\christian\git\aut\control_code\touch_app.c
 	<avr/io.h>
 	"defines.h"
 	"lcd_driver.h"
@@ -696,7 +696,7 @@
 	"lcd_app.h"
 	"usart_func.h"
 
-1473064124 source:c:\users\christian\git\aut\control_code\lcd_app.c
+1473195217 source:c:\users\christian\git\aut\control_code\lcd_app.c
 	<avr/io.h>
 	"defines.h"
 	"lcd_driver.h"

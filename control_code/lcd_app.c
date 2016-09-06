@@ -139,10 +139,9 @@ t_page LCD_AutoPage(t_page page)
 		LCD_Init();                          	//InitLCD
 		TCC0_wait_ms(2);						          //Wait
 	}
-  else if(lcd_reset > 10000)
+  else if(lcd_reset == 10000)
   {
     LCD_MarkTextButton(Auto);
-    lcd_reset = 0;
   }
 	else if(lcd_reset == 20000)
   {
@@ -151,9 +150,10 @@ t_page LCD_AutoPage(t_page page)
     MCP7941_LCD_WriteTime(_init);
     MCP7941_LCD_WriteDate();
   }
-  else if(lcd_reset == 30000)
+  else if(lcd_reset > 30000)
   {
     LCD_AutoSet_Symbol(page, aMin, aSec);
+    lcd_reset = 0;
   }
 	lcd_reset++;
 
@@ -408,9 +408,11 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 
 		//------------------------------------------------WriteAutoVar
 		if((page == AutoCirc)	|| (page == AutoAir) ||
-		(page == ErrorTreat)){
+		(page == ErrorTreat))
+		{
       LCD_WriteAutoVar_Comp(airMin, airSec);			//compVar
-      Eval_Oxygen(_count, airMin);}				        //CountOxygenHours
+      Eval_Oxygen(_count, airMin);
+    }
     else LCD_WriteAutoVar(airMin, airSec);				//normalVar
 	}
 	return page;
@@ -452,13 +454,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 	//--------------------------------------------------OutSet
 	else if(cmd == _sym)
 	{
-		switch(ip_state)
-		{
-			case _disabled:
-			case _off:		LCD_SymbolAuto_IP(page, _off);	break;
-			case _on:		  LCD_SymbolAuto_IP(page, _on);   break;
-			default:									                    break;
-		}
+    LCD_SymbolAuto_IP(page, ip_state);
 		LCD_WriteAutoVar_IP(0x07, t_ip);
 	}
 
@@ -467,11 +463,11 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 	//----------------------------------------------------Set
 	else if(cmd == _set)
 	{
-		if(ip_state == _on)
+		if(ip_state == _on &&
+    (page == AutoAirOff || page == AutoCircOff))
 		{
-		  if(page != AutoAir && page != AutoCirc){  //AllbutAir
-        LCD_SymbolAuto_IP(page, _on);           //posSymbols
-		    OUT_Set_InflowPump();}                  //ClrIP
+      LCD_SymbolAuto_IP(page, ip_state);
+      OUT_Set_InflowPump();
     }
 	}
 
@@ -480,9 +476,8 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 	{
 		if(ip_state == _on)
 		{
-		  if(page != AutoAir && page != AutoCirc){  //AllbutAir
-        LCD_SymbolAuto_IP(page, _off);          //symbols
-		    OUT_Clr_InflowPump();}                  //ClrIP
+      LCD_SymbolAuto_IP(page, ip_state);
+      OUT_Clr_InflowPump();
     }
 	}
 
@@ -511,7 +506,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 			t_ip[1] = MEM_EEPROM_ReadVar(ON_inflowPump);
 			t_ip[0] = 2;
 
-			LCD_SymbolAuto_IP(page, _on);
+			LCD_SymbolAuto_IP(page, ip_state);
 			LCD_WriteAutoVar_IP(0x07, t_ip);     //WriteAll
 			OUT_Set_InflowPump();
     }
@@ -748,8 +743,7 @@ void LCD_AutoSet_Symbol(t_page page, int aMin, int aSec)
 		case AutoMud:			LCD_AutoSet_Mud(aMin, aSec);		  break;
 
 		case AutoAir:
-		case AutoAirOff:	LCD_Write_AirVar(page, 0, _write); break;
-
+		case AutoAirOff:
 		case AutoCirc:
 		case AutoCircOff:	LCD_Write_AirVar(page, 0, _write);	break;
 		default:													                    break;

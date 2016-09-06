@@ -160,13 +160,11 @@ t_page Touch_AutoLinker(unsigned char matrix, t_page page,
 					PORT_Relais_AllOff();
 					return PinManual; 				break;	//Manual
 
-
 		case 0x43:	LCD_Backlight(_on);	Error_OFF();	bug=0;
 					LCD_MarkTextButton(Setup);
 					PORT_Ventil_AutoClose(page);
 					PORT_Relais_AllOff();
 					return PinSetup; 					break;	//Setup
-
 
 		case 0x44:	LCD_Backlight(_on);	Error_OFF();	bug=0;
 					LCD_MarkTextButton(Data);

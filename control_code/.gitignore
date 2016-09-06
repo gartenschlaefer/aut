@@ -5,4 +5,5 @@ control_code
 *.map
 *.sig
 *.hex
+*.exe
 .obj/
