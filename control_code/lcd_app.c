@@ -52,8 +52,8 @@
 t_page LCD_AutoPage(t_page page)
 {
 	static t_page			    sPage = START_PAGE;	  //Start-AutoPage
-	static int 				    aMin = 5;
-	static int	 			    aSec = 0;
+	static int 				    min = 5;
+	static int	 			    sec = 0;
 	static int				    lcd_reset = 0;
 	static unsigned char  initVar = 0;
 
@@ -61,8 +61,8 @@ t_page LCD_AutoPage(t_page page)
 	int sSec;
 	int *p_min;
 	int *p_sec;
-	p_min = &aMin;
-	p_sec = &aSec;
+	p_min = &min;
+	p_sec = &sec;
 
 	switch(page)
 	{
@@ -71,7 +71,7 @@ t_page LCD_AutoPage(t_page page)
       page = sPage;
 
       if(!initVar ||
-      (aMin == 0 && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
+      (min == 0 && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
       {
         initVar = 1;
         LCD_Write_AirVar(AutoCirc, 0, _init);
@@ -125,13 +125,18 @@ t_page LCD_AutoPage(t_page page)
 		default:											break;
 	}
 
-	Watchdog_Restart();					//Watchdog
-	LCD_Backlight(_exe);				//Backlight
-
+  // change pages
 	page = Touch_AutoLinker(Touch_Matrix(), page, p_min, p_sec);
 	page = Sonic_ReadTank(page, _exe);
-
 	if(page != sPage) LCD_AutoSet(page, p_min, p_sec);  //changePage
+
+	// execute in all auto pages
+  Watchdog_Restart();
+	LCD_Backlight(_exe);
+	//*-* added
+  LCD_Auto_InflowPump(page, sec, _exe);
+  LCD_Auto_Phosphor(sec, _exe);
+	MPX_ReadAverage(Auto, _exe);
 
   //--------------------------------------------------lcd_reset
 	if(lcd_reset == 10)										//30s default: 32000
@@ -152,7 +157,7 @@ t_page LCD_AutoPage(t_page page)
   }
   else if(lcd_reset > 30000)
   {
-    LCD_AutoSet_Symbol(page, aMin, aSec);
+    LCD_AutoSet_Symbol(page, min, sec);
     lcd_reset = 0;
   }
 	lcd_reset++;
@@ -252,7 +257,6 @@ t_page LCD_AutoPage_Circ(t_page page, int *p_min, int *p_sec)
   t_page sPage = page;                        //SafeBack4ErrTreat
   page = Error_Detection(page, min, sec);     //ErrorDet
 	page = LCD_Write_AirVar(page, sec,  _exe);  //WriteVar
-  LCD_Auto_InflowPump(page, sec, _exe);	      //InflowPump_exe
 
 	if(Eval_CountDown(p_min, p_sec) && (page != ErrorTreat) &&
 	(!MEM_EEPROM_ReadVar(SENSOR_inTank) || LCD_Sym_NoUS(page, _check)))
@@ -277,7 +281,6 @@ t_page LCD_AutoPage_Air(t_page page, int *p_min, int *p_sec)
 
   page = Error_Detection(page, min, sec);   //ErrorDet
 	page = LCD_Write_AirVar(page, sec, _exe);	//WriteVar
-  LCD_Auto_InflowPump(page, sec, _exe);	    //InflowPump_exe
 
 	if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
 	{
@@ -512,8 +515,8 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
     }
 
 		//-------------------------------------------------CountDown
-		if(page == AutoAirOff || page == AutoCircOff
-    || page == ErrorTreat || ip_state == _off)
+		if(ip_state == _off ||
+    ((page == AutoAirOff || page == AutoCircOff) && ip_state == _on))
 		{
       if(ip_count != sec)
       {
@@ -522,7 +525,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
         {
           if(t_ip[1] || t_ip[2])
           {
-            t_ip[0] = 60; //hold-0:0:0
+            t_ip[0] = 60;
           }
           if((!t_ip[1]) && t_ip[2])
           {
@@ -706,6 +709,7 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
         MEM_EEPROM_ReadVar(TIME_L_circ));
       LCD_AutoSet_Symbol(page, *p_min, *p_sec);     //Sym
       LCD_Write_AirVar(page, 0, _set);
+      LCD_Auto_InflowPump(page, 0, _set);				//IP-Set
       break;	//Circulate
 
 		case AutoAir:
@@ -714,6 +718,7 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
         MEM_EEPROM_ReadVar(TIME_L_air));
       LCD_AutoSet_Symbol(page, *p_min, *p_sec);     //Sym
       LCD_Write_AirVar(page, 0, _set);
+      LCD_Auto_InflowPump(page, 0, _set);				//IP-Set
       break;	//Air
 
 		default:
@@ -726,7 +731,7 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
  * 						Auto Set Symbols
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_Symbol(t_page page, int aMin, int aSec)
+void LCD_AutoSet_Symbol(t_page page, int min, int sec)
 {
   //ClearText
   LCD_ClrSpace(13, 0, 6, 160);
@@ -737,10 +742,10 @@ void LCD_AutoSet_Symbol(t_page page, int aMin, int aSec)
 	switch(page)
 	{
 		case AutoPage:	  LCD_AutoSet_Page();							  break;
-		case AutoZone:		LCD_AutoSet_Zone(aMin, aSec);		  break;
-		case AutoSetDown:	LCD_AutoSet_SetDown(aMin, aSec);	break;
-		case AutoPumpOff: LCD_AutoSet_PumpOff(aMin, aSec);  break;
-		case AutoMud:			LCD_AutoSet_Mud(aMin, aSec);		  break;
+		case AutoZone:		LCD_AutoSet_Zone(min, sec);		  break;
+		case AutoSetDown:	LCD_AutoSet_SetDown(min, sec);	break;
+		case AutoPumpOff: LCD_AutoSet_PumpOff(min, sec);  break;
+		case AutoMud:			LCD_AutoSet_Mud(min, sec);		  break;
 
 		case AutoAir:
 		case AutoAirOff:

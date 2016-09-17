@@ -279,9 +279,6 @@ void LCD_WriteAutoVar(int min, int sec)
 		LCD_WriteValue2_MyFont(13,17, sec);		//CT sec
 	}
 	if(sec==59)	LCD_WriteValue2_MyFont(13,5, min);		//CT min
-
-	LCD_Auto_Phosphor(sec, _exe);						//Phosphor
-	MPX_ReadAverage(Auto, _exe);						//Average Preassure
 }
 
 
@@ -316,9 +313,6 @@ void LCD_WriteAutoVar_Comp(int min, int sec)
 		opHour = Eval_Comp_OpHours(_add);
 		LCD_WriteValue5_MyFont(15,43, opHour);
 	}
-
-	LCD_Auto_Phosphor(sec, _exe);					//Phosphor
-	MPX_ReadAverage(Auto, _exe);					//Preassure
 }
 
 
