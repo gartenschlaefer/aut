@@ -261,7 +261,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     else if(state >= 2)
     {
       if(TCF0_Wait_Query()) state++;		//2s
-      //***SonicTime*2s - def:12
+      //***SonicTime*2s - def:16
       if(state >= 16)
       {
         Sonic_App(US_reset);

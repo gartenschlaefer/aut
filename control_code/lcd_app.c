@@ -133,7 +133,6 @@ t_page LCD_AutoPage(t_page page)
 	// execute in all auto pages
   Watchdog_Restart();
 	LCD_Backlight(_exe);
-	//*-* added
   LCD_Auto_InflowPump(page, sec, _exe);
   LCD_Auto_Phosphor(sec, _exe);
 	MPX_ReadAverage(Auto, _exe);

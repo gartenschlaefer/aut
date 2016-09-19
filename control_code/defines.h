@@ -24,10 +24,10 @@
 #define START_PAGE AutoSetDown
 
 //Company
-#define COMPANY   1	      //CompanyID - 0=Purator; 1=HECS
+#define COMPANY   0	      //CompanyID - 0=Purator; 1=HECS
 
 //Memory Init
-#define MEM_INIT  0       //and LCD Calibration
+#define MEM_INIT  1       //and LCD Calibration
 
 //SoftwareVersion
 #define SV1       1	      //x.-.-
@@ -39,7 +39,7 @@
 #define DEF_MIN   0x30    //:30: = 0x30
 #define DEF_HOUR  0x12    //08:: = 0x08
 #define DEF_DAY   7       //Tag1 = Montag
-#define DEF_DATE  0x04    //__.x.x
+#define DEF_DATE  0x19    //__.x.x
 #define DEF_MONTH 0x09    //x.__.x
 #define DEF_YEAR  0x16    //x.x.20__
 
