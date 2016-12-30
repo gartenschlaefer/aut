@@ -114,28 +114,38 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
 {
 	unsigned char i = 0;
 	unsigned char dlc = 0;
-	unsigned char errMon = 0;
-	static unsigned char err = 0;
+	static int err = 0;
 
 	dlc = txB0[0];
 	MCP2515_WriteReg(TXB0DLC, dlc);			  //DLC
 	MCP2515_WriteReg(TXB0SIDH, txB0[1]);	//Address-H
 	MCP2515_WriteReg(TXB0SIDL, 0x00);		  //Address-L
 
-	while(dlc)								            //Datalength
+	while(dlc)
 	{
 		dlc--;
 		MCP2515_WriteReg(0x36 + i, txB0[2 + i]);	//Data
 		i++;
+		LCD_DeathMan(3,1);
 	}
 
-	MCP2515_WriteReg(TXB0CTRL, TXREQ);				    //StartTransmition
+	MCP2515_WriteReg(TXB0CTRL, TXREQ);				    //StartTransmission
 	while(!(MCP2515_ReadReg(CANINTF) & TX0IF_bm))	//waitUntilSent?
 	{
-		errMon = (MCP2515_ReadReg(TXB0CTRL) & 0xF0);
-		if(errMon){
-			err++;
-			return errMon;}		//IfErrorReturn
+		// CAN Error
+		if((MCP2515_ReadReg(TXB0CTRL) & 0xF0))
+    {
+			err = 0;
+			return 1;
+    }
+
+    // MCP2515 failed
+    if(err > 500)
+    {
+      err = 0;
+      return 2;
+    }
+    err++;
 	}
 	return 0;
 }

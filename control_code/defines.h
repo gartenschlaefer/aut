@@ -27,12 +27,12 @@
 #define COMPANY   0	      //CompanyID - 0=Purator; 1=HECS
 
 //Memory Init
-#define MEM_INIT  1       //and LCD Calibration
+#define MEM_INIT  0       //and LCD Calibration
 
 //SoftwareVersion
 #define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
-#define SV3       3	      //-.-.x
+#define SV3       9	      //-.-.x
 
 //TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
