@@ -265,6 +265,37 @@ void LCD_WriteAuto_IP_Sensor(void)
 
 
 /* ------------------------------------------------------------------*
+ * 						Phosphor Symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_SymbolAuto_Ph(t_FuncCmd state)
+{
+  switch(state)
+  {
+    case _on:
+      LCD_Write_Symbol_3(6, 134, n_phosphor);	break;
+
+    case _disabled:
+    case _off:
+      LCD_Write_Symbol_3(6, 134, p_phosphor);	break;
+
+    default:													break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ * 						Phosphor Var
+ * ------------------------------------------------------------------*/
+
+void LCD_WriteAutoVar_Ph(unsigned char min, unsigned char sec)
+{
+  LCD_WriteValue2_MyFont(13,135, min);
+  LCD_WriteValue2_MyFont(13,147, sec);
+}
+
+
+/* ------------------------------------------------------------------*
  * 						AutoVar
  * ------------------------------------------------------------------*/
 

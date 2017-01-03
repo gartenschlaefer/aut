@@ -462,7 +462,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 
 	else if(ip_state == _disabled)	return ip_state;	//Disabled?
 
-	//----------------------------------------------------Set
+	//--------------------------------------------------Set
 	else if(cmd == _set)
 	{
 		if(ip_state == _on &&
@@ -473,7 +473,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
     }
 	}
 
-	//----------------------------------------------------Reset
+	//--------------------------------------------------Reset
 	else if(cmd == _reset)
 	{
 		if(ip_state == _on)
@@ -483,10 +483,10 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
     }
 	}
 
-	//-----------------------------------------------------exe
+	//--------------------------------------------------Execution
 	else if(cmd == _exe)
 	{
-		//-------------------------------------------------AutoChange2Off
+		// AutoChange2Off
 		if(ip_state == _on && page != ErrorTreat && !t_ip[1] && !t_ip[0])
 		{
 			ip_state = _off;
@@ -498,7 +498,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 			OUT_Clr_InflowPump();
     }
 
-		//-------------------------------------------------AutoChange2On
+		// AutoChange2On
 		else if(ip_state == _off  &&  page != ErrorTreat
 		&& !t_ip[2] && !t_ip[1]   && !t_ip[0]
     && (page == AutoAirOff || page == AutoCircOff))
@@ -513,7 +513,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 			OUT_Set_InflowPump();
     }
 
-		//-------------------------------------------------CountDown
+		// CountDown
 		if(ip_state == _off ||
     ((page == AutoAirOff || page == AutoCircOff) && ip_state == _on))
 		{
@@ -559,96 +559,71 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
  * 						Auto Phosphor
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_Phosphor(int sec, t_FuncCmd cmd)
+void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
 {
-	static unsigned char pCount=0;
-	static unsigned char pMin= 0;
-	static unsigned char pSec= 5;
-	static t_FuncCmd	 p_state=0;
+	static unsigned char count = 0;
+	static unsigned char min = 0;
+	static unsigned char sec = 5;
+	static t_FuncCmd	 state = _off;
 
-	//--------------------------------------------------Init
+	//--------------------------------------------------Initialization
 	if(cmd == _init)
 	{
-		pMin= MEM_EEPROM_ReadVar(ON_phosphor);		//Read ON-Time
-		if(!pMin){
-		  pSec= 0;						  //Phosphor=Disabled?
-      p_state= _disabled;		//Disable
-      return;}						  //Return
-
-		pMin= 1;
-		pSec= 5;
-		p_state= _off;
+		min = MEM_EEPROM_ReadVar(ON_phosphor);
+		if(!min)
+    {
+		  sec= 0;
+      state = _disabled;
+      return;
+    }
+		min = 1;
+		sec = 5;
+		state = _off;
 	}
 
-  //--------------------------------------------------sym
+  //--------------------------------------------------Symbols
 	else if(cmd == _sym)
 	{
-		switch(p_state)
-		{
-			case _on:
-        LCD_Write_Symbol_3(6, 134, n_phosphor);	break;
-
-			case _disabled:
-			case _off:
-        LCD_Write_Symbol_3(6, 134, p_phosphor);	break;
-
-			default:													break;
-		}
-		LCD_WriteValue2_MyFont(13,135, pMin);
-		LCD_WriteValue2_MyFont(13,147, pSec);
+		LCD_SymbolAuto_Ph(state);
+    LCD_WriteAutoVar_Ph(min, sec);
 	}
 
-	//--------------------------------------------------Set
-	else if(cmd == _set)
-	{
-		switch(p_state)
-		{
-			case _on:
-			  OUT_Set_Phosphor();
-        LCD_Write_Symbol_3(6, 134, n_phosphor);	break;
+	//--------------------------------------------------Disabled
+	else if(state == _disabled)		return;
 
-			case _disabled:
-			case _off:
-			  OUT_Clr_Phosphor();
-        LCD_Write_Symbol_3(6, 134, p_phosphor);	break;
-
-			default:													break;
-		}
-		LCD_WriteValue2_MyFont(13,135, pMin);
-		LCD_WriteValue2_MyFont(13,147, pSec);
-	}
-
-	else if(p_state==_disabled)		return;			//Disabled?
-
-	//--------------------------------------------------Exe
+	//--------------------------------------------------Execution
 	else if(cmd ==_exe)
 	{
-		if(pCount != sec)
+		//Counter
+		if(count != s_sec)
     {
-      pCount = sec;							    //Counter
-      if(pSec < 1)
+      count = s_sec;
+      if(sec < 1)
       {
-        pSec = 60;
-        pMin--;
-        LCD_WriteValue2_MyFont(13,135, pMin);
+        sec = 60;
+        min--;
+        LCD_WriteValue2_MyFont(13,135, min);
       }
-      pSec--;
-      LCD_WriteValue2_MyFont(13,147, pSec);
+      sec--;
+      LCD_WriteValue2_MyFont(13,147, sec);
     }
 
-		if(p_state==_on && !pMin && !pSec)								//Change to OFF
+    //Change to OFF
+		if(state==_on && !min && !sec)
 		{
-			p_state=_off;
-			pMin= MEM_EEPROM_ReadVar(OFF_phosphor);
-			pSec=0;
+			state =_off;
+			min = MEM_EEPROM_ReadVar(OFF_phosphor);
+			sec = 0;
 			LCD_Write_Symbol_3(6, 134, p_phosphor);
 			OUT_Clr_Phosphor();
 		}
-		else if(p_state==_off && !pMin && !pSec)					//Change to ON
+
+		//Change to ON
+		else if(state ==_off && !min && !sec)
 		{
-			p_state=_on;
-			pMin= MEM_EEPROM_ReadVar(ON_phosphor);
-			pSec=0;
+			state = _on;
+			min = MEM_EEPROM_ReadVar(ON_phosphor);
+			sec = 0;
 			LCD_Write_Symbol_3(6, 134, n_phosphor);
 			OUT_Set_Phosphor();
 		}

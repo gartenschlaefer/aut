@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    CAN-function-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	ï¿½C:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -139,7 +139,7 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
     }
 
     // MCP2515 failed
-    if(err > 500)
+    if(err > 1000)
     {
       err = 0;
       return 2;

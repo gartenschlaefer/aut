@@ -30,6 +30,8 @@ void LCD_AutoSet_PumpOff(unsigned char min, unsigned char sec);
 void LCD_AutoSet_Mud		(unsigned char min, unsigned char sec);
 void LCD_SymbolAuto_IP  (t_page page, t_FuncCmd cmd);
 void LCD_WriteAutoVar_IP(unsigned char cho, unsigned char *t_ip);
+void LCD_SymbolAuto_Ph(t_FuncCmd state);
+void LCD_WriteAutoVar_Ph(unsigned char min, unsigned char sec);
 
 void LCD_AutoText(void);
 void LCD_Auto_SonicVal(int sonic);
