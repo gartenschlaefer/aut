@@ -20,21 +20,24 @@
 
 //*-*Configuration
 
-//Start Page
+// Start Page
 #define START_PAGE AutoSetDown
 
-//Company
+// Company
 #define COMPANY   0	      //CompanyID - 0=Purator; 1=HECS
 
-//Memory Init
+// Memory Init
 #define MEM_INIT  0       //and LCD Calibration
 
-//SoftwareVersion
+// Debug
+#define DEBUG     1
+
+// SoftwareVersion
 #define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
 #define SV3       9	      //-.-.x
 
-//TimeDefault
+// TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
 #define DEF_HOUR  0x12    //08:: = 0x08

@@ -88,8 +88,9 @@ void PORT_Buzzer(t_FuncCmd cmd)
 
 	switch(cmd)
 	{
-	  //***DisableBuzzer
-		case _error:        //  break;
+		case _error:
+      //***DisableBuzzer
+		  if(DEBUG) return;
 		  state = _error;				break;	//Error
 
 		case _off:
@@ -345,8 +346,12 @@ void PORT_RunTime(void)
 	{
 		runTime = 0;
 		PORT_Ventilator();  //Ventilator
+
 		//***USVCheckVoltageSupply
-    ADC_USV_Check();
+		if(!DEBUG)
+    {
+      ADC_USV_Check();
+    }
 	}
 }
 

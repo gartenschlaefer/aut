@@ -90,9 +90,15 @@ void Basic_Init_Mem(void)
   AT24C_Init();                       //Tel-Nr.
   MEM_EEPROM_SetZero();               //SetDataPagesZero
 
-	//***VarDefaultInit
-  MEM_EEPROM_WriteVarDefault();
-	//MEM_EEPROM_WriteVarDefault_Short(); //Just4Debug
+	if(DEBUG)
+  {
+    //***VarDefaultShort
+    MEM_EEPROM_WriteVarDefault_Short(); //Just4Debug
+  }
+  else
+  {
+    MEM_EEPROM_WriteVarDefault();
+  }
 
 	MCP7941_InitDefault();			        //Timer IC Init
 	LCD_Calibration();					        //LCD Calibration

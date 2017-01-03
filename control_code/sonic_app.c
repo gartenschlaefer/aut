@@ -260,9 +260,11 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     //------------------------------------------------NextShot
     else if(state >= 2)
     {
+      unsigned char repeat_time = 16;
       if(TCF0_Wait_Query()) state++;		//2s
-      //***SonicTime*2s - def:16
-      if(state >= 16)
+      //***SonicTime*2s
+      if(DEBUG) repeat_time = 5;
+      if(state >= repeat_time)
       {
         Sonic_App(US_reset);
         Sonic_App(D5_ini);
@@ -296,16 +298,26 @@ t_page Sonic_ChangePage(t_page page, int sonic)
   int lvCi = 0;
 
   //--------------------------------------------------checkOldValue
-  if(!oldSonic) oldSonic = sonic;   //Init
+  if(!oldSonic)
+  {
+    oldSonic = sonic;   //Init
+  }
   else
   {
-    if(sonic > (oldSonic + 50)) error++;
-    else if(sonic < (oldSonic - 50)) error++;
-    else error = 0;
-
-    if(error > 3) {
+    if((sonic > (oldSonic + 50)) || (sonic < (oldSonic - 50)))
+    {
+      error++;
+    }
+    else
+    {
       error = 0;
-      oldSonic = sonic;}
+    }
+
+    if(error > 3)
+    {
+      error = 0;
+      oldSonic = sonic;
+    }
 
     if(error) return page;
   }

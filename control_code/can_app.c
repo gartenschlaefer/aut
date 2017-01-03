@@ -126,7 +126,6 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
 		dlc--;
 		MCP2515_WriteReg(0x36 + i, txB0[2 + i]);	//Data
 		i++;
-		LCD_DeathMan(3,1);
 	}
 
 	MCP2515_WriteReg(TXB0CTRL, TXREQ);				    //StartTransmission

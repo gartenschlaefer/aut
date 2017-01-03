@@ -24,6 +24,7 @@
 #define LEFT		(1<<PIN3)		      //ADC Read
 #define RIGHT		(1<<PIN1)		      //Resistor 150 - 220R
 
+#define CAL_READS   200           //Count of Reads for calibration
 
 
 /* ==================================================================*
@@ -38,16 +39,12 @@ void 			Touch_Cal			  (void);
 int 			Touch_X_Cal_Init(void);
 int 			Touch_Y_Cal_Init(void);
 
-
-
 /* ------------------------------------------------------------------*
  * 						Touch Calibration
  * ------------------------------------------------------------------*/
 
 int 			Touch_X_Cal			(int xBereich);
 int			 	Touch_Y_Cal			(int yBereich);
-
-
 
 /* ------------------------------------------------------------------*
  * 						Touch Measure

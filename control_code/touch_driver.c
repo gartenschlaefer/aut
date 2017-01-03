@@ -12,7 +12,6 @@
 *	for the EADOGXL160-7 Display
 * ------------------------------------------------------------------
 *	Date:			15.07.2011
-* lastChanges:
 \**********************************************************************/
 
 
@@ -29,7 +28,6 @@
 #include "basic_func.h"
 #include "tc_func.h"
 #include "memory_app.h"
-
 
 
 /* ==================================================================*
@@ -75,17 +73,12 @@ void Touch_Cal(void)
 	LCD_Clean();
 	LCD_WriteStringFont(2,0,"Touchpanel Calibrated");
 	LCD_WriteStringFont(5,0,"EEPROM written");
-
-	TCD0_Stop();				//stop Timer
+	TCD0_Stop();
 }
 
 
-
 /*-------------------------------------------------------------------*
- * 	Touch_X/Y_Cal_Init
- * --------------------------------------------------------------
- *	Returns highest Value of Touchpanel in X/Y-Direction
- *	This Functions has to be used only once for each Touchpanel
+ * 	Touch_X_Cal_Init
  * ------------------------------------------------------------------*/
 
 int Touch_X_Cal_Init(void)
@@ -93,55 +86,53 @@ int Touch_X_Cal_Init(void)
 	int calData=0;
 	int	xCal=0;
 
-	Touch_Clean();							//Clean
+	Touch_Clean();
 	LCD_Clean();
 	LCD_WriteStringFont(2,0,"Touchpanel X-Calibrating");
+	TCC0_Touch_Wait();
 
-	TCC0_Touch_Wait();						//Wait 10ms
-
-	for(int i=0; i<300; i++)				//6s / 20ms
+	for(int i=0; i<CAL_READS; i++)
 	{
 		Watchdog_Restart();
 		calData= Touch_X_ReadData();
 		if(calData>xCal) xCal= calData;
 	}
 
-	Touch_Clean();							//Clean
-	TCD0_Stop();						//stop Timer
-
+	Touch_Clean();
 	return xCal;
 }
+
+
+/*-------------------------------------------------------------------*
+ * 	Touch_Y_Cal_Init
+ * ------------------------------------------------------------------*/
 
 int Touch_Y_Cal_Init(void)
 {
 	int calData=0;
 	int	yCal=0;
 
-	Touch_Clean();							//Clean
+	Touch_Clean();
 	LCD_Clean();
 	LCD_WriteStringFont(2,0,"Touchpanel Y-Calibrating");
+	TCC0_Touch_Wait();
 
-	TCC0_Touch_Wait();						//Wait 10ms
-
-	for(int i=0; i<300; i++)				//6s / 20ms
+	for(int i=0; i<CAL_READS; i++)
 	{
 		Watchdog_Restart();
 		calData= Touch_Y_ReadData();
 		if(calData>yCal) yCal= calData;
 	}
 
-	Touch_Clean();							//Clean
-	TCD0_Stop();						//stop Timer
-
+	Touch_Clean();
 	return yCal;
 }
 
 
-
 /*-------------------------------------------------------------------*
- * 	Touch_X/Y_Cal
+ * 	Touch_X_Cal
  * --------------------------------------------------------------
- *	X/Y-Bereich will be calibrated
+ *	X-space will be calibrated
  * ------------------------------------------------------------------*/
 
 int Touch_X_Cal(int xBereich)
@@ -160,6 +151,12 @@ int Touch_X_Cal(int xBereich)
 	return xCal;
 }
 
+
+/*-------------------------------------------------------------------*
+ * 	Touch_Y_Cal
+ * --------------------------------------------------------------
+ *	Y-space will be calibrated
+ * ------------------------------------------------------------------*/
 
 int Touch_Y_Cal(int yBereich)
 {
@@ -248,19 +245,19 @@ void Touch_Y_Measure(void)
  *  Clean Up Measure through Touch_Clean
  * ------------------------------------------------------------------*/
 
- int Touch_Y_ReadData(void)
- {
+int Touch_Y_ReadData(void)
+{
 	int yData= 0;
 
-	Touch_Clean();						//Clean
-	TCC0_Touch_Wait();					//Wait 10ms
+  // Setup Pins
+	Touch_Clean();
+	TCC0_Touch_Wait();
+	Touch_Y_Measure();
+	TCC0_Touch_Wait();
 
-	Touch_Y_Measure();					//Measure Set up
-	TCC0_Touch_Wait();					//Wait 10ms
-
-	yData= Touch_Y_Read();				//Read at ADC0
-	Touch_Clean();						//Clean
-	TCD0_Stop();					//stop Timer
+  // Read at ADC0
+	yData= Touch_Y_Read();
+	Touch_Clean();
 
 	return yData;
 }
@@ -321,15 +318,15 @@ void Touch_X_Measure(void)
  {
 	int xData= 0;
 
-	Touch_Clean();						//Clean
-	TCC0_Touch_Wait();				//Wait 10ms
+	// Setup Port
+	Touch_Clean();
+	TCC0_Touch_Wait();
+	Touch_X_Measure();
+	TCC0_Touch_Wait();
 
-	Touch_X_Measure();				//Measure Set up
-	TCC0_Touch_Wait();				//Wait 10ms
-
-	xData= Touch_X_Read();		//Read at ADC0
-	Touch_Clean();						//Clean
-	TCD0_Stop();				//stop Timer
+  // Read at ADC0
+	xData= Touch_X_Read();
+	Touch_Clean();
 
 	return xData;
 }
