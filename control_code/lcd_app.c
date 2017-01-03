@@ -427,7 +427,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 
 t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 {
-	static unsigned char ip_count = 0;
+	static int ip_count = 0;
 	static unsigned char t_ip[3] = {0,0,0};	//Time[h=2:min=1:sec=0]
 	static t_FuncCmd ip_state = _off;		    //Init-Var
 
@@ -561,7 +561,7 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 
 void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
 {
-	static unsigned char count = 0;
+	static int count = 0;
 	static unsigned char min = 0;
 	static unsigned char sec = 5;
 	static t_FuncCmd	 state = _off;
