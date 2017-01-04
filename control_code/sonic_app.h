@@ -24,6 +24,8 @@
 #define		DERR	(1<<2)		//DistanceError
 #define		TERR	(1<<3)		//TempError
 
+#define D_LIM 50
+
 
 
 /* ==================================================================*

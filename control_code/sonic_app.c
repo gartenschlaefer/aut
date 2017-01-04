@@ -11,7 +11,6 @@
 *	UltraSonic Applications
 * ------------------------------------------------------------------
 *	Date:			    21.05.2014
-* lastChanges:  12.08.2015
 \**********************************************************************/
 
 
@@ -223,14 +222,6 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	//--------------------------------------------------exe
 	else if(cmd == _exe)
 	{
-    //------------------------------------------------AirOffCheck
-    if(page != AutoAirOff && page != AutoCircOff &&
-    page != AutoSetDown)
-    {
-      state = 1;
-      return page;
-    }
-
 	  //------------------------------------------------Read
     if(state == 0)
     {
@@ -296,52 +287,51 @@ t_page Sonic_ChangePage(t_page page, int sonic)
   int lvCi = 0;
 
   //--------------------------------------------------checkOldValue
-  if(!oldSonic)
+  // init
+  if(!oldSonic) oldSonic = sonic;
+
+  // limits
+  if((sonic > (oldSonic + D_LIM)) || (sonic < (oldSonic - D_LIM)))
   {
-    oldSonic = sonic;   //Init
+    error++;
   }
   else
   {
-    if((sonic > (oldSonic + 50)) || (sonic < (oldSonic - 50)))
-    {
-      error++;
-    }
-    else
-    {
-      error = 0;
-    }
-
-    if(error > 3)
-    {
-      error = 0;
-      oldSonic = sonic;
-    }
-
-    if(error) return page;
+    error = 0;
+    oldSonic = sonic;
   }
+
+  // tries to accept the new distance
+  if(error > 4)
+  {
+    error = 0;
+    oldSonic = sonic;
+  }
+  if(error) return page;
 
   //--------------------------------------------------Percentage
   zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) |
           (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8)		|
+  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) |
 				  (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8)		|
+  lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) |
 				  (MEM_EEPROM_ReadVar(TANK_L_Circ)));
 
-// TODO (chris#1#): do not jump back to air
-
+  //--------------------------------------------------change-Page
 	switch(page)
 	{
-		case AutoSetDown:
+		case AutoZone:
 			if(sonic < (zero - (lvO2 * 10)))	    page = AutoSetDown;
 			else if(sonic < (zero - (lvCi * 10))) page = AutoAir;
 			else                                  page = AutoCirc;
 			break;
 
+    case AutoCirc:
 		case AutoCircOff:
 			if(sonic < (zero - (lvCi * 10)))  page = AutoAir;
 			break;
 
+    case AutoAir:
 		case AutoAirOff:
 			if(sonic < (zero - (lvO2 * 10)))	page = AutoSetDown;
 			break;
