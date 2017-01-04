@@ -1,7 +1,7 @@
 /*********************************************************************\
 *	Author:			  Christian Walter
 * ------------------------------------------------------------------
-* Projekt:		  Steuerung ICT
+* Project:		  Control Interception ICT
 *	Name:			    Display-App-SourceFile
 * ------------------------------------------------------------------
 *	µC:        	  ATxmega128A1
@@ -11,7 +11,6 @@
 *	Application-File for the EADOGXL160-7 Display
 * ------------------------------------------------------------------
 *	Date:			    13.07.2011
-* lastChanges:	23.12.2015
 \**********************************************************************/
 
 #include<avr/io.h>
@@ -51,18 +50,13 @@
 
 t_page LCD_AutoPage(t_page page)
 {
-	static t_page			    sPage = START_PAGE;	  //Start-AutoPage
-	static int 				    min = 5;
-	static int	 			    sec = 0;
-	static int				    lcd_reset = 0;
-	static unsigned char  initVar = 0;
-
-	int sMin;									//SaveTime
-	int sSec;
-	int *p_min;
-	int *p_sec;
-	p_min = &min;
-	p_sec = &sec;
+	static t_page	sPage = START_PAGE;
+	static int min = 5;
+	static int sec = 0;
+	static int lcd_reset = 0;
+	static unsigned char initVar = 0;
+	int *p_min = &min;
+	int *p_sec = &sec;
 
 	switch(page)
 	{
@@ -71,7 +65,7 @@ t_page LCD_AutoPage(t_page page)
       page = sPage;
 
       if(!initVar ||
-      (min == 0 && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
+      (!min && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
       {
         initVar = 1;
         LCD_Write_AirVar(AutoCirc, 0, _init);
@@ -82,8 +76,9 @@ t_page LCD_AutoPage(t_page page)
       }
       else
       {
-        sMin = *p_min;
-        sSec = *p_sec;
+        //SaveTime
+        int sMin = *p_min;
+        int sSec = *p_sec;
         LCD_AutoSet(page, p_min, p_sec);
         *p_min = sMin;
         *p_sec = sSec;
@@ -128,7 +123,7 @@ t_page LCD_AutoPage(t_page page)
   // change pages
 	page = Touch_AutoLinker(Touch_Matrix(), page, p_min, p_sec);
 	page = Sonic_ReadTank(page, _exe);
-	if(page != sPage) LCD_AutoSet(page, p_min, p_sec);  //changePage
+	if(page != sPage) LCD_AutoSet(page, p_min, p_sec);
 
 	// execute in all auto pages
   Watchdog_Restart();
@@ -529,22 +524,16 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
           if((!t_ip[1]) && t_ip[2])
           {
             t_ip[1] = 60;
-            if(t_ip[2])
-            {
-              t_ip[2]--;
-            }
+            // decrease h
+            t_ip[2]--;
             LCD_WriteAutoVar_IP(0x06, t_ip);
           }
-          if(t_ip[1])
-          {
-            t_ip[1]--;
-          }
+          // decrease min
+          if(t_ip[1]) t_ip[1]--;
           LCD_WriteAutoVar_IP(0x02, t_ip);
         }
-        if(t_ip[0])
-        {
-          t_ip[0]--;
-        }
+        // decrease sec
+        if(t_ip[0]) t_ip[0]--;
         LCD_WriteAutoVar_IP(0x01, t_ip);		    //WriteSec
       }
     }
@@ -592,24 +581,24 @@ void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
 	else if(state == _disabled)		return;
 
 	//--------------------------------------------------Execution
-	else if(cmd ==_exe)
+	else if(cmd == _exe)
 	{
 		//Counter
 		if(count != s_sec)
     {
       count = s_sec;
-      if(sec < 1)
+      if(!sec)
       {
         sec = 60;
-        min--;
+        if(min) min--;
         LCD_WriteValue2_MyFont(13,135, min);
       }
-      sec--;
+      if(sec) sec--;
       LCD_WriteValue2_MyFont(13,147, sec);
     }
 
     //Change to OFF
-		if(state==_on && !min && !sec)
+		if(state == _on && !min && !sec)
 		{
 			state =_off;
 			min = MEM_EEPROM_ReadVar(OFF_phosphor);
@@ -619,7 +608,7 @@ void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
 		}
 
 		//Change to ON
-		else if(state ==_off && !min && !sec)
+		else if(state == _off && !min && !sec)
 		{
 			state = _on;
 			min = MEM_EEPROM_ReadVar(ON_phosphor);
@@ -638,7 +627,6 @@ void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
 
 void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 {
-	*p_sec = 0;
 	switch(page)
 	{
 		case AutoPage:
@@ -647,18 +635,21 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
       break;	//Set Page
 
 		case AutoZone:
+      *p_sec = 0;
 		  *p_min = 2;
       LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
       OUT_Set_Air();
       break;	//Zone
 
 		case AutoSetDown:
+      *p_sec = 0;
 		  *p_min = MEM_EEPROM_ReadVar(TIME_setDown);
       LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
       OUT_SetDown();
       break;	//Set Down
 
 		case AutoPumpOff:
+      *p_sec = 0;
 		  *p_min = MEM_EEPROM_ReadVar(ON_pumpOff);
       LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
       OUT_Set_PumpOff();
@@ -679,6 +670,7 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 
 		case AutoCirc:
 		case AutoCircOff:
+      *p_sec = 0;
       *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_circ)<<8) |
         MEM_EEPROM_ReadVar(TIME_L_circ));
       LCD_AutoSet_Symbol(page, *p_min, *p_sec);     //Sym
@@ -688,6 +680,7 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 
 		case AutoAir:
 		case AutoAirOff:
+      *p_sec = 0;
 		  *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_air)<<8) |
         MEM_EEPROM_ReadVar(TIME_L_air));
       LCD_AutoSet_Symbol(page, *p_min, *p_sec);     //Sym

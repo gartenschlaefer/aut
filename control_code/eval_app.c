@@ -12,7 +12,6 @@
 *	and Built-In Functions
 * ------------------------------------------------------------------
 *	Date:			29.06.2011
-* lastChanges:
 \**********************************************************************/
 
 
@@ -157,30 +156,32 @@ int Eval_Comp_OpHours(t_FuncCmd cmd)
 
 unsigned char Eval_CountDown(int *cMin, int *cSec)
 {
-	int min=0;
-	int sec=0;
-	static unsigned char  count=0;
-	static unsigned char	ctOld=0;
-	unsigned char			    sTC=0;
+	int min = 0;
+	int sec = 0;
+	static unsigned char count = 0;
+	static unsigned char ctOld = 0;
+	unsigned char sTC = 0;
 
-	min=	*cMin;
-	sec=	*cSec;
+	min = *cMin;
+	sec = *cSec;
 
-	count=	MCP7941_ReadByte(TIC_SEC);
-	sTC=	TCD1_MainAuto_SafetyTC(_exe);			//Timer Safety
+	count = MCP7941_ReadByte(TIC_SEC);
+	sTC = TCD1_MainAuto_SafetyTC(_exe);			//Timer Safety
 
+  // Countdown
 	if(count != ctOld	|| sTC)
 	{
-		ctOld= count;
+		ctOld = count;
 		if(!sec && min)
 		{
 			sec = 60;
 			min--;
 		}
-		sec--;
+		if(sec) sec--;
 		TCD1_MainAuto_SafetyTC(_reset);
 	}
 
+  // End of Timer
   if(!sec && !min)
 	{
 	  TCD1_MainAuto_SafetyTC(_reset);
