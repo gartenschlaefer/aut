@@ -217,8 +217,8 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	static unsigned char state = 1;
 	static int sonic = 0;
 
-	if(!MEM_EEPROM_ReadVar(SONIC_on))
-	  return page;
+  // deactivated
+	if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
 
 	//--------------------------------------------------exe
 	else if(cmd == _exe)
@@ -232,7 +232,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     }
 
 	  //------------------------------------------------Read
-    if(state == 0)								            //Read
+    if(state == 0)
     {
       Sonic_App(US_exe);
       if(Sonic_App(R_sreg) & DISA)						//DistanceAvailable
@@ -289,8 +289,6 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 
 t_page Sonic_ChangePage(t_page page, int sonic)
 {
-	if(!MEM_EEPROM_ReadVar(SONIC_on))	return page;	//DisabledUS
-
   static int oldSonic = 0;
   static unsigned char error = 0;
   int zero = 0;

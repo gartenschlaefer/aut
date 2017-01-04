@@ -630,34 +630,35 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 	switch(page)
 	{
 		case AutoPage:
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
       OUT_CloseOff();
-      break;	//Set Page
+      break;
 
 		case AutoZone:
       *p_sec = 0;
 		  *p_min = 2;
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
       OUT_Set_Air();
-      break;	//Zone
+      break;
 
 		case AutoSetDown:
       *p_sec = 0;
 		  *p_min = MEM_EEPROM_ReadVar(TIME_setDown);
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
       OUT_SetDown();
-      break;	//Set Down
+      break;
 
 		case AutoPumpOff:
       *p_sec = 0;
 		  *p_min = MEM_EEPROM_ReadVar(ON_pumpOff);
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec); //Sym
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
       OUT_Set_PumpOff();
-      break;	//Pump Off
+      break;
 
 		case AutoMud:
 		  *p_min = MEM_EEPROM_ReadVar(ON_MIN_mud);
       *p_sec = MEM_EEPROM_ReadVar(ON_SEC_mud);
+
       //do not open Mud
       if((*p_min == 0) && (*p_sec == 0))
       {
@@ -673,20 +674,26 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
       *p_sec = 0;
       *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_circ)<<8) |
         MEM_EEPROM_ReadVar(TIME_L_circ));
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec);     //Sym
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
+
+      // reset Time and Output
+      LCD_Write_AirVar(page, 0, _init);
       LCD_Write_AirVar(page, 0, _set);
-      LCD_Auto_InflowPump(page, 0, _set);				//IP-Set
-      break;	//Circulate
+      LCD_Auto_InflowPump(page, 0, _set);
+      break;
 
 		case AutoAir:
 		case AutoAirOff:
       *p_sec = 0;
 		  *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_air)<<8) |
         MEM_EEPROM_ReadVar(TIME_L_air));
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec);     //Sym
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
+
+      // reset Time and Output
+      LCD_Write_AirVar(page, 0, _init);
       LCD_Write_AirVar(page, 0, _set);
-      LCD_Auto_InflowPump(page, 0, _set);				//IP-Set
-      break;	//Air
+      LCD_Auto_InflowPump(page, 0, _set);
+      break;
 
 		default:
 		  break;
