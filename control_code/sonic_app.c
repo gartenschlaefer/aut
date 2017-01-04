@@ -321,19 +321,25 @@ t_page Sonic_ChangePage(t_page page, int sonic)
 	switch(page)
 	{
 		case AutoZone:
-			if(sonic < (zero - (lvO2 * 10)))	    page = AutoSetDown;
-			else if(sonic < (zero - (lvCi * 10))) page = AutoAir;
-			else                                  page = AutoCirc;
+			if(sonic < (zero - (lvO2 * 10)))
+        page = AutoSetDown;
+			else{
+			  page = AutoCirc;
+        LCD_Write_AirVar(page, 0, _init);}
 			break;
 
     case AutoCirc:
 		case AutoCircOff:
-			if(sonic < (zero - (lvCi * 10)))  page = AutoAir;
+			if(sonic < (zero - (lvCi * 10))){
+        page = AutoAir;
+        LCD_Write_AirVar(page, 0, _init);}
 			break;
 
     case AutoAir:
 		case AutoAirOff:
-			if(sonic < (zero - (lvO2 * 10)))	page = AutoSetDown;
+			if(sonic < (zero - (lvO2 * 10))){
+        page = AutoSetDown;
+        LCD_Write_AirVar(AutoCirc, 0, _init);}
 			break;
 
 		default: break;

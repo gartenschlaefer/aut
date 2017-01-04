@@ -76,12 +76,17 @@ t_page LCD_AutoPage(t_page page)
       }
       else
       {
-        //SaveTime
+        // SaveTime
         int sMin = *p_min;
         int sSec = *p_sec;
         LCD_AutoSet(page, p_min, p_sec);
         *p_min = sMin;
         *p_sec = sSec;
+
+        // rewrite countdown
+        if(page != AutoAir && page != AutoAirOff &&
+          page != AutoCirc && page != AutoCircOff){
+            LCD_AutoCountDown(*p_min, *p_sec);}
       }
       break;
 
@@ -307,7 +312,6 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 	{
 		airMin = LCD_AutoRead_StartTime(page);	//Read On
 		airSec = 0;
-		LCD_Auto_InflowPump(page, 0, _reset);   //ResetIP
 	}
 
 	//--------------------------------------------------------Set
@@ -395,7 +399,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
       if(!airSec && (page != ErrorTreat))
       {
         airSec = 60;
-        airMin--;
+        if(airMin) airMin--;
       }
       if(airSec)  airSec--;
     }
@@ -671,26 +675,19 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 
 		case AutoCirc:
 		case AutoCircOff:
-      *p_sec = 0;
-      *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_circ)<<8) |
-        MEM_EEPROM_ReadVar(TIME_L_circ));
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
-
-      // reset Time and Output
-      LCD_Write_AirVar(page, 0, _init);
-      LCD_Write_AirVar(page, 0, _set);
-      LCD_Auto_InflowPump(page, 0, _set);
-      break;
-
-		case AutoAir:
+    case AutoAir:
 		case AutoAirOff:
-      *p_sec = 0;
-		  *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_air)<<8) |
-        MEM_EEPROM_ReadVar(TIME_L_air));
-      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
+		  // time
+		  *p_sec = 0;
+		  if(page == AutoCirc || page == AutoCircOff){
+        *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_circ)<<8) |
+        MEM_EEPROM_ReadVar(TIME_L_circ));}
+      else{
+        *p_min = ((	MEM_EEPROM_ReadVar(TIME_H_air)<<8) |
+        MEM_EEPROM_ReadVar(TIME_L_air));}
 
-      // reset Time and Output
-      LCD_Write_AirVar(page, 0, _init);
+      // set Output
+      LCD_AutoSet_Symbol(page, *p_min, *p_sec);
       LCD_Write_AirVar(page, 0, _set);
       LCD_Auto_InflowPump(page, 0, _set);
       break;
