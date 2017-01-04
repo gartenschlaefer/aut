@@ -1061,6 +1061,7 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
   else if(cmd == _ok) LCD_WriteStringFont(17, 50, "OK...Cycle Power!");
   else if(cmd == _noData) LCD_WriteStringFont(17, 50, "NoData");
   else if(cmd == _success) LCD_WriteStringFont(17, 50, "Success");
+  else if(cmd == _mcp_fail) LCD_WriteStringFont(17, 100, "MCP-fail");
 }
 
 

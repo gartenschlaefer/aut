@@ -251,11 +251,8 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     //------------------------------------------------NextShot
     else if(state >= 2)
     {
-      unsigned char repeat_time = 16;
       if(TCF0_Wait_Query()) state++;		//2s
-      //***SonicTime*2s
-      if(DEBUG) repeat_time = 5;
-      if(state >= repeat_time)
+      if(state >= Sonic_getRepeatTime(page))
       {
         Sonic_App(US_reset);
         Sonic_App(D5_ini);
@@ -271,6 +268,34 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	}
 
 	return page;
+}
+
+
+/* ------------------------------------------------------------------*
+ * 						UltraSonic - ReadTank - ChangePages
+ * ------------------------------------------------------------------*/
+
+unsigned char Sonic_getRepeatTime(t_page page)
+{
+  unsigned char repeat_time = 16; //16s
+  switch(page)
+  {
+			case AutoZone: break;
+			case AutoSetDown: repeat_time = 32; break;
+			case AutoPumpOff: repeat_time = 8; break;
+			case AutoMud: repeat_time = 32; break;
+
+			case AutoAir:
+			case AutoCirc: repeat_time = 32; break;
+
+			case AutoAirOff:
+      case AutoCircOff: break;
+
+      default: break;
+  }
+  //***SonicTime*2s
+  if(DEBUG) repeat_time = 5;
+  return repeat_time;
 }
 
 
@@ -324,6 +349,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
 			if(sonic < (zero - (lvO2 * 10)))
         page = AutoSetDown;
 			else{
+        LCD_Write_AirVar(page, 0, _reset);
 			  page = AutoCirc;
         LCD_Write_AirVar(page, 0, _init);}
 			break;
@@ -331,6 +357,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
     case AutoCirc:
 		case AutoCircOff:
 			if(sonic < (zero - (lvCi * 10))){
+        LCD_Write_AirVar(page, 0, _reset);
         page = AutoAir;
         LCD_Write_AirVar(page, 0, _init);}
 			break;
@@ -338,6 +365,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
     case AutoAir:
 		case AutoAirOff:
 			if(sonic < (zero - (lvO2 * 10))){
+        LCD_Write_AirVar(page, 0, _reset);
         page = AutoSetDown;
         LCD_Write_AirVar(AutoCirc, 0, _init);}
 			break;

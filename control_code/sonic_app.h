@@ -55,6 +55,7 @@ void Sonic_Data_BootRead(void);
 void Sonic_Data_BootWrite(void);
 
 t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd);
+unsigned char Sonic_getRepeatTime(t_page page);
 t_page Sonic_ChangePage(t_page page, int sonic);
 int Sonic_LevelCal(t_FuncCmd cmd);
 unsigned char Sonic_sVersion(void);

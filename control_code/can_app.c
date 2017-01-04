@@ -20,6 +20,7 @@
 #include "defines.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
+#include "lcd_sym.h"
 
 #include "basic_func.h"
 #include "tc_func.h"
@@ -142,6 +143,7 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
     if(err > 1000)
     {
       err = 0;
+      LCD_Data_SonicWrite(_mcp_fail, 0);
       return 2;
     }
     err++;

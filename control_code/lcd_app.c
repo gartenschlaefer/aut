@@ -327,6 +327,19 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
     }
 	}
 
+  //--------------------------------------------------------Set
+	else if(cmd == _reset)
+	{
+    if(page == AutoAir || page == AutoCirc)
+    {
+      OUT_Clr_Air();
+    }
+    else if(page == AutoAirOff || page == AutoCircOff)
+    {
+      OUT_Set_Air();
+    }
+	}
+
 	//--------------------------------------------------------WriteSym
 	else if(cmd == _write)
 	{
