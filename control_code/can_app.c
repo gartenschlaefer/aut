@@ -148,6 +148,7 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
     }
     err++;
 	}
+	err = 0;
 	return 0;
 }
 
