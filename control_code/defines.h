@@ -111,7 +111,7 @@ typedef enum
 	_op,      _telnr,     _wrong, _debug,   _entry,
 	_inc,     _dec,       _check, _low,		  _high,
 	_noData,	_goOn,      _noUS,  _noBoot,  _ok,
-	_success
+	_success, _mcp_fail
 }t_FuncCmd;
 
 
