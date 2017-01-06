@@ -252,7 +252,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     else if(state >= 2)
     {
       if(TCF0_Wait_Query()) state++;		//2s
-      if(state >= Sonic_getRepeatTime(page))
+      if(state > Sonic_getRepeatTime(page))
       {
         Sonic_App(US_reset);
         Sonic_App(D5_ini);
@@ -277,16 +277,16 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 
 unsigned char Sonic_getRepeatTime(t_page page)
 {
-  unsigned char repeat_time = 16; //16s
+  unsigned char repeat_time = 15;
   switch(page)
   {
 			case AutoZone: break;
-			case AutoSetDown: repeat_time = 32; break;
-			case AutoPumpOff: repeat_time = 8; break;
-			case AutoMud: repeat_time = 32; break;
+			case AutoSetDown: repeat_time = 30; break;
+			case AutoPumpOff: repeat_time = 7; break;
+			case AutoMud: repeat_time = 30; break;
 
 			case AutoAir:
-			case AutoCirc: repeat_time = 32; break;
+			case AutoCirc: repeat_time = 30; break;
 
 			case AutoAirOff:
       case AutoCircOff: break;
@@ -349,6 +349,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
 			if(sonic < (zero - (lvO2 * 10)))
         page = AutoSetDown;
 			else{
+        LCD_Auto_InflowPump(page, 0, _reset);
         LCD_Write_AirVar(page, 0, _reset);
 			  page = AutoCirc;
         LCD_Write_AirVar(page, 0, _init);}
@@ -357,6 +358,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
     case AutoCirc:
 		case AutoCircOff:
 			if(sonic < (zero - (lvCi * 10))){
+        LCD_Auto_InflowPump(page, 0, _reset);
         LCD_Write_AirVar(page, 0, _reset);
         page = AutoAir;
         LCD_Write_AirVar(page, 0, _init);}
@@ -365,6 +367,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
     case AutoAir:
 		case AutoAirOff:
 			if(sonic < (zero - (lvO2 * 10))){
+        LCD_Auto_InflowPump(page, 0, _reset);
         LCD_Write_AirVar(page, 0, _reset);
         page = AutoSetDown;
         LCD_Write_AirVar(AutoCirc, 0, _init);}

@@ -321,10 +321,6 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
     {
       OUT_Set_Air();
     }
-    else if(page == AutoAirOff || page == AutoCircOff)
-    {
-      OUT_Clr_Air();
-    }
 	}
 
   //--------------------------------------------------------Set
@@ -333,10 +329,6 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
     if(page == AutoAir || page == AutoCirc)
     {
       OUT_Clr_Air();
-    }
-    else if(page == AutoAirOff || page == AutoCircOff)
-    {
-      OUT_Set_Air();
     }
 	}
 

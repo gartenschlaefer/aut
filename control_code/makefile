@@ -10,7 +10,7 @@ LDLIBS     =
 
 #make submission zip
 release:
-	zip ./archiv/$(SUBMISSION)_S1.2.2.zip *.hex
+	zip ./archiv/$(SUBMISSION)_S1.2.4.zip *.hex
 
 #make clean
 clean:
