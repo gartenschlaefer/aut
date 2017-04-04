@@ -11,7 +11,6 @@
 *	UltraSonic Applications
 * ------------------------------------------------------------------
 *	Date:			    21.05.2014
-* lastChanges:  12.08.2015
 \**********************************************************************/
 
 
@@ -217,22 +216,14 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	static unsigned char state = 1;
 	static int sonic = 0;
 
-	if(!MEM_EEPROM_ReadVar(SONIC_on))
-	  return page;
+  // deactivated
+	if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
 
 	//--------------------------------------------------exe
 	else if(cmd == _exe)
 	{
-    //------------------------------------------------AirOffCheck
-    if(page != AutoAirOff && page != AutoCircOff &&
-    page != AutoSetDown)
-    {
-      state = 1;
-      return page;
-    }
-
 	  //------------------------------------------------Read
-    if(state == 0)								            //Read
+    if(state == 0)
     {
       Sonic_App(US_exe);
       if(Sonic_App(R_sreg) & DISA)						//DistanceAvailable
@@ -260,11 +251,8 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     //------------------------------------------------NextShot
     else if(state >= 2)
     {
-      unsigned char repeat_time = 16;
       if(TCF0_Wait_Query()) state++;		//2s
-      //***SonicTime*2s
-      if(DEBUG) repeat_time = 5;
-      if(state >= repeat_time)
+      if(state > Sonic_getRepeatTime(page))
       {
         Sonic_App(US_reset);
         Sonic_App(D5_ini);
@@ -287,10 +275,36 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
  * 						UltraSonic - ReadTank - ChangePages
  * ------------------------------------------------------------------*/
 
+unsigned char Sonic_getRepeatTime(t_page page)
+{
+  unsigned char repeat_time = 15;
+  switch(page)
+  {
+			case AutoZone: break;
+			case AutoSetDown: repeat_time = 30; break;
+			case AutoPumpOff: repeat_time = 7; break;
+			case AutoMud: repeat_time = 30; break;
+
+			case AutoAir:
+			case AutoCirc: repeat_time = 30; break;
+
+			case AutoAirOff:
+      case AutoCircOff: break;
+
+      default: break;
+  }
+  //***SonicTime*2s
+  if(DEBUG) repeat_time = 5;
+  return repeat_time;
+}
+
+
+/* ------------------------------------------------------------------*
+ * 						UltraSonic - ReadTank - ChangePages
+ * ------------------------------------------------------------------*/
+
 t_page Sonic_ChangePage(t_page page, int sonic)
 {
-	if(!MEM_EEPROM_ReadVar(SONIC_on))	return page;	//DisabledUS
-
   static int oldSonic = 0;
   static unsigned char error = 0;
   int zero = 0;
@@ -298,54 +312,65 @@ t_page Sonic_ChangePage(t_page page, int sonic)
   int lvCi = 0;
 
   //--------------------------------------------------checkOldValue
-  if(!oldSonic)
+  // init
+  if(!oldSonic) oldSonic = sonic;
+
+  // limits
+  if((sonic > (oldSonic + D_LIM)) || (sonic < (oldSonic - D_LIM)))
   {
-    oldSonic = sonic;   //Init
+    error++;
   }
   else
   {
-    if((sonic > (oldSonic + 50)) || (sonic < (oldSonic - 50)))
-    {
-      error++;
-    }
-    else
-    {
-      error = 0;
-    }
-
-    if(error > 3)
-    {
-      error = 0;
-      oldSonic = sonic;
-    }
-
-    if(error) return page;
+    error = 0;
+    oldSonic = sonic;
   }
+
+  // tries to accept the new distance
+  if(error > 4)
+  {
+    error = 0;
+    oldSonic = sonic;
+  }
+  if(error) return page;
 
   //--------------------------------------------------Percentage
   zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) |
           (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8)		|
+  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) |
 				  (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8)		|
+  lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) |
 				  (MEM_EEPROM_ReadVar(TANK_L_Circ)));
 
-// TODO (chris#1#): do not jump back to air
-
+  //--------------------------------------------------change-Page
 	switch(page)
 	{
-		case AutoSetDown:
-			if(sonic < (zero - (lvO2 * 10)))	    page = AutoSetDown;
-			else if(sonic < (zero - (lvCi * 10))) page = AutoAir;
-			else                                  page = AutoCirc;
+		case AutoZone:
+			if(sonic < (zero - (lvO2 * 10)))
+        page = AutoSetDown;
+			else{
+        LCD_Auto_InflowPump(page, 0, _reset);
+        LCD_Write_AirVar(page, 0, _reset);
+			  page = AutoCirc;
+        LCD_Write_AirVar(page, 0, _init);}
 			break;
 
+    case AutoCirc:
 		case AutoCircOff:
-			if(sonic < (zero - (lvCi * 10)))  page = AutoAir;
+			if(sonic < (zero - (lvCi * 10))){
+        LCD_Auto_InflowPump(page, 0, _reset);
+        LCD_Write_AirVar(page, 0, _reset);
+        page = AutoAir;
+        LCD_Write_AirVar(page, 0, _init);}
 			break;
 
+    case AutoAir:
 		case AutoAirOff:
-			if(sonic < (zero - (lvO2 * 10)))	page = AutoSetDown;
+			if(sonic < (zero - (lvO2 * 10))){
+        LCD_Auto_InflowPump(page, 0, _reset);
+        LCD_Write_AirVar(page, 0, _reset);
+        page = AutoSetDown;
+        LCD_Write_AirVar(AutoCirc, 0, _init);}
 			break;
 
 		default: break;
