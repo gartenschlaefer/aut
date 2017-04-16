@@ -27,10 +27,10 @@
 #define COMPANY   1
 
 // Memory Init
-#define MEM_INIT  1
+#define MEM_INIT  0
 
 // Debug
-#define DEBUG     0
+#define DEBUG     1
 
 // SoftwareVersion
 #define SV1       1	      //x.-.-

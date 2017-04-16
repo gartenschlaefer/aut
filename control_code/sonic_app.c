@@ -222,6 +222,8 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	//--------------------------------------------------exe
 	else if(cmd == _exe)
 	{
+	  //*-* del
+	  LCD_WriteValue3_MyFont(1, 40, state);
 	  //------------------------------------------------Read
     if(state == 0)
     {
