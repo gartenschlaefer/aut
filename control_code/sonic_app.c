@@ -146,40 +146,53 @@ int Sonic_App(t_US cmd)
 void Sonic_Data_Shot(void)
 {
 	unsigned char run = 1;
-
-	Sonic_App(US_reset);
-	Sonic_App(T_ini);
+  unsigned char *rec;
+  // Temp
+	CAN_SonicQuery(_init, _startTemp);
 	while(run)
-	{
-		Sonic_App(US_exe);
-		if(Sonic_App(R_sreg) & TEMPA)
-		{
-			LCD_Data_SonicWrite(_temp, Sonic_App(R_treg)); //printTemp
-			run = 0;
-		}
-		else if(Sonic_App(R_sreg) & TERR)
-		{
-			LCD_Data_SonicWrite(_noUS, 0);
-			run = 0;
-		}
-	}
-
+  {
+    rec = CAN_SonicQuery(_exe, 0);
+    //error
+    if(rec[0] >= _usErrTimeout1)
+    {
+      LCD_Data_SonicWrite(_noUS, 0);
+      run = 0;
+    }
+    // OK
+    else if(rec[0] == _usTempSuccess)
+    {
+      LCD_Data_SonicWrite(_temp, (rec[1] << 8) | rec[2]);
+      run = 0;
+    }
+    // Wrong one
+    else if(rec[0] == _usDistSuccess)
+    {
+      CAN_SonicQuery(_init, _startTemp);
+    }
+  }
+  // 5shots
   run = 1;
-  Sonic_App(US_reset);
-	Sonic_App(D5_ini);
+  CAN_SonicQuery(_init, _5Shots);
 	while(run)
 	{
-		Sonic_App(US_exe);
-		if(Sonic_App(R_sreg) & DISA)
-		{
-			LCD_Data_SonicWrite(_shot, Sonic_App(R_dreg));   //printDistance
-			run = 0;
-		}
-		else if(Sonic_App(R_sreg) & DERR)
-		{
+    rec = CAN_SonicQuery(_exe, 0);
+    // error
+    if(rec[0] >= _usErrTimeout1)
+    {
 			LCD_Data_SonicWrite(_noUS, 0);
 			run = 0;
-		}
+    }
+    // OK
+    else if(rec[0] == _usDistSuccess)
+    {
+      LCD_Data_SonicWrite(_shot, (rec[1] << 8) | rec[2]);
+			run = 0;
+    }
+    // Wrong one
+    else if(rec[0] == _usTempSuccess)
+    {
+      CAN_SonicQuery(_init, _5Shots);
+    }
 	}
 }
 
@@ -190,20 +203,26 @@ void Sonic_Data_Shot(void)
 
 void Sonic_Data_Auto(void)
 {
-	Sonic_App(US_exe);
-  if(Sonic_App(R_sreg) & TEMPA)
-	{
-		LCD_Data_SonicWrite(_temp, Sonic_App(R_treg));
-		Sonic_App(D5_ini);
-	}
-	else if(Sonic_App(R_sreg) & TERR) LCD_Data_SonicWrite(_noUS, 0);
+  unsigned char *rec;
 
-	else if(Sonic_App(R_sreg) & DISA)
-	{
-		LCD_Data_SonicWrite(_shot1, Sonic_App(R_dreg));
-		Sonic_App(T_ini);
-	}
-	else if(Sonic_App(R_sreg) & DERR) LCD_Data_SonicWrite(_noUS, 0);
+  rec = CAN_SonicQuery(_exe, 0);
+  // error
+  if(rec[0] >= _usErrTimeout1)
+  {
+    LCD_Data_SonicWrite(_noUS, 0);
+  }
+  // Distance
+  else if(rec[0] == _usDistSuccess)
+  {
+    LCD_Data_SonicWrite(_shot1, (rec[1] << 8) | rec[2]);
+    CAN_SonicQuery(_init, _startTemp);
+  }
+  // Temperature
+  else if(rec[0] == _usTempSuccess)
+  {
+    LCD_Data_SonicWrite(_temp, (rec[1] << 8) | rec[2]);
+    CAN_SonicQuery(_init, _5Shots);
+  }
 }
 
 
