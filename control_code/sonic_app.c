@@ -234,33 +234,43 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 {
 	static unsigned char state = 1;
 	static int sonic = 0;
+	unsigned char *rec;
 
   // deactivated
 	if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
-
+	//--------------------------------------------------init
+	else if(cmd == _init)
+  {
+    state = 1;
+  }
 	//--------------------------------------------------exe
 	else if(cmd == _exe)
 	{
-	  //*-* del
-	  LCD_WriteValue3_MyFont(1, 40, state);
 	  //------------------------------------------------Read
     if(state == 0)
     {
-      Sonic_App(US_exe);
-      if(Sonic_App(R_sreg) & DISA)						//DistanceAvailable
+      rec = CAN_SonicQuery(_exe, 0);
+      // Error
+      if(rec[0] >= _usErrTimeout1)
       {
-        sonic = Sonic_App(R_dreg);	          //ReadReg
-        LCD_Auto_SonicVal(sonic);             //WriteValue
-        page = Sonic_ChangePage(page, sonic);	//ChangePage
-        LCD_Sym_NoUS(page, _clear);           //ClearNoUs
-        state = 2;
+        CAN_SonicQuery(_init, _5Shots);
+        LCD_Sym_NoUS(page, _write);
+        LCD_WriteValue2(2, 40, 3);
       }
-      else if(Sonic_App(R_sreg) & DERR)   //NoUs
+      // Distance
+      else if(rec[0] == _usDistSuccess)
       {
-        Sonic_App(US_reset);
-        Sonic_App(D5_ini);
-        state = 0;
-        LCD_Sym_NoUS(page, _write);       //WriteNoUs
+        sonic = (rec[1] << 8) | rec[2];
+        LCD_Auto_SonicVal(sonic);
+        page = Sonic_ChangePage(page, sonic);
+        LCD_Sym_NoUS(page, _clear);
+        state = 1;
+      }
+      // Temperature
+      else if(rec[0] == _usTempSuccess)
+      {
+        CAN_SonicQuery(_init, _5Shots);
+        LCD_WriteValue2(2, 40, 2);
       }
     }
     //------------------------------------------------TC-Init
@@ -275,8 +285,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       if(TCF0_Wait_Query()) state++;		//2s
       if(state > Sonic_getRepeatTime(page))
       {
-        Sonic_App(US_reset);
-        Sonic_App(D5_ini);
+        CAN_SonicQuery(_init, _5Shots);
         state = 0;
       }
     }

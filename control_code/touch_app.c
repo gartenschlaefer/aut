@@ -1538,8 +1538,6 @@ t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
 		  if(!touch && page != DataSonicBoot){	touch = 2;
 		    LCD_Data_SonicWrite(_clear, 0);
         LCD_Write_TextButton(10, 0, Auto, 0);
-        //Sonic_App(US_reset);
-        //Sonic_App(T_ini);
         CAN_SonicQuery(_init, _startTemp);
         page = DataSonicAuto;}
       break;	//AutoShot
