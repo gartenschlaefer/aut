@@ -67,15 +67,16 @@ typedef enum
   _usWait = 0,
   _usDistReq = 1,
   _usTempReq = 2,
-  _usAckOK = 3,
-  _usDistAv = 4,
-  _usTempAv = 5,
-  _usDistSuccess = 6,
-  _usTempSuccess = 7,
+  _usDistAckOK = 3,
+  _usTempAckOK = 4,
+  _usDistAv = 5,
+  _usTempAv = 6,
+  _usDistSuccess = 7,
+  _usTempSuccess = 8,
   _usErrTimeout1 = 10,
   _usErrTimeout2 = 11,
   _usErrTimeout3 = 12,
-
+  _usErrWrongReq = 13
 }t_USstates;
 
 
@@ -106,10 +107,8 @@ void CAN_TxUSSREG(unsigned char reg);
  * ------------------------------------------------------------------*/
 
 unsigned char CAN_LiveCheck(unsigned char addr);
-unsigned char *CAN_SonicDistance(t_FuncCmd cmd, t_UScmd us);
-unsigned char *CAN_SonicTemp(t_FuncCmd cmd);
-unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us);
 unsigned char *CAN_SonicVersion(t_FuncCmd cmd);
+unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us);
 unsigned char CAN_SonicReadProgram(t_FuncCmd cmd);
 unsigned char CAN_SonicWriteProgram(t_FuncCmd cmd);
 

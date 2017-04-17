@@ -1535,7 +1535,6 @@ void LCD_DataSet(t_page page, int *p_min, int *p_sec)
 		case DataSetup:		LCD_DataSet_Setup();	break;
 
 		case DataSonic:
-		  Sonic_App(T_ini);
       LCD_DataSet_Sonic();	  break;
 		default:									break;
 	}

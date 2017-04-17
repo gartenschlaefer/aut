@@ -231,219 +231,6 @@ unsigned char CAN_LiveCheck(unsigned char addr)
 }
 
 
-/* -------------------------------------------------------------------*
- * 						Measure Distance
- * -------------------------------------------------------------------*
- *	cmd: _init		  -	Restart Measurement
- *	cmd: _exe		    -	Measurement
- *	return:			    --------------------------------------------------
- *	sonic[0]: 3     -	State Received Distance -> OK
- *	sonic[0]: 10..  -	TimeOut Error - Restart requird
- * ------------------------------------------------------------------*/
-
-unsigned char *CAN_SonicDistance(t_FuncCmd cmd, t_UScmd us)
-{
-	unsigned char *rec;						          //Pointer
-	unsigned char ack = 0;
-	static unsigned char err = 0;
-	static unsigned char sonic[3] = {	0,		//state
-									                  0,		//dataH
-									                  0};		//dataL
-
-	//--------------------------------------------------Init
-	if(cmd == _init)
-	{
-		err = 0;												  //ErrorReset
-		sonic[0] = 0;											//Start-Condition
-		TCE1_WaitMilliSec_Init(25);	//SafetyTimer
-		CAN_TxCmd(us);			              //CANTxCmd
-	}
-	//--------------------------------------------------Exe
-	else if(cmd == _exe)
-	{
-		//--------------------------------------------Start+ACK
-		if(sonic[0] == 0)
-		{
-			if(TCE1_Wait_Query())					  //ResendCmd
-			{
-				err++;
-				if(err >= 5) sonic[0] = 10;			  //Error2Much
-        CAN_TxCmd(us);			                //CANTxCmd
-			}
-
-			ack = CAN_RxACK();
-			if(ack == _oneShot || ack == _5Shots)	//CANRxACK
-			{
-				err = 0;									          //ResetError
-				sonic[0] = 1;							          //nextStep
-				CAN_TxCmd(_readUSSREG);					    //RequestUSSREG2
-				TCE1_WaitMilliSec_Init(25);	  //CAN-TimerInit
-			}
-			else if(ack == _working)				      //Working
-			{
-				err = 0;
-				TCE1_WaitMilliSec_Init(25);
-			}
-		}
-		//--------------------------------------------CheckDistanceData
-		else if(sonic[0] == 1)
-		{
-			if(TCE1_Wait_Query())		        //ResendCmd
-			{
-				err++;
-				if(err >= 5) sonic[0] = 11;	      //Error2Much
-				CAN_TxCmd(_readUSSREG);			        //CANTxCmd
-			}
-
-			rec = CAN_RxB0_Read();			          //ReadCan
-			if(rec[0])									          //checkDLC
-			{
-				if(rec[2] == _readUSSREG)		        //checkCMD
-				{
-          err = 0;								          //ResetError
-					if(rec[3] & DISA)					        //CheckIfDistanceAv
-					{
-						sonic[0] = 2;						        //nextStep
-						CAN_TxCmd(_readDistance);				//TxWriteCmd
-						TCE1_WaitMilliSec_Init(25);	//CAN-TimerInit
-					}
-				}
-			}
-		}
-		//--------------------------------------------ReadDistance
-		else if(sonic[0] == 2)						//-ReadDistance
-		{
-			if(TCE1_Wait_Query())
-			{
-				err++;
-				if(err >= 5) sonic[0] = 12;		//Error2Much
-				CAN_TxCmd(_readDistance);			//TxWriteCmd
-			}
-
-			rec = CAN_RxB0_Read();					//ReadCan
-			if(rec[0])
-			{
-				if(rec[2] == _readDistance)		//checkCMD
-				{
-					sonic[1] = rec[3]; 	//DataH
-					sonic[2] = rec[4];	//DataL
-					sonic[0] = 3;				//Received
-				}
-			}
-		}
-		else TCE1_Stop();		//StopTimer
-	}
-	return &sonic[0];
-}
-
-
-/* ------------------------------------------------------------------*
- * 						Measure Temperature
- * -------------------------------------------------------------------*
- *	Parameter:		  --------------------------------------------------
- *	cmd: _init		  -	Start Measurement
- *	cmd: _exe		    -	Request Temp
- *	return:			    --------------------------------------------------
- *	sonic[0]: 3 	  -	State Received Temperature -> OK
- *	sonic[0]: 10.. 	-	TimeOut Error - Restart requird
- * ------------------------------------------------------------------*/
-
-unsigned char *CAN_SonicTemp(t_FuncCmd cmd)
-{
-	unsigned char *rec;						//Pointer
-	unsigned char ack;
-	static unsigned char err = 0;
-	static unsigned char sonic[3] = { 0,		//state
-                                    0,		//dataH
-                                    0};		//dataL
-	//--------------------------------------------Init
-	if(cmd == _init)
-	{
-		err = 0;								          //ErrorReset
-		sonic[0] = 0;						          //Start-Condition
-		TCE1_WaitMilliSec_Init(25);	//SafetyTimer
-		CAN_TxCmd(_startTemp);				    //CANTxCmd
-	}
-	//--------------------------------------------Exe
-	else if(cmd == _exe)
-	{
-		//--------------------------------------------Start+ACK
-		if(sonic[0] == 0)
-		{
-			if(TCE1_Wait_Query())				//ResendCmd
-			{
-				err++;
-				if(err >= 5)	sonic[0] = 10;		//Error2Much
-				CAN_TxCmd(_startTemp);					//CANTxCmd
-			}
-
-			ack = CAN_RxACK();
-			if(ack == _startTemp)
-			{
-				err = 0;									        //ResetError
-				sonic[0] = 1;							        //nextStep
-				CAN_TxCmd(_readUSSREG);					  //RequestUSSREG2
-				TCE1_WaitMilliSec_Init(25);	//CAN-TimerInit
-			}
-			else if(ack == _working)						    //Working
-			{
-				err = 0;
-				TCE1_WaitMilliSec_Init(25);
-			}
-		}
-		//--------------------------------------------CheckTempData
-		else if(sonic[0] == 1)
-		{
-			if(TCE1_Wait_Query())		//ResendCmd
-			{
-				err++;
-				if(err >= 5) sonic[0] = 11;	//Error2Much
-				CAN_TxCmd(_readUSSREG);			//CANTxCmd
-			}
-
-			rec = CAN_RxB0_Read();				//ReadCan
-			if(rec[0])									  //checkDLC
-			{
-				if(rec[2] == _readUSSREG)		//checkCMD
-				{
-					if(rec[3] & TEMPA)				//CheckIfDistanceAvailable
-					{
-						err = 0;								//ResetError
-						sonic[0] = 2;						//nextStep
-						CAN_TxCmd(_readTemp);				      //TxWriteCmd
-						TCE1_WaitMilliSec_Init(25);	//CAN-TimerInit
-					}
-				}
-			}
-		}
-		//--------------------------------------------ReadTemp
-		else if(sonic[0] == 2)						//-ReadTemp
-		{
-			if(TCE1_Wait_Query())
-			{
-				err++;
-				if(err >= 5) sonic[0] = 12;		//Error2Much
-				CAN_TxCmd(_readTemp);					//TxWriteCmd
-			}
-
-			rec = CAN_RxB0_Read();			//ReadCan
-			if(rec[0])
-			{
-				if(rec[2] == _readTemp)		//checkCMD
-				{
-					sonic[1] = rec[3]; 			//DataH
-					sonic[2] = rec[4];			//DataL
-					sonic[0] = 3;						//Received
-				}
-			}
-		}
-		else TCE1_Stop();				//StopTimerIfErrorOrReady
-	}
-	return &sonic[0];
-}
-
-
-
 /* ------------------------------------------------------------------*
  * 						Read Software Version
  * ------------------------------------------------------------------*/
@@ -488,7 +275,7 @@ unsigned char *CAN_SonicVersion(t_FuncCmd cmd)
 	return &sonic[0];
 }
 
-//*-* del
+
 /* ------------------------------------------------------------------*
  * 						Measure Temperature or Distance
  * -------------------------------------------------------------------*
@@ -526,7 +313,6 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
 	//--------------------------------------------------Exe
 	else if(cmd == _exe)
 	{
-	  //LCD_WriteValue3_MyFont(2, 100, sonic[0]);
 		//--------------------------------------------Start+ACK
 		if(sonic[0] == _usTempReq || sonic[0] == _usDistReq)
 		{
@@ -534,34 +320,64 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
 			if(TCE1_Wait_Query())
 			{
 				err++;
-				if(err >= 5) sonic[0] = _usErrTimeout1;
+				if(err >= 5)
+        {
+          sonic[0] = _usErrTimeout1;
+          return sonic;
+        }
 				else if(sonic[0] == _usTempReq) CAN_TxCmd(_startTemp);
         else if(sonic[0] == _usDistReq) CAN_TxCmd(_5Shots);
 			}
       // Check ACK
 			ack = CAN_RxACK();
-			if((ack == _startTemp && sonic[0] == _usTempReq) ||
-        (ack == _5Shots && sonic[0] == _usDistReq))
+			switch(ack)
 			{
-				err = 0;
-				sonic[0] = _usAckOK;
-				CAN_TxCmd(_readUSSREG);
-				TCE1_WaitMilliSec_Init(25);
-			}
-			else if(ack == _working)				      //Working
-			{
-				err = 0;
-				TCE1_WaitMilliSec_Init(25);
+        case _startTemp:
+          if(sonic[0] == _usTempReq)
+          {
+            sonic[0] = _usTempAckOK;
+            CAN_TxCmd(_readUSSREG);
+            TCE1_WaitMilliSec_Init(25);
+          }
+          else
+          {
+            sonic[0] = _usErrWrongReq;
+            return sonic;
+          } break;
+
+        case _5Shots:
+          if(sonic[0] == _usDistReq)
+          {
+            sonic[0] = _usDistAckOK;
+            CAN_TxCmd(_readUSSREG);
+            TCE1_WaitMilliSec_Init(25);
+          }
+          else
+          {
+            sonic[0] = _usErrWrongReq;
+            return sonic;
+          } break;
+
+        case _working:
+          err = 0;
+          TCE1_WaitMilliSec_Init(25);
+          break;
+
+        default: break;
 			}
 		}
 		//--------------------------------------------CheckData
-		else if(sonic[0] == _usAckOK)
+		else if(sonic[0] == _usDistAckOK || sonic[0] == _usTempAckOK)
 		{
 			// Error check
 			if(TCE1_Wait_Query())
 			{
 				err++;
-				if(err >= 5) sonic[0] = _usErrTimeout2;
+        if(err >= 5)
+        {
+          sonic[0] = _usErrTimeout2;
+          return sonic;
+        }
 				CAN_TxCmd(_readUSSREG);
 			}
       // Check if Data available
@@ -572,14 +388,14 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
 				{
           err = 0;
           // Distance
-					if(rec[3] & DISA)
+					if(rec[3] & DISA && sonic[0] == _usDistAckOK)
 					{
 						sonic[0] = _usDistAv;
 						CAN_TxCmd(_readDistance);
 						TCE1_WaitMilliSec_Init(25);
 					}
 					// Temperature
-					else if(rec[3] & TEMPA)
+					else if(rec[3] & TEMPA && sonic[0] == _usTempAckOK)
           {
             sonic[0] = _usTempAv;
 						CAN_TxCmd(_readTemp);
@@ -595,7 +411,11 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
 			if(TCE1_Wait_Query())
 			{
 				err++;
-				if(err >= 5) sonic[0] = _usErrTimeout3;
+        if(err >= 5)
+        {
+          sonic[0] = _usErrTimeout3;
+          return sonic;
+        }
 				else if(sonic[0] == _usDistAv) CAN_TxCmd(_readDistance);
 				else if(sonic[0] == _usTempAv) CAN_TxCmd(_readTemp);
 			}
@@ -617,9 +437,13 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
 				}
 			}
 		}
-		else TCE1_Stop();		//StopTimer
+		//--------------------------------------------Nothing
+		else
+    {
+      TCE1_Stop();		//StopTimer
+    }
 	}
-	return &sonic[0];
+	return sonic;
 }
 
 /* ------------------------------------------------------------------*

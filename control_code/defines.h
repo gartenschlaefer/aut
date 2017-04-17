@@ -106,12 +106,12 @@ typedef enum
 	_enabled,	_disabled,	_stop,	_calc,	  _clear,
 	_test,		_read,			_read1,	_read2,	  _ready,
 	_write1,	_write2,		_shot,	_shot1,	  _shot2,
-	_temp,		_error1,    _ton,   _ovent,   _cvent,
+	_temp,		_temp1,     _error1,    _ton,   _ovent,
 	_cvent_s, _notav,     _mbar,  _mmbar,   _right,
 	_op,      _telnr,     _wrong, _debug,   _entry,
 	_inc,     _dec,       _check, _low,		  _high,
 	_noData,	_goOn,      _noUS,  _noBoot,  _ok,
-	_success, _mcp_fail
+	_success, _mcp_fail,  _cvent, _autotext
 }t_FuncCmd;
 
 

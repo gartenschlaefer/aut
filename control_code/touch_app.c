@@ -1537,7 +1537,7 @@ t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
 		case 0x21:
 		  if(!touch && page != DataSonicBoot){	touch = 2;
 		    LCD_Data_SonicWrite(_clear, 0);
-        LCD_Write_TextButton(10, 0, Auto, 0);
+		    LCD_Data_SonicWrite(_autotext, 0);
         CAN_SonicQuery(_init, _startTemp);
         page = DataSonicAuto;}
       break;	//AutoShot
@@ -1585,10 +1585,14 @@ t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
       break;	//ResetButtons
 
 		//------------------------------------------------MainLinker
-		case 0x41:	touch = 0; return AutoPage; 	break;
-		case 0x42:	touch = 0; return PinManual; break;
-		case 0x43:	touch = 0; return PinSetup; 	break;
-		case 0x44:	touch = 0; return DataPage; 	break;
+		case 0x41:	touch = 0; LCD_Data_SonicWrite(_clear, 0);
+                return AutoPage; 	break;
+		case 0x42:	touch = 0; LCD_Data_SonicWrite(_clear, 0);
+                return PinManual; break;
+		case 0x43:	touch = 0; LCD_Data_SonicWrite(_clear, 0);
+                return PinSetup; 	break;
+		case 0x44:	touch = 0; LCD_Data_SonicWrite(_clear, 0);
+                return DataPage; 	break;
 		default:									                break;
 	}
 	return page;

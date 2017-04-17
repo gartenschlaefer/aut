@@ -998,10 +998,11 @@ void LCD_WriteDataArrows(void)
 
 void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
 {
-	int temp = 0;
 	static unsigned char i = 5;
   static unsigned int max = 0;
   static unsigned int min = 10000;
+  static unsigned int max_temp = 0;
+  static unsigned int min_temp = 10000;
 
   //--------------------------------------------------ClearDisplay
 	if(cmd == _clear)
@@ -1009,6 +1010,8 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
 		i = 5;
 		max = 0;
 		min = 10000;
+		max_temp = 0;
+		min_temp = 10000;
 		LCD_ClrSpace(4, 91, 15, 69);
 		LCD_ClrSpace(17, 50, 4, 60);  //MessageLine
 	}
@@ -1021,39 +1024,76 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
   //--------------------------------------------------AutoShot
 	else if(cmd == _shot1)
 	{
-	  if(shot > max){
+    LCD_WriteValue5_MyFont(5, 126, shot);
+	  if(shot > max)
+    {
 	    max = shot;
-      temp = Sonic_App(R_treg);
-	    LCD_WriteValue5_MyFont(10, 126, max);
-      LCD_WriteMyFont(10, 102, 22);   //.
-	    LCD_WriteValue2_MyFont(10, 105, (temp & 0x00FF));
-      LCD_WriteValue2_MyFont(10, 95, ((temp >> 8) & 0x00FF));}	//max
-
-    if(shot < min){
+	    LCD_WriteValue5_MyFont(11, 126, max);
+    }
+    if(shot < min)
+    {
       min = shot;
-      temp = Sonic_App(R_treg);
-	    LCD_WriteValue5_MyFont(13, 126, min);
-      LCD_WriteMyFont(13, 102, 22);   //.
-      LCD_WriteValue2_MyFont(13, 105, (temp & 0x00FF));
-      LCD_WriteValue2_MyFont(13, 95, ((temp >> 8) & 0x00FF));}	//min
-
-		LCD_WriteValue5_MyFont(5, 126, shot);	    //WriteOneShot
+	    LCD_WriteValue5_MyFont(17, 126, min);
+    }
 	}
   //--------------------------------------------------Temperature
 	else if(cmd == _temp)
 	{
-    if(i > 17){
+    if(i > 17)
+    {
       i = 5;
-      LCD_ClrSpace(4, 95, 15, 60);}	    //AutoclearSpace
-
-    if(shot & 0x8000){
+      LCD_ClrSpace(4, 95, 15, 60);
+    }
+    if(shot & 0x8000)
+    {
       shot &= 0x7FFF;
-      LCD_WriteMyFont(i, 91, 11);}      //-
-
+      LCD_WriteMyFont(i, 91, 11);  //-
+    }
     LCD_WriteMyFont(i, 102, 22);        //.
     LCD_WriteValue2_MyFont(i, 105, (shot & 0x00FF));
-    LCD_WriteValue2_MyFont(i, 95, ((shot >> 8) & 0x00FF));	//min
+    LCD_WriteValue2_MyFont(i, 95, ((shot >> 8) & 0x00FF));
 	}
+  //--------------------------------------------------AutoTemp
+  else if(cmd == _temp1)
+	{
+    unsigned char minus_sign = 0;
+    if(shot & 0x8000)
+    {
+      minus_sign = 1;
+      shot &= 0x7FFF;
+      LCD_WriteMyFont(5, 91, 11); //-
+    }
+    LCD_WriteValue2_MyFont(5, 105, (shot & 0x00FF));
+    LCD_WriteValue2_MyFont(5, 95, ((shot >> 8) & 0x00FF));
+    if(shot > max_temp)
+    {
+	    max_temp = shot;
+	    if(minus_sign)  LCD_WriteMyFont(11, 91, 11); //-
+	    LCD_WriteValue2_MyFont(11, 105, (max_temp & 0x00FF));
+      LCD_WriteValue2_MyFont(11, 95, ((max_temp >> 8) & 0x00FF));
+    }
+    if(shot < min_temp)
+    {
+      min_temp = shot;
+      if(minus_sign)  LCD_WriteMyFont(17, 91, 11); //-
+      LCD_WriteValue2_MyFont(17, 105, (min_temp & 0x00FF));
+      LCD_WriteValue2_MyFont(17, 95, ((min_temp >> 8) & 0x00FF));
+    }
+	}
+  //--------------------------------------------------AutoTemp
+	else if(cmd == _autotext)
+  {
+    LCD_Write_TextButton(10, 0, Auto, 0);
+    LCD_WriteMyFont(9, 113, 13); //m
+    LCD_WriteMyFont(9, 117, 15); //a
+    LCD_WriteMyFont(9, 121, 25); //x
+    LCD_WriteMyFont(15, 113, 13); //m
+    LCD_WriteMyFont(15, 117, 23); //i
+    LCD_WriteMyFont(15, 121, 24); //n
+    LCD_WriteMyFont(17, 102, 22); //.
+    LCD_WriteMyFont(11, 102, 22); //.
+    LCD_WriteMyFont(5, 102, 22);  //.
+  }
   //--------------------------------------------------Messages
 	else if(cmd == _noUS)   LCD_WriteStringFont(17, 50, "NoUS");
   else if(cmd == _noBoot) LCD_WriteStringFont(17, 50, "NoBoot");
