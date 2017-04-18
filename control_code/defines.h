@@ -24,7 +24,7 @@
 #define START_PAGE AutoSetDown
 
 // CompanyID - 0 = Purator; 1 = HECS
-#define COMPANY   1
+#define COMPANY   0
 
 // Memory Init
 #define MEM_INIT  1
@@ -35,15 +35,15 @@
 // SoftwareVersion
 #define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
-#define SV3       4	      //-.-.x
+#define SV3       5	      //-.-.x
 
 // TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
 #define DEF_HOUR  0x12    //08:: = 0x08
-#define DEF_DAY   5       //Tag1 = Monday
-#define DEF_DATE  0x06    //__.x.x
-#define DEF_MONTH 0x01    //x.__.x
+#define DEF_DAY   2       //Tag1 = Monday
+#define DEF_DATE  0x18    //__.x.x
+#define DEF_MONTH 0x04    //x.__.x
 #define DEF_YEAR  0x17    //x.x.20__
 
 
@@ -106,12 +106,12 @@ typedef enum
 	_enabled,	_disabled,	_stop,	_calc,	  _clear,
 	_test,		_read,			_read1,	_read2,	  _ready,
 	_write1,	_write2,		_shot,	_shot1,	  _shot2,
-	_temp,		_error1,    _ton,   _ovent,   _cvent,
+	_temp,		_temp1,     _error1,    _ton,   _ovent,
 	_cvent_s, _notav,     _mbar,  _mmbar,   _right,
 	_op,      _telnr,     _wrong, _debug,   _entry,
 	_inc,     _dec,       _check, _low,		  _high,
 	_noData,	_goOn,      _noUS,  _noBoot,  _ok,
-	_success, _mcp_fail
+	_success, _mcp_fail,  _cvent, _autotext
 }t_FuncCmd;
 
 

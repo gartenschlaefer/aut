@@ -1,6 +1,4 @@
 *.exe
-control_code/control_code.layout
-control_code/control_code.depend
 ~*
 *.txt
 *.mop
@@ -8,3 +6,5 @@ control_code/control_code.depend
 *.ger
 *.gbr
 *.drl
+*.layout
+*.depend

@@ -1535,7 +1535,6 @@ void LCD_DataSet(t_page page, int *p_min, int *p_sec)
 		case DataSetup:		LCD_DataSet_Setup();	break;
 
 		case DataSonic:
-		  Sonic_App(T_ini);
       LCD_DataSet_Sonic();	  break;
 		default:									break;
 	}
@@ -1776,7 +1775,7 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry)
 			case Setup:		LCD_WriteSetupEntry(5+(2*i), eep, entry);	break;
 			default:													break;
 		}
-		//-------------------------------------------Update-Varibles---
+		//-------------------------------------------Update------------
 		if(entry<1)
 		{
 			entry=4;			eep--;

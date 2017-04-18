@@ -32,154 +32,59 @@
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						UltraSonic App - 4Safety
- * ------------------------------------------------------------------*/
-
-int Sonic_App(t_US cmd)
-{
-	static int usSreg = 0;			  //StatusReg
-	static int usDreg = 0;			  //DistanceReg
-	static int usTreg = 0;			  //TempReg
-
-	static t_US state = US_wait;  //StatusCAN
-	unsigned char *rec = 0;				//ReadPointer
-
-	//---------------------------------------------DistanceInit-OneShot
-	if((cmd == D1_ini) && (state == US_wait))
-	{
-		rec = CAN_SonicDistance(_init, _oneShot);
-		usSreg &= ~DERR;
-		state = D1_wo;
-	}
-
-	//---------------------------------------------DistanceInit-5Shots
-	else if((cmd == D5_ini) && (state == US_wait))
-	{
-		rec = CAN_SonicDistance(_init, _5Shots);
-		usSreg &= ~DERR;
-		state = D5_wo;
-	}
-
-	//---------------------------------------------TempInit
-	else if((cmd == T_ini) && (state == US_wait))
-	{
-		rec = CAN_SonicTemp(_init);
-		usSreg &= ~TERR;
-		state = T_wo;
-	}
-
-	//--------------------------------------------------US-Exe
-	else if(cmd == US_exe)
-	{
-		//------------------------------------------------ShotExe
-		if(state == D1_wo)
-		{
-			rec = CAN_SonicDistance(_exe, _oneShot);  //ReadSonic
-			if(rec[0] >= 10)                          //Error
-			{
-			 	usSreg |= DERR;
-				state = US_wait;
-			}
-			else if(rec[0] == 3)                   //OK
-			{
-				usDreg = ((rec[1] << 8) | rec[2]);  //DistanceReg
-				usSreg |= DISA;                     //DistanceAv
-				state = US_wait;
-			}
-		}
-    //------------------------------------------------Shot5Exe
-		else if(state == D5_wo)
-		{
-			rec = CAN_SonicDistance(_exe, _5Shots); //ReadSonic
-			if(rec[0] >= 10)                        //Error
-			{
-			 	usSreg |= DERR;
-				state = US_wait;
-			}
-			else if(rec[0] == 3)                  //OK
-			{
-				usDreg = ((rec[1] << 8) | rec[2]);  //DistanceReg
-				usSreg |= DISA;                     //DistanceAv
-				state = US_wait;
-			}
-		}
-    //------------------------------------------------TempExe
-		else if(state == T_wo)
-		{
-			rec = CAN_SonicTemp(_exe);  //ReadSonic
-			if(rec[0] >= 10)            //Error
-			{
-			 	usSreg |= TERR;
-				state = US_wait;
-			}
-			else if(rec[0] == 3)        //OK
-			{
-				usTreg = ((rec[1] << 8) | rec[2]);  //TempReg
-				usSreg |= TEMPA;                    //TempAv
-				state = US_wait;
-			}
-		}
-		return usSreg;
-	}
-	//---------------------------------------------US-Reset
-	else if(cmd == US_reset)
-	{
-		state = US_wait;
-		usSreg = 0x00;
-		usDreg = 0;
-		usTreg = 0;
-	}
-	//---------------------------------------------US-Read
-	else if(cmd == R_sreg)	return usSreg;
-	else if(cmd == R_dreg){	usSreg &= ~DISA;	return usDreg;}
-	else if(cmd == R_treg){	usSreg &= ~TEMPA;	return usTreg;}
-
-	return state;
-}
-
-
-
-/* ------------------------------------------------------------------*
- * 						UltraSonic - LCDData - Shot
+ * 						UltraSonic - LCD-Data - Shot
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_Shot(void)
 {
 	unsigned char run = 1;
-
-	Sonic_App(US_reset);
-	Sonic_App(T_ini);
+  unsigned char *rec;
+  // Temp
+	CAN_SonicQuery(_init, _startTemp);
 	while(run)
-	{
-		Sonic_App(US_exe);
-		if(Sonic_App(R_sreg) & TEMPA)
-		{
-			LCD_Data_SonicWrite(_temp, Sonic_App(R_treg)); //printTemp
-			run = 0;
-		}
-		else if(Sonic_App(R_sreg) & TERR)
-		{
-			LCD_Data_SonicWrite(_noUS, 0);
-			run = 0;
-		}
-	}
-
+  {
+    rec = CAN_SonicQuery(_exe, 0);
+    //error
+    if(rec[0] >= _usErrTimeout1)
+    {
+      LCD_Data_SonicWrite(_noUS, 0);
+      run = 0;
+    }
+    // OK
+    else if(rec[0] == _usTempSuccess)
+    {
+      LCD_Data_SonicWrite(_temp, (rec[1] << 8) | rec[2]);
+      run = 0;
+    }
+    // Wrong one
+    else if(rec[0] == _usDistSuccess || rec[0] == _usWait)
+    {
+      CAN_SonicQuery(_init, _startTemp);
+    }
+  }
+  // 5shots
   run = 1;
-  Sonic_App(US_reset);
-	Sonic_App(D5_ini);
+  CAN_SonicQuery(_init, _5Shots);
 	while(run)
 	{
-		Sonic_App(US_exe);
-		if(Sonic_App(R_sreg) & DISA)
-		{
-			LCD_Data_SonicWrite(_shot, Sonic_App(R_dreg));   //printDistance
-			run = 0;
-		}
-		else if(Sonic_App(R_sreg) & DERR)
-		{
+    rec = CAN_SonicQuery(_exe, 0);
+    // error
+    if(rec[0] >= _usErrTimeout1)
+    {
 			LCD_Data_SonicWrite(_noUS, 0);
 			run = 0;
-		}
+    }
+    // OK
+    else if(rec[0] == _usDistSuccess)
+    {
+      LCD_Data_SonicWrite(_shot, (rec[1] << 8) | rec[2]);
+			run = 0;
+    }
+    // Wrong one
+    else if(rec[0] == _usTempSuccess || rec[0] == _usWait)
+    {
+      CAN_SonicQuery(_init, _5Shots);
+    }
 	}
 }
 
@@ -190,20 +95,26 @@ void Sonic_Data_Shot(void)
 
 void Sonic_Data_Auto(void)
 {
-	Sonic_App(US_exe);
-  if(Sonic_App(R_sreg) & TEMPA)
-	{
-		LCD_Data_SonicWrite(_temp, Sonic_App(R_treg));
-		Sonic_App(D5_ini);
-	}
-	else if(Sonic_App(R_sreg) & TERR) LCD_Data_SonicWrite(_noUS, 0);
+  unsigned char *rec;
 
-	else if(Sonic_App(R_sreg) & DISA)
-	{
-		LCD_Data_SonicWrite(_shot1, Sonic_App(R_dreg));
-		Sonic_App(T_ini);
-	}
-	else if(Sonic_App(R_sreg) & DERR) LCD_Data_SonicWrite(_noUS, 0);
+  rec = CAN_SonicQuery(_exe, 0);
+  // error
+  if(rec[0] >= _usErrTimeout1)
+  {
+    LCD_Data_SonicWrite(_noUS, 0);
+  }
+  // Distance
+  else if(rec[0] == _usDistSuccess)
+  {
+    LCD_Data_SonicWrite(_shot1, (rec[1] << 8) | rec[2]);
+    CAN_SonicQuery(_init, _startTemp);
+  }
+  // Temperature
+  else if(rec[0] == _usTempSuccess)
+  {
+    LCD_Data_SonicWrite(_temp1, (rec[1] << 8) | rec[2]);
+    CAN_SonicQuery(_init, _5Shots);
+  }
 }
 
 
@@ -215,31 +126,41 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 {
 	static unsigned char state = 1;
 	static int sonic = 0;
+	unsigned char *rec;
 
   // deactivated
 	if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
-
+	//--------------------------------------------------init
+	else if(cmd == _init)
+  {
+    state = 1;
+  }
 	//--------------------------------------------------exe
 	else if(cmd == _exe)
 	{
 	  //------------------------------------------------Read
     if(state == 0)
     {
-      Sonic_App(US_exe);
-      if(Sonic_App(R_sreg) & DISA)						//DistanceAvailable
+      rec = CAN_SonicQuery(_exe, 0);
+      // Error
+      if(rec[0] >= _usErrTimeout1)
       {
-        sonic = Sonic_App(R_dreg);	          //ReadReg
-        LCD_Auto_SonicVal(sonic);             //WriteValue
-        page = Sonic_ChangePage(page, sonic);	//ChangePage
-        LCD_Sym_NoUS(page, _clear);           //ClearNoUs
-        state = 2;
+        CAN_SonicQuery(_init, _5Shots);
+        LCD_Sym_NoUS(page, _write);
       }
-      else if(Sonic_App(R_sreg) & DERR)   //NoUs
+      // Distance
+      else if(rec[0] == _usDistSuccess)
       {
-        Sonic_App(US_reset);
-        Sonic_App(D5_ini);
-        state = 0;
-        LCD_Sym_NoUS(page, _write);       //WriteNoUs
+        sonic = (rec[1] << 8) | rec[2];
+        LCD_Auto_SonicVal(sonic);
+        page = Sonic_ChangePage(page, sonic);
+        LCD_Sym_NoUS(page, _clear);
+        state = 1;
+      }
+      // Temperature
+      else if(rec[0] == _usTempSuccess || rec[0] == _usWait)
+      {
+        CAN_SonicQuery(_init, _5Shots);
       }
     }
     //------------------------------------------------TC-Init
@@ -254,8 +175,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       if(TCF0_Wait_Query()) state++;		//2s
       if(state > Sonic_getRepeatTime(page))
       {
-        Sonic_App(US_reset);
-        Sonic_App(D5_ini);
+        CAN_SonicQuery(_init, _5Shots);
         state = 0;
       }
     }
@@ -272,7 +192,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 
 
 /* ------------------------------------------------------------------*
- * 						UltraSonic - ReadTank - ChangePages
+ * 						UltraSonic - Repeat Time
  * ------------------------------------------------------------------*/
 
 unsigned char Sonic_getRepeatTime(t_page page)
@@ -387,6 +307,8 @@ t_page Sonic_ChangePage(t_page page, int sonic)
 int Sonic_LevelCal(t_FuncCmd cmd)
 {
 	static int level = 0;
+  unsigned char run = 1;
+  unsigned char *rec;
 
 	switch(cmd)
 	{
@@ -406,22 +328,34 @@ int Sonic_LevelCal(t_FuncCmd cmd)
 
     //------------------------------------------------Meassure
 		case _new:
-      Sonic_App(D5_ini);			              //Distance Init
-      TCF0_WaitSec_Init(1);
-      while(!(Sonic_App(R_sreg) & DISA))	  //DistanceAvailable
+      CAN_SonicQuery(_init, _5Shots);
+      while(run)
       {
-        Sonic_App(US_exe);
-        if(TCF0_Wait_Query()){
-          LCD_Sym_NoUS(SetupCal, _write);     //WriteNoUs
+        rec = CAN_SonicQuery(_exe, 0);
+        // error
+        if(rec[0] >= _usErrTimeout1)
+        {
+          LCD_Sym_NoUS(SetupCal, _write);
           level = 0;
-          return 0;}
+          run = 0;
+        }
+        // OK
+        else if(rec[0] == _usDistSuccess)
+        {
+          level = (rec[1] << 8) | rec[2];
+          LCD_Sym_NoUS(SetupCal, _clear);
+          run = 0;
+        }
+        // Wrong one
+        else if(rec[0] == _usTempSuccess || rec[0] == _usWait)
+        {
+          CAN_SonicQuery(_init, _5Shots);
+        }
       }
-      level = Sonic_App(R_dreg);	            //ReadReg
-      LCD_Sym_NoUS(SetupCal, _clear);         //WriteNoUs
       break;
 
 		case _write:
-		  LCD_WriteValue4(17, 40, level);	break;    //WriteInSetupCalPage
+		  LCD_WriteValue4(17, 40, level);	break;
 		default:									        break;
 	}
 	return level;
@@ -462,7 +396,7 @@ unsigned char Sonic_sVersion(void)
 
 
 /* ------------------------------------------------------------------*
- * 						UltraSonic - LCDData - Bootloader
+ * 						UltraSonic - LCD-Data - Bootloader
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_Boot(t_FuncCmd cmd)
@@ -495,7 +429,7 @@ void Sonic_Data_Boot(t_FuncCmd cmd)
 
 
 /* ------------------------------------------------------------------*
- * 						UltraSonic - LCDData - Bootloader Read
+ * 						UltraSonic - LCD-Data - Bootloader Read
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_BootRead(void)
@@ -519,7 +453,7 @@ void Sonic_Data_BootRead(void)
 
 
 /* ------------------------------------------------------------------*
- * 						UltraSonic - LCDData - Bootloader Write
+ * 						UltraSonic - LCD-Data - Bootloader Write
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_BootWrite(void)

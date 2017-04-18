@@ -47,7 +47,6 @@ typedef enum
  * 						FUNCTIONS API
  * ==================================================================*/
 
-int Sonic_App(t_US cmd);
 void Sonic_Data_Shot(void);
 void Sonic_Data_Auto(void);
 void Sonic_Data_Boot(t_FuncCmd cmd);
