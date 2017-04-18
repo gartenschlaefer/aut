@@ -1775,7 +1775,7 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry)
 			case Setup:		LCD_WriteSetupEntry(5+(2*i), eep, entry);	break;
 			default:													break;
 		}
-		//-------------------------------------------Update-Varibles---
+		//-------------------------------------------Update------------
 		if(entry<1)
 		{
 			entry=4;			eep--;

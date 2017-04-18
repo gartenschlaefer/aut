@@ -1003,6 +1003,7 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
   static unsigned int min = 10000;
   static unsigned int max_temp = 0;
   static unsigned int min_temp = 10000;
+  static unsigned char error = 0;
 
   //--------------------------------------------------ClearDisplay
 	if(cmd == _clear)
@@ -1025,6 +1026,13 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
 	else if(cmd == _shot1)
 	{
     LCD_WriteValue5_MyFont(5, 126, shot);
+    // limits
+    if((shot > (max + D_LIM)) || (shot < (min - D_LIM))) error++;
+    else error = 0;
+    // tries to accept the new distance
+    if(error > 2) error = 0;
+    if(error) return;
+    // new max and min
 	  if(shot > max)
     {
 	    max = shot;

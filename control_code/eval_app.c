@@ -521,7 +521,7 @@ unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
 
 	for(eep= startPa; eep< endPa; eep++)					//Pages
 	{
-		for(i=0; i<4; i++)									//Entrys
+		for(i=0; i<4; i++)
 		{
 			rDay= 	MEM_EEPROM_ReadData(eep, i, DATA_day);
 			rMonth= MEM_EEPROM_ReadData(eep, i, DATA_month);
@@ -536,13 +536,14 @@ unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
 				(rH		> h		&& 	rDay >= day		&&	rMonth >= month	&& 	rYear >= year)	||
 				(rMin	> min	&& 	rH >= h			&& 	rDay >= day		&&	rMonth >= month	&& 	rYear >= year)))
 				{
-						year= 		rYear;
-						month=		rMonth;
-						day=		rDay;
-						h=			rH;
-						min=		rMin;
-						latest[0]=	eep;
-						latest[1]= 	i;		}
+          year = rYear;
+          month = rMonth;
+          day =	rDay;
+          h = rH;
+          min =	rMin;
+          latest[0] =	eep;
+          latest[1] = i;
+        }
 		}
 	}
 
