@@ -8,3 +8,7 @@
 *.drl
 *.layout
 *.depend
+*.o
+*.elf
+*.map
+io-can-modul_code/io_can_modul_code.hex
