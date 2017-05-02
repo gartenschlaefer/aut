@@ -36,6 +36,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="basic.h" />
+		<Unit filename="defines.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -43,6 +44,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="output.h" />
+		<Unit filename="tc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="tc.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
