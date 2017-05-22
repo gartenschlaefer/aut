@@ -4,7 +4,7 @@
 * Project:		  Interception ICT
 *	Name:			    Modem-GC864-driver-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -19,13 +19,11 @@
 
 #include "defines.h"
 #include "lcd_driver.h"
-
 #include "basic_func.h"
 #include "usart_func.h"
 #include "tc_func.h"
-
 #include "at24c_app.h"
-
+#include "modem_driver.h"
 
 
 /* ==================================================================*
@@ -260,9 +258,10 @@ char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
 
 unsigned char Modem_Call(TelNr nr)
 {
-  nr.pos= 0;
-  TCC0_wait_us(25);                     //wait
-  if(Modem_TelNr(_read, nr) == 11) return 1;            //NoNumber
+  nr.pos = 0;
+  TCC0_wait_us(25);
+  //NoNumber
+  if(Modem_TelNr(_read, nr) == 11) return 1;
 
   //--------------------------------------------------DialNumber
 	USART_WriteString("AT+FCLASS=8");   //EnablePhone
@@ -278,18 +277,26 @@ unsigned char Modem_Call(TelNr nr)
   USART_WriteByte(0x0D);						    //CR
 
   //--------------------------------------------------Wait+HangUp
-  LCD_WriteMyFont(16, 119, nr.id);      //TelNr
-  TCC0_wait_sec(1);                     //wait
-  for(nr.pos = 0; nr.pos < 9; nr.pos++)     //10
+  LCD_WriteMyFont(16, 119, nr.id);
+  TCC0_wait_sec(1);
+  unsigned char point_pos = 0;
+  for(nr.pos = 0; nr.pos < MO_HANG_UP_TIME; nr.pos++)
   {
-    Watchdog_Restart();                   //WatchdogRestart
-    LCD_WriteMyFont(16, 123+nr.pos*4, 22);  //...
-    TCC0_wait_sec(1);                       //wait
+    Watchdog_Restart();
+    if(point_pos > 5)
+    {
+      point_pos = 0;
+      LCD_ClrSpace(16,119,2,41);
+      LCD_WriteMyFont(16, 123 + point_pos * 4, 22);  //...
+    }
+    point_pos++;
+    TCC0_wait_sec(1);
   }
-  USART_WriteString("ATH");             //DisconnectCall
-  USART_WriteByte(0x0D);						    //CR
-  TCC0_wait_sec(1);                     //wait
-  LCD_ClrSpace(16,119,2,41);            //ClearSpace
+  //DisconnectCall
+  USART_WriteString("ATH");
+  USART_WriteByte(0x0D);
+  TCC0_wait_sec(1);
+  LCD_ClrSpace(16,119,2,41);
   return 0;
 }
 
@@ -297,6 +304,7 @@ unsigned char Modem_Call(TelNr nr)
 /* ------------------------------------------------------------------*
  * 						Modem Call
  * ------------------------------------------------------------------*/
+
 void Modem_CallAllNumbers(void)
 {
   TelNr nr;

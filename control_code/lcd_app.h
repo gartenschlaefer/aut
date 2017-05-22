@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    Display-App-HeaderFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------

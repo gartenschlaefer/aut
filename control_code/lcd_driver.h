@@ -1,7 +1,7 @@
 /*********************************************************************\
 *	Author:			  Christian Walter
 *	Project:		  Display-Driver-HeaderFile
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------

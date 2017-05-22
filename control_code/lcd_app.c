@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    Display-App-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  AVR Studio mit avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------

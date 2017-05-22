@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    Main-File
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -27,7 +27,6 @@
 #include "modem_driver.h"
 #include "port_func.h"
 #include "basic_func.h"
-
 
 
 /* ==================================================================*

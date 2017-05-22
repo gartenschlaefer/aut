@@ -1,7 +1,7 @@
 /*********************************************************************\
 *	Author:			  Christian Walter
 *	Project:		Display-Symbols-HeaderFile
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		AVR Studio 4.18 mit avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
