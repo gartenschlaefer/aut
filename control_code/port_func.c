@@ -332,7 +332,7 @@ void PORT_Relais_AllOff(void)
  * 						FUNCTIONS RunTime
  * ==================================================================*/
 
-void PORT_RunTime(void)
+void PORT_RunTime(struct InputHandler *in)
 {
 	static unsigned char runTime = 0;
 
@@ -344,14 +344,16 @@ void PORT_RunTime(void)
 		PORT_Ventilator();
 
 		// Floating switch alarm
-		if(IN_FLOAT_S3)
+		if(IN_FLOAT_S3 && !in->float_sw_alarm)
     {
       Modem_CallAllNumbers();
       Error_ON();
+      in->float_sw_alarm = 1;
     }
-    else
+    else if(!IN_FLOAT_S3 && in->float_sw_alarm)
     {
       Error_OFF();
+      in->float_sw_alarm = 0;
     }
 
 		//***USVCheckVoltageSupply
@@ -362,6 +364,15 @@ void PORT_RunTime(void)
 	}
 }
 
+
+/* ------------------------------------------------------------------*
+ * 						Input Handler Init
+ * ------------------------------------------------------------------*/
+
+void InputHandler_init(struct InputHandler *in)
+{
+   in->float_sw_alarm = 0;
+}
 
 
 

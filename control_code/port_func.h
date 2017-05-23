@@ -40,6 +40,10 @@
 
 #define IN_FLOAT_S3 (P_OPTO.IN & OC1)
 
+struct InputHandler {
+  unsigned char float_sw_alarm;
+};
+
 
 /* ------------------------------------------------------------------*
  * 						Ventil Outpus
@@ -111,27 +115,29 @@ typedef enum
  * 						FUCNTION API
  * ==================================================================*/
 
-void PORT_Init			(void);
-void PORT_SoftwareRst	(void);
-void PORT_Bootloader	(void);
+void PORT_Init(void);
+void PORT_SoftwareRst(void);
+void PORT_Bootloader(void);
 
-void PORT_Buzzer		(t_FuncCmd cmd);
-void PORT_Ventilator	(void);
-void PORT_RunTime		(void);
+void PORT_Buzzer(t_FuncCmd cmd);
+void PORT_Ventilator(void);
+void PORT_RunTime(struct InputHandler *in);
 
-void PORT_Ventil			(t_ventil ventil);
-void PORT_Ventil_AllOpen	(void);
-void PORT_Ventil_AllClose	(void);
-void PORT_Ventil_AllOff		(void);
-void PORT_Ventil_AutoClose	(t_page page);
+void PORT_Ventil(t_ventil ventil);
+void PORT_Ventil_AllOpen(void);
+void PORT_Ventil_AllClose(void);
+void PORT_Ventil_AllOff(void);
+void PORT_Ventil_AutoClose(t_page page);
 
-void PORT_RelaisSet			(unsigned char relais);
-void PORT_RelaisClr			(unsigned char relais);
-void PORT_Relais_AllOff		(void);
+void PORT_RelaisSet(unsigned char relais);
+void PORT_RelaisClr(unsigned char relais);
+void PORT_Relais_AllOff(void);
+
+void InputHandler_init(struct InputHandler *in);
 
 
 
 
 /*********************************************************************\
- * End of SL_PORT_func.h
+ * End
 \**********************************************************************/

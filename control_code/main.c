@@ -40,11 +40,15 @@ int main(void)
 	Basic_Init();             //Init
   LCD_Backlight(_on);				//BacklightOn
 
+  // Input
+  struct InputHandler input_handler;
+  InputHandler_init(&input_handler);
+
 	while(1)
 	{
 		Watchdog_Restart();
 		PORT_Bootloader();
-		PORT_RunTime();
+		PORT_RunTime(&input_handler);
     Modem_TurnOn();
 
 		//------------------------------------------------GreatLinker
