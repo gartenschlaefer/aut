@@ -104,7 +104,7 @@ void LCD_AutoText(void)
  * 						Auto UltraSonic Value
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_SonicVal(int sonic)
+void LCD_Auto_SonicVal(t_page page, int sonic)
 {
   int zero = 0;
   int dif = 0;
@@ -112,9 +112,16 @@ void LCD_Auto_SonicVal(int sonic)
   int cal = 0;
   int lvO2 = 0;
 
-  LCD_WriteValue4_MyFont(17, 5, sonic);	//value
-  LCD_WriteMyFont(17, 22, 13);		      //m
-  LCD_WriteMyFont(17, 26, 13);		      //m
+  switch(page)
+  {
+    case AutoZone:  case AutoSetDown: case AutoPumpOff:
+    case AutoMud:   case AutoCirc:    case AutoCircOff:
+    case AutoAir:   case AutoAirOff:
+      LCD_WriteValue4_MyFont(17, 5, sonic);
+      LCD_WriteMyFont(17, 22, 13); //m
+      LCD_WriteMyFont(17, 26, 13); //m
+    default: break;
+  }
 
   //--------------------------------------------------Percentage
   zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) |
@@ -126,9 +133,23 @@ void LCD_Auto_SonicVal(int sonic)
   cal = sonic - (zero - (lvO2 * 10));
   if(sonic > zero) per = 0;
   else per = 100 - ((cal * 10) / dif) * 10;
-
   if(!sonic) per = 0;
-  LCD_WriteValue3_MyFont(15, 5, per);	  //value
+  switch(page)
+  {
+    case AutoZone:  case AutoSetDown: case AutoPumpOff:
+    case AutoMud:   case AutoCirc:    case AutoCircOff:
+    case AutoAir:   case AutoAirOff:
+      LCD_WriteValue3_MyFont(15, 5, per);	  //value
+
+    case ManualMain:  case ManualCirc:  case ManualCircOff:
+    case ManualAir:   case ManualSetDown: case ManualPumpOff:
+    case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
+    case ManualPhosphor:  case ManualInflowPump:
+      LCD_WriteValue3(17,42, per);
+
+    default: break;
+  }
+
 }
 
 
@@ -185,7 +206,6 @@ void LCD_AutoSet_Mud(unsigned char min, unsigned char sec)
 	LCD_Write_Symbol_1(5, 0, n_mud);
 	LCD_Write_Symbol_2(6, 45, n_compressor);
 	LCD_AutoCountDown(min, sec);
-	MPX_ReadTank(AutoAir, _reset);
 }
 
 
@@ -447,7 +467,6 @@ void LCD_WriteManualVar(int min, unsigned char sec)
 	  if(min >= 100) LCD_WriteValue3(17,118, min);
 	  else LCD_WriteValue2(17,124, min);		//CT min
   }
-  MPX_ReadAverage(Manual, _exe);
 }
 
 
@@ -1660,7 +1679,13 @@ unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd)
     case AutoSetDown:	case AutoMud:	    case AutoPumpOff:
     case AutoCirc:    case AutoCircOff: case AutoPage:
     case AutoAir:			case AutoAirOff:
-      row = 17; col = 5;  break;
+      row = 17; col = 5; break;
+
+    case ManualMain:  case ManualCirc:  case ManualCircOff:
+    case ManualAir:   case ManualSetDown: case ManualPumpOff:
+    case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
+    case ManualPhosphor:  case ManualInflowPump:
+      row = 17; col = 2; break;
 
     case SetupCal: row = 0; col = 38; break;
     default:                          break;

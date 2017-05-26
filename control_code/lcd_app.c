@@ -793,6 +793,7 @@ t_page LCD_ManualPage(t_page page)
 
 	Watchdog_Restart();
 	LCD_Backlight(_exe);
+	Sonic_ReadTank(page, _exe);
 
   //--------------------------------------------------lcd_reset
 	if(lcd_reset > 32000)										//30s

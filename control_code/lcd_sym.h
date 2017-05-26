@@ -34,7 +34,7 @@ void LCD_SymbolAuto_Ph(t_FuncCmd state);
 void LCD_WriteAutoVar_Ph(unsigned char min, unsigned char sec);
 
 void LCD_AutoText(void);
-void LCD_Auto_SonicVal(int sonic);
+void LCD_Auto_SonicVal(t_page page, int sonic);
 void LCD_AutoCountDown(unsigned char min, unsigned char sec);
 void LCD_WriteAuto_IP_Sensor(void);
 void LCD_WriteAutoVar(int min, int sec);

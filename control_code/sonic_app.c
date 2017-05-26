@@ -152,7 +152,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       else if(rec[0] == _usDistSuccess)
       {
         sonic = (rec[1] << 8) | rec[2];
-        LCD_Auto_SonicVal(sonic);
+        LCD_Auto_SonicVal(page, sonic);
         page = Sonic_ChangePage(page, sonic);
         LCD_Sym_NoUS(page, _clear);
         state = 1;
@@ -184,7 +184,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	//--------------------------------------------------write
 	else if(cmd == _write)
 	{
-		if(!LCD_Sym_NoUS(page, _check)) LCD_Auto_SonicVal(sonic);
+		if(!LCD_Sym_NoUS(page, _check)) LCD_Auto_SonicVal(page, sonic);
 	}
 
 	return page;
