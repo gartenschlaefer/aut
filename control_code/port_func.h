@@ -38,7 +38,7 @@
 #define OC3 (PIN5_bm)
 #define OC4 (PIN4_bm)
 
-#define IN_FLOAT_S3 (P_OPTO.IN & OC1)
+#define IN_FLOAT_S3 (!(P_OPTO.IN & OC1))
 
 struct InputHandler {
   unsigned char float_sw_alarm;

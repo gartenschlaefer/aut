@@ -334,11 +334,10 @@ void PORT_Relais_AllOff(void)
 
 void PORT_RunTime(struct InputHandler *in)
 {
-	static unsigned char runTime = 0;
+	static int runTime = 0;
 
 	runTime++;
-	//100 = 5s
-	if(runTime > 250)
+	if(runTime > 2500)
 	{
 		runTime = 0;
 		PORT_Ventilator();
@@ -346,13 +345,19 @@ void PORT_RunTime(struct InputHandler *in)
 		// Floating switch alarm
 		if(IN_FLOAT_S3 && !in->float_sw_alarm)
     {
-      Modem_CallAllNumbers();
-      Error_ON();
+      if(MEM_EEPROM_ReadVar(ALARM_sensor))
+      {
+        Modem_CallAllNumbers();
+        Error_ON();
+      }
       in->float_sw_alarm = 1;
     }
     else if(!IN_FLOAT_S3 && in->float_sw_alarm)
     {
-      Error_OFF();
+      if(MEM_EEPROM_ReadVar(ALARM_sensor))
+      {
+        Error_OFF();
+      }
       in->float_sw_alarm = 0;
     }
 

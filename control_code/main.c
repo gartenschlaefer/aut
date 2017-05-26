@@ -35,11 +35,11 @@
 
 int main(void)
 {
-	t_page 	page = DataPage;	//StartPage
-
-	Basic_Init();             //Init
-  LCD_Backlight(_on);				//BacklightOn
-
+	// start page
+	t_page 	page = DataPage;
+  // init
+	Basic_Init();
+  LCD_Backlight(_on);
   // Input
   struct InputHandler input_handler;
   InputHandler_init(&input_handler);
@@ -48,7 +48,6 @@ int main(void)
 	{
 		Watchdog_Restart();
 		PORT_Bootloader();
-		PORT_RunTime(&input_handler);
     Modem_TurnOn();
 
 		//------------------------------------------------GreatLinker
@@ -58,57 +57,66 @@ int main(void)
 			case ManualPage:  page = LCD_ManualPage(page);  break;
 			case SetupPage:	  page = LCD_SetupPage(page);	  break;
 			case DataPage:		page = LCD_DataPage(page);	  break;
-
+      //----------------------------------------------Pin-Pages
 			case PinManual:		page = LCD_PinPage(page);		break;
 			case PinSetup: 		page = LCD_PinPage(page);		break;
+      //----------------------------------------------Auto-Pages
+			case AutoZone:
+			case AutoSetDown:
+			case AutoPumpOff:
+			case AutoMud:
+			case AutoCirc:
+      case AutoCircOff:
+			case AutoAir:
+			case AutoAirOff:
+			  page = LCD_AutoPage(page);
+        PORT_RunTime(&input_handler);
+        break;
+      //----------------------------------------------Manual-Pages
+			case ManualMain:
+			case ManualCirc:
+      case ManualCircOff:
+			case ManualAir:
+			case ManualSetDown:
+			case ManualPumpOff:
+			case ManualPumpOff_On:
+			case ManualMud:
+			case ManualCompressor:
+			case ManualPhosphor:
+			case ManualInflowPump:
+			  page = LCD_ManualPage(page);
+			  break;
+      //----------------------------------------------Manual-Pages
+			case SetupMain:
+			case SetupCirculate:
+			case SetupAir:
+			case SetupSetDown:
+			case SetupPumpOff:
+			case SetupMud:
+			case SetupCompressor:
+			case SetupPhosphor:
+			case SetupInflowPump:
+			case SetupCal:
+			case SetupCalPressure:
+			case SetupAlarm:
+			case SetupWatch:
+			case SetupZone:
+			  page = LCD_SetupPage(page);
+			  break;
+      //----------------------------------------------Data-Pages
+			case DataMain:
+			case DataAuto:
+			case DataManual:
+			case DataSetup:
+			case DataSonic:
+			case DataSonicAuto:
+      case DataSonicBoot:
+      case DataSonicBootR:
+      case DataSonicBootW:
+        page = LCD_DataPage(page);
+        break;
 
-			case AutoZone:	  page = LCD_AutoPage(page);  break;
-			case AutoSetDown: page = LCD_AutoPage(page);  break;
-			case AutoPumpOff: page = LCD_AutoPage(page);	break;
-			case AutoMud:		  page = LCD_AutoPage(page);	break;
-			case AutoCirc:   	page = LCD_AutoPage(page);	break;
-      case AutoCircOff:	page = LCD_AutoPage(page);	break;
-			case AutoAir:			page = LCD_AutoPage(page);	break;
-			case AutoAirOff:  page = LCD_AutoPage(page);	break;
-
-			case ManualMain:		    page = LCD_ManualPage(page);	break;
-			case ManualCirc:	      page = LCD_ManualPage(page);	break;
-      case ManualCircOff:	    page = LCD_ManualPage(page);	break;
-			case ManualAir: 		    page = LCD_ManualPage(page);	break;
-			case ManualSetDown:		  page = LCD_ManualPage(page);	break;
-			case ManualPumpOff:		  page = LCD_ManualPage(page);	break;
-			case ManualPumpOff_On:	page = LCD_ManualPage(page);	break;
-			case ManualMud:			    page = LCD_ManualPage(page);	break;
-			case ManualCompressor:	page = LCD_ManualPage(page);	break;
-			case ManualPhosphor:	  page = LCD_ManualPage(page);	break;
-			case ManualInflowPump:	page = LCD_ManualPage(page);	break;
-
-			case SetupMain:			    page = LCD_SetupPage(page);	break;
-			case SetupCirculate:	  page = LCD_SetupPage(page);	break;
-			case SetupAir: 			    page = LCD_SetupPage(page);	break;
-			case SetupSetDown:		  page = LCD_SetupPage(page);	break;
-			case SetupPumpOff:		  page = LCD_SetupPage(page);	break;
-			case SetupMud:			    page = LCD_SetupPage(page);	break;
-			case SetupCompressor:	  page = LCD_SetupPage(page);	break;
-			case SetupPhosphor:		  page = LCD_SetupPage(page);	break;
-			case SetupInflowPump:	  page = LCD_SetupPage(page);	break;
-			case SetupCal:			    page = LCD_SetupPage(page);	break;
-			case SetupCalPressure:  page = LCD_SetupPage(page);	break;
-			case SetupAlarm:		    page = LCD_SetupPage(page);	break;
-			case SetupWatch:		    page = LCD_SetupPage(page);	break;
-			case SetupZone:			    page = LCD_SetupPage(page);	break;
-
-			case DataMain:			    page = LCD_DataPage(page);	break;
-			case DataAuto:			    page = LCD_DataPage(page);	break;
-			case DataManual:		    page = LCD_DataPage(page);	break;
-			case DataSetup:			    page = LCD_DataPage(page);	break;
-			case DataSonic:	        page = LCD_DataPage(page);	break;
-			case DataSonicAuto:     page = LCD_DataPage(page);	break;
-      case DataSonicBoot:    page = LCD_DataPage(page);	break;
-      case DataSonicBootR:    page = LCD_DataPage(page);	break;
-      case DataSonicBootW:    page = LCD_DataPage(page);	break;
-
-			default:				        page = AutoPage;					  break;
+			default: page = AutoPage; break;
     }
 	}
 }

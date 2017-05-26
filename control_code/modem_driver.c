@@ -287,8 +287,8 @@ unsigned char Modem_Call(TelNr nr)
     {
       point_pos = 0;
       LCD_ClrSpace(16,119,2,41);
-      LCD_WriteMyFont(16, 123 + point_pos * 4, 22);  //...
     }
+    LCD_WriteMyFont(16, 123 + point_pos * 4, 22);  //...
     point_pos++;
     TCC0_wait_sec(1);
   }
