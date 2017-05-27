@@ -194,20 +194,18 @@ t_page Touch_AutoLinker(unsigned char matrix, t_page page,
 
 t_page Touch_ManualLinker(unsigned char matrix, t_page page)
 {
-	static unsigned char touch=0;
-
 	switch(matrix)
 	{
 		case 0x11: 	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_circulate);	touch=0;
+      LCD_Mark_ManualSymbol(sn_circulate);
       return ManualCirc;					break;		//Circulate
 
 		case 0x12: 	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_air);			touch=0;
+      LCD_Mark_ManualSymbol(sn_air);
       return ManualAir;						break;		//Air
 
 		case 0x13:	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_setDown);		touch=0;
+      LCD_Mark_ManualSymbol(sn_setDown);
       return ManualSetDown;			  break;		//SetDown
 
 		case 0x14:	LCD_Backlight(_on);
@@ -215,48 +213,46 @@ t_page Touch_ManualLinker(unsigned char matrix, t_page page)
       return ManualPumpOff;			  break;		//PumpOff
 
 		case 0x21:	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_mud);			touch=0;
+      LCD_Mark_ManualSymbol(sn_mud);
       return ManualMud;					  break;		//Mud
 
 		case 0x22:	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_compressor);	touch=0;
+      LCD_Mark_ManualSymbol(sn_compressor);
       return ManualCompressor;	  break;		//Comp
 
 		case 0x23:	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_phosphor);		touch=0;
+      LCD_Mark_ManualSymbol(sn_phosphor);
       return ManualPhosphor;			break;		//Phosphor
 
 		case 0x24:	LCD_Backlight(_on);
-      LCD_Mark_ManualSymbol(sn_inflowPump);	touch=0;
+      LCD_Mark_ManualSymbol(sn_inflowPump);
       return ManualInflowPump;		break;		//IP
 
-		case 0x33:	if(!touch && page == ManualPumpOff){		touch=1;
-      LCD_Write_Symbol_3(15, 85, n_ok);
-      OUT_Set_PumpOff();
-      LCD_ClrSpace(15, 2, 5, 120);
-      LCD_WriteStringFont(17,136,":");
-      return ManualPumpOff_On;}	    break;	//PumpOff
-
+		case 0x33:
+		  if(page == ManualPumpOff){
+        LCD_Write_Symbol_3(15, 85, n_ok);
+        return ManualPumpOff_On;}
+      break;
 
 		//------------------------------------------------MainLinker
 		case 0x41:	LCD_Backlight(_on);
       LCD_MarkTextButton(Auto);
-      MEM_EEPROM_WriteManualEntry(0,0, _write);	touch=0;
+      MEM_EEPROM_WriteManualEntry(0,0, _write);
       return AutoPage; 							break;
 
 		case 0x42:	LCD_Backlight(_on);
       LCD_MarkTextButton(Manual);
-      MEM_EEPROM_WriteManualEntry(0,0, _write);	touch=0;
+      MEM_EEPROM_WriteManualEntry(0,0, _write);
       return ManualPage; 							break;
 
 		case 0x43:	LCD_Backlight(_on);
       LCD_MarkTextButton(Setup);
-      MEM_EEPROM_WriteManualEntry(0,0, _write);	touch=0;
+      MEM_EEPROM_WriteManualEntry(0,0, _write);
       return SetupPage; 							break;
 
 		case 0x44:	LCD_Backlight(_on);
       LCD_MarkTextButton(Data);
-      MEM_EEPROM_WriteManualEntry(0,0, _write);	touch=0;
+      MEM_EEPROM_WriteManualEntry(0,0, _write);
       return DataPage; 							break;
 
 		default:												break;

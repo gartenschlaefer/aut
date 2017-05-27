@@ -65,7 +65,7 @@ void LCD_AutoSet_Page(void)
  * 						Auto Countdown
  * ------------------------------------------------------------------*/
 
-void LCD_AutoCountDown(unsigned char min, unsigned char sec)
+void LCD_AutoCountDown(int min, int sec)
 {
 	LCD_WriteValue2_MyFont(13,5, min);
 	LCD_WriteValue2_MyFont(13,17, sec);
@@ -92,7 +92,11 @@ void LCD_AutoText(void)
 
   MCP7941_LCD_WriteTime(_init);
   MCP7941_LCD_WriteDate();
-	MPX_ReadTank(AutoPage, _write);	//tank
+
+  // Read water level
+	MPX_ReadTank(AutoPage, _write);
+	LCD_Auto_SonicVal(AutoPage, _write);
+
 	LCD_WriteValue5_MyFont(15,43, Eval_Comp_OpHours(_init));
 
 	LCD_WriteAuto_IP_Sensor();
@@ -112,24 +116,27 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
   int cal = 0;
   int lvO2 = 0;
 
+  // deactivated sonic
+	if(!MEM_EEPROM_ReadVar(SONIC_on)) return;
+  //--------------------------------------------------mm
   switch(page)
   {
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCirc:    case AutoCircOff:
-    case AutoAir:   case AutoAirOff:
+    case AutoAir:   case AutoAirOff:  case AutoPage:
       LCD_WriteValue4_MyFont(17, 5, sonic);
       LCD_WriteMyFont(17, 22, 13); //m
       LCD_WriteMyFont(17, 26, 13); //m
+      break;
     default: break;
   }
-
   //--------------------------------------------------Percentage
   zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) |
           (MEM_EEPROM_ReadVar(SONIC_L_LV)));
   lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2)<<8)		|
 				  (MEM_EEPROM_ReadVar(TANK_L_O2)));
-
-  dif = lvO2 * 10;             //Waterlevel-difference
+  //water-level-difference
+  dif = lvO2 * 10;
   cal = sonic - (zero - (lvO2 * 10));
   if(sonic > zero) per = 0;
   else per = 100 - ((cal * 10) / dif) * 10;
@@ -138,14 +145,18 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
   {
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCirc:    case AutoCircOff:
-    case AutoAir:   case AutoAirOff:
-      LCD_WriteValue3_MyFont(15, 5, per);	  //value
+    case AutoAir:   case AutoAirOff:  case AutoPage:
+      LCD_WriteValue3_MyFont(15, 5, per);
+      LCD_WriteMyFont(15, 18, 19); //%
+      break;
 
     case ManualMain:  case ManualCirc:  case ManualCircOff:
     case ManualAir:   case ManualSetDown: case ManualPumpOff:
     case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
     case ManualPhosphor:  case ManualInflowPump:
-      LCD_WriteValue3(17,42, per);
+      LCD_WriteValue3(17,2, per);
+      LCD_WriteStringFont(17,22,"%");
+      break;
 
     default: break;
   }
@@ -157,7 +168,7 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
  * 						Set Auto Zone
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_Zone(unsigned char min, unsigned char sec)
+void LCD_AutoSet_Zone(int min, int sec)
 {
 	LCD_Write_Symbol_2(6, 0, n_circulate);
 	LCD_Write_Symbol_2(6, 45, n_compressor);
@@ -170,7 +181,7 @@ void LCD_AutoSet_Zone(unsigned char min, unsigned char sec)
  * 						Set Auto SetDown
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_SetDown(unsigned char min, unsigned char sec)
+void LCD_AutoSet_SetDown(int min, int sec)
 {
 	LCD_Write_Symbol_2(6, 0, n_setDown);
 	LCD_Write_Symbol_2(6, 45, p_compressor);
@@ -182,7 +193,7 @@ void LCD_AutoSet_SetDown(unsigned char min, unsigned char sec)
  * 						Set Auto PumpOff
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_PumpOff(unsigned char min, unsigned char sec)
+void LCD_AutoSet_PumpOff(int min, int sec)
 {
 	LCD_Write_Symbol_1(5, 0, n_pumpOff);
 	if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
@@ -201,7 +212,7 @@ void LCD_AutoSet_PumpOff(unsigned char min, unsigned char sec)
  * 						Set Auto Mud
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_Mud(unsigned char min, unsigned char sec)
+void LCD_AutoSet_Mud(int min, int sec)
 {
 	LCD_Write_Symbol_1(5, 0, n_mud);
 	LCD_Write_Symbol_2(6, 45, n_compressor);
@@ -308,7 +319,7 @@ void LCD_SymbolAuto_Ph(t_FuncCmd state)
  * 						Phosphor Var
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAutoVar_Ph(unsigned char min, unsigned char sec)
+void LCD_WriteAutoVar_Ph(int min, int sec)
 {
   LCD_WriteValue2_MyFont(13,135, min);
   LCD_WriteValue2_MyFont(13,147, sec);
@@ -439,7 +450,7 @@ void LCD_AutoAirSym(t_page page)
  * --------------------------------------------------------------
  * ==================================================================*/
 
-void LCD_ManualText(int min, unsigned char sec)
+void LCD_ManualText(int min, int sec)
 {
 	LCD_WriteValue2(17,124, min);
 	LCD_WriteValue2(17,142, sec);
@@ -453,7 +464,7 @@ void LCD_ManualText(int min, unsigned char sec)
  * 						Set Manual Pages
  * ------------------------------------------------------------------*/
 
-void LCD_WriteManualVar(int min, unsigned char sec)
+void LCD_WriteManualVar(int min, int sec)
 {
 	static unsigned char oldSec = 0;
 
@@ -474,7 +485,7 @@ void LCD_WriteManualVar(int min, unsigned char sec)
  * 						Set Manual Pages
  * ------------------------------------------------------------------*/
 
-void LCD_ManualSet_Page(int min, unsigned char sec)
+void LCD_ManualSet_Page(int min, int sec)
 {
 	unsigned char i=0;
 

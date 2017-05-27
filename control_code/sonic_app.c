@@ -128,7 +128,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	static int sonic = 0;
 	unsigned char *rec;
 
-  // deactivated
+  // deactivated sonic
 	if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
 	//--------------------------------------------------init
 	else if(cmd == _init)
@@ -197,7 +197,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 
 unsigned char Sonic_getRepeatTime(t_page page)
 {
-  unsigned char repeat_time = 15;
+  unsigned char repeat_time = 7;
   switch(page)
   {
 			case AutoZone: break;

@@ -131,7 +131,7 @@ void TCC0_wait_ms(int ms)
 	TCC0_Stop();					//stopTimer
 }
 
-void TCC0_wait_sec(unsigned char sec)
+void TCC0_wait_sec(int sec)
 {
 	while(sec)
 	{

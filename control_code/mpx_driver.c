@@ -116,6 +116,9 @@ int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
 			{
 				case Auto:		LCD_WriteValue3_MyFont(13,43, add);
 				              return add;	break;
+
+				case Manual:	LCD_WriteValue3(17,42, add);
+				              return add;	break;
 				default:									break;
 			}
 		}
@@ -312,12 +315,13 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
 	//------------------------------------------------write
 	else if(cmd == _write)
 	{
-		perP = mpxAv - minP;					    //calc
-		if(perP <= 0)	perP = 0;					  //limit
-		perP = ((perP * 100) / hO2);			//calc
+		perP = mpxAv - minP;
+		if(perP <= 0)	perP = 0;
+		perP = ((perP * 100) / hO2);
+		//ManualWrite
 		if(page == ManualCirc)
 		{
-			LCD_Sym_MPX(_mmbar, perP);  //ManualWrite
+			LCD_Sym_MPX(_mmbar, perP);
 			return page;
 		}
     LCD_Sym_MPX(_debug, perP);
@@ -329,21 +333,6 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
 
 
 
-/* ==================================================================*
- * 						FUNCTIONS - Test
- * ==================================================================*/
-
-void MPX_Test(void)
-{
-	while(1)
-	{
-		Watchdog_Restart();
-		LCD_WriteValue3(1,2, MPX_Read());
-		LCD_WriteValue3(4,2, MPX_ReadCal());
-		LCD_WriteValue3(1,40, MPX_ReadAverage_UnCal_Value());
-		LCD_WriteValue3(4,40, MPX_ReadAverage_Value());
-	}
-}
 
 
 
