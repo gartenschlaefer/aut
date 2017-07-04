@@ -1,7 +1,7 @@
 /*********************************************************************\
 *	Author:			  Christian Walter
 *	Project:		  Timer Counter Funktionen
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -35,7 +35,7 @@ unsigned char TCC0_Wait_Query(void);
 
 void TCC0_wait_us(int us);
 void TCC0_wait_ms(int ms);
-void TCC0_wait_sec(unsigned char sec);
+void TCC0_wait_sec(int sec);
 void TCC0_wait_3s5(void);
 
 void TCC0_Main_Wait(void);

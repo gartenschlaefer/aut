@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    sonic_app.c
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -128,7 +128,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	static int sonic = 0;
 	unsigned char *rec;
 
-  // deactivated
+  // deactivated sonic
 	if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
 	//--------------------------------------------------init
 	else if(cmd == _init)
@@ -152,7 +152,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       else if(rec[0] == _usDistSuccess)
       {
         sonic = (rec[1] << 8) | rec[2];
-        LCD_Auto_SonicVal(sonic);
+        LCD_Auto_SonicVal(page, sonic);
         page = Sonic_ChangePage(page, sonic);
         LCD_Sym_NoUS(page, _clear);
         state = 1;
@@ -184,7 +184,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 	//--------------------------------------------------write
 	else if(cmd == _write)
 	{
-		if(!LCD_Sym_NoUS(page, _check)) LCD_Auto_SonicVal(sonic);
+		if(!LCD_Sym_NoUS(page, _check)) LCD_Auto_SonicVal(page, sonic);
 	}
 
 	return page;
@@ -197,7 +197,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 
 unsigned char Sonic_getRepeatTime(t_page page)
 {
-  unsigned char repeat_time = 15;
+  unsigned char repeat_time = 7;
   switch(page)
   {
 			case AutoZone: break;

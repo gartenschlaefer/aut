@@ -2,9 +2,9 @@
 *	Author:			  Christian Walter
 * ------------------------------------------------------------------
 * Project:		  Control Interception ICT
-*	Name:			    PORT+Interrupt-SourceFile
+*	Name:			    PORT+Interrupt
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -12,7 +12,6 @@
 * ------------------------------------------------------------------
 *	Date:			    27.05.2011
 * lastChanges:	15.10.2014
-
 \**********************************************************************/
 
 #include<avr/io.h>
@@ -22,19 +21,15 @@
 #include "defines.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
-
 #include "memory_app.h"
 #include "output_app.h"
 #include "mcp9800_driver.h"
-
 #include "adc_func.h"
 #include "tc_func.h"
 #include "port_func.h"
 #include "basic_func.h"
 #include "modem_driver.h"
-
-
-
+#include "error_func.h"
 
 
 /* ==================================================================*
@@ -43,25 +38,25 @@
 
 void PORT_Init(void)
 {
-	//--------------------------------------------PORT Direction
-	P_OPTO.DIR = 	PIN3_bm;					//PORTH Opto Input - PIN3 USV-on
-	P_VENTIL.DIR = 	0xFF;						//PORTJ Ventil Output
-	P_RELAIS.DIR = 	0xFF;						//PORTK Relais Output
+	// PORT Direction
+	P_OPTO.DIRCLR = 	PIN3_bm | OC1 | OC2 | OC3 | OC4;
+	P_VENTIL.DIR = 	0xFF;
+	P_RELAIS.DIR = 	0xFF;
 
-	PORTCFG.MPCMASK=0xFF;						//set Mask
-    P_OPTO.PIN0CTRL= PORT_OPC_WIREDANDPULL_gc;	//Pins PULL UP
+  // Pins PULL UP
+	PORTCFG.MPCMASK = 0xFF;
+  P_OPTO.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
+  // FirmwareUpdate PullUp
+	PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
 
-	PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;	//FirmwareUpdate PullUp
-
-	//--------------------------------------------Interrupts
-	PMIC.CTRL=	PMIC_MEDLVLEN_bm	|			//MediumLevel Interrupts
-				PMIC_LOLVLEN_bm;				//LowLevel Interrupts
+	// Interrupts, MediumLevel, LowLevel Interrupts
+	PMIC.CTRL =	PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm;
 }
-
 
 void PORT_SoftwareRst(void)
 {
-	CCP = 0xD8;					//Protection
+	//Protection
+	CCP = 0xD8;
 	RST.CTRL= RST_SWRST_bm;
 }
 
@@ -71,7 +66,7 @@ void PORT_Bootloader(void)
 	{
 		LCD_Clean();
 		LCD_WriteStringFont(1, 1, "Bootloader-Modus");
-		asm volatile("jmp 0x20000");		//Jump Instruction
+		asm volatile("jmp 0x20000");
 	}
 }
 
@@ -337,15 +332,34 @@ void PORT_Relais_AllOff(void)
  * 						FUNCTIONS RunTime
  * ==================================================================*/
 
-void PORT_RunTime(void)
+void PORT_RunTime(struct InputHandler *in)
 {
-	static unsigned char runTime=0;
+	static int runTime = 0;
 
 	runTime++;
-	if(runTime > 250)		    //100 = 5s
+	if(runTime > 2500)
 	{
 		runTime = 0;
-		PORT_Ventilator();  //Ventilator
+		PORT_Ventilator();
+
+		// Floating switch alarm
+		if(IN_FLOAT_S3 && !in->float_sw_alarm)
+    {
+      if(MEM_EEPROM_ReadVar(ALARM_sensor))
+      {
+        Modem_CallAllNumbers();
+        Error_ON();
+      }
+      in->float_sw_alarm = 1;
+    }
+    else if(!IN_FLOAT_S3 && in->float_sw_alarm)
+    {
+      if(MEM_EEPROM_ReadVar(ALARM_sensor))
+      {
+        Error_OFF();
+      }
+      in->float_sw_alarm = 0;
+    }
 
 		//***USVCheckVoltageSupply
 		if(!DEBUG)
@@ -355,6 +369,15 @@ void PORT_RunTime(void)
 	}
 }
 
+
+/* ------------------------------------------------------------------*
+ * 						Input Handler Init
+ * ------------------------------------------------------------------*/
+
+void InputHandler_init(struct InputHandler *in)
+{
+   in->float_sw_alarm = 0;
+}
 
 
 

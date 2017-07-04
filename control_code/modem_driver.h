@@ -4,7 +4,7 @@
 * Project:		Interception ICT
 *	Name:			  Modem-GC864-driver-HeaderFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -19,15 +19,32 @@
  * 						Defines
  * ==================================================================*/
 
+#define MO_HANG_UP_TIME   25
+#define MO_STARTUP_DELAY  200
+
+#define MO_PW_OFF    (PORTF.IN & PIN2_bm)
+#define MO_PORT_ON   (PORTF.OUTSET =	PIN0_bm)
+#define MO_PORT_OFF  (PORTF.OUTCLR =	PIN0_bm)
+
+
+struct Modem {
+  unsigned char turned_on;
+  unsigned char turn_on_state;
+  unsigned char turn_on_error;
+  int startup_delay;
+};
+
 
 /* ==================================================================*
  * 						FUNCTIONS - API
  * ==================================================================*/
 
-void Modem_Init(void);
+void Modem_init(struct Modem *mo);
+void Modem_Port_Init(void);
 
-unsigned char Modem_TurnOn  (void);
-void          Modem_TurnOff (void);
+unsigned char Modem_Check(struct Modem *mo);
+unsigned char Modem_TurnOn(struct Modem *mo);
+void Modem_TurnOff (void);
 
 void Modem_ReadPWR(void);
 void Modem_ReadSLED(void);
@@ -37,7 +54,7 @@ void Modem_ReadRxD(void);
 char Modem_TelNr(t_FuncCmd cmd, TelNr nr);
 
 unsigned char Modem_Call(TelNr nr);
-void          Modem_CallAllNumbers(void);
+void Modem_CallAllNumbers(void);
 
 void Modem_SendTest(void);
 void Modem_Test(void);
@@ -47,5 +64,5 @@ void Modem_Test(void);
 
 
 /**********************************************************************\
- * End of modem_driver.h
+ * EOF
 \**********************************************************************/

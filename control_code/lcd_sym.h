@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    Display-Symbol-HeaderFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -24,18 +24,18 @@
  * ------------------------------------------------------------------*/
 
 void LCD_AutoSet_Page		(void);
-void LCD_AutoSet_Zone		(unsigned char min, unsigned char sec);
-void LCD_AutoSet_SetDown(unsigned char min, unsigned char sec);
-void LCD_AutoSet_PumpOff(unsigned char min, unsigned char sec);
-void LCD_AutoSet_Mud		(unsigned char min, unsigned char sec);
+void LCD_AutoSet_Zone		(int min, int sec);
+void LCD_AutoSet_SetDown(int min, int sec);
+void LCD_AutoSet_PumpOff(int min, int sec);
+void LCD_AutoSet_Mud		(int min, int sec);
 void LCD_SymbolAuto_IP  (t_page page, t_FuncCmd cmd);
 void LCD_WriteAutoVar_IP(unsigned char cho, unsigned char *t_ip);
 void LCD_SymbolAuto_Ph(t_FuncCmd state);
-void LCD_WriteAutoVar_Ph(unsigned char min, unsigned char sec);
+void LCD_WriteAutoVar_Ph(int min, int sec);
 
 void LCD_AutoText(void);
-void LCD_Auto_SonicVal(int sonic);
-void LCD_AutoCountDown(unsigned char min, unsigned char sec);
+void LCD_Auto_SonicVal(t_page page, int sonic);
+void LCD_AutoCountDown(int min, int sec);
 void LCD_WriteAuto_IP_Sensor(void);
 void LCD_WriteAutoVar(int min, int sec);
 void LCD_WriteAutoVar_Comp(int min, int sec);
@@ -47,9 +47,9 @@ void LCD_AutoAirSym        (t_page page);
  * 						Manual
  * ------------------------------------------------------------------*/
 
-void LCD_ManualText		  (int min, unsigned char sec);
-void LCD_ManualSet_Page	(int min, unsigned char sec);
-void LCD_WriteManualVar(int min, unsigned char sec);
+void LCD_ManualText(int min, int sec);
+void LCD_ManualSet_Page(int min, int sec);
+void LCD_WriteManualVar(int min, int sec);
 
 /* ------------------------------------------------------------------*
  * 						Setup

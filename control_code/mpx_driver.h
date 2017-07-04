@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    MPX-driver-HeaderFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -40,7 +40,6 @@ int MPX_ReadAverage_UnCal_Value(void);
 
 int 		MPX_LevelCal(t_FuncCmd cmd);
 t_page	MPX_ReadTank(t_page page, t_FuncCmd cmd);
-void 		MPX_Test(void);
 
 
 

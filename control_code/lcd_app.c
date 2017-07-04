@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    Display-App-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  AVR Studio mit avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -151,8 +151,6 @@ t_page LCD_AutoPage(t_page page)
   {
     if(!COMPANY)   LCD_Write_Purator(0,0);
     else LCD_Write_HECS(0,0);
-    MCP7941_LCD_WriteTime(_init);
-    MCP7941_LCD_WriteDate();
   }
   else if(lcd_reset > 30000)
   {
@@ -560,8 +558,8 @@ t_FuncCmd LCD_Auto_InflowPump(t_page page, int sec, t_FuncCmd cmd)
 void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
 {
 	static int count = 0;
-	static unsigned char min = 0;
-	static unsigned char sec = 5;
+	static int min = 0;
+	static int sec = 5;
 	static t_FuncCmd	 state = _off;
 
 	//--------------------------------------------------Initialization
@@ -774,7 +772,7 @@ t_page LCD_ManualPage(t_page page)
 
 		case ManualPumpOff:
 		case ManualPumpOff_On:
-      page = LCD_ManualPage_PumpOff(p_min, p_sec);	  break;
+      page = LCD_ManualPage_PumpOff(page, p_min, p_sec); break;
 
 		case ManualMud:
       page = LCD_ManualPage_Mud(p_min, p_sec);			  break;
@@ -793,6 +791,12 @@ t_page LCD_ManualPage(t_page page)
 
 	Watchdog_Restart();
 	LCD_Backlight(_exe);
+  if(page != ManualPumpOff)
+  {
+    LCD_WriteManualVar(*p_min, *p_sec);
+    MPX_ReadAverage(Manual, _exe);
+    Sonic_ReadTank(page, _exe);
+  }
 
   //--------------------------------------------------lcd_reset
 	if(lcd_reset > 32000)										//30s
@@ -831,7 +835,6 @@ t_page LCD_ManualPage_Main(int *p_min, int *p_sec)
 	page = LCD_ManualCD(page, p_min, p_sec);     //CountDown
 	if(page!= ManualMain)
 	  LCD_ManualSet(page, p_min, p_sec);	//nextPage
-	LCD_WriteManualVar(*p_min, *p_sec);	  //Variables
 	return page;
 }
 
@@ -852,8 +855,6 @@ t_page LCD_ManualPage_Circ(t_page page, int *p_min, int *p_sec)
     LCD_ManualSet(page, p_min, p_sec);		  //nextPage
     return page;
   }
-
-	LCD_WriteManualVar(*p_min, *p_sec);		        //Variables
 	page = LCD_Write_AirVar(page, *p_sec, _exe);	//WriteVar
 	return page;
 }
@@ -874,7 +875,6 @@ t_page LCD_ManualPage_Air(int *p_min, int *p_sec)
     LCD_ManualSet(page, p_min, p_sec);	    //nextPage
     return page;
   }
-	LCD_WriteManualVar(*p_min, *p_sec);		      //Variables
 	return page;
 }
 
@@ -888,8 +888,8 @@ t_page LCD_ManualPage_SetDown(int *p_min, int *p_sec)
 	t_page page = ManualSetDown;
 	page =	Touch_ManualLinker(Touch_Matrix(), page);
   page = LCD_ManualCD(page, p_min, p_sec);     //CountDown
-	if(page != ManualSetDown)	LCD_ManualSet(page, p_min, p_sec);	//nextPage
-	LCD_WriteManualVar(*p_min, *p_sec);									//Variables
+	if(page != ManualSetDown)
+    LCD_ManualSet(page, p_min, p_sec);	//nextPage
 	return page;
 }
 
@@ -898,37 +898,36 @@ t_page LCD_ManualPage_SetDown(int *p_min, int *p_sec)
  * 						Manual Pump Off
  * ------------------------------------------------------------------*/
 
-t_page LCD_ManualPage_PumpOff(int *p_min, int *p_sec)
+t_page LCD_ManualPage_PumpOff(t_page page, int *p_min, int *p_sec)
 {
-	t_page page = ManualPumpOff;
-	static unsigned char on = 0;
+	t_page save_page = page;
 	static unsigned char count = 0;
 
 	page = Touch_ManualLinker(Touch_Matrix(), page);
   page = LCD_ManualCD(page, p_min, p_sec);     //CountDown
-	if(page == ManualPumpOff_On){
-	  on = 1;		                        //PumpOffOn
-    *p_min = 29;
-	  *p_sec = 58;
-		LCD_ManualText(*p_min, *p_sec);}
-
-	else if(page != ManualPumpOff){				  //--Else
-		LCD_ClrSpace(14, 2, 8, 120);
-		if(on)	OUT_Clr_PumpOff();					  //Clr PumpOff
-		LCD_ManualSet(page, p_min, p_sec);		//nextPage
-		LCD_ManualText(*p_min, *p_sec);
-		on = 0;
-		return page;}
-
-	if(!on){
+	if(page != save_page)
+  {
+    if(page != ManualPumpOff_On)
+    {
+      LCD_ClrSpace(15, 2, 5, 120);
+      LCD_WriteStringFont(17,61,"mbar");
+    }
+    if(save_page == ManualPumpOff_On)
+    {
+      OUT_Clr_PumpOff();
+    }
+    LCD_ManualSet(page, p_min, p_sec);
+  }
+  // blink
+	else if(page == ManualPumpOff)
+  {
 	  TCC0_DisplayManual_Wait();
-	  count++;							//--Blink
+	  count++;
 		if(count == 125)
 		  LCD_WriteStringFontNeg(17,15,"PRESS OK!:");
-		if(count == 250){
-		  LCD_WriteStringFont(17,15,"PRESS OK!:");}}
-
-	if(on) LCD_WriteManualVar(*p_min, *p_sec);		//Variables
+		if(count == 250)
+		  LCD_WriteStringFont(17,15,"PRESS OK!:");
+  }
 	return page;
 }
 
@@ -945,8 +944,6 @@ t_page LCD_ManualPage_Mud(int *p_min, int *p_sec)
 	if(page != ManualMud){
 	  OUT_Clr_Mud();
     LCD_ManualSet(page, p_min, p_sec);}	//nextPage
-
-	LCD_WriteManualVar(*p_min, *p_sec);
 	return page;
 }
 
@@ -963,8 +960,6 @@ t_page LCD_ManualPage_Compressor(int *p_min, int *p_sec)
 	if(page != ManualCompressor){
 	  OUT_Clr_Compressor();
     LCD_ManualSet(page, p_min, p_sec);}	//nextPage
-
-	LCD_WriteManualVar(*p_min, *p_sec);
 	return page;
 }
 
@@ -981,8 +976,6 @@ t_page LCD_ManualPage_Phosphor(int *p_min, int *p_sec)
 	if(page != ManualPhosphor){
 	  OUT_Clr_Phosphor();
     LCD_ManualSet(page, p_min, p_sec);}	//nextPage
-
-	LCD_WriteManualVar(*p_min, *p_sec);
 	return page;
 }
 
@@ -999,8 +992,6 @@ t_page LCD_ManualPage_InflowPump(int *p_min, int *p_sec)
 	if(page != ManualInflowPump){
 	  OUT_Clr_InflowPump();
     LCD_ManualSet(page, p_min, p_sec);}	//nextPage
-
-	LCD_WriteManualVar(*p_min, *p_sec);
 	return page;
 }
 
@@ -1042,6 +1033,15 @@ void LCD_ManualSet(t_page page, int *p_min, int *p_sec)
       *p_sec = 0;
       LCD_WriteValue2(17,124, *p_min);
       LCD_WriteValue2(17,142, *p_sec);		break;
+
+    case ManualPumpOff_On:
+      OUT_Set_PumpOff();
+      LCD_ClrSpace(15, 2, 5, 120);
+      LCD_WriteStringFont(17,136,":");
+      *p_min = 29;
+      *p_sec = 59;
+      LCD_ManualText(*p_min, *p_sec);
+      break;
 
 		case ManualMud:
 		  OUT_Set_Mud();

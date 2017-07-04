@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    MPX-driver-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -81,7 +81,7 @@ int MPX_ReadCal(void)
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- * 	MPX_ReadAverage
+ * 	MPX Read Average Value
  * --------------------------------------------------------------
  *	Wait until Conversion Complete and return Data
  * ------------------------------------------------------------------*/
@@ -119,9 +119,6 @@ int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
 
 				case Manual:	LCD_WriteValue3(17,42, add);
 				              return add;	break;
-
-				case Setup:		return add;	break;
-				case Data:	  return add;	break;
 				default:									break;
 			}
 		}
@@ -233,7 +230,7 @@ int MPX_LevelCal(t_FuncCmd cmd)
 
 
 /*-------------------------------------------------------------------*
- * 	MPX_ReadTank
+ * 	MPX Read Tank via pressure
  * --------------------------------------------------------------
  *	Reads the position of Water, call only in air times
  *  gives back page to go next, or stay in same
@@ -249,6 +246,8 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
 	int	minP = 0;
 	int	perP = 0;
 
+  // return if Ultrasonic
+  if(MEM_EEPROM_ReadVar(SONIC_on)) return page;
   //--------------------------------------------------DisabledReadTank
 	if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) ||
   page == AutoPumpOff 					          ||
@@ -268,24 +267,20 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
     LCD_Sym_MPX(_notav, 0);         //---
     return page;
   }
-
   //------------------------------------------------ReadVars
 	hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2)<<8) |
         (MEM_EEPROM_ReadVar(TANK_L_O2)));
-
 	hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ)<<8) |
           (MEM_EEPROM_ReadVar(TANK_L_Circ)));
-
 	minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP)<<8) |
           (MEM_EEPROM_ReadVar(TANK_L_MinP)));
 
-	//------------------------------------------------exe
+	//--------------------------------------------------exe
 	if(cmd == _exe)
 	{
 		mpxAv = MPX_LevelCal(_new);		        //ReadValue
 		if(page == ManualCirc)	return page;	//Return
     LCD_Sym_MPX(_mbar, mpxAv);
-		if(MEM_EEPROM_ReadVar(SONIC_on)) return page;	//IfSonicReturn
 
     //------------------------------------------------Circulate
 		if(page == AutoCirc)
@@ -317,44 +312,27 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
 			else					              return AutoCirc;
 		}
 	}
-
 	//------------------------------------------------write
 	else if(cmd == _write)
 	{
-		perP = mpxAv - minP;					    //calc
-		if(perP <= 0)	perP = 0;					  //limit
-		perP = ((perP * 100) / hO2);			//calc
+		perP = mpxAv - minP;
+		if(perP <= 0)	perP = 0;
+		perP = ((perP * 100) / hO2);
+		//ManualWrite
 		if(page == ManualCirc)
 		{
-			LCD_Sym_MPX(_mmbar, perP);  //ManualWrite
+			LCD_Sym_MPX(_mmbar, perP);
 			return page;
 		}
     LCD_Sym_MPX(_debug, perP);
 	}
-
-	//------------------------------------------------misc
-	else if(cmd == _reset)	mpxAv = 0;
+	//------------------------------------------------error
 	else if(cmd == _error)	if(error >= 2) return ErrorMPX;
 	return page;
 }
 
 
 
-/* ==================================================================*
- * 						FUNCTIONS - Test
- * ==================================================================*/
-
-void MPX_Test(void)
-{
-	while(1)
-	{
-		Watchdog_Restart();
-		LCD_WriteValue3(1,2, MPX_Read());
-		LCD_WriteValue3(4,2, MPX_ReadCal());
-		LCD_WriteValue3(1,40, MPX_ReadAverage_UnCal_Value());
-		LCD_WriteValue3(4,40, MPX_ReadAverage_Value());
-	}
-}
 
 
 

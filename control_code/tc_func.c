@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    TC-Functions-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -131,7 +131,7 @@ void TCC0_wait_ms(int ms)
 	TCC0_Stop();					//stopTimer
 }
 
-void TCC0_wait_sec(unsigned char sec)
+void TCC0_wait_sec(int sec)
 {
 	while(sec)
 	{
@@ -206,7 +206,7 @@ void TCC1_WaitMilliSec_Init(int milliSec)
 
 	TCC1.CNT = 0;
 	TCC1.PER = 60000;						//Max milliSek= 900
-	TCC1.CCA = time;						//OputCompare auf x*1µs
+	TCC1.CCA = time;						//OputCompare auf x*1us
 	TCC1.INTFLAGS |= (1<<TC1_CCAIF_bp);		//reset INTFlag
 
 	TCC1_CTRLA= TC_CLKSEL_DIV256_gc;			//clk/8
@@ -257,7 +257,7 @@ void TCD0_WaitMilliSec_Init(int milliSec)
 
 	TCD0.CNT = 0;
 	TCD0.PER = 60000;						//Max milliSek= 900
-	TCD0.CCA = time;						//OputCompare auf x*1Âµs
+	TCD0.CCA = time;						//OputCompare auf x*1us
 	TCD0.INTFLAGS |= (1<<TC0_CCAIF_bp);		//reset INTFlag
 
 	TCD0_CTRLA= TC_CLKSEL_DIV256_gc;			//clk/8
@@ -278,7 +278,7 @@ void TCD0_WaitSec_Init(int Sec)
 
 	TCD0.CNT = 0;
 	TCD0.PER = 60000;						//Max Sek= 3s
-	TCD0.CCA = time;						//OputCompare auf x*1µs
+	TCD0.CCA = time;						//OputCompare auf x*1us
 	TCD0.INTFLAGS |= (1<<TC0_CCAIF_bp);		//reset INTFlag
 
 	TCD0_CTRLA= TC_CLKSEL_DIV1024_gc;			//clk/8
@@ -328,7 +328,7 @@ void TCD1_WaitMilliSec_Init(int milliSec)
 
 	TCD1.CNT = 0;
 	TCD1.PER = 60000;						//Max milliSek= 900
-	TCD1.CCA = time;						//OputCompare auf x*1µs
+	TCD1.CCA = time;						//OputCompare auf x*1us
 	TCD1.INTFLAGS |= (1<<TC1_CCAIF_bp);		//reset INTFlag
 
 	TCD1_CTRLA= TC_CLKSEL_DIV256_gc;			//clk/8
@@ -552,7 +552,7 @@ void TCE1_WaitMilliSec_Init(int milliSec)
 
 	TCE1.CNT = 0;
 	TCE1.PER = 60000;						//Max milliSek= 900
-	TCE1.CCA = time;						//OputCompare auf x*1µs
+	TCE1.CCA = time;						//OputCompare auf x*1us
 	TCE1.INTFLAGS |= (1<<TC1_CCAIF_bp);		//reset INTFlag
 
 	TCE1_CTRLA= TC_CLKSEL_DIV256_gc;			//clk/8
@@ -622,7 +622,7 @@ void TCF0_WaitMilliSec_Init(int milliSec)
 
 	TCF0.CNT = 0;
 	TCF0.PER = 60000;						//Max milliSek= 900
-	TCF0.CCA = time;						//OputCompare auf x*1µs
+	TCF0.CCA = time;						//OputCompare auf x*1us
 	TCF0.INTFLAGS |= (1<<TC1_CCAIF_bp);		//reset INTFlag
 
 	TCF0_CTRLA= TC_CLKSEL_DIV256_gc;			//clk/8
@@ -693,7 +693,7 @@ void TCF1_WaitMilliSec_Init(int milliSec)
 
 	TCF1.CNT = 0;
 	TCF1.PER = 60000;						//Max milliSek= 900
-	TCF1.CCA = time;						//OputCompare auf x*1µs
+	TCF1.CCA = time;						//OputCompare auf x*1us
 	TCF1.INTFLAGS |= (1<<TC1_CCAIF_bp);		//reset INTFlag
 
 	TCF1_CTRLA= TC_CLKSEL_DIV256_gc;			//clk/8

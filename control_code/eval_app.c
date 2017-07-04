@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    Eval-App-SourceFile
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
@@ -41,27 +41,33 @@
  * 						O2 Evaluation
  * ==================================================================*/
 
-void Eval_Oxygen(t_FuncCmd cmd, unsigned char min)
+void Eval_Oxygen(t_FuncCmd cmd, int min)
 {
-	static int	o2=0;
-	static unsigned char o2Min=0;
-	static unsigned char o2Counter=0;
+	static int o2 = 0;
+	static int o2Min = 0;
+	static int o2Counter = 0;
 
 	switch(cmd)
 	{
 		case _entry:
-      MEM_EEPROM_WriteAutoEntry(o2, 0, Write_o2);	break;		//Write Entry
+      MEM_EEPROM_WriteAutoEntry(o2, 0, Write_o2);
+      break;
 
 		case _clear:
-		  o2= 0x00;
-		  o2Counter=0x00;	break;
+		  o2 = 0;
+		  o2Counter = 0;
+		  break;
 
 		case _count:
-      if(o2Min!= min){	o2Counter++;	o2Min= min;}
-      if(o2Counter>=1){	o2Counter=0;	o2++;}			  break;
+      if(o2Min != min){	o2Counter++;	o2Min = min;}
+      if(o2Counter >= 1){	o2Counter = 0;	o2++;}
+      break;
 
-    case _dec:  o2--;   break;
-		default:            break;
+    case _dec:
+      o2--;
+      break;
+
+		default: break;
 	}
 }
 

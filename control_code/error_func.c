@@ -4,7 +4,7 @@
 * Project:		  Control Interception ICT
 *	Name:			    error_func.c
 * ------------------------------------------------------------------
-*	µC:        	  ATxmega128A1
+*	uC:        	  ATxmega128A1
 *	Compiler:		  avr-gcc (WINAVR 2010)
 *	Description:
 * ------------------------------------------------------------------
