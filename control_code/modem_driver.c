@@ -30,11 +30,25 @@
  * 						FUNCTIONS Basics
  * ==================================================================*/
 
+ /* ------------------------------------------------------------------*
+ * 						Modem Object init
+ * ------------------------------------------------------------------*/
+// TODO (christian#1#): Modem_object_init ...
+//
+void Modem_init(struct Modem *mo)
+{
+   mo->turned_on = 0;
+   mo->turn_on_state = 0;
+   mo->turn_on_error = 0;
+   mo->startup_delay = 0;
+}
+
+
 /* ------------------------------------------------------------------*
  * 						Init
  * ------------------------------------------------------------------*/
 
-void Modem_Init(void)
+void Modem_Port_Init(void)
 {
 	PORTF.DIR = PIN0_bm |		//PF0-ModemOn-Output
               PIN1_bm	|		//PF1-ModemReset-Output
@@ -47,8 +61,42 @@ void Modem_Init(void)
                     PIN6_bm;		//PF6-ModemRxD-Input
 
   PORTF.PIN2CTRL = PORT_OPC_WIREDANDPULL_gc;	//Pins PULL UP
-	PORTF.OUT = 		0x00;						            //Clr Modem Outputs
-	PORTF.OUTCLR = PIN4_bm;						          //RTS-Off
+
+	PORTF.OUTCLR = (PIN0_bm | PIN1_bm | PIN4_bm | PIN7_bm);
+}
+
+
+/* ------------------------------------------------------------------*
+ * 						Modem check
+ * ------------------------------------------------------------------*/
+
+unsigned char Modem_Check(struct Modem *mo)
+{
+  // Startup
+  if(mo->startup_delay < MO_STARTUP_DELAY)
+  {
+    mo->startup_delay++;
+    return 1;
+  }
+
+  Modem_ReadSLED();
+
+  // Check if off
+  if(MO_PW_OFF)
+  {
+    mo->turned_on = 0;
+    Modem_TurnOn(mo);
+    LCD_WriteValue2(1, 100, mo->turn_on_state);
+    LCD_WriteValue2(3, 100, mo->turn_on_error);
+  }
+  // PWR on
+  else if(!MO_PW_OFF)
+  {
+    mo->turned_on = 1;
+    mo->turn_on_state = 0;
+    mo->turn_on_error = 0;
+  }
+  return 0;
 }
 
 
@@ -56,46 +104,44 @@ void Modem_Init(void)
  * 						Modem TurnOn
  * ------------------------------------------------------------------*/
 
-unsigned char Modem_TurnOn(void)
+unsigned char Modem_TurnOn(struct Modem *mo)
 {
-  static unsigned char state=0;
-	if(PORTF.IN & PIN2_bm)				  //IfPWR-Off?
-	{
-	  if(!state)
-	  {
-	    PORTF.OUTSET=	PIN0_bm;		    //TurnOnModem
-	    TCF1_WaitSec_Init(3);
-      state= 1;
-    }
+  if(mo->turn_on_state == 0)
+  {
+    MO_PORT_ON;
+    TCF1_WaitSec_Init(1);
+    mo->turn_on_state = 1;
+  }
 
-    else if(state == 1 && TCF1_Wait_Query())
+  else if(mo->turn_on_state == 1 && TCF1_Wait_Query())
+  {
+    MO_PORT_OFF;
+    if(MO_PW_OFF)
     {
-		  TCF1_WaitSec_Init(2);
-		  state= 2;
-		}
-
-		else if(state == 2 && TCF1_Wait_Query())
-		{
-      PORTF.OUTCLR=	PIN0_bm;		    //ClrOnSignal
-      TCF1_Stop();
-      if(PORTF.IN & PIN2_bm)  state= 3;
-      else return _on;
-		}
-
-		else if(state == 3)
-		{
-      return _notav;   //NotAvailable
-		}
-	}
-	else                  //IfPWR-On
-	{
-    if(state)
-    {
-      PORTF.OUTCLR=	PIN0_bm;		    //ClrOnSignal
-      TCF1_Stop();
-      state= 0;
+      TCF1_WaitSec_Init(2);
+      mo->turn_on_state = 2;
     }
-	  return _on;
+    else
+    {
+      TCF1_Stop();
+      mo->turn_on_state = 0;
+    }
+  }
+
+  else if(mo->turn_on_state == 2 && TCF1_Wait_Query())
+  {
+    // timeout
+    if(MO_PW_OFF)
+    {
+      mo->turn_on_error++;
+    }
+    else
+    {
+      TCF1_Stop();
+    }
+    TCF1_Stop();
+    mo->turn_on_state = 0;
+
   }
 	return 0;
 }
@@ -445,18 +491,11 @@ void Modem_SendTest(void)
 }
 
 
-//*--------------------------------------------------Modem
+/*--------------------------------------------------Modem
 void Modem_Test(void)
 {
-  /*
-	unsigned char 	len=1;
-	int	i=0;
-	unsigned char 	*p_rec;
-  p_rec= &len;  p_rec++;
-  */
-
 	LCD_WriteStringFont(1, 10, "Hallo Modemm");
-	Modem_Init();
+	Modem_Port_Init();
 
 	LCD_WriteStringFont(4, 30,	"PWR");
 	LCD_WriteStringFont(8, 30,	"SLED");
@@ -485,7 +524,10 @@ void Modem_Test(void)
 		Modem_ReadCTS();
 		Modem_ReadRxD();
 
-		/*
+    unsigned char 	len=1;
+    int	i=0;
+    unsigned char 	*p_rec;
+    p_rec= &len;  p_rec++;
 		i= USART_ReadByte();
 		if((i & 0xFF00))
 		{
@@ -513,10 +555,10 @@ void Modem_Test(void)
 			LCD_DeathMan(0,0);
 			Modem_SendTest();
 		}
-		*/
+
 	}
 }
-
+*/
 
 
 

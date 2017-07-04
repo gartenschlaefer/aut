@@ -37,18 +37,20 @@ int main(void)
 {
 	// start page
 	t_page 	page = DataPage;
-  // init
+  // Init
 	Basic_Init();
   LCD_Backlight(_on);
   // Input
   struct InputHandler input_handler;
+  struct Modem modem;
   InputHandler_init(&input_handler);
+  Modem_init(&modem);
 
 	while(1)
 	{
 		Watchdog_Restart();
 		PORT_Bootloader();
-    Modem_TurnOn();
+    Modem_Check(&modem);
 
 		//------------------------------------------------GreatLinker
 		switch(page)

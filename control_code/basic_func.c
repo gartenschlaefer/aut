@@ -66,7 +66,7 @@ void Basic_Init(void)
   MCP7941_Init();						  //TimerIC
 	AD8555_Init();						  //InitAD8555 MPX-Amplifier
 	CAN_Init();							    //InitMCP2515 CAN-Controller
-  Modem_Init();               //InitModem
+  Modem_Port_Init();               //InitModem
 
 	TCC0_Main_Wait();					        //Wait 200ms
 

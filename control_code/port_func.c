@@ -66,7 +66,7 @@ void PORT_Bootloader(void)
 	{
 		LCD_Clean();
 		LCD_WriteStringFont(1, 1, "Bootloader-Modus");
-		asm volatile("jmp 0x20000");		//Jump Instruction
+		asm volatile("jmp 0x20000");
 	}
 }
 

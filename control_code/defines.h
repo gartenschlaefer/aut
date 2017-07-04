@@ -35,7 +35,7 @@
 // SoftwareVersion
 #define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
-#define SV3       6	      //-.-.x
+#define SV3       11	      //-.-.x
 
 // TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
