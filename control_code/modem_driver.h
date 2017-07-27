@@ -42,12 +42,12 @@ struct Modem {
 void Modem_init(struct Modem *mo);
 void Modem_Port_Init(void);
 
-unsigned char Modem_Check(struct Modem *mo);
+unsigned char Modem_Check(t_page page, struct Modem *mo);
 unsigned char Modem_TurnOn(struct Modem *mo);
 void Modem_TurnOff (void);
 
 void Modem_ReadPWR(void);
-void Modem_ReadSLED(void);
+void Modem_ReadSLED(t_page page);
 void Modem_ReadCTS(void);
 void Modem_ReadRxD(void);
 

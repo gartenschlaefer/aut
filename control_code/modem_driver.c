@@ -19,6 +19,8 @@
 
 #include "defines.h"
 #include "lcd_driver.h"
+#include "lcd_app.h"
+
 #include "basic_func.h"
 #include "usart_func.h"
 #include "tc_func.h"
@@ -70,7 +72,7 @@ void Modem_Port_Init(void)
  * 						Modem check
  * ------------------------------------------------------------------*/
 
-unsigned char Modem_Check(struct Modem *mo)
+unsigned char Modem_Check(t_page page, struct Modem *mo)
 {
   // Startup
   if(mo->startup_delay < MO_STARTUP_DELAY)
@@ -79,7 +81,7 @@ unsigned char Modem_Check(struct Modem *mo)
     return 1;
   }
 
-  Modem_ReadSLED();
+  Modem_ReadSLED(page);
 
   // Check if off
   if(MO_PW_OFF)
@@ -184,16 +186,31 @@ void Modem_ReadPWR(void)
  * 						Modem ReadSLED
  * ------------------------------------------------------------------*/
 
-void Modem_ReadSLED(void)
+void Modem_ReadSLED(t_page page)
 {
-	if(PORTF.IN & PIN3_bm)
+	if(page == DataMain)
 	{
-		LCD_FillSpace(18, 137, 1, 4);
-	}
-	else
+    if(PORTF.IN & PIN3_bm)
+    {
+      LCD_WriteMyFont(1, 40, 26);
+    }
+    else
+    {
+      LCD_ClrSpace(1, 40, 2, 4);
+    }
+  }
+  else if(page == PinModem)
 	{
-		LCD_ClrSpace(18, 137, 1, 4);
-	}
+    if(PORTF.IN & PIN3_bm)
+    {
+      LCD_WriteMyFont(18, 137, 26);
+    }
+    else
+    {
+      LCD_ClrSpace(18, 137, 2, 4);
+    }
+  }
+
 }
 
 

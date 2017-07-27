@@ -50,7 +50,7 @@ int main(void)
 	{
 		Watchdog_Restart();
 		PORT_Bootloader();
-    Modem_Check(&modem);
+    Modem_Check(page, &modem);
 
 		//------------------------------------------------GreatLinker
 		switch(page)

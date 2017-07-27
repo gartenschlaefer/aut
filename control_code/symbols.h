@@ -246,7 +246,7 @@ unsigned char FontNumbers_4X6_Neg[FontNumbers_4X6_Neg_LEN] =
    31, 31, 31, 0,       //14-BlackBox
 };
 
-#define FontNumbers_4X6_LEN  106
+#define FontNumbers_4X6_LEN  110
 unsigned char FontNumbers_4X6[FontNumbers_4X6_LEN] =
 {
     4,  1,
@@ -276,7 +276,8 @@ unsigned char FontNumbers_4X6[FontNumbers_4X6_LEN] =
     0, 16,  0,  0,      //22-.
     0, 26,  0,  0,      //23-i
    28,  4, 28,  0,      //24-n
-   20,  8, 20,  0       //25-x
+   20,  8, 20,  0,      //25-x
+   18, 45, 45, 18       //26-Modem
 };
 
 

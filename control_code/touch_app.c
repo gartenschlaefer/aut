@@ -1800,7 +1800,7 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
     cp=0;
     LCD_Pin_Write(_clear, nr);
 	}
-	if(nr.id) Modem_ReadSLED();
+	if(nr.id) Modem_ReadSLED(PinModem);
 
 	return page;
 }
