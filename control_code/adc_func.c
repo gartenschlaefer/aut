@@ -20,9 +20,10 @@
 #include <avr/pgmspace.h>
 
 #include "defines.h"
+#include "lcd_driver.h"
+#include "lcd_app.h"
 #include "tc_func.h"
 #include "adc_func.h"
-#include "lcd_driver.h"
 #include "modem_driver.h"
 
 

@@ -24,7 +24,7 @@
  * ------------------------------------------------------------------*/
 typedef enum
 {	AutoPage, 			ManualPage,			SetupPage,		DataPage,
-	PinManual,			PinSetup, 			AutoZone,
+	PinManual,			PinSetup, 			PinModem,     AutoZone,
 
 	AutoSetDown,	AutoMud,
 	AutoCirc,     AutoCircOff,  AutoPumpOff,
