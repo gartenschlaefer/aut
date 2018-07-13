@@ -181,6 +181,7 @@ t_page Touch_AutoLinker(unsigned char matrix, t_page page,
 	  *p_min = 0;
 	  *p_sec = 5;
 	  LCD_AutoCountDown(*p_min, *p_min);
+	  bug = 0;
   }
 
 	return page;

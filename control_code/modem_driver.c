@@ -88,8 +88,9 @@ unsigned char Modem_Check(t_page page, struct Modem *mo)
   {
     mo->turned_on = 0;
     Modem_TurnOn(mo);
-    LCD_WriteValue2(1, 100, mo->turn_on_state);
-    LCD_WriteValue2(3, 100, mo->turn_on_error);
+    //*-*Debug
+    //LCD_WriteValue2(1, 100, mo->turn_on_state);
+    //LCD_WriteValue2(3, 100, mo->turn_on_error);
   }
   // PWR on
   else if(!MO_PW_OFF)
