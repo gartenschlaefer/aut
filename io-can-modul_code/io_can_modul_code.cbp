@@ -36,6 +36,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="basic.h" />
+		<Unit filename="can_app.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="can_app.h" />
+		<Unit filename="can_func.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="can_func.h" />
 		<Unit filename="defines.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
