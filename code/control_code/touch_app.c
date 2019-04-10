@@ -1006,8 +1006,6 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
 		case 0x14:	if(!touch && page == SetupCal){	touch = 7;
       LCD_ControlButtons(sn_ok);
       MEM_EEPROM_WriteSetupEntry();
-      MEM_EEPROM_WriteVar(CAL_L_druck, (cal & 0x00FF));
-      MEM_EEPROM_WriteVar(CAL_H_druck, ((cal >> 8) & 0x00FF));
       MEM_EEPROM_WriteVar(CAL_Redo_on, calRedo);
       if(MEM_EEPROM_ReadVar(SONIC_on)) Sonic_LevelCal(_save);
       else MPX_LevelCal(_save);
@@ -1018,9 +1016,13 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       	LCD_Write_TextButton(9, 80, OpenV, 0);
         PORT_Ventil_AllOpen();}}  break;
 
+    // CAL for setting pressure to zero level
 		case 0x24:	if(!touch && page == SetupCal){	touch = 4;
       LCD_Write_Symbol_2(9,125, n_cal);
-      cal = MPX_ReadAverage_UnCal_Value();}	  break;	//Cal
+      cal = MPX_ReadAverage_UnCal_Value();
+      MEM_EEPROM_WriteVar(CAL_L_druck, (cal & 0x00FF));
+      MEM_EEPROM_WriteVar(CAL_H_druck, ((cal >> 8) & 0x00FF));
+      } break;
 
 		case 0x31:	if(!touch){	touch = 5;
 		  LCD_Write_Symbol_2(15,1, n_level);
@@ -1030,11 +1032,14 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
 		    PORT_Ventil_AllClose();}
       page = SetupCalPressure;}								break;	//Level-Messure
 
+    // Cal redo with pressure -> Auto Zone page
 		case 0x34:	if(!touch){	touch = 3;
-      if(calRedo){ calRedo = 0;
-        LCD_Write_Symbol_3(15,130, p_arrowRedo);}
-      else{	calRedo = 1;
-        LCD_Write_Symbol_3(15,130, n_arrowRedo);}}	break;	//Cal-Redo
+      if(!MEM_EEPROM_ReadVar(SONIC_on)){
+        if(calRedo){ calRedo = 0;
+          LCD_Write_Symbol_3(15,130, p_arrowRedo);}
+        else{	calRedo = 1;
+          LCD_Write_Symbol_3(15,130, n_arrowRedo);}}}	
+      break;	//Cal-Redo
 
 		case 0x00:	if(touch){
 		  if(touch == 4) LCD_Write_Symbol_2(9,125, p_cal);

@@ -731,9 +731,12 @@ void LCD_SetupSet_Cal(void)
     LCD_WriteStringFont(17,60, "mbar");
     MPX_LevelCal(_init);}
 
-  calRedo = MEM_EEPROM_ReadVar(CAL_Redo_on);
-  if(calRedo) LCD_Write_Symbol_3(15,130, n_arrowRedo);
-  else        LCD_Write_Symbol_3(15,130, p_arrowRedo);
+  // Cal redo with pressure -> Auto Zone page
+  if(!MEM_EEPROM_ReadVar(SONIC_on)){
+    calRedo = MEM_EEPROM_ReadVar(CAL_Redo_on);
+    if(calRedo) LCD_Write_Symbol_3(15,130, n_arrowRedo);
+    else        LCD_Write_Symbol_3(15,130, p_arrowRedo);
+  }
 
 
 	LCD_MarkTextButton(Setup);

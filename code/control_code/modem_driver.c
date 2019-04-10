@@ -189,8 +189,10 @@ void Modem_ReadPWR(void)
 
 void Modem_ReadSLED(t_page page)
 {
-	if(page == DataMain)
+  if(page == DataMain)
 	{
+    //***TODO: Cool Symbol for modem
+    /*
     if(PORTF.IN & PIN3_bm)
     {
       LCD_WriteMyFont(1, 40, 26);
@@ -199,7 +201,9 @@ void Modem_ReadSLED(t_page page)
     {
       LCD_ClrSpace(1, 40, 2, 4);
     }
+    */
   }
+
   else if(page == PinModem)
 	{
     if(PORTF.IN & PIN3_bm)

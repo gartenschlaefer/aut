@@ -119,6 +119,8 @@ int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
 
 				case Manual:	LCD_WriteValue3(17,42, add);
 				              return add;	break;
+
+        case Data:    return add; break; 
 				default:									break;
 			}
 		}

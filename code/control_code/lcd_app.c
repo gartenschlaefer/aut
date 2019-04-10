@@ -1270,8 +1270,8 @@ t_page LCD_SetupPage_InflowPump(int *p_min, int *p_sec)
 
 t_page LCD_SetupPage_Cal(int *p_min, int *p_sec)
 {
-	t_page page = 		    SetupCal;
-	static unsigned char 	iniTime = 0;
+	t_page page = SetupCal;
+	static unsigned char iniTime = 0;
 
 	if(iniTime)	page = SetupCalPressure;
 	page = Touch_SetupCalLinker(Touch_Matrix(), page);	//TouchApp
