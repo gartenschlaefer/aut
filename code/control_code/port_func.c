@@ -147,8 +147,10 @@ void PORT_Ventilator(void)
  * 						FUNCTIONS Ventil
  * ==================================================================*/
 
-void PORT_Ventil(t_ventil ventil)
+unsigned char PORT_Ventil(t_ventil ventil)
 {
+  static unsigned char state = 0;
+
 	Watchdog_Restart();
 
 	switch(ventil)
@@ -156,54 +158,79 @@ void PORT_Ventil(t_ventil ventil)
 		case OPEN_Reserve:
 		  P_VENTIL.OUTSET= O_RES;
       TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_RES;			break;
+      P_VENTIL.OUTCLR= O_RES;	
+      state |= V_RES;
+      break;
 
 		case CLOSE_Reserve:
 		  P_VENTIL.OUTSET= C_RES;
       TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_RES;			break;
+      P_VENTIL.OUTCLR= C_RES;
+      state &= ~V_RES;			
+      break;
 
 		case OPEN_MudPump:
 		  P_VENTIL.OUTSET= O_MUD;
       TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_MUD;			break;
+      P_VENTIL.OUTCLR= O_MUD;
+      state |= V_MUD;			
+      break;
 
 		case CLOSE_MudPump:
 		  P_VENTIL.OUTSET= C_MUD;
       TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_MUD;			break;
+      P_VENTIL.OUTCLR= C_MUD;
+      state &= ~V_MUD;
+      break;
 
 		case OPEN_Air:
       P_VENTIL.OUTSET= O_AIR;
       TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_AIR;			break;
+      P_VENTIL.OUTCLR= O_AIR;
+      state |= V_AIR;		
+      break;
 
 		case CLOSE_Air:
 		  P_VENTIL.OUTSET= C_AIR;
       TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_AIR;			break;
+      P_VENTIL.OUTCLR= C_AIR;
+      state &= ~V_AIR;
+      break;
 
 		case OPEN_ClearWater:
 		  P_VENTIL.OUTSET= O_CLRW;
       TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_CLRW;		break;
+      P_VENTIL.OUTCLR= O_CLRW;
+      state |= V_CLW;		
+      break;
 
 		case CLOSE_ClearWater:
 		  P_VENTIL.OUTSET= C_CLRW;
       TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_CLRW;		break;
+      P_VENTIL.OUTCLR= C_CLRW;
+      state &= ~V_CLW;
+      break;
 
-		case CLOSE_IPAir:
-		  P_VENTIL.OUTSET= C_AIR | C_RES;
+    case CLOSE_IPAir:
+      P_VENTIL.OUTSET= C_AIR | C_RES;
       TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_AIR | C_RES;	break;
+      P_VENTIL.OUTCLR= C_AIR | C_RES;  
+      break;
 
-		case OFF_Ventil:
-		  P_VENTIL.OUTSET= 0x00;
-      P_VENTIL.OUTCLR= 0x00;			break;
-		default:											break;
+    case RESET_STATE: 
+      state = 0x00; 
+      break;
+
+    case SET_STATE: 
+      state = 0x0F; 
+      break;
+
+		default: 
+      break;
 	}
+
 	Watchdog_Restart();
+  return state;
 }
 
 
@@ -234,6 +261,8 @@ void PORT_Ventil_AllOpen(void)
 	TCC0_wait_ms(500);
 	P_VENTIL.OUTCLR= O_CLRW;
 	TCC0_wait_ms(500);
+
+  PORT_Ventil(SET_STATE);
 	Watchdog_Restart();
 }
 
@@ -264,6 +293,8 @@ void PORT_Ventil_AllClose(void)
 	TCC0_wait_ms(500);
 	P_VENTIL.OUTCLR= C_CLRW;
 	TCC0_wait_ms(500);
+
+  PORT_Ventil(RESET_STATE);
 	Watchdog_Restart();
 }
 
@@ -381,6 +412,56 @@ void InputHandler_init(struct InputHandler *in)
 
 
 
+/* ------------------------------------------------------------------*
+ *            Debug
+ * ------------------------------------------------------------------*/
+
+void PORT_Debug(void)
+{ 
+  static unsigned char refresh = 0;
+  static unsigned char blink = 1;
+
+  unsigned char y_pos_r = 19;
+  unsigned char y_pos_v = 21;
+
+  refresh++;
+
+  if(refresh == 250)
+  {
+    refresh = 0;
+
+    // print register names
+    if(blink){
+      blink = 0;
+      LCD_WriteStringFontNeg(y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
+      LCD_WriteStringFontNeg(y_pos_v, 0, "V: Ai Mu Cl Re");
+    }
+    
+    // print register states
+    else{
+      blink = 1;
+
+      // relais
+      for(int relais = 0; relais < 8; relais++)
+      {
+        if(P_RELAIS.OUT & (1<<relais)) 
+          LCD_WriteStringFontNeg(y_pos_r, 18 + 18 * relais, "1 ");
+        else
+          LCD_WriteStringFontNeg(y_pos_r, 18 + 18 * relais, "0 ");
+      }
+
+      // ventils
+      for(int ventil = 0; ventil < 4; ventil++)
+      {
+        if(PORT_Ventil(READ_STATE) & (1<<ventil)) 
+          LCD_WriteStringFontNeg(y_pos_v, 18 + 18 * ventil, "1 ");
+        else
+          LCD_WriteStringFontNeg(y_pos_v, 18 + 18 * ventil, "0 ");
+      }
+    }
+
+  }
+}
 
 /*********************************************************************\
  * End of port_func.c

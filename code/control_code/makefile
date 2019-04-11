@@ -14,11 +14,11 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = control_code
+TARGET = ./bin/control_code
 
 
 # Object files directory
-OBJDIR = .
+OBJDIR = ./.obj
 
 
 # List C source files here. (C dependencies are automatically generated.)

@@ -52,6 +52,12 @@ int main(void)
 		PORT_Bootloader();
     Modem_Check(page, &modem);
 
+    // Debug Code
+    if(DEBUG)
+    {
+      PORT_Debug();
+    }
+
 		//------------------------------------------------GreatLinker
 		switch(page)
 		{

@@ -80,8 +80,14 @@ typedef enum
 	OPEN_MudPump,		CLOSE_MudPump,
 	OPEN_Air,			CLOSE_Air,
 	OPEN_ClearWater,	CLOSE_ClearWater,
-	CLOSE_IPAir,		OFF_Ventil
+  CLOSE_IPAir,  RESET_STATE, 
+  SET_STATE, READ_STATE
 }t_ventil;
+
+#define V_AIR (1<<0)
+#define V_MUD (1<<1)
+#define V_CLW (1<<2) 
+#define V_RES (1<<3)   
 
 
 /* ------------------------------------------------------------------*
@@ -123,7 +129,7 @@ void PORT_Buzzer(t_FuncCmd cmd);
 void PORT_Ventilator(void);
 void PORT_RunTime(struct InputHandler *in);
 
-void PORT_Ventil(t_ventil ventil);
+unsigned char PORT_Ventil(t_ventil ventil);
 void PORT_Ventil_AllOpen(void);
 void PORT_Ventil_AllClose(void);
 void PORT_Ventil_AllOff(void);
@@ -134,7 +140,7 @@ void PORT_RelaisClr(unsigned char relais);
 void PORT_Relais_AllOff(void);
 
 void InputHandler_init(struct InputHandler *in);
-
+void PORT_Debug(void);
 
 
 
