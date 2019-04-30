@@ -14,8 +14,9 @@
 * lastChanges:  31.08.2015
 \**********************************************************************/
 
-#include<avr/io.h>
-
+// Include guard
+#ifndef MCP_7941_DRIVER_H   
+#define MCP_7941_DRIVER_H
 
 /* ==================================================================*
  * 						DEFINES
@@ -81,11 +82,5 @@ unsigned char MCP7941_ReadTime      (unsigned char cmd);
 void 			    MCP7941_LCD_WriteTime	(t_FuncCmd cmd);
 void 			    MCP7941_LCD_WriteDate	(void);
 
-
-
-
-
-/*********************************************************************\
- * End of SL_MCP7941_diver.h
-\**********************************************************************/
+#endif
 

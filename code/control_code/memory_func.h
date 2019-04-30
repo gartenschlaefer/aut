@@ -14,7 +14,9 @@
 * lastChanges:
 \**********************************************************************/
 
-
+// Include guard
+#ifndef MEMORY_FUNC_H   
+#define MEMORY_FUNC_H
 
 /* ==================================================================*
  * 						FUNCTIONS - API
@@ -56,13 +58,5 @@ void MEM_EEPROM_WriteByte
 void MEM_EEPROM_EntPageErase	(unsigned char page);
 void MEM_EEPROM_EntErase		(void);
 
-
-
-
-
-
-
-/***********************************************************************
- *	END of xmA_Memory_func.h
- ***********************************************************************/
+#endif
 

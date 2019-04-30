@@ -14,6 +14,9 @@
 * lastChanges:  17.05.2015
 \**********************************************************************/
 
+// Include guard
+#ifndef MPX_DRIVER_H   
+#define MPX_DRIVER_H
 
 /* ==================================================================*
  * 						Enumeration
@@ -41,14 +44,5 @@ int MPX_ReadAverage_UnCal_Value(void);
 int 		MPX_LevelCal(t_FuncCmd cmd);
 t_page	MPX_ReadTank(t_page page, t_FuncCmd cmd);
 
-
-
-
-
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/
+#endif
 

@@ -767,18 +767,15 @@ void LCD_WriteValueNeg2(uint8 y, uint8 x, int value)
 void LCD_WriteValue3(uint8 y, uint8 x, int value)
 {
 	char cValue[10] = {0};
-	int	con = 0;
 	unsigned char	i = 0;
 
-	con = value;
-
-	if(con > 999) con= 999;
-	if(con < 1)	con= 0;
+	if(value > 999) value = 999;
+	if(value < 1)	value = 0;
 
 	//--------------------------------------------------Hex2Bcd1Byte
-	cValue[0]= (con / 100);
-	cValue[1]= ((con - (100 * cValue[0])) / 10);
-	cValue[2]= (con - ((cValue[0] * 100) + (cValue[1] * 10)));
+	cValue[0]= (value / 100);
+	cValue[1]= ((value - (100 * cValue[0])) / 10);
+	cValue[2]= (value - ((cValue[0] * 100) + (cValue[1] * 10)));
 
 	//--------------------------------------------------AsciiConversion
 	for(i=0; i<3; i++) cValue[i]= cValue[i]+48;

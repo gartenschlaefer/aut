@@ -14,6 +14,9 @@
 * lastChanges:
 \**********************************************************************/
 
+// Include guard
+#ifndef EVAL_APP_H   
+#define EVAL_APP_H
 
 /* ==================================================================*
  * 						Defines
@@ -64,10 +67,5 @@ void Eval_PinWrite(unsigned char pin, unsigned char codePos);
 void Eval_PinDel(void);
 void Eval_PinClr(unsigned char *pin);
 
-
-
-
-/**********************************************************************\
- * EOF
-\**********************************************************************/
+#endif
 

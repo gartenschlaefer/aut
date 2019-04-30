@@ -14,7 +14,9 @@
 * lastChanges:	27.12.2014
 \**********************************************************************/
 
-
+// Include guard
+#ifndef MEMORY_APP_H   
+#define MEMORY_APP_H
 
 /* ==================================================================*
  * 						Enumeration
@@ -86,12 +88,5 @@ void			MEM_EEPROM_WriteSetupEntry	(void);
 void 			MEM_EEPROM_SetZero	(void);
 void 			MEM_EEPROM_WriteVarDefault_Short(void);
 
-
-
-
-
-
-/***********************************************************************
- *	END of xmA_Memory_app.h
- ***********************************************************************/
+#endif
 

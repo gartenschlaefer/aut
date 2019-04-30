@@ -14,6 +14,9 @@
 * lastChanges:  17.05.2015
 \**********************************************************************/
 
+// Include guard
+#ifndef SONIC_APP_H   
+#define SONIC_APP_H
 
 /* ==================================================================*
  * 						Defines
@@ -59,8 +62,4 @@ t_page Sonic_ChangePage(t_page page, int sonic);
 int Sonic_LevelCal(t_FuncCmd cmd);
 unsigned char Sonic_sVersion(void);
 
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/
+#endif

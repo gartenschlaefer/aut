@@ -14,6 +14,9 @@
 * lastChanges:	05.01.2013
 \**********************************************************************/
 
+// Include guard
+#ifndef SPI_FUNC_H   
+#define SPI_FUNC_H
 
 /* ==================================================================*
  * 						Defines
@@ -44,10 +47,4 @@ void SPI_Init(void);
 unsigned char SPI_WriteByte(unsigned char wByte);
 unsigned char SPI_ReadByte(void);
 
-
-
-
-
-/**********************************************************************\
- * End of spi_func.h
-\**********************************************************************/
+#endif

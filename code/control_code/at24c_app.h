@@ -14,6 +14,10 @@
 * lastChanges:
 \**********************************************************************/
 
+// Include guard
+#ifndef AT24C_APP_H   
+#define AT24C_APP_H
+
 typedef enum
 {
   TEL1_0,   TEL1_1,   TEL1_2,   TEL1_3,
@@ -36,9 +40,4 @@ typedef enum
 void          AT24C_WriteVar(t_EEvar var, unsigned char sData);
 unsigned char AT24C_ReadVar (t_EEvar var);
 
-
-
-
-/**********************************************************************\
- * End of at24c_app.h
-\**********************************************************************/
+#endif

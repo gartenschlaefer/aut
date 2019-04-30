@@ -15,7 +15,9 @@
 * lastChanges:	10.10.2013
 \**********************************************************************/
 
-
+// Include guard
+#ifndef TOUCH_APP_H   
+#define TOUCH_APP_H
 
 /* ==================================================================*
  * 						FUNCTIONS - API
@@ -73,10 +75,5 @@ t_page Touch_DataManualLinker	(unsigned char matrix, t_page pa);
 t_page Touch_DataSetupLinker	(unsigned char matrix, t_page pa);
 t_page Touch_DataSonicLinker	(unsigned char matrix, t_page page);
 
-
-
-
-/**********************************************************************\
- * END of xmA_Touch_app.h
-\**********************************************************************/
+#endif
 

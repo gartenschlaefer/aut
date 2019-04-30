@@ -14,6 +14,9 @@
 * lastChanges:  24.07.2015
 \**********************************************************************/
 
+// Include guard
+#ifndef ERROR_FUNC_H   
+#define ERROR_FUNC_H
 
 /* ==================================================================*
  * 						Defines - Error Positions
@@ -59,10 +62,5 @@ void Error_Action_UP_SetError(void);
 void Error_Action_IT_SetError(void);
 void Error_Action_OT_SetError(void);
 
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/
+#endif
 

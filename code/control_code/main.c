@@ -56,6 +56,7 @@ int main(void)
     if(DEBUG)
     {
       PORT_Debug();
+      LCD_WriteValue2(0, 70, page);
     }
 
 		//------------------------------------------------GreatLinker

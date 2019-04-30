@@ -11,6 +11,9 @@
 * lastChanges:	17.05.2015
 \**********************************************************************/
 
+// Include guard
+#ifndef LCD_DRIVER_H   
+#define LCD_DRIVER_H
 
 
 /* ==================================================================*
@@ -272,14 +275,6 @@ void 			LCD_WP_SetFrame	(uint8 row, uint8 col, uint8 height, uint8 len);
 void 			LCD_FillSpace	(uint8 row, uint8 col, uint8 height, uint8 len);
 void 			LCD_ClrSpace	(uint8 row, uint8 col, uint8 height, uint8 len);
 
-
-
-
-
-
-
-/***********************************************************************
- *	End of file
- ***********************************************************************/
+#endif
 
 

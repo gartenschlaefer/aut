@@ -14,6 +14,9 @@
 * lastChanges:
 \**********************************************************************/
 
+// Include guard
+#ifndef TOUCH_DRIVER_H   
+#define TOUCH_DRIVER_H
 
 /* ==================================================================*
  * 						Defines
@@ -62,11 +65,6 @@ int 			Touch_X_ReadData(void);					//All in One X-Measure
 
 unsigned char 	*Touch_Read		(void);					//TouchRead
 
-
-
-
-/***********************************************************************
- * End of SL_Touch_driver.h
-***********************************************************************/
+#endif
 
 

@@ -14,6 +14,9 @@
 * lastChanges:  18.05.2015
 \**********************************************************************/
 
+// Include guard
+#ifndef CAN_APP_H   
+#define CAN_APP_H
 
 /* ==================================================================*
  * 						Defines
@@ -112,10 +115,4 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us);
 unsigned char CAN_SonicReadProgram(t_FuncCmd cmd);
 unsigned char CAN_SonicWriteProgram(t_FuncCmd cmd);
 
-
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/
+#endif

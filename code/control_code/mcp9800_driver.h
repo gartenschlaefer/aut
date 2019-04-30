@@ -14,7 +14,9 @@
 * lastChanges:	06.06.2011
 \**********************************************************************/
 
-#include<avr/io.h>
+// Include guard
+#ifndef MCP_9800_DRIVER_H   
+#define MCP_9800_DRIVER_H
 
 /* ==================================================================*
  * 						DEFINES
@@ -91,11 +93,6 @@ void MCP9800_SendByte	(unsigned char pointer, unsigned char sData);
 unsigned char MCP9800_PlusTemp(void);
 void MCP9800_WriteTemp(void);
 
-
-
-
-/*********************************************************************\
- * End of SL_DS1302_diver.h
-\**********************************************************************/
+#endif
 
 

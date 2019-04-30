@@ -14,6 +14,10 @@
 * lastChanges:  10.02.2016
 \**********************************************************************/
 
+// Include guard
+#ifndef TWI_FUNC_H   
+#define TWI_FUNC_H
+
 /* ==================================================================*
  * 						Defines
  * ==================================================================*/
@@ -81,11 +85,5 @@ void 			TWI_Master_Reset			(void);
 unsigned char 	TWI2_Master_Send			(unsigned char send);
 unsigned char 	TWI2_Master_AddressWriteMode(unsigned char f_address);
 
-
-
-
-
-/*********************************************************************\
- * End of file
-\*********************************************************************/
+#endif
 
