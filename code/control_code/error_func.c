@@ -60,42 +60,62 @@ void Error_OFF(void)
  * 					Read Error
  * ---------------------------------------------------------------*/
 
-unsigned char Error_Read(unsigned char err)
+unsigned char Error_Read(t_page page)
 {
-	unsigned char out = 0;
-	int lim = 0;
+	unsigned char err = 0;
 
-	if(err & E_T)
-	{
-		lim = MEM_EEPROM_ReadVar(ALARM_temp);
-		if(MCP9800_PlusTemp() > lim)  out |= E_T;			//Temp
-		else							            out &= ~E_T;
-	}
+  // temp
+	if(MCP9800_PlusTemp() > MEM_EEPROM_ReadVar(ALARM_temp))  
+    err |= E_T;
 
-	if(err & E_OP)
-	{
-		lim = ((MEM_EEPROM_ReadVar(MAX_H_druck)<<8) |
-      (MEM_EEPROM_ReadVar(MAX_L_druck)));
-		if(MPX_ReadCal() > lim) out |= E_OP;		//over-pressure
-		else							      out &= ~E_OP;
-	}
+  // over-pressure
+	if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | (MEM_EEPROM_ReadVar(MAX_L_druck)))) 
+    err |= E_OP;
 
-	if(err & E_UP)
-	{
-		lim = ((MEM_EEPROM_ReadVar(MIN_H_druck)<<8) |
-      (MEM_EEPROM_ReadVar(MIN_L_druck)));
-		if(MPX_ReadCal() < lim) out |= E_UP;		//under-pressure
-		else							      out &= ~E_UP;
-	}
+  // under-pressure check if necessary
+  unsigned char check_up_err = 0;
+  switch(page)
+  {
+    // air off
+    case AutoCircOff:
+    case AutoAirOff:
+      // inflow pump
+      if(LCD_Auto_InflowPump(page, 0, _state) == _on)     
+      {
+        // mammut pump
+        if(!(MEM_EEPROM_ReadVar(PUMP_inflowPump)))  
+          check_up_err = 1;
+      }
+      break;
 
-	if(err & E_IT)
-	{
-		lim= MPX_ReadTank(AutoAir, _error);
-		if(lim == ErrorMPX) out |= E_IT;		    //max in Tank
-		else							  out &= ~E_IT;
-	}
+    // pump off
+    case AutoPumpOff:
+      // mammut pump
+      if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff)))
+        check_up_err = 1;
+      break;
 
-	return out;
+    // air on
+    case AutoZone:
+    case AutoMud:
+    case AutoCirc:
+    case AutoAir:
+      check_up_err = 1;
+      break;
+
+    default:
+      break;
+  }
+
+  // under-pressure
+	if(check_up_err && MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck)<<8) | (MEM_EEPROM_ReadVar(MIN_L_druck)))) 
+    err |= E_UP;		
+
+  // max in Tank
+	if(MPX_ReadTank(AutoAir, _error) == ErrorMPX) 
+    err |= E_IT;
+	
+	return err;
 }
 
 
@@ -105,67 +125,49 @@ unsigned char Error_Read(unsigned char err)
 
 t_page Error_Detection(t_page page, int min, int sec)
 {
-	static unsigned char  occ = 0;
-	static unsigned char  rev = 0;
-	static t_page         treatPage;
-	unsigned char 			  err = 0;
-  ErrTreat              treat;
+	static unsigned char occ = 0;
+	static unsigned char rev = 0;
+	static t_page treatPage;
+	unsigned char err = 0;
+  ErrTreat treat;
 
-  //--------------------------------------------------low-pressure
-	switch(page)
-	{
-		case AutoCircOff:  case AutoAirOff:
-      if(LCD_Auto_InflowPump(page, 0, _state) == _on)     //IfInflowPump
-      {
-        if(!(MEM_EEPROM_ReadVar(PUMP_inflowPump)))  //ifMammutpumpe
-          err|= Error_Read(E_UP);
-      }
-    break;
+  // check if errors occur
+	err = Error_Read(page);
 
-    case AutoPumpOff:
-      if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff)))   //IfMammutpumpe
-        err|= Error_Read(E_UP);
+  // run the buzzer
+  PORT_Buzzer(_exe);
 
-		case AutoZone:    case AutoMud:
-		case AutoCirc:    case AutoAir:
-		  err|= Error_Read(E_UP); break;
-
-		default:				break;
-	}
-
-	//--------------------------------------------------CheckAlways
-	err |= Error_Read(E_T | E_OP | E_IT);		//Err2Check
-  PORT_Buzzer(_exe);						          //BuzzerExe
-
-  //--------------------------------------------------ErrorTimerOn
+  // error timer on
   if(err && !occ)
   {
-    if(TCE0_ErrorTimer(_ton))				  	  //--Error Ocur
+    if(TCE0_ErrorTimer(_ton))
     {
       occ = 1;
       treatPage = page;
-      TCE0_ErrorTimer(_reset);					  //ResetTimer
+      TCE0_ErrorTimer(_reset);
     }
   }
 
-  //--------------------------------------------------ErrorTreatment
+  // error treatment
   if(occ)
   {
-    rev = 1;                                    //RevertFlag
-    treat = Error_Treatment(treatPage, err);	  //Error Treatment
+    rev = 1;
+    treat = Error_Treatment(treatPage, err);
     if(treat.err_treated){
       page = treat.page;
-      occ = 0;}
-    else page = ErrorTreat;
+      occ = 0;
+    }
+    else 
+      page = ErrorTreat;
   }
 
-  //--------------------------------------------------ErrorReset
-	if(!err && rev && !occ)								  //--Error Clean
+  // error reset
+	if(!err && rev && !occ)
 	{
 		rev = 0;
-		Error_OFF();							            //Error-Clean
-		TCE0_ErrorTimer(_reset);              //ResetTimer
-		LCD_AutoSet_Symbol(page, min, sec);		//Clear Display
+		Error_OFF();
+		TCE0_ErrorTimer(_reset);
+		LCD_AutoSet_Symbol(page, min, sec);
 	}
 	return page;
 }
@@ -184,41 +186,45 @@ ErrTreat Error_Treatment(t_page page, unsigned char error)
   static unsigned char err = 0;
 
   if(error) err = error;
-  //--------------------------------------------------Temp
+
+  // temp
 	if(err & E_T)
 	{
-	  Error_Symbol(E_T);                              //ErrorSymbol
     Error_Action_Temp_SetError();
     treat.page = AutoSetDown;
     treat.err_treated = 1;
     err &= ~E_T;
 	}
 
-	//--------------------------------------------------Overpressure
+	// over-pressure
 	if(err & E_OP)
 	{
     if(page == AutoSetDown){
-	    if(Error_Action_OP_SetDown()) treat.err_treated = 1;}
+	    if(Error_Action_OP_SetDown()) 
+        treat.err_treated = 1;
+    }
 	  else{
-	    if(Error_Action_OP_Air(page)) treat.err_treated = 1;}
-    if(treat.err_treated) err &= ~E_OP;
+	    if(Error_Action_OP_Air(page)) 
+        treat.err_treated = 1;
+    }
+    if(treat.err_treated) 
+      err &= ~E_OP;
   }
 
-	//--------------------------------------------------Underpressure
+	// under-pressure
 	if(err & E_UP)
 	{
     if(Error_Action_UP_Air(page)){
       treat.err_treated = 1;
-      err &= ~E_OP;}
+      err &= ~E_OP;
+    }
 	}
 
-	//--------------------------------------------------MaxInTank
+	// max in tank
 	if(err & E_IT)
 	{
-    Error_Symbol(E_IT);                              //ErrorSymbol
     Error_Action_IT_SetError();
-    if((page == AutoAir) || (page == AutoAirOff) ||
-    (page == AutoCirc) || (page == AutoCircOff))
+    if((page == AutoAir) || (page == AutoAirOff) || (page == AutoCirc) || (page == AutoCircOff))
       treat.page = AutoSetDown;
     treat.err_treated = 1;
     err &= ~E_IT;
@@ -227,7 +233,6 @@ ErrTreat Error_Treatment(t_page page, unsigned char error)
 	//--------------------------------------------------MaxOUTTank
 	if(err & E_OT)
 	{
-    Error_Symbol(E_OT);
     Error_Action_OT_SetError();
     treat.err_treated = 1;
     err &= ~E_OT;
@@ -245,31 +250,32 @@ unsigned char Error_Action_OP_SetDown(void)
 {
   static unsigned char s_op = 0;
 
-  //--------------------------------------------------open
+  // open air ventil
   if(!s_op)
   {
-    Error_Symbol(E_OP);          //Symbol
-    Error_Action_OP_SetError();	 //AlarmAction
+    Error_Action_OP_SetError();
     OUT_Clr_Compressor();
-    P_VENTIL.OUTSET = O_AIR;      //OpenAir
+    P_VENTIL.OUTSET = O_AIR;
     s_op = 1;
   }
-  //--------------------------------------------------stopOpening
+
+  // stop opening air ventil and close it
   else if(s_op == 1)
   {
     if(TCE0_ErrorTimer(_ovent))
     {
-      P_VENTIL.OUTCLR= O_AIR;       //StopOpening
-      P_VENTIL.OUTSET= C_AIR;       //CloseAir
+      P_VENTIL.OUTCLR= O_AIR;
+      P_VENTIL.OUTSET= C_AIR;
       s_op = 2;
     }
   }
-  //--------------------------------------------------stclosing
+
+  // stop closing air ventil
   else if(s_op == 2)
   {
     if(TCE0_ErrorTimer(_cvent))
     {
-      P_VENTIL.OUTCLR= C_AIR;       //Stclosing
+      P_VENTIL.OUTCLR= C_AIR;
       s_op = 0;
       return 1;
     }
@@ -286,36 +292,44 @@ unsigned char Error_Action_OP_Air(t_page page)
 {
   static unsigned char s_op = 0;
 
-  //--------------------------------------------------close
+  // close 
   if(!s_op)
   {
-    Error_Symbol(E_OP);           //Symbol
-    Error_Action_OP_SetError();		//AlarmAction
+    Error_Action_OP_SetError();
     switch(page)
 	  {
       case AutoPumpOff:
-        if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))	  //Mammutpumpe?
-          P_VENTIL.OUTSET = C_CLRW;              break;
+        // mammut pump
+        if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
+          P_VENTIL.OUTSET = C_CLRW;              
+        break;
 
-      case AutoMud: P_VENTIL.OUTSET = C_MUD;     break;
+      case AutoMud: 
+        P_VENTIL.OUTSET = C_MUD;     
+        break;
 
       case AutoAirOff:
 		  case AutoCircOff:
-        if((LCD_Auto_InflowPump(page, 0, _state) == _on)
-        && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
+        if((LCD_Auto_InflowPump(page, 0, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
           P_VENTIL.OUTSET = C_RES;
         else{
           OUT_Clr_Compressor();
-          P_VENTIL.OUTSET = O_AIR;}           break;
+          P_VENTIL.OUTSET = O_AIR;}           
+        break;
 
       case AutoCirc:
       case AutoAir:
-		  case AutoZone:  P_VENTIL.OUTSET = C_AIR;  break;
-      default:                                  break;
+		  case AutoZone:  
+        P_VENTIL.OUTSET = C_AIR;  
+        break;
+
+      default:                                  
+        break;
 	  }
-    s_op= 1;
+    s_op = 1;
   }
-  //--------------------------------------------------stopClosing-open
+
+  // stop closing and open
   else if(s_op == 1)
   {
     if(TCE0_ErrorTimer(_cvent))
@@ -323,7 +337,8 @@ unsigned char Error_Action_OP_Air(t_page page)
       switch(page)
       {
         case AutoPumpOff:
-          if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))	  //Mammutpumpe?
+          // mamut pump
+          if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
           {
             P_VENTIL.OUTCLR= C_CLRW;
             P_VENTIL.OUTSET= O_CLRW;
@@ -353,7 +368,7 @@ unsigned char Error_Action_OP_Air(t_page page)
     }
   }
 
-  //--------------------------------------------------stopOpening
+  // stop opening
   else if(s_op == 2)
   {
     if(TCE0_ErrorTimer(_cvent))
@@ -361,24 +376,34 @@ unsigned char Error_Action_OP_Air(t_page page)
       switch(page)
       {
         case AutoPumpOff:
-          if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))	  //Mammutpumpe?
-            P_VENTIL.OUTCLR = O_CLRW;             break;
+          // mammut pump
+          if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
+            P_VENTIL.OUTCLR = O_CLRW;             
+          break;
 
-        case AutoMud: P_VENTIL.OUTCLR = O_MUD;    break;
+        case AutoMud: 
+          P_VENTIL.OUTCLR = O_MUD;    
+          break;
 
         case AutoAirOff:
         case AutoCircOff:
-          if((LCD_Auto_InflowPump(page, 0, _state) == _on)
-          && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
+          if((LCD_Auto_InflowPump(page, 0, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
             P_VENTIL.OUTCLR = O_RES;
-          else P_VENTIL.OUTCLR = C_AIR;           break;
+          else 
+            P_VENTIL.OUTCLR = C_AIR;
+          break;
 
         case AutoCirc:
         case AutoAir:
-        case AutoZone:  P_VENTIL.OUTCLR = O_AIR;  break;
-        default:                                  break;
+        case AutoZone:  
+          P_VENTIL.OUTCLR = O_AIR;
+          break;
+
+        default:                                  
+          break;
       }
-      s_op= 0;
+
+      s_op = 0;
       return 1;
     }
   }
@@ -396,28 +421,27 @@ unsigned char Error_Action_UP_Air(t_page page)
   {
     case AutoAirOff:
     case AutoCircOff:
-      if((LCD_Auto_InflowPump(page, 0, _state) ==_on) &&
-      (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
+      if((LCD_Auto_InflowPump(page, 0, _state) ==_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
       {
-        Error_Symbol(E_UP);
         Error_Action_UP_SetError();
         PORT_RelaisSet(R_COMP);
-        PORT_RelaisSet(R_EXT_COMP);		//Compressor ON
+        PORT_RelaisSet(R_EXT_COMP);
         return 1;
-      }                            break;
+      }                            
+      break;
 
     case AutoZone:
     case AutoPumpOff:
     case AutoCirc:
     case AutoAir:
     case AutoMud:
-      Error_Symbol(E_UP);
       Error_Action_UP_SetError();
       PORT_RelaisSet(R_COMP);
-      PORT_RelaisSet(R_EXT_COMP);		//Compressor ON
-      return 1;                    break;
+      PORT_RelaisSet(R_EXT_COMP);
+      return 1;                    
 
-    default:  return 1;                     break;
+    default:  
+      return 1;
   }
   return 0;
 }
@@ -436,11 +460,12 @@ void Error_Action_Temp_SetError(void)
 {
 	static unsigned char c = 0;
 
+  Error_Symbol(E_T);
 	c++;
 	if(c == 2)
 	{
-    Error_ON();                                     //ErrorOn
-    MEM_EEPROM_WriteAutoEntry(0, 1, Write_Error);	  //Write Error
+    Error_ON();
+    MEM_EEPROM_WriteAutoEntry(0, 1, Write_Error);
     Modem_CallAllNumbers();
 	}
 	if(c > 250) c = 0;
@@ -454,11 +479,13 @@ void Error_Action_Temp_SetError(void)
 void Error_Action_OP_SetError(void)
 {
 	static unsigned char c = 0;
+
+  Error_Symbol(E_OP);
 	c++;
 	if(c == 2)
 	{
-		if(MEM_EEPROM_ReadVar(ALARM_comp))	Error_ON();	//ErrorSignal-ON
-		MEM_EEPROM_WriteAutoEntry(0, 2, Write_Error);	  //Write Error
+		if(MEM_EEPROM_ReadVar(ALARM_comp))	Error_ON();
+		MEM_EEPROM_WriteAutoEntry(0, 2, Write_Error);
     Modem_CallAllNumbers();
 	}
 	if(c > 250) c = 0;
@@ -472,14 +499,16 @@ void Error_Action_OP_SetError(void)
 void Error_Action_UP_SetError(void)
 {
 	static unsigned char c = 0;
+
+  Error_Symbol(E_UP);
 	c++;
 	if(c == 2)
 	{
-		if(MEM_EEPROM_ReadVar(ALARM_comp))	Error_ON(); //ErrorSignal-ON
-		MEM_EEPROM_WriteAutoEntry(0, 4, Write_Error);	  //Write Error
+		if(MEM_EEPROM_ReadVar(ALARM_comp))	Error_ON();
+		MEM_EEPROM_WriteAutoEntry(0, 4, Write_Error);
     Modem_CallAllNumbers();
 	}
-	if(c > 250) c = 0;                             //NextError
+	if(c > 250) c = 0;
 }
 
 
@@ -490,14 +519,16 @@ void Error_Action_UP_SetError(void)
 void Error_Action_IT_SetError(void)
 {
 	static unsigned char c = 0;
+
+  Error_Symbol(E_IT);
 	c++;
 	if(c == 2)
 	{
     if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON();
-    MEM_EEPROM_WriteAutoEntry(0, 8, Write_Error);	    //WriteError
+    MEM_EEPROM_WriteAutoEntry(0, 8, Write_Error);
     Modem_CallAllNumbers();
 	}
-	if(c > 250) c = 0;                             //NextError
+	if(c > 250) c = 0;
 }
 
 /* ------------------------------------------------------------------*
@@ -507,14 +538,16 @@ void Error_Action_IT_SetError(void)
 void Error_Action_OT_SetError(void)
 {
 	static unsigned char c = 0;
+
+  Error_Symbol(E_OT);
 	c++;
 	if(c == 2)
 	{
     if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON();
-    MEM_EEPROM_WriteAutoEntry(0, 16, Write_Error);	//WriteError
+    MEM_EEPROM_WriteAutoEntry(0, 16, Write_Error);
     Modem_CallAllNumbers();
 	}
-	if(c > 250) c= 0;                             //NextError
+	if(c > 250) c = 0;
 }
 
 
@@ -525,34 +558,30 @@ void Error_Action_OT_SetError(void)
 
 void Error_Symbol(unsigned char err)
 {
-  if(err & E_T)	                          //Temp
+  // temp
+  if(err & E_T)
   {
     LCD_Write_Symbol_3(16, 134, n_grad);
   }
 
-  if((err & E_OP) || (err & E_UP))        //OverPressure
+  // over-pressure or under-pressure
+  if((err & E_OP) || (err & E_UP))
   {
     LCD_ClrSpace(6, 44, 6, 35);
     LCD_Write_Symbol_2(6, 45, n_alarm);
   }
 
-  if(err & E_IT)                          //Max in Tank
+  // max in tank
+  if(err & E_IT)
   {
     LCD_Write_Symbol_2(17, 1, n_alarm);
     LCD_TextButton(Auto, 0);
   }
 
-  if(err & E_OT)                          //Max out Tank
+  // max out tank
+  if(err & E_OT)
   {
     LCD_Write_Symbol_2(17, 90, n_alarm);
     LCD_TextButton(Setup, 0);
   }
 }
-
-
-
-
-
-/**********************************************************************\
- * END of file
-\**********************************************************************/

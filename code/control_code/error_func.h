@@ -46,7 +46,7 @@ typedef struct _ErrTreat
 void Error_ON(void);
 void Error_OFF(void);
 
-unsigned char Error_Read	(unsigned char err);
+unsigned char Error_Read(t_page page);
 
 t_page 		Error_Detection	(t_page page, int min, int sec);
 ErrTreat  Error_Treatment	(t_page page, unsigned char error);
