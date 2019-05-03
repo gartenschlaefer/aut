@@ -53,12 +53,14 @@ void PORT_Init(void)
 	PMIC.CTRL =	PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm;
 }
 
+/*
 void PORT_SoftwareRst(void)
 {
 	//Protection
 	CCP = 0xD8;
 	RST.CTRL= RST_SWRST_bm;
 }
+*/
 
 void PORT_Bootloader(void)
 {
@@ -147,7 +149,7 @@ void PORT_Ventilator(void)
  * 						FUNCTIONS Ventil
  * ==================================================================*/
 
-unsigned char PORT_Ventil(t_ventil ventil)
+unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
 {
   static unsigned char state = 0;
 
@@ -217,11 +219,19 @@ unsigned char PORT_Ventil(t_ventil ventil)
       P_VENTIL.OUTCLR= C_AIR | C_RES;  
       break;
 
-    case RESET_STATE: 
+    case SET_STATE_CLOSE:
+      state &= ~new_state;
+      break;
+
+    case SET_STATE_OPEN:
+      state |= new_state;
+      break;
+
+    case SET_STATE_ALL_CLOSED: 
       state = 0x00; 
       break;
 
-    case SET_STATE: 
+    case SET_STATE_ALL_OPEN: 
       state = 0x0F; 
       break;
 
@@ -262,7 +272,7 @@ void PORT_Ventil_AllOpen(void)
 	P_VENTIL.OUTCLR= O_CLRW;
 	TCC0_wait_ms(500);
 
-  PORT_Ventil(SET_STATE);
+  PORT_Ventil(SET_STATE_ALL_OPEN, 0);
 	Watchdog_Restart();
 }
 
@@ -294,16 +304,9 @@ void PORT_Ventil_AllClose(void)
 	P_VENTIL.OUTCLR= C_CLRW;
 	TCC0_wait_ms(500);
 
-  PORT_Ventil(RESET_STATE);
+  PORT_Ventil(SET_STATE_ALL_CLOSED, 0);
 	Watchdog_Restart();
 }
-
-void PORT_Ventil_AllOff(void)
-{
-	P_VENTIL.OUT= 0x00;
-}
-
-
 
 
 /* ------------------------------------------------------------------*
@@ -426,7 +429,7 @@ void PORT_Debug(void)
 
   refresh++;
 
-  if(refresh == 250)
+  if(refresh == 150)
   {
     refresh = 0;
 
@@ -453,7 +456,7 @@ void PORT_Debug(void)
       // ventils
       for(int ventil = 0; ventil < 4; ventil++)
       {
-        if(PORT_Ventil(READ_STATE) & (1<<ventil)) 
+        if(PORT_Ventil(READ_STATE, 0) & (1<<ventil)) 
           LCD_WriteStringFontNeg(y_pos_v, 18 + 18 * ventil, "1 ");
         else
           LCD_WriteStringFontNeg(y_pos_v, 18 + 18 * ventil, "0 ");

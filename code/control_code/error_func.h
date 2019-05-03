@@ -52,7 +52,6 @@ t_page 		Error_Detection	(t_page page, int min, int sec);
 ErrTreat  Error_Treatment	(t_page page, unsigned char error);
 void      Error_Symbol    (unsigned char err);
 
-unsigned char Error_Action_OP_SetDown (void);
 unsigned char Error_Action_OP_Air     (t_page page);
 unsigned char Error_Action_UP_Air	    (t_page page);
 
