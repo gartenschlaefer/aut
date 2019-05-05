@@ -375,6 +375,8 @@ unsigned char Modem_Call(TelNr nr)
 
 void Modem_CallAllNumbers(void)
 {
+  //*** modify this if calls should be enabled in debuging
+  if(DEBUG) return;
   TelNr nr;
   nr.id = 1;
   Modem_Call(nr);

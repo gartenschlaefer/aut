@@ -34,21 +34,21 @@
 #define MEM_INIT  0
 
 // Debug
-#define DEBUG     1
+#define DEBUG     0
 
 // SoftwareVersion
 #define SV1       1	      //x.-.-
 #define SV2       2	      //-.x.-
-#define SV3       11	      //-.-.x
+#define SV3       7	      //-.-.x
 
 // TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
 #define DEF_HOUR  0x12    //08:: = 0x08
-#define DEF_DAY   6       //Tag1 = Monday
-#define DEF_DATE  0x27    //__.x.x
+#define DEF_DAY   7       //Tag1 = Monday
+#define DEF_DATE  0x05    //__.x.x
 #define DEF_MONTH 0x05    //x.__.x
-#define DEF_YEAR  0x17    //x.x.20__
+#define DEF_YEAR  0x19    //x.x.20__
 
 
 
