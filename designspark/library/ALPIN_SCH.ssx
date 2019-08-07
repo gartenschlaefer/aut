@@ -49,12 +49,14 @@ lm211||8
 LM317||8
 L_v1||2
 MCP2515||18
+MCP4725||6
 MCP9700A||3
 MCP9800||5
 MODEM_CONN-80||80
 N-MOSFET||3
 NPN_Digital||3
 npn_v1||3
+npn_v2||4
 OK||4
 OPV||5
 OPVx2||8
@@ -80,6 +82,7 @@ varistor_v1||2
 XMEGA128A1||100
 XMEGA_A3||64
 XTAL||2
+XTR115||8
 z-diode_v1||2
 zenerDiode||2
 Z_DIODE||2
