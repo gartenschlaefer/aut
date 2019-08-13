@@ -11,7 +11,7 @@
 *	UltraSonic send and receive applications
 * ------------------------------------------------------------------
 *	Date:			    12.04.2015
-* lastChanges:  12.04.2015
+* lastChanges:  13.08.2019
 \**********************************************************************/
 
 
@@ -55,6 +55,7 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
     state = 0;
     CAN_USSREG(_reset, DISA);					      //WriteStatusReg
   }
+
   //--------------------------------------------------Exe
   else if(cmd == _exe)
   {
@@ -64,58 +65,83 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
       Sonic_StartMeasurement();	//SendPulses&Start
       state = 1;
     }
+
     //--------------------------------------------------EchoRecord
     else if(state == 1)
     {
-      sonic = ADC_ReadByteComplete();	//ReadByte
+      sonic = ADC_ReadByteComplete();
+
+      // read timer
+      time[a][0]= TCNT3L;
+      time[a][1]= TCNT3H;
+
+      // adc sonic echo trigger lever
       if(sonic >= SONIC_TRIGGER)
       {
-        TC3_Sonic_StopTimer();		    //TimerStop
-        time[a][0] = TCNT3L;			    //DistanceByte1
-        time[a][1] = TCNT3H;			    //DistanceByte2
-        if(a > 3) state = 2;			    //NextStep
+        // stop timer
+        TC3_Sonic_StopTimer();
+
+        // all trials done
+        if(a >= N_SHOTS - 1)
+        {
+          state = 2;
+        }
+        // more trials
         else
         {
-          TC2_16MHzWait_msQuery(_init, TSAFE);  //SafetyTimer
+          //SafetyTimer
+          TC2_16MHzWait_msQuery(_init, TSAFE);
           state = 4;
           a++;
         }
       }
+
+      // third timer var
       else if(TIFR3 & (1 << TOV3))	//UltraSonicTimeOut-80cm
       {
-        TIFR3 |= (1 << TOV3);			  //ResetFlag
-        time[a][2]++;				        //DistanceByte3
-        if(time[a][2] > 3)			    //TimeOut
+        TIFR3 |= (1 << TOV3);
+        time[a][2]++;
+      }
+
+      // send limit
+      else if (time[a][2] >= SEND_LIMIT_H && time[a][1] >= SEND_LIMIT_L)
+      {
+        // stop timer
+        TC3_Sonic_StopTimer();
+        
+        // all trials done
+        if(a >= N_SHOTS - 1)
         {
-          TC3_Sonic_StopTimer();	  //TimerStop
-          time[a][0] = TCNT3L;		  //DistanceByte1
-          time[a][1] = TCNT3H;		  //DistanceByte2
-          if(a > 3) state = 2;		  //NextStep
-          else
-          {
-            TC2_16MHzWait_msQuery(_init, TSAFE);		//SafetyTimer
-            state = 4;
-            a++;
-          }
+          state = 2;
+        }
+        // more trials
+        else
+        {
+          //SafetyTimer
+          TC2_16MHzWait_msQuery(_init, TSAFE);
+          state = 4;
+          a++;
         }
       }
     }
+
     //--------------------------------------------------Calc+StoreData
     else if(state == 2)
     {
-      for(a = 0; a < 5; a++)
+      for(a = 0; a < N_SHOTS; a++)
       {
         result[a] = Sonic_Time2mm(&time[a][0]);	//Calculate
         calc = calc + result[a];						    //Sum
         time[a][2] = 0;								  //ResetTime[2](NoTC-Counter)
       }
-      calc = calc / 5;
+      calc = calc / N_SHOTS;
       CAN_USDDREG(_write, calc);				    //WriteDataReg
       CAN_USSREG(_set, DISA);					      //WriteStatusReg
       TC2_16MHzWait_msQuery(_init, TSAFE);	//SafetyTimer
       a = 0;									              //ResetIndex
       state = 3;								            //2SafetyTimer
     }
+
     //--------------------------------------------------Success
     else if(state == 3)
     {
@@ -125,6 +151,7 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
         return _wait;						//Back2Wait
       }
     }
+
     //--------------------------------------------------NoSuccess
     else if(state == 4)
     {
@@ -152,31 +179,38 @@ t_UScmd Sonic_OneShot(void)
 		Sonic_StartMeasurement();	//SendPulses&Start
 		state = 1;
 	}
+
 	//--------------------------------------------------EchoRecord
 	else if(state == 1)
 	{
-		sonic = ADC_ReadByteComplete();	//ReadByte
+		sonic = ADC_ReadByteComplete();
+
+    // read timer
+    time[0]= TCNT3L;
+    time[1]= TCNT3H;
+
+    // adc sonic echo trigger lever
 		if(sonic >= SONIC_TRIGGER)
 		{
 			TC3_Sonic_StopTimer();	//TimerStop
-			time[0]= TCNT3L;			  //DistanceByte1
-			time[1]= TCNT3H;			  //DistanceByte2
 			state = 2;					    //NextStep
 		}
 
+    // third timer var
 		else if(TIFR3 & (1<<TOV3))	//UltraSonicTimeOut-80cm
 		{
 			TIFR3 |= (1 << TOV3);			//ResetFlag
 			time[2]++;					      //DistanceByte3
-			if(time[2] > 3)
-			{
-				TC3_Sonic_StopTimer();	//TimerStop
-				time[0] = TCNT3L;			  //DistanceByte1
-				time[1] = TCNT3H;			  //DistanceByte2
-				state = 2;					    //NextStep
-			}
 		}
+
+    // send limit
+    else if (time[2] >= SEND_LIMIT_H && time[1] >= SEND_LIMIT_L)
+    {
+      TC3_Sonic_StopTimer();
+      state = 2;
+    }
 	}
+
 	//--------------------------------------------------StoreData
 	else if(state == 2)
 	{
@@ -187,6 +221,7 @@ t_UScmd Sonic_OneShot(void)
 		TC2_16MHzWait_msQuery(_init, TSAFE);		//SafetyTimer
 		state = 3;
 	}
+
 	//--------------------------------------------------SafetyTimer
 	else if(state == 3)
 	{
@@ -316,12 +351,13 @@ int Sonic_Time2mm(unsigned char *p_time)
 	cycle = ((cycle << 8) | p_time[0]);
   temp = ((CAN_USDTREG(_read, 0) >> 8) & 0x00FF);
 
-
+  // calculate sonic velocity
   if(temp & 0x80){
     temp &= 0x7F;
     c = 3315 - (6 * temp);}         //331,5m/s - 0,6 * °C
   else c = 3315 + (6 * temp);       //331,5m/s + 0,6 * °C
 
+  // calculate distance 2 ways
 	us = ((cycle * 625) / 10000);	    //MicroSecs 	0,0625=1Zyclus
 	um = ((us * c) / 20);		          //MicroMeters s=c*T=343,5m/s*t
 	mm = (um / 1000) + SONIC_OFFSET;  //MilliMeters
@@ -329,11 +365,3 @@ int Sonic_Time2mm(unsigned char *p_time)
 	return mm;
 }
 
-
-
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/

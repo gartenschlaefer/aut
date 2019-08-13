@@ -21,10 +21,10 @@
  * ==================================================================*/
 
 //*-*Configuration
-
 #define SONIC_TRIGGER	  230		  //Trigger Value
 #define TSAFE           200     //Time2nextSend in ms
-#define SVERS           0x11    //SortwareVersion x.x
+#define SVERS           0x12    //SortwareVersion x.x
+#define N_SHOTS          5
 
 //*-*Sonic Config - 125kHz
 #define SONIC_OFFSET  33      //Offset in mm - 125kHz
@@ -32,6 +32,8 @@
 #define PULSEWIDTH_IC 128
 #define PULSEWIDTH_OC 64
 #define STVALUE       0x30    //StartValue172mm - 125kHz
+#define SEND_LIMIT_H  0x04
+#define SEND_LIMIT_L  0x43
 //*/
 
 
@@ -41,6 +43,8 @@
 #define PULSEWIDTH_IC 212
 #define PULSEWIDTH_OC 106
 #define STVALUE       0x52   //StartValue300mm - 75kHz
+#define SEND_LIMIT_H  0x07
+#define SEND_LIMIT_L  0x1B
 //*/
 
 
