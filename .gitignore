@@ -17,7 +17,7 @@
 *.lst
 *.dep/
 *.sym
-sonic_code_app/sonic_code_app
-sonic_code_boot/sonic_code_boot
-io-can-modul_code/io_can_modul_code.hex
+code/sonic_code_app/sonic_code_app
+code/sonic_code_boot/sonic_code_boot
+code/io-can-modul_code/io_can_modul_code.hex
 

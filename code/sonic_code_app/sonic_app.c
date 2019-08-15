@@ -41,7 +41,6 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
   unsigned long calc = 0;
 	static unsigned char state = 0;
 	static unsigned char a = 0;
-	int result[5] = {0,0,0,0,0};
 	static unsigned char time[5][3] = {
     {0x00, 0x00, 0x00},
     {0x00, 0x00, 0x00},
@@ -103,12 +102,13 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
         time[a][2]++;
       }
 
-      // send limit
+      // send time limit
       else if (time[a][2] >= SEND_LIMIT_H && time[a][1] >= SEND_LIMIT_L)
       {
         // stop timer
         TC3_Sonic_StopTimer();
-        
+        time[a][2] = 0xFF;
+
         // all trials done
         if(a >= N_SHOTS - 1)
         {
@@ -128,18 +128,32 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
     //--------------------------------------------------Calc+StoreData
     else if(state == 2)
     {
+      int n_failed_trials = 0;
+
+      // average
       for(a = 0; a < N_SHOTS; a++)
       {
-        result[a] = Sonic_Time2mm(&time[a][0]);	//Calculate
-        calc = calc + result[a];						    //Sum
-        time[a][2] = 0;								  //ResetTime[2](NoTC-Counter)
+        // too far, limit reached
+        if (time[a][2] == 0xFF)
+        {
+          n_failed_trials++;
+          time[a][2] = 0;
+          continue;
+        }
+        // calculation
+        calc = calc + Sonic_Time2mm(&time[a][0]);
+        time[a][2] = 0;
       }
-      calc = calc / N_SHOTS;
-      CAN_USDDREG(_write, calc);				    //WriteDataReg
-      CAN_USSREG(_set, DISA);					      //WriteStatusReg
-      TC2_16MHzWait_msQuery(_init, TSAFE);	//SafetyTimer
-      a = 0;									              //ResetIndex
-      state = 3;								            //2SafetyTimer
+
+      // normalize
+      calc = calc / (N_SHOTS - n_failed_trials);
+
+      // write registers and reset
+      CAN_USDDREG(_write, calc);
+      CAN_USSREG(_set, DISA);
+      TC2_16MHzWait_msQuery(_init, TSAFE);
+      a = 0;
+      state = 3;
     }
 
     //--------------------------------------------------Success
@@ -207,6 +221,7 @@ t_UScmd Sonic_OneShot(void)
     else if (time[2] >= SEND_LIMIT_H && time[1] >= SEND_LIMIT_L)
     {
       TC3_Sonic_StopTimer();
+      time[2] = 0xFF;
       state = 2;
     }
 	}
@@ -214,11 +229,11 @@ t_UScmd Sonic_OneShot(void)
 	//--------------------------------------------------StoreData
 	else if(state == 2)
 	{
-		result = Sonic_Time2mm(&time[0]);	    //Calculate
-		CAN_USDDREG(_write, result);			    //WriteDataReg
-		CAN_USSREG(_set, DISA);					      //WriteStatusReg
-		time[2] = 0;								          //Reset Time[2]
-		TC2_16MHzWait_msQuery(_init, TSAFE);		//SafetyTimer
+		result = Sonic_Time2mm(&time[0]);
+		CAN_USDDREG(_write, result);
+		CAN_USSREG(_set, DISA);
+		time[2] = 0;
+		TC2_16MHzWait_msQuery(_init, TSAFE);
 		state = 3;
 	}
 
@@ -345,6 +360,12 @@ int Sonic_Time2mm(unsigned char *p_time)
 	unsigned long mm = 0;
 	char temp = 0;
   long c = 0;
+
+  // time limit
+  if ( p_time[2] == 0xFF)
+  {
+    return 0;
+  }
 
 	cycle = p_time[2];
 	cycle = ((cycle << 8) | p_time[1]);
