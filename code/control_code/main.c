@@ -37,9 +37,14 @@ int main(void)
 {
 	// start page
 	t_page 	page = DataPage;
-  // Init
+
+	// Init
 	Basic_Init();
-  LCD_Backlight(_on);
+	LCD_Backlight(_on);
+
+	//*-* modem test loop
+	Modem_Test();
+
   // Input
   struct InputHandler input_handler;
   struct Modem modem;

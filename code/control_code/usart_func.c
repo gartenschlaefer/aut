@@ -22,9 +22,11 @@
 #include "lcd_driver.h"
 #include "lcd_app.h"
 #include "usart_func.h"
+#include "modem_driver.h"
 
 
-
+// *-* remove debug
+int count_i = 0;
 
 /* ==================================================================*
  * 						Interrupts
@@ -32,7 +34,20 @@
 
 ISR(USARTF1_RXC_vect)
 {
-	USART_Rx_Buffer(_add, USARTF1.DATA);
+	// read data from internal register
+	unsigned char data = USARTF1.DATA;
+
+	//*-* remove debug
+	LCD_WriteValue3(20, 130, count_i);
+	LCD_WriteValue3(count_i*2, 100, data);
+	count_i++;
+	if (count_i > 8)
+	{
+	  count_i = 0;
+  }
+
+  // add byte to buffer
+	USART_Rx_Buffer(_add, data);
 }
 
 
@@ -57,15 +72,31 @@ ISR(USARTF1_RXC_vect)
 
 void USART_Init(void)
 {
-	USARTF1.CTRLA = USART_RXCINTLVL_MED_gc;		//RX-Interrupt-Enabled
+	// Port infos
+	// RX - PF6
+	// TX - PF7
 
-	USARTF1.CTRLB = USART_RXEN_bm	|					  //RX-enabled
-						      USART_TXEN_bm;						//TX-enabled
+	// global interrupts dissable
+	cli();
 
+	// ports init
+	Modem_Port_Init();
+
+	// Interrupts, MediumLevel, LowLevel Interrupts
+	//PMIC.CTRL =	PMIC_LOLVLEN_bm;
+	PMIC.CTRL =	PMIC_MEDLVLEN_bm;
+
+	// interrupt enable
+	USARTF1.CTRLA = USART_RXCINTLVL_MED_gc;
+
+	// transmission enable
+	USARTF1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+
+	// modes: asynch, noparity, 2stop bits, 8bit
 	USARTF1.CTRLC =	USART_CMODE_ASYNCHRONOUS_gc	|		//AsynchronousMode
 						      USART_PMODE_DISABLED_gc		  |		//NoParity
-						      //USART_SBMODE_bm			|		//2StopBits
-						      USART_CHSIZE_8BIT_gc;				//8Bit
+						      //USART_SBMODE_bm			|					//2StopBits
+						      USART_CHSIZE_8BIT_gc;
 
 	//*------------------------------------------*
 	USARTF1.BAUDCTRLA =	123;								//115200 - Bsel=123
@@ -79,6 +110,9 @@ void USART_Init(void)
 	USARTF1.BAUDCTRLA =	12;									//9600 - Bsel=12
 	USARTF1.BAUDCTRLB =	(3<<4);							//9600 - Bscale=3
 	//------------------------------------------*/
+
+	// global interrupts enable
+	sei();
 }
 
 
@@ -88,16 +122,21 @@ void USART_Init(void)
 
 int USART_ReadByte(void)
 {
-	unsigned char read=0;
-
+  // check status
 	if(USARTF1.STATUS & USART_RXCIF_bm)
 	{
-		read= USARTF1.DATA;						//ReadDataReg
-		USARTF1.STATUS |= USART_RXCIF_bm;		//ResetFlag
-		return (0x0100 | read);					//ReturnData
+		// read data
+		unsigned char read= USARTF1.DATA;
+
+		// reset flag
+		USARTF1.STATUS |= USART_RXCIF_bm;
+
+		// return message
+		return (0x0100 | read);
 	}
 
-	return 0x0000;				//NoMessage
+	// no message
+	return 0x0000;
 }
 
 
@@ -110,18 +149,26 @@ unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
 	static unsigned char rx_buffer[50]={0};
 	static unsigned char pos=0;
 
+	// add byte to buffer
 	if(cmd == _add)
 	{
+		if(pos >= 49)
+		{
+			return &rx_buffer[0];
+		}
 		rx_buffer[pos+1] = c;			//store char
 		pos++;
 	}
 
+	// get zeros position with num of entries
 	else if(cmd == _read)
 	{
-		rx_buffer[0]= pos;
+		// amount of entries
+		rx_buffer[0] = pos;
 		return &rx_buffer[0];
 	}
 
+	// clear buffer
 	else if(cmd == _clear)
 	{
 		for(pos=0; pos<50; pos++)
@@ -141,10 +188,10 @@ unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
 
 void USART_WriteByte(char write)
 {
-	while(!(USARTF1.STATUS & USART_DREIF_bm));	//DataRegEmpty?
-	USARTF1_DATA= write;						//ReadDataReg
-	while(!(USARTF1.STATUS & USART_TXCIF_bm));	//waitUntilSent
-	USARTF1.STATUS |= USART_TXCIF_bm;			//ResetFlag
+	while(!(USARTF1.STATUS & USART_DREIF_bm));
+	USARTF1_DATA = write;
+	while(!(USARTF1.STATUS & USART_TXCIF_bm));
+	USARTF1.STATUS |= USART_TXCIF_bm;
 }
 
 

@@ -15,7 +15,7 @@
 \**********************************************************************/
 
 // Include guard
-#ifndef MODEM_DRIVER_H   
+#ifndef MODEM_DRIVER_H
 #define MODEM_DRIVER_H
 
 /* ==================================================================*
@@ -25,9 +25,12 @@
 #define MO_HANG_UP_TIME   25
 #define MO_STARTUP_DELAY  200
 
-#define MO_PW_OFF    (PORTF.IN & PIN2_bm)
-#define MO_PORT_ON   (PORTF.OUTSET =	PIN0_bm)
-#define MO_PORT_OFF  (PORTF.OUTCLR =	PIN0_bm)
+#define MO_PW_OFF    (!(PORTF.IN & PIN2_bm))
+#define MO_PORT_ON   (PORTF.OUTSET = PIN0_bm)
+#define MO_PORT_OFF  (PORTF.OUTCLR = PIN0_bm)
+
+#define CHAR_CR (0x0D)
+#define CHAR_LF (0x0A)
 
 
 struct Modem {
@@ -51,8 +54,8 @@ void Modem_TurnOff (void);
 
 void Modem_ReadPWR(void);
 void Modem_ReadSLED(t_page page);
+unsigned char Modem_CTS_ready(void);
 void Modem_ReadCTS(void);
-void Modem_ReadRxD(void);
 
 char Modem_TelNr(t_FuncCmd cmd, TelNr nr);
 
@@ -60,6 +63,9 @@ unsigned char Modem_Call(TelNr nr);
 void Modem_CallAllNumbers(void);
 
 void Modem_SendTest(void);
+void Modem_WriteSMS(void);
+void Modem_DialNumber(void);
+void Modem_GetSoftwareversion(void);
 void Modem_Test(void);
 
 #endif

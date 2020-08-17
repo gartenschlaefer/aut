@@ -38,19 +38,19 @@
 
 void PORT_Init(void)
 {
-	// PORT Direction
-	P_OPTO.DIRCLR = 	PIN3_bm | OC1 | OC2 | OC3 | OC4;
+	// inputs
+	P_OPTO.DIRCLR = PIN3_bm | OC1 | OC2 | OC3 | OC4;
+
+	// outputs
 	P_VENTIL.DIR = 	0xFF;
 	P_RELAIS.DIR = 	0xFF;
 
-  // Pins PULL UP
+	// Pins PULL UP
 	PORTCFG.MPCMASK = 0xFF;
-  P_OPTO.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
-  // FirmwareUpdate PullUp
-	PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
+	P_OPTO.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
 
-	// Interrupts, MediumLevel, LowLevel Interrupts
-	PMIC.CTRL =	PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm;
+	// FirmwareUpdate PullUp
+	PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
 }
 
 /*

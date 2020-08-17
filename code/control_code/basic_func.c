@@ -45,39 +45,44 @@
 
 void Basic_Init(void)
 {
-  Clock_Init();						    //Init Clock
-	PORT_Init();						    //Init PORT
-	ADC_Init();							    //Init ADC-Channels
-	sei();
+	// ports init
+	Clock_Init();
+	PORT_Init();
+	ADC_Init();
 
-	USART_Init();						    //Init USART
-	TWI_Master_Init();					//Init TWI
-	TWI2_Master_Init();					//Init TWI2
+	// communication init
+	USART_Init();
+	TWI_Master_Init();
+	TWI2_Master_Init();
 
-	LCD_HardwareRst();					//Display Reset
-	TCC0_Main_Wait();					  //Wait 200ms
-	LCD_Init();                 //Init LCD
-	TCC0_Main_Wait();					  //Wait 200ms
-	LCD_Clean();						    //Display Clean
+	// display init
+	LCD_HardwareRst();
+	TCC0_Main_Wait();
+	LCD_Init();
+	TCC0_Main_Wait();
+	LCD_Clean();
 
+	// Memory init
   if(MEM_INIT) Basic_Init_Mem();
 
-  Watchdog_Init();					  //Init Watchdog
-  MCP7941_Init();						  //TimerIC
-	AD8555_Init();						  //InitAD8555 MPX-Amplifier
-	CAN_Init();							    //InitMCP2515 CAN-Controller
-  Modem_Port_Init();               //InitModem
+  // Watchdog
+  Watchdog_Init();
 
-	TCC0_Main_Wait();					        //Wait 200ms
+  // Devices Init
+  MCP7941_Init();
+	AD8555_Init();
+	CAN_Init();
+	TCC0_Main_Wait();
 
 	//--------------------------------------------------JumptoApp
-  TCE1_WaitMilliSec_Init(25);	    //SafetyTimer
-  CAN_TxCmd(_app);				        //CANTxCmd
+  TCE1_WaitMilliSec_Init(25);
+  CAN_TxCmd(_app);
   while(CAN_RxACK() != _ack)
     if(TCE1_Wait_Query()) break;
   TCE0_Stop();
 
-	TCD1_MainAuto_SafetyTC(_init);		//SafetyTimerifTimerICfail
+  // Safety Timer
+	TCD1_MainAuto_SafetyTC(_init);
 }
 
 
@@ -150,11 +155,4 @@ void Watchdog_Restart(void)
 	WDT_RESET;
 }
 
-
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/
 
