@@ -26,7 +26,8 @@
 
 
 // *-* remove debug
-int count_i = 0;
+//int count_i = 0;
+//int count_j = 0;
 
 /* ==================================================================*
  * 						Interrupts
@@ -37,14 +38,16 @@ ISR(USARTF1_RXC_vect)
 	// read data from internal register
 	unsigned char data = USARTF1.DATA;
 
-	//*-* remove debug
+	/*-* remove debug
 	LCD_WriteValue3(20, 130, count_i);
-	LCD_WriteValue3(count_i*2, 100, data);
+	LCD_WriteValue3(count_i*2, 80+20*count_j, data);
 	count_i++;
-	if (count_i > 8)
+	if (count_i > 10)
 	{
 	  count_i = 0;
+	  count_j++;
   }
+  //*/
 
   // add byte to buffer
 	USART_Rx_Buffer(_add, data);

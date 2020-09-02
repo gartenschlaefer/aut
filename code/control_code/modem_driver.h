@@ -31,6 +31,8 @@
 
 #define CHAR_CR (0x0D)
 #define CHAR_LF (0x0A)
+#define CHAR_ESC (0x1B)
+#define CHAR_CTR_Z (0x1A)
 
 
 struct Modem {
