@@ -65,9 +65,11 @@ unsigned char Modem_Call(TelNr nr);
 void Modem_CallAllNumbers(void);
 
 void Modem_SendTest(void);
-void Modem_WriteSMS(void);
+void Modem_Test(void);
+
+void Modem_WriteSMS(char msg[]);
 void Modem_DialNumber(void);
 void Modem_GetSoftwareversion(void);
-void Modem_Test(void);
+void Modem_Shutdown(void);
 
 #endif

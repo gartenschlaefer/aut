@@ -52,21 +52,22 @@ void Modem_init(struct Modem *mo)
 
 void Modem_Port_Init(void)
 {
+  // outputs
 	PORTF.DIR = PIN0_bm |		//PF0-ModemOn-Output
               PIN1_bm	|		//PF1-ModemReset-Output
               PIN4_bm	|		//PF4-ModemRTS-Output
               PIN7_bm;		//PF7-ModemTxD-Output
 
+  // inputs
 	PORTCFG.MPCMASK =	PIN2_bm	|		//PF2-ModemPWRmonitor-Input
                     PIN3_bm	|		//PF3-ModemSLED-Input
                     PIN5_bm	|		//PF5-ModemCTS-Input
                     PIN6_bm;		//PF6-ModemRxD-Input
 
-  PORTF.PIN2CTRL = PORT_OPC_WIREDANDPULL_gc | PORT_INVEN_bm;	//Pins PULL UP
-  //PORTF.PIN2CTRL = PORT_OPC_WIREDORPULL_gc;
-  //PORTF.PIN2CTRL = PORT_OPC_PULLUP_gc;
-  //PORTF.PIN2CTRL = PORT_OPC_BUSKEEPER_gc;
+  //Pins PULL UP and inverted
+  PORTF.PIN2CTRL = PORT_OPC_WIREDANDPULL_gc | PORT_INVEN_bm;
 
+  // config
 	PORTF.OUTCLR = (PIN0_bm | PIN1_bm | PIN4_bm | PIN7_bm);
 	PORTF.OUTSET = (PIN2_bm | PIN3_bm | PIN5_bm | PIN6_bm);
 
@@ -326,21 +327,22 @@ unsigned char Modem_Call(TelNr nr)
 {
   nr.pos = 0;
   TCC0_wait_us(25);
-  //NoNumber
+
+  // NoNumber selected
   if(Modem_TelNr(_read, nr) == 11) return 1;
 
   //--------------------------------------------------DialNumber
-	USART_WriteString("AT+FCLASS=8");   //EnablePhone
-	USART_WriteByte(CHAR_CR);						  //CR
-	TCC0_wait_ms(100);                  //wait
-	USART_WriteString("ATD+");		      //CallHeader
+	USART_WriteString("AT+FCLASS=8");
+	USART_WriteByte(CHAR_CR);
+	TCC0_wait_ms(100);
+	USART_WriteString("ATD+");
 
   for(nr.pos= 0; ((nr.tel != 11) && (nr.pos < 16)); nr.pos++)
   {
     nr.tel= Modem_TelNr(_read, nr);
     if(nr.tel != 11) USART_WriteByte(nr.tel+48);
   }
-  USART_WriteByte(CHAR_CR);						    //CR
+  USART_WriteByte(CHAR_CR);
 
   //--------------------------------------------------Wait+HangUp
   LCD_WriteMyFont(16, 119, nr.id);
@@ -354,15 +356,19 @@ unsigned char Modem_Call(TelNr nr)
       point_pos = 0;
       LCD_ClrSpace(16,119,2,41);
     }
-    LCD_WriteMyFont(16, 123 + point_pos * 4, 22);  //...
+
+    // ...
+    LCD_WriteMyFont(16, 123 + point_pos * 4, 22);
     point_pos++;
     TCC0_wait_sec(1);
   }
+
   //DisconnectCall
   USART_WriteString("ATH");
   USART_WriteByte(CHAR_CR);
   TCC0_wait_sec(1);
   LCD_ClrSpace(16,119,2,41);
+
   return 0;
 }
 
@@ -386,70 +392,47 @@ void Modem_CallAllNumbers(void)
 /* ------------------------------------------------------------------*
  * 						Modem SendTest
  * ------------------------------------------------------------------*/
+
+// helper var
 int call_done = 0;
+
 void Modem_SendTest(void)
 {
-	// data allowed from modem
-	PORTF.OUTSET = PIN4_bm;				//RTS-Off
+	// data not allowed from modem
+	PORTF.OUTSET = PIN4_bm;
 
-	if (Modem_CTS_ready())
-	{
+  if (!call_done)
+  {
+      // dial number
+      Modem_DialNumber();
 
-		// USART_WriteString("AT");
-		//USART_WriteString("AT#SELINT?");
-		//USART_WriteString("AT#SIMDET=1");
+      // sms
+      //Modem_WriteSMS("msg 1");
 
-		//USART_WriteByte(CHAR_LF);
-		//USART_WriteByte(CHAR_CR);
-
-    //USART_WriteString("AT+ICF?");
-    //USART_WriteByte(CHAR_CR);
-
-        if (!call_done)
-        {
-            // dial number
-            //Modem_DialNumber();
-            Modem_WriteSMS();
-            //USART_WriteString("AT");
-            //USART_WriteByte(CHAR_CR);
-            call_done = 1;
-        }
-
-
-		//Modem_GetSoftwareversion();
-		//LCD_WriteValue3(14, 130, 42);
-
-		/*---------------------------------------------PortSpeed
-		USART_WriteString("AT+IPR=115200");
-		USART_WriteString("");
-		USART_WriteByte(CHAR_CR);						//CR
-		//---------------------------------------------*/
-
-		/*---------------------------------------------ShutDown
-		USART_WriteString("AT#SHDN");
-		USART_WriteByte(CHAR_CR);						//CR
-		//---------------------------------------------*/
-	}
+      //USART_WriteString("AT");
+      //USART_WriteByte(CHAR_CR);
+      call_done = 1;
+  }
 
 	// data allowed from modem
-	PORTF.OUTCLR = PIN4_bm;				//RTS-Off
+	PORTF.OUTCLR = PIN4_bm;
 }
-
 
 
 void Modem_Test(void)
 {
-	LCD_WriteStringFont(1, 10, "Hallo Modem");
-	//Modem_Port_Init();
 
+  // some text
+	LCD_WriteStringFont(1, 10, "Modem");
+  LCD_WriteStringFont(4, 30,  "PWR");
+  LCD_WriteStringFont(12, 30, "CTS");
+
+  // modem init
 	struct Modem modem;
   Modem_init(&modem);
 
-	LCD_WriteStringFont(4, 30,	"PWR");
-	LCD_WriteStringFont(12, 30,	"CTS");
-
+  // timers
 	TCC0_wait_sec(1);
-
 	TCF1_WaitSec_Init(3);
 
 	// test page
@@ -458,12 +441,13 @@ void Modem_Test(void)
   // RTS off
   PORTF.OUTCLR = PIN4_bm;
 
-
+  // wait variable
   int wait_var = 0;
 
   // loop
 	while(1)
 	{
+    // Watchdog
 	  Watchdog_Restart();
 
 	  // check modem status -> turn on
@@ -473,26 +457,68 @@ void Modem_Test(void)
 		Modem_ReadPWR();
 		Modem_ReadCTS();
 
-
+    // time instance
 		if(TCF1_Wait_Query())
 		{
+      // add counter
       wait_var++;
 
-      if (wait_var == 5)
+      // wait for ready modem
+      if (Modem_CTS_ready())
       {
+
+        // send
+        if (wait_var == 5)
+        {
           // send something
+          LCD_WriteStringFont(15, 30, "sent");
           Modem_SendTest();
+        }
+
+        // read buffer
+        else
+        {
+          unsigned char *p_rec = USART_Rx_Buffer(_read, 0);
+          unsigned char len = *p_rec;
+          unsigned char i = 0;
+          unsigned char j = 0;
+          p_rec++;
+
+          // print length
+          LCD_WriteValue2(20, 5, len);
+
+          // print message
+          while(len)
+          {
+            LCD_WriteValue3(i*2, 70+30*j, *p_rec);
+            //LCD_WriteFont(i*2, 100+30*j, *p_rec);
+            p_rec++;
+            len--;
+            i++;
+
+            if (i > 11)
+            {
+              i = 0;
+              j++;
+            }
+            if (j > 2)
+            {
+              j = 0;
+            }
+
+          }
+
+          // clear buffer
+          USART_Rx_Buffer(_clear, 0);
+        }
       }
 
       else
       {
-        unsigned char *p_rec = USART_Rx_Buffer(_read, 0);
-        unsigned char len = *p_rec;
-        p_rec++;
-
-        LCD_WriteValue2(20, 5, len);
+        wait_var = 0;
       }
 
+      // see if it still runs
 			LCD_DeathMan(0, 0);
 		}
 
@@ -519,18 +545,22 @@ void Modem_Test(void)
 
 	}
 }
-//*/
 
 
-void Modem_WriteSMS(void)
+void Modem_WriteSMS(char msg[])
 {
 
   // text mode
   USART_WriteString("AT+CMGF=1");
   USART_WriteByte(CHAR_CR);
 
+  // wait
+  //TCC0_wait_ms(10);
+
   USART_WriteString("AT+CNMI=1,1,0,0,0");
   USART_WriteByte(CHAR_CR);
+  
+  //TCC0_wait_ms(10);
 
   USART_WriteString("AT+CMGS=");
   USART_WriteByte(0x22);
@@ -538,37 +568,14 @@ void Modem_WriteSMS(void)
   USART_WriteByte(0x22);
   USART_WriteByte(CHAR_CR);
 
-  USART_WriteString(">TEST");
+  //TCC0_wait_ms(10);
+  
+  // message here
+  USART_WriteString(msg);
   USART_WriteByte(CHAR_CTR_Z);
   USART_WriteByte(CHAR_CR);
-
-  /*
-	//Parameters
-	USART_WriteString("AT+CSMP=17,168,0,240");
-	USART_WriteByte(CHAR_CR);
-	TCC0_wait_ms(10);
-
-	USART_WriteString("AT+CNMI=1,1,0,0,0");
-	USART_WriteByte(CHAR_CR);
-	TCC0_wait_ms(10);
-
-	//LCD_Pin_WriteOK(1);
-
-	USART_WriteString("AT+CMGW=");
-	USART_WriteByte(0x22);
-	USART_WriteString("+436802104231");
-	USART_WriteByte(0x22);
-  USART_WriteByte(CHAR_CR);
-
-	USART_WriteString(">TEST");
-	USART_WriteByte(CHAR_ESC);
-	USART_WriteByte(CHAR_CR);
-	TCC0_wait_ms(10);
-
-	USART_WriteString("AT+CMSS=1");
-	USART_WriteByte(CHAR_CR);
-	TCC0_wait_ms(10);
-  */
+  
+  TCC0_wait_ms(10);
 }
 
 
@@ -576,7 +583,7 @@ void Modem_DialNumber(void)
 {
 	USART_WriteString("AT+FCLASS=8");
 	USART_WriteByte(CHAR_CR);
-	TCC0_wait_sec(1);
+  TCC0_wait_ms(100);
 	USART_WriteString("ATD+436802104231");
 	USART_WriteByte(CHAR_CR);
 }
@@ -587,6 +594,64 @@ void Modem_GetSoftwareversion(void)
 	USART_WriteString("AT+CGMR");
 	USART_WriteByte(CHAR_CR);
 }
+
+
+void Modem_Shutdown(void)
+{
+  USART_WriteString("AT#SHDN");
+  USART_WriteByte(CHAR_CR);
+}
+
+
+/* modem crap
+
+  // USART_WriteString("AT");
+  //USART_WriteString("AT#SELINT?");
+  //USART_WriteString("AT#SIMDET=1");
+
+  //USART_WriteByte(CHAR_LF);
+  //USART_WriteByte(CHAR_CR);
+
+  //USART_WriteString("AT+ICF?");
+  //USART_WriteByte(CHAR_CR);
+
+  //Modem_GetSoftwareversion();
+  //LCD_WriteValue3(14, 130, 42);
+
+  // PortSpeed
+  USART_WriteString("AT+IPR=115200");
+  USART_WriteString("");
+  USART_WriteByte(CHAR_CR);
+
+
+  // SMS
+
+  //Parameters
+  USART_WriteString("AT+CSMP=17,168,0,240");
+  USART_WriteByte(CHAR_CR);
+  TCC0_wait_ms(10);
+
+  USART_WriteString("AT+CNMI=1,1,0,0,0");
+  USART_WriteByte(CHAR_CR);
+  TCC0_wait_ms(10);
+
+  //LCD_Pin_WriteOK(1);
+
+  USART_WriteString("AT+CMGW=");
+  USART_WriteByte(0x22);
+  USART_WriteString("+436802104231");
+  USART_WriteByte(0x22);
+  USART_WriteByte(CHAR_CR);
+
+  USART_WriteString(">TEST");
+  USART_WriteByte(CHAR_ESC);
+  USART_WriteByte(CHAR_CR);
+  TCC0_wait_ms(10);
+
+  USART_WriteString("AT+CMSS=1");
+  USART_WriteByte(CHAR_CR);
+  TCC0_wait_ms(10);
+*/
 
 
 

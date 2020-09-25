@@ -48,18 +48,20 @@ void Error_OFF(void);
 
 unsigned char Error_Read(t_page page);
 
-t_page 		Error_Detection	(t_page page, int min, int sec);
-ErrTreat  Error_Treatment	(t_page page, unsigned char error);
-void      Error_Symbol    (unsigned char err);
+t_page Error_Detection(t_page page, int min, int sec);
+ErrTreat Error_Treatment(t_page page, unsigned char error);
 
-unsigned char Error_Action_OP_Air     (t_page page);
-unsigned char Error_Action_UP_Air	    (t_page page);
+unsigned char Error_Action_OP_Air(t_page page);
+unsigned char Error_Action_UP_Air(t_page page);
 
 void Error_Action_Temp_SetError(void);
 void Error_Action_OP_SetError(void);
 void Error_Action_UP_SetError(void);
 void Error_Action_IT_SetError(void);
 void Error_Action_OT_SetError(void);
+
+void Error_ModemAction(unsigned char error);
+void Error_Symbol(unsigned char err);
 
 #endif
 
