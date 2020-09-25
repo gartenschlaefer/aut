@@ -15,7 +15,7 @@
 \**********************************************************************/
 
 // Include guard
-#ifndef DEFINES_H   
+#ifndef DEFINES_H
 #define DEFINES_H
 
 /* ==================================================================*
@@ -30,11 +30,12 @@
 // CompanyID - 0 = Purator; 1 = HECS
 #define COMPANY   1
 
-// Memory Init
+// Memory Init set to zero
 #define MEM_INIT  0
 
-// Debug
-#define DEBUG     0
+// Debug set to zero
+#define DEBUG     1
+#define DEB_PORT	0
 
 // SoftwareVersion
 #define SV1       1	      //x.-.-
@@ -62,7 +63,6 @@ typedef signed   short  int16;
 typedef unsigned short  uint16;
 typedef signed   long   int32;
 typedef unsigned long   uint32;
-typedef unsigned char   bool;
 typedef uint16          halDataAlign_t;
 
 

@@ -43,7 +43,7 @@ int main(void)
 	LCD_Backlight(_on);
 
 	//*-* modem test loop
-	Modem_Test();
+	//Modem_Test();
 
   // Input
   struct InputHandler input_handler;
@@ -60,7 +60,7 @@ int main(void)
     // Debug Code
     if(DEBUG)
     {
-      PORT_Debug();
+      if (DEB_PORT) PORT_Debug();
       LCD_WriteValue2(0, 70, page);
     }
 

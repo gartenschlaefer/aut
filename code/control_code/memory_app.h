@@ -18,6 +18,33 @@
 #ifndef MEMORY_APP_H   
 #define MEMORY_APP_H
 
+
+/* ==================================================================*
+ * 						Defines
+ * ==================================================================*/
+
+// 8 Auto pages
+#define AUTO_START_PAGE	2
+#define AUTO_END_PAGE	16
+
+// 2 Manual pages
+#define MANUAL_START_PAGE 17
+#define MANUAL_END_PAGE 21
+
+// 2 Setup pages
+#define SETUP_START_PAGE 22
+#define SETUP_END_PAGE 26
+
+// 8 extended auto pages
+#define AUTO_EXT_START_PAGE 30
+#define AUTO_EXT_END_PAGE 45
+
+// amount of data pages
+#define DATA_PAGE_NUM_AUTO (16 - 1)
+#define DATA_PAGE_NUM_MANUAL (2 - 1)
+#define DATA_PAGE_NUM_SETUP (2 - 1)
+
+
 /* ==================================================================*
  * 						Enumeration
  * ==================================================================*/

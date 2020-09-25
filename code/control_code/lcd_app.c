@@ -13,7 +13,8 @@
 *	Date:			    13.07.2011
 \**********************************************************************/
 
-#include<avr/io.h>
+#include <avr/io.h>
+#include <stdbool.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -1606,54 +1607,43 @@ void LCD_Entry_Clr(void)
  * 						Auto Entry
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAutoEntryPage(t_eeDataPage page)
+void LCD_WriteAutoEntryPage(unsigned char page)
 {
 	unsigned char entry=0;
 	unsigned char eep=0;
 	unsigned char *p_ct= Eval_Memory_LatestEntry(Auto);
-	unsigned char i=0;
 
-	eep= *p_ct;
+	// get pointer stuff
+	eep = *p_ct;
 	p_ct++;
-	entry= *p_ct;
+	entry = *p_ct;
 
-	switch(page)
+	// clear display section
+	LCD_Entry_Clr();
+
+	// page num
+	LCD_WriteMyFont(1, 140, (page + 1) / 10);
+	LCD_WriteMyFont(1, 144, (page + 1) % 10);
+	//LCD_WriteStringMyFont(1, 140, "01;16");
+	LCD_WriteStringMyFont(1, 148, ";16");
+
+
+	// get right eep
+	unsigned char wep = LCD_eep_minus(Auto, eep, (2 * page));
+
+	if (DEBUG) LCD_WriteValue2(0, 0, wep);
+
+	// write coresponding page
+	if (page >= DATA_PAGE_NUM_AUTO)
 	{
-		case Page1: LCD_Entry_Clr();
-                LCD_wPage(Auto, eep, entry);	break;
-
-		case Page2:	LCD_Entry_Clr();  eep= LCD_eep_minus(eep,2);
-						    LCD_wPage(Auto, eep, entry);	break;
-
-		case Page3:	LCD_Entry_Clr();  eep= LCD_eep_minus(eep,4);
-						    LCD_wPage(Auto, eep, entry);	break;
-
-		case Page4:	LCD_Entry_Clr();  eep= LCD_eep_minus(eep,6);
-						    LCD_wPage(Auto, eep, entry);	break;
-
-		case Page5:	LCD_Entry_Clr();  eep= LCD_eep_minus(eep,8);
-						    LCD_wPage(Auto, eep, entry);	break;
-
-		case Page6:	LCD_Entry_Clr();	eep= LCD_eep_minus(eep,10);
-						    LCD_wPage(Auto, eep, entry);	break;
-
-		case Page7:	LCD_Entry_Clr();	eep= LCD_eep_minus(eep,12);
-						    LCD_wPage(Auto, eep, entry);	break;
-
-		case Page8:	LCD_Entry_Clr();	eep= LCD_eep_minus(eep,14);
-      for(i=0; i<4; i++)
-      {
-        LCD_WriteAutoEntry(5+(2*i), eep, entry);
-        if(entry<1)
-        {
-          entry=4;		eep--;
-          if(eep < 2)		eep= 16;
-        }
-        entry--;
-      }
-      LCD_WriteStringFont(15,1,"End");	break;
-
-		default:		break;
+		// half page
+		LCD_wPage(Auto, wep, entry, true);
+		LCD_Data_EndText();
+	}
+	else
+	{
+		// full page
+		LCD_wPage(Auto, wep, entry, false);
 	}
 }
 
@@ -1663,35 +1653,40 @@ void LCD_WriteAutoEntryPage(t_eeDataPage page)
  * 						Data Manual Entry Page
  * ------------------------------------------------------------------*/
 
-void LCD_WriteManualEntryPage(t_eeDataPage page)
+void LCD_WriteManualEntryPage(unsigned char page)
 {
 	unsigned char entry=0;
 	unsigned char eep=0;
 	unsigned char *p_ct= Eval_Memory_LatestEntry(Manual);
-	unsigned char i=0;
 
-	eep= *p_ct;
+	// pointer stuff
+	eep = *p_ct;
 	p_ct++;
-	entry= *p_ct;
+	entry = *p_ct;
 
-	switch(page)
+	// clear display section
+	LCD_Entry_Clr();
+
+	// page num
+	LCD_WriteMyFont(1, 144, page + 1);
+
+
+	// get right eep
+	unsigned char wep = LCD_eep_minus(Manual, eep, (2 * page));
+
+	if (DEBUG) LCD_WriteValue2(0, 0, wep);
+
+	// write coresponding page
+	if (page >= DATA_PAGE_NUM_MANUAL)
 	{
-		case Page1:	LCD_Entry_Clr();
-						    LCD_wPage(Manual, eep, entry);	break;
-
-		case Page2:	LCD_Entry_Clr();		eep= LCD_eep_minus(eep,2);
-      for(i=0; i<4; i++)
-      {
-        LCD_WriteManualEntry(5+(2*i), eep, entry);
-        if(entry<1)
-        {
-          entry=4;		eep--;
-          if(eep < 17)	eep= 20;
-        }
-        entry--;
-      }
-      LCD_WriteStringFont(15,1,"End");	break;
-		default:										      	break;
+		// half page
+		LCD_wPage(Manual, wep, entry, true);
+		LCD_Data_EndText();
+	}
+	else
+	{
+		// full page
+		LCD_wPage(Manual, wep, entry, false);
 	}
 }
 
@@ -1701,38 +1696,41 @@ void LCD_WriteManualEntryPage(t_eeDataPage page)
  * 						Data Setup Entry Page
  * ------------------------------------------------------------------*/
 
-void LCD_WriteSetupEntryPage(t_eeDataPage page)
+void LCD_WriteSetupEntryPage(unsigned char page)
 {
 	unsigned char entry=0;
 	unsigned char eep=0;
 	unsigned char *p_ct= Eval_Memory_LatestEntry(Setup);
-	unsigned char i=0;
 
-	eep= *p_ct;
+	// pointer stuff
+	eep = *p_ct;
 	p_ct++;
-	entry= *p_ct;
+	entry = *p_ct;
 
-	switch(page)
+	// clear display section
+	LCD_Entry_Clr();
+
+	// page num
+	LCD_WriteMyFont(1, 144, page + 1);
+
+	// get right eep
+	unsigned char wep = LCD_eep_minus(Setup, eep, (2 * page));
+
+	if (DEBUG) LCD_WriteValue2(0, 0, wep);
+
+	// write coresponding page
+	if (page >= DATA_PAGE_NUM_MANUAL)
 	{
-		case Page1: LCD_Entry_Clr();
-						    LCD_wPage(Setup, eep, entry);			break;
-
-		case Page2:	LCD_Entry_Clr();	eep= LCD_eep_minus(eep,2);
-      for(i=0; i<4; i++)
-      {
-        LCD_WriteSetupEntry(5+(2*i), eep, entry);
-        if(entry<1)
-        {
-          entry=4;		eep--;
-          if(eep < 22)	eep= 25;
-        }
-        entry--;
-      }
-      LCD_WriteStringFont(15,1,"End");	break;
-		default:											      break;
+		// half page
+		LCD_wPage(Setup, wep, entry, true);
+		LCD_Data_EndText();
+	}
+	else
+	{
+		// full page
+		LCD_wPage(Setup, wep, entry, false);
 	}
 }
-
 
 
 
@@ -1750,18 +1748,19 @@ void LCD_WriteSetupEntryPage(t_eeDataPage page)
  *	Writes One Entry line, call in entryPages
  * ------------------------------------------------------------------*/
 
-void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry)
+void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool half)
 {
 	unsigned char i=0;
 	unsigned char startPa=0;
 	unsigned char endPa=0;
 
+	// determine start and end page
 	switch(data)
 	{
-		case Auto:		startPa= 2;		endPa= 16;		break;			//8Pages
-		case Manual:	startPa= 17; 	endPa= 20;		break;			//2Pages
-		case Setup:		startPa= 22;	endPa= 25;		break;			//2Pages
-		default:										            break;
+		case Auto:		startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
+		case Manual:	startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
+		case Setup:		startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+		default: break;
 	}
 
 	//-----------------------------------------------------------------Half-Page
@@ -1783,6 +1782,9 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry)
 		}
 		entry--;
 	}
+
+	// return if only half page needed
+	if (half) return;
 
 	//-----------------------------------------------------------------Complete-Page
 	for(i=4; i<8; i++)
@@ -1810,15 +1812,65 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry)
  * 						Minus
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_eep_minus(unsigned char eep, unsigned char cnt)
+unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char cnt)
 {
-	unsigned char i=0;
-	for(i=0; i<cnt; i++)
+	unsigned char i = 0;
+	unsigned char startPa = 0;
+	unsigned char endPa = 0;
+
+	// determine start and end page
+	switch(data)
 	{
-		eep--;
-		if(eep<2) eep=16;
+		case Auto:		startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
+		case Manual:	startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
+		case Setup:		startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+		default: break;
 	}
+
+	// extension
+	if (data == Auto)
+	{
+		// get right eeprom page
+		for(i = 0; i < cnt; i++)
+		{
+			eep--;
+
+			// get to end page of extension
+			if (eep < startPa)
+			{
+				eep = AUTO_EXT_END_PAGE;
+			}
+
+			// get over extension gap
+			else if (eep > endPa && eep < AUTO_EXT_START_PAGE)
+			{
+				eep = endPa;
+			}
+		}
+	}
+
+	// no extension
+	else
+	{
+		// get right eeprom page
+		for(i = 0; i < cnt; i++)
+		{
+			eep--;
+			if (eep < startPa) eep = endPa;
+		}
+	}
+
 	return eep;
+}
+
+
+/* ------------------------------------------------------------------*
+ * 						End text sym
+ * ------------------------------------------------------------------*/
+
+void LCD_Data_EndText(void)
+{
+	LCD_WriteStringFont(15,1,"End");
 }
 
 

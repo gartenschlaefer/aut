@@ -347,7 +347,7 @@ void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_AutoEntry write)
 				}
 
 				//--------------------------------------------Write-Entry
-				if(page < 2)	page = 2;		//Write Protection
+				if(page < AUTO_START_PAGE)	page = AUTO_START_PAGE;		//Write Protection
 				for(i=0; i<8; i++)
 				{
 					MEM_EEPROM_LoadData(entry, i, data[i]);
@@ -408,7 +408,7 @@ void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd c
 		}
 
 		//--------------------------------------------Write-Entry
-		if(page<2)	page = 2;		//Write Protection
+		if(page < MANUAL_START_PAGE)	page = MANUAL_START_PAGE;		//Write Protection
 		for(i=0; i<7; i++)
 		{
 			MEM_EEPROM_LoadData(entry, i, data[i]);
@@ -455,7 +455,7 @@ void MEM_EEPROM_WriteSetupEntry(void)
 	}
 
 	//--------------------------------------------Write-Entry
-	if(page < 2)	page = 2;		//Write Protection
+	if(page < SETUP_START_PAGE)	page = SETUP_START_PAGE;		//Write Protection
 	for(i = 0; i < 6; i++) MEM_EEPROM_LoadData(entry, i, data[i]);
 	MEM_EEPROM_PageEraseWrite(page);
 }
@@ -474,12 +474,19 @@ void MEM_EEPROM_SetZero(void)
 	unsigned char eep = 0;
 	unsigned char data[8] = {0x00};
 
-	for(eep = 2; eep < 26; eep++){			//Pages
-		for(e = 0; e < 4; e++){								//Entries
-			for(i = 0; i < 8; i++){							//Bytes
+	// pages
+	for(eep = AUTO_START_PAGE; eep < AUTO_EXT_END_PAGE + 1; eep++)
+	{
+		// entries
+		for(e = 0; e < 4; e++)
+		{
+			// bytes
+			for(i = 0; i < 8; i++)
+			{
 				MEM_EEPROM_LoadData(e, i, data[i]);
-			}}
-		MEM_EEPROM_PageEraseWrite(eep);			//Write new Data
+			}
+		}
+		MEM_EEPROM_PageEraseWrite(eep);
 	}
 }
 

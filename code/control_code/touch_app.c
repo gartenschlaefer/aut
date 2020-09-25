@@ -1404,18 +1404,16 @@ t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
 											else 		iData=iData;
 								LCD_Write_Symbol_3(	3,	140, n_arrowUp);}	break;	//arrowUp
 
-		case 0x34:	if(!mark){	mark= 2;	if(iData<7) iData++;
+		case 0x34:	if(!mark){	mark= 2;	if(iData < DATA_PAGE_NUM_AUTO) iData++;
 											else		iData=iData;
 								LCD_Write_Symbol_3(	14,	140, n_arrowDown);}	break;	//arrowDown
 
 		case 0x00:	if(mark==1){mark= 0;
 								LCD_Write_Symbol_3(	3,	140, p_arrowUp);
-								LCD_WriteMyFont(1,144,iData+1);
 								LCD_WriteAutoEntryPage(iData);}
 
 					if(mark==2){mark= 0;
 								LCD_Write_Symbol_3(	14,	140, p_arrowDown);
-								LCD_WriteMyFont(1,144,iData+1);
 								LCD_WriteAutoEntryPage(iData);}				break;	//No Touch
 
 
@@ -1447,18 +1445,16 @@ t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
 											else 		iData=iData;
 								LCD_Write_Symbol_3(	3,	140, n_arrowUp);}	break;	//arrowUp
 
-		case 0x34:	if(!mark){	mark= 2;	if(iData<1) iData++;
+		case 0x34:	if(!mark){	mark= 2;	if(iData < DATA_PAGE_NUM_MANUAL) iData++;
 											else		iData=iData;
 								LCD_Write_Symbol_3(	14,	140, n_arrowDown);}	break;	//arrowDown
 
 		case 0x00:	if(mark==1){mark= 0;
 								LCD_Write_Symbol_3(	3,	140, p_arrowUp);
-								LCD_WriteMyFont(1,144,iData+1);
 								LCD_WriteManualEntryPage(iData);}
 
 					if(mark==2){mark= 0;
 								LCD_Write_Symbol_3(	14,	140, p_arrowDown);
-								LCD_WriteMyFont(1,144,iData+1);
 								LCD_WriteManualEntryPage(iData);}			break;	//No Touch
 
 
@@ -1490,18 +1486,16 @@ t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
 											else 		iData=iData;
 								LCD_Write_Symbol_3(	3,	140, n_arrowUp);}	break;	//arrowUp
 
-		case 0x34:	if(!mark){	mark= 2;	if(iData<1) iData++;
+		case 0x34:	if(!mark){	mark= 2;	if(iData < DATA_PAGE_NUM_SETUP) iData++;
 											else		iData=iData;
 								LCD_Write_Symbol_3(	14,	140, n_arrowDown);}	break;	//arrowDown
 
 		case 0x00:	if(mark==1){mark= 0;
-								LCD_Write_Symbol_3(	3,	140, p_arrowUp);
-								LCD_WriteMyFont(1,144,iData+1);
+								LCD_Write_Symbol_3(	3, 140, p_arrowUp);
 								LCD_WriteSetupEntryPage(iData);}
 
 					if(mark==2){mark= 0;
 								LCD_Write_Symbol_3(	14,	140, p_arrowDown);
-								LCD_WriteMyFont(1,144,iData+1);
 								LCD_WriteSetupEntryPage(iData);}				break;	//No Touch
 
 

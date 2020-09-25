@@ -18,6 +18,8 @@
 #ifndef LCD_APP_H   
 #define LCD_APP_H
 
+#include <stdbool.h>
+
 /* ==================================================================*
  * 						Enumerations
  * ==================================================================*/
@@ -54,16 +56,6 @@ typedef enum
 
 	ErrorMPX,   ErrorTreat
 }t_page;
-
-
-/* ------------------------------------------------------------------*
- * 						EEPages
- * ------------------------------------------------------------------*/
-
-typedef enum
-{	Page1,				Page2,				Page3,			Page4,
-	Page5,				Page6,				Page7,			Page8,
-}t_eeDataPage;
 
 
 
@@ -162,12 +154,13 @@ void LCD_DataSet		(t_page setPage, int *p_Min, int *p_Sec);
  * ------------------------------------------------------------------*/
 
 void LCD_Entry_Clr(void);
-void LCD_WriteAutoEntryPage	  (t_eeDataPage page);
-void LCD_WriteManualEntryPage (t_eeDataPage page);
-void LCD_WriteSetupEntryPage	(t_eeDataPage page);
+void LCD_WriteAutoEntryPage	  (unsigned char page);
+void LCD_WriteManualEntryPage (unsigned char page);
+void LCD_WriteSetupEntryPage	(unsigned char page);
 
-void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry);
-unsigned char LCD_eep_minus	(unsigned char eep, unsigned char cnt);
+void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool half);
+unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char cnt);
+void LCD_Data_EndText(void);
 
 
 /* ------------------------------------------------------------------*

@@ -923,9 +923,8 @@ void LCD_DataSet_Auto(void)
 	LCD_Write_TextButton(22, 0, Auto, 0);
 	LCD_WriteDataArrows();
 
-	LCD_WriteStringMyFont(1,148,";8");
-	LCD_WriteMyFont(1,144,1);
-	LCD_WriteAutoEntryPage(Page1);					//Page
+	LCD_WriteStringMyFont(1, 140, "01;16");
+	LCD_WriteAutoEntryPage(0);
 }
 
 
@@ -940,8 +939,8 @@ void LCD_DataSet_Manual(void)
 	LCD_Write_TextButton(22, 40, Manual, 0);
 	LCD_WriteDataArrows();
 
-	LCD_WriteStringMyFont(1,144,"1;2");
-	LCD_WriteManualEntryPage(Page1);
+	LCD_WriteStringMyFont(1, 144, "1;2");
+	LCD_WriteManualEntryPage(0);
 }
 
 
@@ -956,8 +955,8 @@ void LCD_DataSet_Setup(void)
 	LCD_Write_TextButton(22, 80, Setup, 0);
 	LCD_WriteDataArrows();
 
-	LCD_WriteStringMyFont(1,144,"1;2");
-	LCD_WriteSetupEntryPage(Page1);
+	LCD_WriteStringMyFont(1, 144, "1;2");
+	LCD_WriteSetupEntryPage(0);
 }
 
 

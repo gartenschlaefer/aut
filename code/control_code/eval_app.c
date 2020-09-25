@@ -384,30 +384,39 @@ void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
 
 unsigned char *Eval_Memory_NoEntry(t_textButtons data)
 {
-	static unsigned char memCount[3]={2,0,0};
+	static unsigned char memCount[3] = {AUTO_START_PAGE, 0, 0};
 
-	unsigned char 	*p_count= memCount;				//Return Pointer
-	unsigned char 	eep=0;
-	unsigned char 	i=0;
-	unsigned char 	stop=0;
+	unsigned char *p_count = memCount;
+	unsigned char eep = 0;
+	unsigned char i = 0;
+	unsigned char stop = 0;
 
-	unsigned char startPa=0;
-	unsigned char endPa=0;
+	unsigned char startPa = AUTO_START_PAGE;
+	unsigned char endPa = AUTO_END_PAGE;
 
+	// determine start and end page
 	switch(data)
 	{
-		case Auto:		startPa= 2;		endPa= 17;	memCount[0]= 2;		break;	//8Pages
-		case Manual:	startPa= 17; 	endPa= 21;	memCount[0]= 17;	break;	//2Pages
-		case Setup:		startPa= 22;	endPa= 26;	memCount[0]= 22;	break;	//2Pages
-		default:														break;
+		case Auto:		startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
+		case Manual:	startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
+		case Setup:		startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+		default: break;
 	}
 
-	for(eep= startPa; eep< endPa; eep++)							//pages
+	// start page
+	memCount[0] = startPa;
+
+	// pages
+	for(eep = startPa; eep < endPa; eep++)
 	{
-		for(i=0; i<4; i++)									//Entrys
+		// update page
+		memCount[0] = eep;
+
+		// entries
+		for(i=0; i<4; i++)
 		{
 			memCount[1]= i;
-			if(!(MEM_EEPROM_ReadData(eep, i, DATA_day)))	//Day
+			if(!(MEM_EEPROM_ReadData(eep, i, DATA_day)))
 			{
 				stop=1;
 				break;
@@ -420,7 +429,44 @@ unsigned char *Eval_Memory_NoEntry(t_textButtons data)
 			break;					//Loop termination
 		}
 		else memCount[2]=0;			//No null entries found
-		memCount[0]++;
+
+
+	}
+
+	// extension
+	if (data == Auto && !stop)
+	{
+		// start page
+		memCount[0] = AUTO_EXT_START_PAGE;
+
+		// pages
+		for(eep = AUTO_EXT_START_PAGE; eep < AUTO_EXT_END_PAGE; eep++)
+		{
+			// update page
+			memCount[0] = eep;
+
+			// entries
+			for(i=0; i<4; i++)
+			{
+				// check entry pos
+				memCount[1]= i;
+				if(!(MEM_EEPROM_ReadData(eep, i, DATA_day)))
+				{
+					stop=1;
+					break;
+				}
+			}
+
+			// null entry found
+			if(stop)
+			{
+				memCount[2] = 1;
+				break;
+			}
+
+			// no null entry found
+			else memCount[2] = 0;
+		}
 	}
 
 	return p_count;
@@ -433,14 +479,14 @@ unsigned char *Eval_Memory_NoEntry(t_textButtons data)
 
 unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
 {
-	static unsigned char old[2]={2,0};
+	static unsigned char old[2] = {AUTO_START_PAGE, 0};
 
 	unsigned char *p_old= old;
 	unsigned char eep=0;
 	unsigned char i=0;
 
-	unsigned char startPa=0;
-	unsigned char endPa=0;
+	unsigned char startPa = AUTO_START_PAGE;
+	unsigned char endPa = AUTO_END_PAGE;
 
 	unsigned char day=31;
 	unsigned char month=12;
@@ -454,17 +500,23 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
 	unsigned char rH=0;
 	unsigned char rMin=0;
 
+	// determine start and end page
 	switch(data)
 	{
-		case Auto:		startPa= 2;		endPa= 17;	old[0]= 2;		break;	//8Pages
-		case Manual:	startPa= 17; 	endPa= 21;	old[0]= 17;		break;	//2Pages
-		case Setup:		startPa= 22;	endPa= 26;	old[0]= 22;		break;	//2Pages
-		default:													break;
+		case Auto:		startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
+		case Manual:	startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
+		case Setup:		startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+		default: break;
 	}
 
-	for(eep= startPa; eep< endPa; eep++)					//Pages
+	// start page
+	old[0] = startPa;
+
+	// pages
+	for(eep= startPa; eep< endPa; eep++)
 	{
-		for(i=0; i<4; i++)									//Entrys
+		// entries
+		for(i=0; i<4; i++)
 		{
 			rDay= 	MEM_EEPROM_ReadData(eep, i, DATA_day);
 			rMonth= MEM_EEPROM_ReadData(eep, i, DATA_month);
@@ -489,6 +541,39 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
 		}
 	}
 
+	// extension
+	if (data == Auto)
+	{
+		// pages
+		for(eep = AUTO_EXT_START_PAGE; eep < AUTO_EXT_END_PAGE; eep++)
+		{
+			// entries
+			for(i=0; i<4; i++)
+			{
+				rDay= 	MEM_EEPROM_ReadData(eep, i, DATA_day);
+				rMonth= MEM_EEPROM_ReadData(eep, i, DATA_month);
+				rYear=	MEM_EEPROM_ReadData(eep, i, DATA_year);
+				rH=		MEM_EEPROM_ReadData(eep, i, DATA_hour);
+				rMin=	MEM_EEPROM_ReadData(eep, i, DATA_minute);
+
+				if(	(rDay)			&&	(
+					(rYear	< year) ||
+					(rMonth	< month	&&	rYear <= year)	||
+					(rDay	< day	&&	rMonth <= month	&& 	rYear <= year)	||
+					(rH		< h		&& 	rDay <= day		&&	rMonth <= month	&& 	rYear <= year)	||
+					(rMin	< min	&& 	rH <= h			&& 	rDay <= day		&&	rMonth <= month	&& 	rYear <= year)))
+					{
+							year= 	rYear;
+							month=	rMonth;
+							day=	rDay;
+							h=		rH;
+							min=	rMin;
+							old[0]=	eep;
+							old[1]= i;		}
+			}
+		}
+	}
+
 	return p_old;
 }
 
@@ -499,14 +584,14 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
 
 unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
 {
-	static unsigned char latest[2]={2,0};
+	static unsigned char latest[2] = {AUTO_START_PAGE, 0};
 
 	unsigned char *p_latest= latest;
 	unsigned char eep=0;
 	unsigned char i=0;
 
-	unsigned char startPa=0;
-	unsigned char endPa=0;
+	unsigned char startPa = AUTO_START_PAGE;
+	unsigned char endPa = AUTO_END_PAGE;
 
 	unsigned char day=0;
 	unsigned char month=0;
@@ -520,16 +605,22 @@ unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
 	unsigned char rH=0;
 	unsigned char rMin=0;
 
+	// determine start and end page
 	switch(data)
 	{
-		case Auto:		startPa= 2;		endPa= 17;	latest[0]= 2;		break;	//8Pages
-		case Manual:	startPa= 17; 	endPa= 21;	latest[0]= 17;		break;	//2Pages
-		case Setup:		startPa= 22;	endPa= 26;	latest[0]= 22;		break;	//2Pages
-		default:													break;
+		case Auto:		startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
+		case Manual:	startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
+		case Setup:		startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+		default: break;
 	}
 
-	for(eep= startPa; eep< endPa; eep++)					//Pages
+	// start page
+	latest[0] = startPa;
+
+	// pages
+	for(eep= startPa; eep< endPa; eep++)
 	{
+		// entries
 		for(i=0; i<4; i++)
 		{
 			rDay= 	MEM_EEPROM_ReadData(eep, i, DATA_day);
@@ -553,6 +644,41 @@ unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
           latest[0] =	eep;
           latest[1] = i;
         }
+		}
+	}
+
+	// extension
+	if (data == Auto)
+	{
+		// pages
+		for(eep = AUTO_EXT_START_PAGE; eep < AUTO_EXT_END_PAGE; eep++)
+		{
+			// entries
+			for(i=0; i<4; i++)
+			{
+				rDay= 	MEM_EEPROM_ReadData(eep, i, DATA_day);
+				rMonth= MEM_EEPROM_ReadData(eep, i, DATA_month);
+				rYear=	MEM_EEPROM_ReadData(eep, i, DATA_year);
+				rH=		MEM_EEPROM_ReadData(eep, i, DATA_hour);
+				rMin=	MEM_EEPROM_ReadData(eep, i, DATA_minute);
+
+				if(	(rDay)			&&	(
+					(rYear	> year) ||
+					(rMonth	> month	&&	rYear >= year)	||
+					(rDay	> day	&&	rMonth >= month	&& 	rYear >= year)	||
+					(rH		> h		&& 	rDay >= day		&&	rMonth >= month	&& 	rYear >= year)	||
+					(rMin	> min	&& 	rH >= h			&& 	rDay >= day		&&	rMonth >= month	&& 	rYear >= year)))
+					{
+	          year = rYear;
+	          month = rMonth;
+	          day =	rDay;
+	          h = rH;
+	          min =	rMin;
+	          latest[0] =	eep;
+	          latest[1] = i;
+	        }
+			}
+
 		}
 	}
 
