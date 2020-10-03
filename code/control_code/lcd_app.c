@@ -1624,13 +1624,11 @@ void LCD_WriteAutoEntryPage(unsigned char page)
 	// page num
 	LCD_WriteMyFont(1, 140, (page + 1) / 10);
 	LCD_WriteMyFont(1, 144, (page + 1) % 10);
-	//LCD_WriteStringMyFont(1, 140, "01;16");
-	LCD_WriteStringMyFont(1, 148, ";16");
-
 
 	// get right eep
 	unsigned char wep = LCD_eep_minus(Auto, eep, (2 * page));
 
+	//*** debug page
 	if (DEBUG) LCD_WriteValue2(0, 0, wep);
 
 	// write coresponding page
@@ -1670,10 +1668,10 @@ void LCD_WriteManualEntryPage(unsigned char page)
 	// page num
 	LCD_WriteMyFont(1, 144, page + 1);
 
-
 	// get right eep
 	unsigned char wep = LCD_eep_minus(Manual, eep, (2 * page));
 
+	//*** debug page
 	if (DEBUG) LCD_WriteValue2(0, 0, wep);
 
 	// write coresponding page
@@ -1716,6 +1714,7 @@ void LCD_WriteSetupEntryPage(unsigned char page)
 	// get right eep
 	unsigned char wep = LCD_eep_minus(Setup, eep, (2 * page));
 
+	//*** debug page
 	if (DEBUG) LCD_WriteValue2(0, 0, wep);
 
 	// write coresponding page
@@ -1777,7 +1776,8 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
 		//-------------------------------------------Update------------
 		if(entry<1)
 		{
-			entry=4;			eep--;
+			entry=4;
+			eep--;
 			if(eep < startPa)	eep= endPa;
 		}
 		entry--;
@@ -1827,37 +1827,11 @@ unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char
 		default: break;
 	}
 
-	// extension
-	if (data == Auto)
+	// get right eeprom page
+	for(i = 0; i < cnt; i++)
 	{
-		// get right eeprom page
-		for(i = 0; i < cnt; i++)
-		{
-			eep--;
-
-			// get to end page of extension
-			if (eep < startPa)
-			{
-				eep = AUTO_EXT_END_PAGE;
-			}
-
-			// get over extension gap
-			else if (eep > endPa && eep < AUTO_EXT_START_PAGE)
-			{
-				eep = endPa;
-			}
-		}
-	}
-
-	// no extension
-	else
-	{
-		// get right eeprom page
-		for(i = 0; i < cnt; i++)
-		{
-			eep--;
-			if (eep < startPa) eep = endPa;
-		}
+		eep--;
+		if (eep < startPa) eep = endPa;
 	}
 
 	return eep;

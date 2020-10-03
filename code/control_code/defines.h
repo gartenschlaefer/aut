@@ -33,9 +33,10 @@
 // Memory Init set to zero
 #define MEM_INIT  0
 
-// Debug set to zero
+// Debug set to zero for no debugging
 #define DEBUG     1
 #define DEB_PORT	0
+#define DEB_ENTRY	0
 
 // SoftwareVersion
 #define SV1       1	      //x.-.-

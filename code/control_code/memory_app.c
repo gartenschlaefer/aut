@@ -456,7 +456,10 @@ void MEM_EEPROM_WriteSetupEntry(void)
 
 	//--------------------------------------------Write-Entry
 	if(page < SETUP_START_PAGE)	page = SETUP_START_PAGE;		//Write Protection
-	for(i = 0; i < 6; i++) MEM_EEPROM_LoadData(entry, i, data[i]);
+	for(i = 0; i < 6; i++)
+	{
+		MEM_EEPROM_LoadData(entry, i, data[i]);
+	}
 	MEM_EEPROM_PageEraseWrite(page);
 }
 
@@ -475,7 +478,7 @@ void MEM_EEPROM_SetZero(void)
 	unsigned char data[8] = {0x00};
 
 	// pages
-	for(eep = AUTO_START_PAGE; eep < AUTO_EXT_END_PAGE + 1; eep++)
+	for(eep = DATA_START_PAGE; eep <= DATA_END_PAGE; eep++)
 	{
 		// entries
 		for(e = 0; e < 4; e++)

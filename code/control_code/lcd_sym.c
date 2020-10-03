@@ -939,7 +939,7 @@ void LCD_DataSet_Manual(void)
 	LCD_Write_TextButton(22, 40, Manual, 0);
 	LCD_WriteDataArrows();
 
-	LCD_WriteStringMyFont(1, 144, "1;2");
+	LCD_WriteStringMyFont(1, 144, "1;3");
 	LCD_WriteManualEntryPage(0);
 }
 
@@ -955,7 +955,7 @@ void LCD_DataSet_Setup(void)
 	LCD_Write_TextButton(22, 80, Setup, 0);
 	LCD_WriteDataArrows();
 
-	LCD_WriteStringMyFont(1, 144, "1;2");
+	LCD_WriteStringMyFont(1, 144, "1;3");
 	LCD_WriteSetupEntryPage(0);
 }
 
