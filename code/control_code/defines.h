@@ -11,7 +11,8 @@
 *	Configuration, enums, defines, structs etc
 * ------------------------------------------------------------------
 *	Date:			    20.06.2011
-* lastChanges:	23.12.2015
+* Changes:			23.12.2015
+* 							19.10.2020 - new debug stuff
 \**********************************************************************/
 
 // Include guard
@@ -33,24 +34,29 @@
 // Memory Init set to zero
 #define MEM_INIT  0
 
-// Debug set to zero for no debugging
-#define DEBUG     1
+// SMS Usage
+#define SMS_ON		1
+
+// Debug set to zero for no debugging: general, buzzer off, modem off, port ventile, data entry
+#define DEBUG     0
+#define DEB_BUZ		0
+#define DEB_MODEM	0
 #define DEB_PORT	0
 #define DEB_ENTRY	0
 
 // SoftwareVersion
-#define SV1       1	      //x.-.-
-#define SV2       2	      //-.x.-
-#define SV3       11	      //-.-.x
+#define SV1       1				//x.-.-
+#define SV2       3				//-.x.-
+#define SV3       0				//-.-.x
 
 // TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
-#define DEF_HOUR  0x12    //08:: = 0x08
-#define DEF_DAY   7       //Tag1 = Monday
-#define DEF_DATE  0x05    //__.x.x
-#define DEF_MONTH 0x05    //x.__.x
-#define DEF_YEAR  0x19    //x.x.20__
+#define DEF_HOUR  0x21    //08:: = 0x08
+#define DEF_DAY   1       //Tag1 = Monday
+#define DEF_DATE  0x19    //__.x.x
+#define DEF_MONTH 0x10    //x.__.x
+#define DEF_YEAR  0x20    //x.x.20__
 
 
 

@@ -86,8 +86,8 @@ void PORT_Buzzer(t_FuncCmd cmd)
 	switch(cmd)
 	{
 		case _error:
-      //***DisableBuzzer
-		  if(DEBUG) return;
+      //*** debug disable buzzer
+		  if(DEB_BUZ) return;
 		  state = _error;				break;	//Error
 
 		case _off:
@@ -381,7 +381,7 @@ void PORT_RunTime(struct InputHandler *in)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
-        Modem_CallAllNumbers();
+        Modem_Alert("Error: floating switch");
         Error_ON();
       }
       in->float_sw_alarm = 1;
@@ -395,7 +395,7 @@ void PORT_RunTime(struct InputHandler *in)
       in->float_sw_alarm = 0;
     }
 
-		//***USVCheckVoltageSupply
+		//*** debug USVCheckVoltageSupply
 		if(!DEBUG)
     {
       ADC_USV_Check();

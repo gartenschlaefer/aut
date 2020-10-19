@@ -155,7 +155,7 @@ void ADC_USV_Check(void)
   if(data < 2500)      //~3110 = 24V
   {
     c++;
-    if(c == 3)  Modem_CallAllNumbers();
+    if(c == 3)  Modem_Alert("Error: USV is active");
     if(c > 720) c = 0;
   }
   else c = 0;

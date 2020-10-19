@@ -89,7 +89,7 @@ void LCD_Backlight(t_FuncCmd cmd)
 		  state = _error;	break;
 
 		case _exe:
-      //***LightAlwaysOn-Debug
+			//***LightAlwaysOn-Debug
 		  if(DEBUG) return;
 
 		  if(state == _on)

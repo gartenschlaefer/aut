@@ -558,9 +558,7 @@ void Error_Action_OT_SetError(void)
 
 void Error_ModemAction(unsigned char error)
 {
-  // call all numbers
-  //Modem_CallAllNumbers();
-
+  
   // SMS message
   char msg[20] = "Error: ";
 
@@ -575,9 +573,8 @@ void Error_ModemAction(unsigned char error)
     default: break;
   }
 
-  // write SMS
-  Modem_WriteSMS(msg);
-
+  // Alert Modem
+  Modem_Alert(msg);
 }
 
 

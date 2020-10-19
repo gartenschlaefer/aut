@@ -11,7 +11,8 @@
 *	Application-File for TouchEADOGXL160-7 Display
 * ------------------------------------------------------------------
 *	Date:			    13.07.2011
-* lastChanges:	25.12.2015
+* Changes:      25.12.2015
+*               19.10.2020 - touch matrix state safety
 \**********************************************************************/
 
 
@@ -64,6 +65,22 @@ unsigned char Touch_Matrix(void)
   static unsigned char state = 0;
   unsigned char *p_touch = Touch_Read();
 
+  //*** remove this next time!!!
+  /*
+  static unsigned char death = 0;
+  if (DEBUG) 
+  {
+    death++;
+    if (death >= 100)
+    {
+      death = 0;
+      LCD_DeathMan(0, 0);
+    }
+    LCD_WriteValue3(0, 35, p_touch[0]);
+    LCD_WriteValue2(2, 35, state);
+  }
+  */
+
   if(p_touch[0] == _ready && (state == 0 || state == 1))
   {
     y[state] = p_touch[1];
@@ -74,10 +91,14 @@ unsigned char Touch_Matrix(void)
 	if(p_touch[0] == _ready && state == 2)
 	{
     state = 0;
+
+    // too much diffs, reject sample
 		if(x[0] < x[1] - 10 || x[0] > x[1] + 10) return 0;
 		if(y[0] < y[1] - 10 || y[0] > y[1] + 10) return 0;
-    yAv = Touch_Y_Cal(((y[0] + y[1]) / 2));		//calibrate
-		xAv = Touch_X_Cal(((x[0] + x[1]) / 2));		//calibrate
+
+    // calibrate
+    yAv = Touch_Y_Cal(((y[0] + y[1]) / 2));
+		xAv = Touch_X_Cal(((x[0] + x[1]) / 2));
 
 		//------------------------------------------------xMatrix
 		if		  (xAv < 16)				        lx = 0;
@@ -94,9 +115,20 @@ unsigned char Touch_Matrix(void)
 		else if	(yAv > 65 && yAv < 77)		hy = 3;
 		else if	(yAv > 85 && yAv < 105)	  hy = 4;
 		else						                  hy = 5;
-		return ((hy<<4) | lx);
+
+    //*** debug touch matrix
+    if (DEBUG)
+    {
+      LCD_WriteValue2_MyFont(22, 152, hy);
+      LCD_WriteValue2_MyFont(24, 152, lx);
+    }
 	}
-	else{hy = 6; lx = 6;}
+
+  // safety state
+  if (state > 2)
+  {
+    state = 0;
+  }
 
 	return ((hy<<4) | lx);
 }
@@ -1038,7 +1070,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
         if(calRedo){ calRedo = 0;
           LCD_Write_Symbol_3(15,130, p_arrowRedo);}
         else{	calRedo = 1;
-          LCD_Write_Symbol_3(15,130, n_arrowRedo);}}}	
+          LCD_Write_Symbol_3(15,130, n_arrowRedo);}}}
       break;	//Cal-Redo
 
 		case 0x00:	if(touch){
@@ -1725,7 +1757,16 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
         touch[11]= 1;
         LCD_Pin_WriteOK(1);
         Modem_TelNr(_save, nr);
-        Modem_Call(nr);               //TestCall
+
+        // test new number
+        if(SMS_ON)
+        {
+          Modem_SMS(nr, "Hello from your wastewater treatment plant, you are added.");
+        }
+        else
+        {
+          Modem_Call(nr);
+        }
         nr.id= 0;
         nr.pos= 0;}
       break;

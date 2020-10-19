@@ -12,6 +12,7 @@
 *	for the EADOGXL160-7 Display
 * ------------------------------------------------------------------
 *	Date:			15.07.2011
+*						19.10.2020 - make touch read saver (states)
 \**********************************************************************/
 
 
@@ -337,61 +338,55 @@ void Touch_X_Measure(void)
 unsigned char *Touch_Read(void)
 {
 	static unsigned char touch[3] = {
-	  _clean,	  //State
-    0x00,	    //Y-Value
-    0x00};	  //X-Value
+		_clean,	  //State
+		0x00,	    //Y-Value
+		0x00 };	  //X-Value
 
 	//--------------------------------------------------X-Measure
 	if(touch[0] == _clean)
 	{
-		Touch_Clean();						        //clean
-		TCD0_WaitMilliSec_Init(5);	  //weit
-		touch[0]= _read1;					        //nextStep
+		Touch_Clean();
+		TCD0_WaitMilliSec_Init(5);
+		touch[0] = _read1;
 	}
 
 	else if((touch[0] == _read1) && TCD0_Wait_Query())
 	{
-		Touch_X_Measure();					      //X-Measure
-		TCD0_WaitMilliSec_Init(5);	  //wait
-		touch[0] = _write1;					      //nextStep
+		Touch_X_Measure();
+		TCD0_WaitMilliSec_Init(5);
+		touch[0] = _write1;
 	}
 
 	else if((touch[0] == _write1) && TCD0_Wait_Query())
 	{
-		touch[2] = (Touch_X_Read()>>4);		//X-Value
-		Touch_Clean();						        //clean
-		TCD0_WaitMilliSec_Init(5);	  //wait
-		touch[0] = _read2;					      //nextStep
+		touch[2] = (Touch_X_Read()>>4);
+		Touch_Clean();
+		TCD0_WaitMilliSec_Init(5);
+		touch[0] = _read2;
 	}
 
 	//--------------------------------------------------Y-Measure
 	else if((touch[0] == _read2) && TCD0_Wait_Query())
 	{
-		Touch_Y_Measure();					      //X-Measure
-		TCD0_WaitMilliSec_Init(5);	  //wait
-		touch[0] = _write2;					      //nextStep
+		Touch_Y_Measure();
+		TCD0_WaitMilliSec_Init(5);
+		touch[0] = _write2;
 	}
 
 	else if((touch[0] == _write2) && TCD0_Wait_Query())
 	{
-		touch[1] = (Touch_Y_Read()>>4);	//X-Value
-		Touch_Clean();						      //Clean
-		TCD0_Stop();					    //StopTimr
-		touch[0] = _ready;					    //End
+		touch[1] = (Touch_Y_Read()>>4);
+		Touch_Clean();
+		TCD0_Stop();
+		touch[0] = _ready;
 	}
 
-	else if(touch[0] == _ready) touch[0] = _clean;
+	// repeat loop and safety
+	else if(touch[0] == _ready || (touch[0] != _clean && touch[0] != _read1 && touch[0] != _write1 && touch[0] != _read2 && touch[0] != _write2))
+	{
+		touch[0] = _clean;
+	}
+
 	return &touch[0];
 }
-
-
-
-
-
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/
 

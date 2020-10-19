@@ -29,6 +29,8 @@
 #define MO_PORT_ON   (PORTF.OUTSET = PIN0_bm)
 #define MO_PORT_OFF  (PORTF.OUTCLR = PIN0_bm)
 
+#define CHAR_STX (0x02)
+#define CHAR_ETX (0x03)
 #define CHAR_CR (0x0D)
 #define CHAR_LF (0x0A)
 #define CHAR_ESC (0x1B)
@@ -62,12 +64,16 @@ void Modem_ReadCTS(void);
 char Modem_TelNr(t_FuncCmd cmd, TelNr nr);
 
 unsigned char Modem_Call(TelNr nr);
+void Modem_SMS(TelNr nr, char msg[]);
+
 void Modem_CallAllNumbers(void);
+void Modem_SMSAllNumbers(char msg[]);
+void Modem_Alert(char msg[]);
 
 void Modem_SendTest(void);
 void Modem_Test(void);
 
-void Modem_WriteSMS(char msg[]);
+void Modem_WriteSMS_Test(char msg[]);
 void Modem_DialNumber(void);
 void Modem_GetSoftwareversion(void);
 void Modem_Shutdown(void);

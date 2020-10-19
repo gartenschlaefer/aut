@@ -57,7 +57,7 @@ int main(void)
 		PORT_Bootloader();
     Modem_Check(page, &modem);
 
-    // Debug Code
+    //*** debug port and lcd page
     if(DEBUG)
     {
       if (DEB_PORT) PORT_Debug();

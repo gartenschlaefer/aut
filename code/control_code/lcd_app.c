@@ -1628,9 +1628,6 @@ void LCD_WriteAutoEntryPage(unsigned char page)
 	// get right eep
 	unsigned char wep = LCD_eep_minus(Auto, eep, (2 * page));
 
-	//*** debug page
-	if (DEBUG) LCD_WriteValue2(0, 0, wep);
-
 	// write coresponding page
 	if (page >= DATA_PAGE_NUM_AUTO)
 	{
@@ -1670,9 +1667,6 @@ void LCD_WriteManualEntryPage(unsigned char page)
 
 	// get right eep
 	unsigned char wep = LCD_eep_minus(Manual, eep, (2 * page));
-
-	//*** debug page
-	if (DEBUG) LCD_WriteValue2(0, 0, wep);
 
 	// write coresponding page
 	if (page >= DATA_PAGE_NUM_MANUAL)
@@ -1714,9 +1708,6 @@ void LCD_WriteSetupEntryPage(unsigned char page)
 	// get right eep
 	unsigned char wep = LCD_eep_minus(Setup, eep, (2 * page));
 
-	//*** debug page
-	if (DEBUG) LCD_WriteValue2(0, 0, wep);
-
 	// write coresponding page
 	if (page >= DATA_PAGE_NUM_MANUAL)
 	{
@@ -1753,6 +1744,9 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
 	unsigned char startPa=0;
 	unsigned char endPa=0;
 
+  //*** debug eep page
+  if (DEBUG) LCD_WriteValue2(0, 0, eep);
+
 	// determine start and end page
 	switch(data)
 	{
@@ -1762,8 +1756,8 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
 		default: break;
 	}
 
-	//-----------------------------------------------------------------Half-Page
-	for(i=0; i<4; i++)
+	// Write the data page to display
+	for(i = 0; i < 8; i++)
 	{
 		//-------------------------------------------Write-Entry-------
 		switch(data)
@@ -1774,36 +1768,16 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
 			default:													break;
 		}
 		//-------------------------------------------Update------------
-		if(entry<1)
+		if(entry < 1)
 		{
-			entry=4;
+			entry = 4;
 			eep--;
-			if(eep < startPa)	eep= endPa;
+			if(eep < startPa)	eep = endPa;
 		}
 		entry--;
-	}
 
-	// return if only half page needed
-	if (half) return;
-
-	//-----------------------------------------------------------------Complete-Page
-	for(i=4; i<8; i++)
-	{
-		//-------------------------------------------Write-Entry-------
-		switch(data)
-		{
-			case Auto:		LCD_WriteAutoEntry(5+(2*i), eep, entry);	break;
-			case Manual:	LCD_WriteManualEntry(5+(2*i), eep, entry);	break;
-			case Setup:		LCD_WriteSetupEntry(5+(2*i), eep, entry);	break;
-			default:													break;
-		}
-		//-------------------------------------------Update-Varibles---
-		if(entry<1)
-		{
-			entry=4;			eep--;
-			if(eep < startPa)	eep= endPa;
-		}
-		entry--;
+    // return if only half page needed
+    if (i >= 4 && half) return;
 	}
 }
 

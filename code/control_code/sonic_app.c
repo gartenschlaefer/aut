@@ -213,7 +213,7 @@ unsigned char Sonic_getRepeatTime(t_page page)
 
       default: break;
   }
-  //***SonicTime*2s
+  //*** debug SonicTime*2s
   if(DEBUG) repeat_time = 5;
   return repeat_time;
 }

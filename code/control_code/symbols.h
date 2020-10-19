@@ -280,7 +280,9 @@ unsigned char FontNumbers_4X6[FontNumbers_4X6_LEN] =
     0, 26,  0,  0,      //23-i
    28,  4, 28,  0,      //24-n
    20,  8, 20,  0,      //25-x
-   18, 45, 45, 18       //26-Modem
+
+    2, 25, 25,  2       //26-Modem
+   //18, 45, 45, 18       //26-Modem
 };
 
 

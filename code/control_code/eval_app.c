@@ -189,7 +189,7 @@ unsigned char Eval_CountDown(int *cMin, int *cSec)
 			min--;
 
 			//*** entry debug every minute
-			if (DEBUG && DEB_ENTRY)
+			if (DEB_ENTRY)
 			{
 				MEM_EEPROM_WriteAutoEntry(10, 2, Write_Error);
 				MEM_EEPROM_WriteAutoEntry(10, 2, Write_o2);
