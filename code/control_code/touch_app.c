@@ -65,22 +65,7 @@ unsigned char Touch_Matrix(void)
   static unsigned char state = 0;
   unsigned char *p_touch = Touch_Read();
 
-  //*** remove this next time!!!
-  /*
-  static unsigned char death = 0;
-  if (DEBUG) 
-  {
-    death++;
-    if (death >= 100)
-    {
-      death = 0;
-      LCD_DeathMan(0, 0);
-    }
-    LCD_WriteValue3(0, 35, p_touch[0]);
-    LCD_WriteValue2(2, 35, state);
-  }
-  */
-
+  // first state, read data
   if(p_touch[0] == _ready && (state == 0 || state == 1))
   {
     y[state] = p_touch[1];
@@ -88,6 +73,7 @@ unsigned char Touch_Matrix(void)
     state++;
   }
 
+  // interpret data
 	if(p_touch[0] == _ready && state == 2)
 	{
     state = 0;
