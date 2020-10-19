@@ -110,6 +110,13 @@ unsigned char Touch_Matrix(void)
     }
 	}
 
+  // other, this is important
+  else
+  {
+    hy = 6; 
+    lx = 6;
+  }
+
   // safety state
   if (state > 2)
   {
