@@ -1,18 +1,5 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Control Interception ICT
-*	Name:			    error_func.c
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	Error Detection and Treatment Source-File
-* ------------------------------------------------------------------
-*	Date:			    24.10.2011
-* lastChanges:	24.02.2015
-\**********************************************************************/
+// --
+// error detection and treatment
 
 #include <string.h>
 
@@ -34,44 +21,44 @@
 
 
 /* ==================================================================*
- * 						Error ON/OFF
+ *            Error ON/OFF
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- * 	PORT_ErrorOn
+ *  PORT_ErrorOn
  * --------------------------------------------------------------
- *	Sets Error Signals
+ *  Sets Error Signals
  * ------------------------------------------------------------------*/
 
 void Error_ON(void)
 {
-	PORT_Buzzer(_error);
-	LCD_Backlight(_error);
-	PORT_RelaisSet(R_ALARM);
+  PORT_Buzzer(_error);
+  LCD_Backlight(_error);
+  PORT_RelaisSet(R_ALARM);
 }
 
 void Error_OFF(void)
 {
-	PORT_Buzzer(_off);
-	LCD_Backlight(_on);
-	PORT_RelaisClr(R_ALARM);
+  PORT_Buzzer(_off);
+  LCD_Backlight(_on);
+  PORT_RelaisClr(R_ALARM);
 }
 
 
 /* ---------------------------------------------------------------*
- * 					Read Error
+ *          Read Error
  * ---------------------------------------------------------------*/
 
 unsigned char Error_Read(t_page page)
 {
-	unsigned char err = 0;
+  unsigned char err = 0;
 
   // temp
-	if(MCP9800_PlusTemp() > MEM_EEPROM_ReadVar(ALARM_temp))
+  if(MCP9800_PlusTemp() > MEM_EEPROM_ReadVar(ALARM_temp))
     err |= E_T;
 
   // over-pressure
-	if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | (MEM_EEPROM_ReadVar(MAX_L_druck))))
+  if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | (MEM_EEPROM_ReadVar(MAX_L_druck))))
     err |= E_OP;
 
   // under-pressure check if necessary
@@ -110,31 +97,31 @@ unsigned char Error_Read(t_page page)
   }
 
   // under-pressure
-	if(check_up_err && MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck)<<8) | (MEM_EEPROM_ReadVar(MIN_L_druck))))
+  if(check_up_err && MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck)<<8) | (MEM_EEPROM_ReadVar(MIN_L_druck))))
     err |= E_UP;
 
   // max in Tank
-	if(MPX_ReadTank(AutoAir, _error) == ErrorMPX)
+  if(MPX_ReadTank(AutoAir, _error) == ErrorMPX)
     err |= E_IT;
 
-	return err;
+  return err;
 }
 
 
 /* ==================================================================*
- * 						Error Detection
+ *            Error Detection
  * ==================================================================*/
 
 t_page Error_Detection(t_page page, int min, int sec)
 {
-	static unsigned char occ = 0;
-	static unsigned char rev = 0;
-	static t_page treatPage;
-	unsigned char err = 0;
+  static unsigned char occ = 0;
+  static unsigned char rev = 0;
+  static t_page treatPage;
+  unsigned char err = 0;
   ErrTreat treat;
 
   // check if errors occur
-	err = Error_Read(page);
+  err = Error_Read(page);
 
   // run the buzzer
   PORT_Buzzer(_exe);
@@ -164,20 +151,20 @@ t_page Error_Detection(t_page page, int min, int sec)
   }
 
   // error reset
-	if(!err && rev && !occ)
-	{
-		rev = 0;
-		Error_OFF();
-		TCE0_ErrorTimer(_reset);
-		LCD_AutoSet_Symbol(page, min, sec);
-	}
-	return page;
+  if(!err && rev && !occ)
+  {
+    rev = 0;
+    Error_OFF();
+    TCE0_ErrorTimer(_reset);
+    LCD_AutoSet_Symbol(page, min, sec);
+  }
+  return page;
 }
 
 
 
 /* ==================================================================*
- * 						Error Treatment
+ *            Error Treatment
  * ==================================================================*/
 
 ErrTreat Error_Treatment(t_page page, unsigned char error)
@@ -190,56 +177,56 @@ ErrTreat Error_Treatment(t_page page, unsigned char error)
   if(error) err = error;
 
   // temp
-	if(err & E_T)
-	{
+  if(err & E_T)
+  {
     Error_Action_Temp_SetError();
     treat.page = AutoSetDown;
     treat.err_treated = 1;
     err &= ~E_T;
-	}
+  }
 
-	// over-pressure
-	if(err & E_OP)
-	{
+  // over-pressure
+  if(err & E_OP)
+  {
     if(Error_Action_OP_Air(page)){
       treat.err_treated = 1;
       err &= ~E_OP;
     }
   }
 
-	// under-pressure
-	if(err & E_UP)
-	{
+  // under-pressure
+  if(err & E_UP)
+  {
     if(Error_Action_UP_Air(page)){
       treat.err_treated = 1;
       err &= ~E_OP;
     }
-	}
+  }
 
-	// max in tank
-	if(err & E_IT)
-	{
+  // max in tank
+  if(err & E_IT)
+  {
     Error_Action_IT_SetError();
     if((page == AutoAir) || (page == AutoAirOff) || (page == AutoCirc) || (page == AutoCircOff))
       treat.page = AutoSetDown;
     treat.err_treated = 1;
     err &= ~E_IT;
-	}
+  }
 
-	//--------------------------------------------------MaxOUTTank
-	if(err & E_OT)
-	{
+  //--------------------------------------------------MaxOUTTank
+  if(err & E_OT)
+  {
     Error_Action_OT_SetError();
     treat.err_treated = 1;
     err &= ~E_OT;
-	}
+  }
 
-	return treat;
+  return treat;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Error Action OverPressure - Air
+ *            Error Action OverPressure - Air
  * ------------------------------------------------------------------*/
 
 unsigned char Error_Action_OP_Air(t_page page)
@@ -251,7 +238,7 @@ unsigned char Error_Action_OP_Air(t_page page)
   {
     Error_Action_OP_SetError();
     switch(page)
-	  {
+    {
       // set down
       case AutoSetDown:
         OUT_Clr_Compressor();
@@ -275,7 +262,7 @@ unsigned char Error_Action_OP_Air(t_page page)
         break;
 
       case AutoAirOff:
-		  case AutoCircOff:
+      case AutoCircOff:
         if((LCD_Auto_InflowPump(page, 0, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
         {
           P_VENTIL.OUTSET = C_RES;
@@ -291,14 +278,14 @@ unsigned char Error_Action_OP_Air(t_page page)
 
       case AutoCirc:
       case AutoAir:
-		  case AutoZone:
+      case AutoZone:
         P_VENTIL.OUTSET = C_AIR;
         PORT_Ventil(SET_STATE_CLOSE, V_AIR);
         break;
 
       default:
         break;
-	  }
+    }
     s_op = 1;
   }
 
@@ -412,7 +399,7 @@ unsigned char Error_Action_OP_Air(t_page page)
 
 
 /* ------------------------------------------------------------------*
- * 						Error Action - UnderPressure Air
+ *            Error Action - UnderPressure Air
  * ------------------------------------------------------------------*/
 
 unsigned char Error_Action_UP_Air(t_page page)
@@ -449,106 +436,106 @@ unsigned char Error_Action_UP_Air(t_page page)
 
 
 /* ==================================================================*
- * 						Error Set
+ *            Error Set
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						Error Set Temperature Error
+ *            Error Set Temperature Error
  * ------------------------------------------------------------------*/
 
 void Error_Action_Temp_SetError(void)
 {
-	static unsigned char c = 0;
+  static unsigned char c = 0;
 
   Error_Symbol(E_T);
-	c++;
-	if(c == 2)
-	{
+  c++;
+  if(c == 2)
+  {
     Error_ON();
     MEM_EEPROM_WriteAutoEntry(0, 1, Write_Error);
     Error_ModemAction(E_T);
-	}
-	if(c > 250) c = 0;
+  }
+  if(c > 250) c = 0;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Error Set OverPressure
+ *            Error Set OverPressure
  * ------------------------------------------------------------------*/
 
 void Error_Action_OP_SetError(void)
 {
-	static unsigned char c = 0;
+  static unsigned char c = 0;
 
   Error_Symbol(E_OP);
-	c++;
-	if(c == 2)
-	{
-		if(MEM_EEPROM_ReadVar(ALARM_comp))	Error_ON();
-		MEM_EEPROM_WriteAutoEntry(0, 2, Write_Error);
+  c++;
+  if(c == 2)
+  {
+    if(MEM_EEPROM_ReadVar(ALARM_comp))  Error_ON();
+    MEM_EEPROM_WriteAutoEntry(0, 2, Write_Error);
     Error_ModemAction(E_OP);
-	}
-	if(c > 250) c = 0;
+  }
+  if(c > 250) c = 0;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Error Set UnderPressure
+ *            Error Set UnderPressure
  * ------------------------------------------------------------------*/
 
 void Error_Action_UP_SetError(void)
 {
-	static unsigned char c = 0;
+  static unsigned char c = 0;
 
   Error_Symbol(E_UP);
-	c++;
-	if(c == 2)
-	{
-		if(MEM_EEPROM_ReadVar(ALARM_comp))	Error_ON();
-		MEM_EEPROM_WriteAutoEntry(0, 4, Write_Error);
+  c++;
+  if(c == 2)
+  {
+    if(MEM_EEPROM_ReadVar(ALARM_comp))  Error_ON();
+    MEM_EEPROM_WriteAutoEntry(0, 4, Write_Error);
     Error_ModemAction(E_UP);
-	}
-	if(c > 250) c = 0;
+  }
+  if(c > 250) c = 0;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Error Set IT - in tank error
+ *            Error Set IT - in tank error
  * ------------------------------------------------------------------*/
 
 void Error_Action_IT_SetError(void)
 {
-	static unsigned char c = 0;
+  static unsigned char c = 0;
 
   Error_Symbol(E_IT);
-	c++;
-	if(c == 2)
-	{
+  c++;
+  if(c == 2)
+  {
     if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON();
     MEM_EEPROM_WriteAutoEntry(0, 8, Write_Error);
     Error_ModemAction(E_IT);
-	}
-	if(c > 250) c = 0;
+  }
+  if(c > 250) c = 0;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Error Set OT - max out tank error
+ *            Error Set OT - max out tank error
  * ------------------------------------------------------------------*/
 
 void Error_Action_OT_SetError(void)
 {
-	static unsigned char c = 0;
+  static unsigned char c = 0;
 
   Error_Symbol(E_OT);
-	c++;
-	if(c == 2)
-	{
+  c++;
+  if(c == 2)
+  {
     if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON();
     MEM_EEPROM_WriteAutoEntry(0, 16, Write_Error);
     Error_ModemAction(E_OT);
-	}
-	if(c > 250) c = 0;
+  }
+  if(c > 250) c = 0;
 }
 
 
@@ -579,7 +566,7 @@ void Error_ModemAction(unsigned char error)
 
 
 /* ==================================================================*
- * 						Error Symbols
+ *            Error Symbols
  * ==================================================================*/
 
 void Error_Symbol(unsigned char err)

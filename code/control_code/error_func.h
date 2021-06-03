@@ -1,35 +1,22 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Control Interception ICT
-*	Name:			    SL_Error_func.h
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	Error Detection and Treatment Header-File
-* ------------------------------------------------------------------
-*	Date:			    24.10.2011
-* lastChanges:  24.07.2015
-\**********************************************************************/
+// --
+// error detection and treatment
 
 // Include guard
 #ifndef ERROR_FUNC_H   
 #define ERROR_FUNC_H
 
 /* ==================================================================*
- * 						Defines - Error Positions
+ *            Defines - Error Positions
  * ==================================================================*/
 
-#define 	E_T			(1<<0)			//Temperature
-#define		E_OP		(1<<1)			//OverPressure
-#define		E_UP		(1<<2)			//UnderPressure
-#define		E_IT		(1<<3)			//MaxinTank
-#define		E_OT		(1<<4)			//OutTank
+#define   E_T     (1<<0)      //Temperature
+#define   E_OP    (1<<1)      //OverPressure
+#define   E_UP    (1<<2)      //UnderPressure
+#define   E_IT    (1<<3)      //MaxinTank
+#define   E_OT    (1<<4)      //OutTank
 
 /* ==================================================================*
- * 						Struct
+ *            Struct
  * ==================================================================*/
 
 typedef struct _ErrTreat
@@ -40,7 +27,7 @@ typedef struct _ErrTreat
 
 
 /* ==================================================================*
- * 						FUNCTIONS - API
+ *            FUNCTIONS - API
  * ==================================================================*/
 
 void Error_ON(void);

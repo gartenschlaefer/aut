@@ -1,18 +1,5 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Control Interception ICT
-*	Name:			    Basic
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	Init, Watchdog, Clock
-* ------------------------------------------------------------------
-*	Date:			    12.05.2015
-* lastChanges:  12.08.2015
-\**********************************************************************/
+// --
+// basic functions, such as init, watchdog, clock
 
 #include<avr/io.h>
 #include<avr/interrupt.h>
@@ -38,31 +25,30 @@
 #include "memory_app.h"
 
 
-
 /* ==================================================================*
- * 						Init
+ *            Init
  * ==================================================================*/
 
 void Basic_Init(void)
 {
-	// ports init
-	Clock_Init();
-	PORT_Init();
-	ADC_Init();
+  // ports init
+  Clock_Init();
+  PORT_Init();
+  ADC_Init();
 
-	// communication init
-	USART_Init();
-	TWI_Master_Init();
-	TWI2_Master_Init();
+  // communication init
+  USART_Init();
+  TWI_Master_Init();
+  TWI2_Master_Init();
 
-	// display init
-	LCD_HardwareRst();
-	TCC0_Main_Wait();
-	LCD_Init();
-	TCC0_Main_Wait();
-	LCD_Clean();
+  // display init
+  LCD_HardwareRst();
+  TCC0_Main_Wait();
+  LCD_Init();
+  TCC0_Main_Wait();
+  LCD_Clean();
 
-	// Memory init
+  // Memory init
   if(MEM_INIT) Basic_Init_Mem();
 
   // Watchdog
@@ -70,11 +56,11 @@ void Basic_Init(void)
 
   // Devices Init
   MCP7941_Init();
-	AD8555_Init();
-	CAN_Init();
-	TCC0_Main_Wait();
+  AD8555_Init();
+  CAN_Init();
+  TCC0_Main_Wait();
 
-	//--------------------------------------------------JumptoApp
+  //--------------------------------------------------JumptoApp
   TCE1_WaitMilliSec_Init(25);
   CAN_TxCmd(_app);
   while(CAN_RxACK() != _ack)
@@ -82,12 +68,12 @@ void Basic_Init(void)
   TCE0_Stop();
 
   // Safety Timer
-	TCD1_MainAuto_SafetyTC(_init);
+  TCD1_MainAuto_SafetyTC(_init);
 }
 
 
 /*-------------------------------------------------------------------*
- * 	Basic - Memory Init
+ *  Basic - Memory Init
  * ------------------------------------------------------------------*/
 
 void Basic_Init_Mem(void)
@@ -95,7 +81,7 @@ void Basic_Init_Mem(void)
   AT24C_Init();                       //Tel-Nr.
   MEM_EEPROM_SetZero();               //SetDataPagesZero
 
-	if(DEBUG)
+  if(DEBUG)
   {
     //***VarDefaultShort
     MEM_EEPROM_WriteVarDefault_Short(); //Just4Debug
@@ -105,54 +91,54 @@ void Basic_Init_Mem(void)
     MEM_EEPROM_WriteVarDefault();
   }
 
-	MCP7941_InitDefault();			        //Timer IC Init
-	LCD_Calibration();					        //LCD Calibration
+  MCP7941_InitDefault();              //Timer IC Init
+  LCD_Calibration();                  //LCD Calibration
 }
 
 
 
 /* ==================================================================*
- * 						Clock
+ *            Clock
  * ==================================================================*/
 
 void Clock_Init(void)
 {
-	OSC.XOSCCTRL = 	OSC_FRQRANGE_12TO16_gc	|		  //Frequenz
-					        OSC_XOSCSEL_XTAL_16KCLK_gc;		//Start-Up
-	OSC.CTRL = 	    OSC_XOSCEN_bm;					      //Enable
+  OSC.XOSCCTRL =  OSC_FRQRANGE_12TO16_gc  |     //Frequenz
+                  OSC_XOSCSEL_XTAL_16KCLK_gc;   //Start-Up
+  OSC.CTRL =      OSC_XOSCEN_bm;                //Enable
 
-	while(!(OSC.STATUS & OSC_XOSCRDY_bm));	//Wait
-	CCP = 0xD8;										          //Protection
-	CLK.CTRL = CLK_SCLKSEL_XOSC_gc;			    //Selection
+  while(!(OSC.STATUS & OSC_XOSCRDY_bm));  //Wait
+  CCP = 0xD8;                             //Protection
+  CLK.CTRL = CLK_SCLKSEL_XOSC_gc;         //Selection
 }
 
 
 
 /* ==================================================================*
- * 						Watchdog
+ *            Watchdog
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- * 	Watchdog_Init
+ *  Watchdog_Init
  * ------------------------------------------------------------------*/
 
 void Watchdog_Init(void)
 {
-	CCP = CCP_IOREG_gc;						    //IO Protection
+  CCP = CCP_IOREG_gc;               //IO Protection
 
-	WDT.CTRL =	WDT_CEN_bm			  |		//Watchdog writeEnable
-              WDT_PER_8KCLK_gc	|		//1s open
-              WDT_ENABLE_bm;				//Watchdog Enable
+  WDT.CTRL =  WDT_CEN_bm        |   //Watchdog writeEnable
+              WDT_PER_8KCLK_gc  |   //1s open
+              WDT_ENABLE_bm;        //Watchdog Enable
 }
 
 
 /*-------------------------------------------------------------------*
- * 	Watchdog_Restart
+ *  Watchdog_Restart
  * ------------------------------------------------------------------*/
 
 void Watchdog_Restart(void)
 {
-	WDT_RESET;
+  WDT_RESET;
 }
 
 

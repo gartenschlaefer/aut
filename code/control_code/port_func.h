@@ -1,18 +1,5 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Control Interception ICT
-*	Name:			    PORT+Interrupt
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	PORT Header
-* ------------------------------------------------------------------
-*	Date:			    27.05.2011
-* lastChanges:	07.11.2011
-\**********************************************************************/
+// --
+// port functions
 
 // Include guard
 #ifndef PORT_FUNC_H   
@@ -21,20 +8,20 @@
 #include<avr/io.h>
 
 /* ==================================================================*
- * 						DEFINES
+ *            DEFINES
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						PORT
+ *            PORT
  * ------------------------------------------------------------------*/
 
-#define	P_OPTO		(PORTH)		//PORTH
-#define	P_VENTIL	(PORTJ)		//PORTJ
-#define	P_RELAIS	(PORTK)		//PORTK
+#define P_OPTO    (PORTH)   //PORTH
+#define P_VENTIL  (PORTJ)   //PORTJ
+#define P_RELAIS  (PORTK)   //PORTK
 
 
 /* ------------------------------------------------------------------*
- * 						Optical coupler Inputs
+ *            Optical coupler Inputs
  * ------------------------------------------------------------------*/
 
 #define OC1 (PIN7_bm)
@@ -50,40 +37,40 @@ struct InputHandler {
 
 
 /* ------------------------------------------------------------------*
- * 						Ventil Outpus
+ *            Ventil Outpus
  * ------------------------------------------------------------------*/
 
 //*--------------------------Normal Connection
-#define ALL_OPEN	0x55
-#define ALL_CLOSE	0xAA
-#define O_RES		  0x01
-#define C_RES		  0x02
-#define O_MUD		  0x04
-#define C_MUD		  0x08
-#define O_AIR		  0x10
-#define C_AIR		  0x20
-#define O_CLRW		0x40
-#define C_CLRW		0x80
+#define ALL_OPEN  0x55
+#define ALL_CLOSE 0xAA
+#define O_RES     0x01
+#define C_RES     0x02
+#define O_MUD     0x04
+#define C_MUD     0x08
+#define O_AIR     0x10
+#define C_AIR     0x20
+#define O_CLRW    0x40
+#define C_CLRW    0x80
 //--------------------------*/
 
 /*--------------------------Rverse
-#define ALL_OPEN	0xAA
-#define ALL_CLOSE	0x55
-#define O_RES		  0x02
-#define C_RES		  0x01
-#define O_MUD		  0x08
-#define C_MUD		  0x04
-#define O_AIR		  0x20
-#define C_AIR		  0x10
-#define O_CLRW		0x80
-#define C_CLRW		0x40
+#define ALL_OPEN  0xAA
+#define ALL_CLOSE 0x55
+#define O_RES     0x02
+#define C_RES     0x01
+#define O_MUD     0x08
+#define C_MUD     0x04
+#define O_AIR     0x20
+#define C_AIR     0x10
+#define O_CLRW    0x80
+#define C_CLRW    0x40
 //--------------------------*/
 
 typedef enum
-{	OPEN_Reserve,		CLOSE_Reserve,
-	OPEN_MudPump,		CLOSE_MudPump,
-	OPEN_Air,			CLOSE_Air,
-	OPEN_ClearWater,	CLOSE_ClearWater,
+{ OPEN_Reserve,   CLOSE_Reserve,
+  OPEN_MudPump,   CLOSE_MudPump,
+  OPEN_Air,     CLOSE_Air,
+  OPEN_ClearWater,  CLOSE_ClearWater,
   CLOSE_IPAir,  
   SET_STATE_CLOSE,
   SET_STATE_OPEN,
@@ -99,34 +86,34 @@ typedef enum
 
 
 /* ------------------------------------------------------------------*
- * 						Relais Outpus
+ *            Relais Outpus
  * ------------------------------------------------------------------*/
 
 /*---------------------------------------Old
-#define R_COMP			(1<<4)			//R1
-#define	R_PHOSPHOR		(1<<5)			//R2
-#define	R_ALARM			(1<<6)			//R3
-#define	R_VENTILATOR	(1<<7)			//R4
-#define	R_INFLOW1		(1<<0)			//R5
-#define	R_INFLOW2		(1<<1)			//R6
-#define	R_CLEARWATER	(1<<2)			//R7
-#define	R_EXT_COMP		(1<<3)			//R8
+#define R_COMP      (1<<4)      //R1
+#define R_PHOSPHOR    (1<<5)      //R2
+#define R_ALARM     (1<<6)      //R3
+#define R_VENTILATOR  (1<<7)      //R4
+#define R_INFLOW1   (1<<0)      //R5
+#define R_INFLOW2   (1<<1)      //R6
+#define R_CLEARWATER  (1<<2)      //R7
+#define R_EXT_COMP    (1<<3)      //R8
 //----------------------------------------*/
 
 //*---------------------------------------New
-#define R_COMP			  (1<<4)			//R1
-#define	R_CLEARWATER	(1<<5)			//R2
-#define	R_ALARM			  (1<<6)			//R3
-#define	R_VENTILATOR	(1<<7)			//R4
-#define	R_INFLOW1		  (1<<0)			//R5
-#define	R_INFLOW2		  (1<<1)			//R6
-#define	R_PHOSPHOR		(1<<2)			//R7
-#define	R_EXT_COMP		(1<<3)			//R8
+#define R_COMP        (1<<4)      //R1
+#define R_CLEARWATER  (1<<5)      //R2
+#define R_ALARM       (1<<6)      //R3
+#define R_VENTILATOR  (1<<7)      //R4
+#define R_INFLOW1     (1<<0)      //R5
+#define R_INFLOW2     (1<<1)      //R6
+#define R_PHOSPHOR    (1<<2)      //R7
+#define R_EXT_COMP    (1<<3)      //R8
 //----------------------------------------*/
 
 
 /* ==================================================================*
- * 						FUCNTION API
+ *            FUCNTION API
  * ==================================================================*/
 
 void PORT_Init(void);

@@ -1,18 +1,5 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Interception ICT
-*	Name:			    AT24C-driver-SourceFile
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	SourceFile for EEPROM AT24C512
-* ------------------------------------------------------------------
-*	Date:			    05.01.2013
-* lastChanges:	09.02.2016
-\**********************************************************************/
+// --
+// EEPROM AT24C512 driver
 
 
 #include <avr/io.h>
@@ -24,11 +11,11 @@
 
 
 /* ==================================================================*
- * 						FUNCTIONS Basics
+ *            FUNCTIONS Basics
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						Init
+ *            Init
  * ------------------------------------------------------------------*/
 
 void AT24C_Init(void)
@@ -36,91 +23,82 @@ void AT24C_Init(void)
   unsigned char addr = 0;
   for(addr = 0; addr < 32; addr++)
   {
-    AT24C_WriteByte(addr, 11);    //ModemTelNr
+    // model tel nr.
+    AT24C_WriteByte(addr, 11);
     TCC0_wait_ms(10);
   }
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Write Byte
+ *            Write Byte
  * ------------------------------------------------------------------*/
 
 void AT24C_WriteByte(int addr, unsigned char sData)
 {
-	unsigned char send[]= {0,0,0};
+  unsigned char send[]= {0,0,0};
 
   send[0]= ((addr >> 8) & 0x00FF);
-	send[1]= addr & 0x00FF;
-	send[2]= sData;
+  send[1]= addr & 0x00FF;
+  send[2]= sData;
 
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send,	3);
+  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 3);
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Write Page - 128Byte
+ *            Write Page - 128Byte
  * ------------------------------------------------------------------*/
 
 void AT24C_WritePage(int addr, unsigned char *sData)
 {
-	unsigned char send[130];
+  unsigned char send[130];
   unsigned char i = 0;
 
   send[0] = ((addr >> 8) & 0x00FF);
-	send[1] = addr & 0x00FF;
-	for(i = 0; i < 128; i++) send[i+2] = sData[i];
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send,	130);
+  send[1] = addr & 0x00FF;
+  for(i = 0; i < 128; i++) send[i+2] = sData[i];
+  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 130);
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Read Byte
+ *            Read Byte
  * ------------------------------------------------------------------*/
 
 unsigned char AT24C_ReadByte(int addr)
 {
-	unsigned char send[] = {0,0};
-	unsigned char *rec;
-	unsigned char rData;
+  unsigned char send[] = {0,0};
+  unsigned char *rec;
+  unsigned char rData;
 
   send[0]= ((addr >> 8) & 0x00FF);
-	send[1]= addr & 0x00FF;
+  send[1]= addr & 0x00FF;
 
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send,	2);
-	rec = TWI2_Master_ReadString(AT24C_ADDR_READ, 1);	  //Read
-	rec++;
-	rData = *rec;
+  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 2);
+  rec = TWI2_Master_ReadString(AT24C_ADDR_READ, 1);   //Read
+  rec++;
+  rData = *rec;
 
-	return rData;
+  return rData;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Read 8Byte
+ *            Read 8Byte
  * ------------------------------------------------------------------*/
 
 unsigned char *AT24C_Read8Byte(int addr)
 {
-	unsigned char send[] = {0,0};
-	unsigned char *rec;
+  unsigned char send[] = {0,0};
+  unsigned char *rec;
 
   send[0]= ((addr >> 8) & 0x00FF);
-	send[1]= addr & 0x00FF;
+  send[1]= addr & 0x00FF;
 
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send,	2);
-	rec = TWI2_Master_ReadString(AT24C_ADDR_READ, 8);	  //Read
-	rec++;
+  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 2);
+  rec = TWI2_Master_ReadString(AT24C_ADDR_READ, 8);   //Read
+  rec++;
 
-	return rec;
+  return rec;
 }
-
-
-
-
-
-
-
-/**********************************************************************\
- * End of file
-\**********************************************************************/

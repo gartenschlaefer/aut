@@ -1,79 +1,64 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Control Interception ICT
-*	Name:			Touchpanel-App-HeaderFile
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	Application-Header-File for the Touchpanel of
-*	the EADOGXL160-7 Display
-* ------------------------------------------------------------------
-*	Date:			13.07.2011
-* lastChanges:	10.10.2013
-\**********************************************************************/
+// --
+// touch applications
 
 // Include guard
 #ifndef TOUCH_APP_H   
 #define TOUCH_APP_H
 
 /* ==================================================================*
- * 						FUNCTIONS - API
+ *            FUNCTIONS - API
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						Touch Matrix
+ *            Touch Matrix
  * ------------------------------------------------------------------*/
 
 unsigned char Touch_Matrix(void);
 
 
 /* ------------------------------------------------------------------*
- * 						Main Linker
+ *            Main Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_AutoLinker   (unsigned char matrix, t_page page,
-                           int *p_min,           int *p_sec);
-t_page Touch_ManualLinker	(unsigned char matrix, t_page page);
-t_page Touch_SetupLinker	(unsigned char matrix, t_page page);
-t_page Touch_DataLinker		(unsigned char matrix, t_page page);
-t_page Touch_PinLinker		(unsigned char matrix, t_page page);
+t_page Touch_AutoLinker   (unsigned char matrix, t_page page, int *p_min, int *p_sec);
+t_page Touch_ManualLinker (unsigned char matrix, t_page page);
+t_page Touch_SetupLinker  (unsigned char matrix, t_page page);
+t_page Touch_DataLinker   (unsigned char matrix, t_page page);
+t_page Touch_PinLinker    (unsigned char matrix, t_page page);
 
 
 /* ------------------------------------------------------------------*
- * 						Manual Linker
+ *            Manual Linker
  * ------------------------------------------------------------------*/
 
-void Touch_ManualPumpOffLinker	(unsigned char matrix);
+void Touch_ManualPumpOffLinker  (unsigned char matrix);
 
 
 /* ------------------------------------------------------------------*
- * 						Setup Linker
+ *            Setup Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupCirculateLinker	(unsigned char matrix, t_page page);
-t_page Touch_SetupAirLinker			(unsigned char matrix, t_page page);
-t_page Touch_SetupWatchLinker		(unsigned char matrix, t_page page);
-t_page Touch_SetupSetDownLinker		(unsigned char matrix, t_page page);
-t_page Touch_SetupPumpOffLinker		(unsigned char matrix, t_page page);
-t_page Touch_SetupMudLinker			(unsigned char matrix, t_page page);
+t_page Touch_SetupCirculateLinker (unsigned char matrix, t_page page);
+t_page Touch_SetupAirLinker     (unsigned char matrix, t_page page);
+t_page Touch_SetupWatchLinker   (unsigned char matrix, t_page page);
+t_page Touch_SetupSetDownLinker   (unsigned char matrix, t_page page);
+t_page Touch_SetupPumpOffLinker   (unsigned char matrix, t_page page);
+t_page Touch_SetupMudLinker     (unsigned char matrix, t_page page);
 t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupPhosphorLinker	(unsigned char matrix, t_page page);
+t_page Touch_SetupPhosphorLinker  (unsigned char matrix, t_page page);
 t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupCalLinker			(unsigned char matrix, t_page page);
-t_page Touch_SetupAlarmLinker		(unsigned char matrix, t_page page);
-t_page Touch_SetupZoneLinker		(unsigned char matrix, t_page page);
+t_page Touch_SetupCalLinker     (unsigned char matrix, t_page page);
+t_page Touch_SetupAlarmLinker   (unsigned char matrix, t_page page);
+t_page Touch_SetupZoneLinker    (unsigned char matrix, t_page page);
 
 /* ------------------------------------------------------------------*
- * 						Data Linker
+ *            Data Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_DataAutoLinker		(unsigned char matrix, t_page pa);
-t_page Touch_DataManualLinker	(unsigned char matrix, t_page pa);
-t_page Touch_DataSetupLinker	(unsigned char matrix, t_page pa);
-t_page Touch_DataSonicLinker	(unsigned char matrix, t_page page);
+t_page Touch_DataAutoLinker   (unsigned char matrix, t_page pa);
+t_page Touch_DataManualLinker (unsigned char matrix, t_page pa);
+t_page Touch_DataSetupLinker  (unsigned char matrix, t_page pa);
+t_page Touch_DataSonicLinker  (unsigned char matrix, t_page page);
 
 #endif
 

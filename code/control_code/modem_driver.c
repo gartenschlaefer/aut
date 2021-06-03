@@ -1,19 +1,5 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Interception ICT
-*	Name:			    Modem-GC864-driver-SourceFile
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	SourceFile for Telit-GSM-Modem GC864Quad_v2
-* ------------------------------------------------------------------
-*	Date:			    01.12.2012
-* lastChanges:  30.12.2014
-\**********************************************************************/
-
+// --
+//  Telit-GSM-Modem GC864Quad_v2
 
 #include <avr/io.h>
 
@@ -29,11 +15,11 @@
 
 
 /* ==================================================================*
- * 						FUNCTIONS Basics
+ *            FUNCTIONS Basics
  * ==================================================================*/
 
  /* ------------------------------------------------------------------*
- * 						Modem Object init
+ *            Modem Object init
  * ------------------------------------------------------------------*/
 // TODO (christian#1#): Modem_object_init ...
 //
@@ -47,35 +33,35 @@ void Modem_init(struct Modem *mo)
 
 
 /* ------------------------------------------------------------------*
- * 						Init
+ *            Init
  * ------------------------------------------------------------------*/
 
 void Modem_Port_Init(void)
 {
   // outputs
-	PORTF.DIR = PIN0_bm |		//PF0-ModemOn-Output
-              PIN1_bm	|		//PF1-ModemReset-Output
-              PIN4_bm	|		//PF4-ModemRTS-Output
-              PIN7_bm;		//PF7-ModemTxD-Output
+  PORTF.DIR = PIN0_bm |   //PF0-ModemOn-Output
+              PIN1_bm |   //PF1-ModemReset-Output
+              PIN4_bm |   //PF4-ModemRTS-Output
+              PIN7_bm;    //PF7-ModemTxD-Output
 
   // inputs
-	PORTCFG.MPCMASK =	PIN2_bm	|		//PF2-ModemPWRmonitor-Input
-                    PIN3_bm	|		//PF3-ModemSLED-Input
-                    PIN5_bm	|		//PF5-ModemCTS-Input
-                    PIN6_bm;		//PF6-ModemRxD-Input
+  PORTCFG.MPCMASK = PIN2_bm |   //PF2-ModemPWRmonitor-Input
+                    PIN3_bm |   //PF3-ModemSLED-Input
+                    PIN5_bm |   //PF5-ModemCTS-Input
+                    PIN6_bm;    //PF6-ModemRxD-Input
 
   //Pins PULL UP and inverted
   PORTF.PIN2CTRL = PORT_OPC_WIREDANDPULL_gc | PORT_INVEN_bm;
 
   // config
-	PORTF.OUTCLR = (PIN0_bm | PIN1_bm | PIN4_bm | PIN7_bm);
-	PORTF.OUTSET = (PIN2_bm | PIN3_bm | PIN5_bm | PIN6_bm);
+  PORTF.OUTCLR = (PIN0_bm | PIN1_bm | PIN4_bm | PIN7_bm);
+  PORTF.OUTSET = (PIN2_bm | PIN3_bm | PIN5_bm | PIN6_bm);
 
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Modem check
+ *            Modem check
  * ------------------------------------------------------------------*/
 
 unsigned char Modem_Check(t_page page, struct Modem *mo)
@@ -110,7 +96,7 @@ unsigned char Modem_Check(t_page page, struct Modem *mo)
 
 
 /* ------------------------------------------------------------------*
- * 						Modem TurnOn
+ *            Modem TurnOn
  * ------------------------------------------------------------------*/
 
 unsigned char Modem_TurnOn(struct Modem *mo)
@@ -152,45 +138,45 @@ unsigned char Modem_TurnOn(struct Modem *mo)
     mo->turn_on_state = 0;
   }
 
-	return 0;
+  return 0;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Modem TurnOff
+ *            Modem TurnOff
  * ------------------------------------------------------------------*/
 
 void Modem_TurnOff(void)
 {
-	if(!(PORTF.IN & PIN2_bm))			    //PWR-On?
-	{
-		PORTF.OUTSET=	PIN0_bm;		      //TurnOff Modem
-		while(!(PORTF.IN & PIN2_bm));		//Wait until turned off
-		TCC0_wait_sec(1);
-		PORTF.OUTCLR=	PIN0_bm;		      //ClrOn Signal
-	}
+  if(!(PORTF.IN & PIN2_bm))         //PWR-On?
+  {
+    PORTF.OUTSET= PIN0_bm;          //TurnOff Modem
+    while(!(PORTF.IN & PIN2_bm));   //Wait until turned off
+    TCC0_wait_sec(1);
+    PORTF.OUTCLR= PIN0_bm;          //ClrOn Signal
+  }
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Modem ReadPWR-Monitor
+ *            Modem ReadPWR-Monitor
  * ------------------------------------------------------------------*/
 
 void Modem_ReadPWR(void)
 {
-	if(PORTF.IN & PIN2_bm)
-	{
-		LCD_FillSpace(4, 10, 2, 8);
-	}
-	else
-	{
-		LCD_ClrSpace(4, 10, 2, 8);
-	}
+  if(PORTF.IN & PIN2_bm)
+  {
+    LCD_FillSpace(4, 10, 2, 8);
+  }
+  else
+  {
+    LCD_ClrSpace(4, 10, 2, 8);
+  }
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Modem ReadSLED
+ *            Modem ReadSLED
  * ------------------------------------------------------------------*/
 
 void Modem_ReadSLED(t_page page)
@@ -223,35 +209,35 @@ void Modem_ReadSLED(t_page page)
 
 
 /* ------------------------------------------------------------------*
- * 						Modem ReadCTS
+ *            Modem ReadCTS
  * ------------------------------------------------------------------*/
 
 unsigned char Modem_CTS_ready(void)
 {
-	// sending data to modem is allowed
-	if(!(PORTF.IN & PIN5_bm))
-	{
-		return 1;
-	}
-	return 0;
+  // sending data to modem is allowed
+  if(!(PORTF.IN & PIN5_bm))
+  {
+    return 1;
+  }
+  return 0;
 }
 
 
 void Modem_ReadCTS(void)
 {
-	if(Modem_CTS_ready())
-	{
-		LCD_FillSpace(12, 10, 2, 8);
-	}
-	else
-	{
-		LCD_ClrSpace(12, 10, 2, 8);
-	}
+  if(Modem_CTS_ready())
+  {
+    LCD_FillSpace(12, 10, 2, 8);
+  }
+  else
+  {
+    LCD_ClrSpace(12, 10, 2, 8);
+  }
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Modem Tel.Nr
+ *            Modem Tel.Nr
  * ------------------------------------------------------------------*/
 
 char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
@@ -317,7 +303,7 @@ char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
 
 
 /* ------------------------------------------------------------------*
- * 						Modem Call
+ *            Modem Call
  * ------------------------------------------------------------------*/
 
 unsigned char Modem_Call(TelNr nr)
@@ -329,10 +315,10 @@ unsigned char Modem_Call(TelNr nr)
   if(Modem_TelNr(_read, nr) == 11) return 1;
 
   //--------------------------------------------------DialNumber
-	USART_WriteString("AT+FCLASS=8");
-	USART_WriteByte(CHAR_CR);
-	TCC0_wait_ms(100);
-	USART_WriteString("ATD+");
+  USART_WriteString("AT+FCLASS=8");
+  USART_WriteByte(CHAR_CR);
+  TCC0_wait_ms(100);
+  USART_WriteString("ATD+");
 
   for(nr.pos= 0; ((nr.tel != 11) && (nr.pos < 16)); nr.pos++)
   {
@@ -408,7 +394,7 @@ void Modem_SMS(TelNr nr, char msg[])
 
 
 /* ------------------------------------------------------------------*
- * 						Modem Call / SMS / Alert
+ *            Modem Call / SMS / Alert
  * ------------------------------------------------------------------*/
 
 void Modem_CallAllNumbers(void)
@@ -458,7 +444,7 @@ void Modem_Alert(char msg[])
 
 
 /* ------------------------------------------------------------------*
- * 						Modem SendTest
+ *            Modem SendTest
  * ------------------------------------------------------------------*/
 
 // helper var
@@ -466,8 +452,8 @@ int call_done = 0;
 
 void Modem_SendTest(void)
 {
-	// data not allowed from modem
-	//PORTF.OUTSET = PIN4_bm;
+  // data not allowed from modem
+  //PORTF.OUTSET = PIN4_bm;
 
   // data allowed from modem
   PORTF.OUTCLR = PIN4_bm;
@@ -503,19 +489,19 @@ void Modem_Test(void)
 {
 
   // some text
-	LCD_WriteStringFont(1, 10, "Modem");
+  LCD_WriteStringFont(1, 10, "Modem");
   LCD_WriteStringFont(4, 30,  "PWR");
   LCD_WriteStringFont(12, 30, "CTS");
 
   // modem init
-	struct Modem modem;
+  struct Modem modem;
   Modem_init(&modem);
 
   // timers
-	TCC0_wait_sec(1);
-	TCF1_WaitSec_Init(3);
+  TCC0_wait_sec(1);
+  TCF1_WaitSec_Init(3);
 
-	// test page
+  // test page
   t_page page = PinModem;
 
   // RTS off
@@ -525,21 +511,21 @@ void Modem_Test(void)
   int wait_var = 0;
 
   // loop
-	while(1)
-	{
+  while(1)
+  {
     // Watchdog
-	  Watchdog_Restart();
+    Watchdog_Restart();
 
-	  // check modem status -> turn on
-	  Modem_Check(page, &modem);
+    // check modem status -> turn on
+    Modem_Check(page, &modem);
 
     // Read status
-		Modem_ReadPWR();
-		Modem_ReadCTS();
+    Modem_ReadPWR();
+    Modem_ReadCTS();
 
     // time instance
-		if(TCF1_Wait_Query())
-		{
+    if(TCF1_Wait_Query())
+    {
       // add counter
       wait_var++;
 
@@ -597,9 +583,9 @@ void Modem_Test(void)
       }
 
       // see if it still runs
-			LCD_DeathMan(0, 0);
-		}
-	}
+      LCD_DeathMan(0, 0);
+    }
+  }
 }
 
 
@@ -641,18 +627,18 @@ void Modem_WriteSMS_Test(char msg[])
 
 void Modem_DialNumber(void)
 {
-	USART_WriteString("AT+FCLASS=8");
-	USART_WriteByte(CHAR_CR);
+  USART_WriteString("AT+FCLASS=8");
+  USART_WriteByte(CHAR_CR);
   TCC0_wait_ms(100);
-	USART_WriteString("ATD+436802104231");
-	USART_WriteByte(CHAR_CR);
+  USART_WriteString("ATD+436802104231");
+  USART_WriteByte(CHAR_CR);
 }
 
 
 void Modem_GetSoftwareversion(void)
 {
-	USART_WriteString("AT+CGMR");
-	USART_WriteByte(CHAR_CR);
+  USART_WriteString("AT+CGMR");
+  USART_WriteByte(CHAR_CR);
 }
 
 
@@ -661,6 +647,3 @@ void Modem_Shutdown(void)
   USART_WriteString("AT#SHDN");
   USART_WriteByte(CHAR_CR);
 }
-
-
-

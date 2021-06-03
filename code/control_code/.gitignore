@@ -1,4 +1,6 @@
 control_code
+
+# file endings
 *.eep
 *.fuse
 *.lock
@@ -6,4 +8,7 @@ control_code
 *.sig
 *.hex
 *.exe
-.obj/
+
+# folders
+bin/
+obj/

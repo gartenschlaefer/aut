@@ -1,21 +1,8 @@
-/*********************************************************************\
-*	Author:			  Christian Walter
-* ------------------------------------------------------------------
-* Project:		  Interception ICT
-*	Name:			    AT24C-app-HeaderFile
-* ------------------------------------------------------------------
-*	uC:        	  ATxmega128A1
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
-* ------------------------------------------------------------------
-*	HeaderFile for EEPROM AT24C512
-* ------------------------------------------------------------------
-*	Date:			    30.12.2014
-* lastChanges:
-\**********************************************************************/
+// --
+// EEPROM AT24C512 applications
 
 // Include guard
-#ifndef AT24C_APP_H   
+#ifndef AT24C_APP_H
 #define AT24C_APP_H
 
 typedef enum
@@ -32,12 +19,11 @@ typedef enum
 }t_EEvar;
 
 
-
 /* ==================================================================*
- * 						FUNCTIONS - API
+ *            FUNCTIONS - API
  * ==================================================================*/
 
-void          AT24C_WriteVar(t_EEvar var, unsigned char sData);
+void AT24C_WriteVar(t_EEvar var, unsigned char sData);
 unsigned char AT24C_ReadVar (t_EEvar var);
 
 #endif
