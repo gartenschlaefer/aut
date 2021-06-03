@@ -229,21 +229,26 @@ int Eval_SetupMinus(int value, int min)
 
 /*-------------------------------------------------------------------*
  *  Eval_SetupCirculateMark
- * --------------------------------------------------------------
- *  First clear, then mark
  * ------------------------------------------------------------------*/
 
 void Eval_SetupCircSensorMark(unsigned char sensor)
 {
   switch (sensor)
   {
-    case 0:   LCD_Write_Symbol_2(15, 0, p_sensor);
-          LCD_FillSpace (15, 39, 4, 31);
-          LCD_WriteStringFontNeg(16,40,"Time:");      break;
-    case 1:   LCD_Write_Symbol_2(15, 0, n_sensor);
-          LCD_ClrSpace  (15, 39, 4, 31);
-          LCD_WriteStringFont(16,40,"Time:");       break;
-    default:                          break;
+    case 0:   
+      LCD_Write_Symbol_2(15, 0, p_sensor);
+      LCD_FillSpace (15, 39, 4, 31);
+      LCD_WriteStringFontNeg(16,40,"Time:"); 
+      break;
+
+    case 1:   
+      LCD_Write_Symbol_2(15, 0, n_sensor);
+      LCD_ClrSpace  (15, 39, 4, 31);
+      LCD_WriteStringFont(16,40,"Time:");
+      break;
+
+    // default
+    default: break;
   }
 }
 

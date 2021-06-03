@@ -1,23 +1,23 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    boot_func.c
+* Project:      UltraSonic
+* Name:         boot_func.c
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	Bootloader Functions Applications
+* Bootloader Functions Applications
 * ------------------------------------------------------------------
-*	Date:			    02.01.2016
+* Date:         02.01.2016
 * lastChanges:
 \**********************************************************************/
 
 #include<avr/io.h>
 
 /* ===================================================================*
- * 						Header
+ *            Header
  * ===================================================================*/
 
 #include "defines.h"
@@ -30,18 +30,18 @@
 
 
 /* ===================================================================*
- * 						FUNCTIONS Apps
+ *            FUNCTIONS Apps
  * ===================================================================*/
 /* -------------------------------------------------------------------*
  *  At90can32
  *  Application Section:  0x0000 - 0x2FFF   24kB    96 pages
- *  Bootloader Section:	  0x3000 - 0x3FFF		8kB     32 pages
+ *  Bootloader Section:   0x3000 - 0x3FFF   8kB     32 pages
  *  Pages:                32
  *  Words / Page:         128
  * -------------------------------------------------------------------*/
 
 /* ===================================================================*
- * 						Bootloader Programm Application Section
+ *            Bootloader Programm Application Section
  * ===================================================================*/
 
 t_UScmd Boot_Program_App(void)
@@ -60,9 +60,9 @@ t_UScmd Boot_Program_App(void)
     for(word = 0; word < 128; word += 4)
     {
       WDT_RESET;
-      p_rx = CAN_RXMOB();		  //RXMob
+      p_rx = CAN_RXMOB();     //RXMob
       while(!p_rx[0]){
-        p_rx = CAN_RXMOB();		//RXMob
+        p_rx = CAN_RXMOB();   //RXMob
         if(TC0_Wait_msQuery(_exe, TC_CAN_MS))
           return _wait;}
       //----------------------------------------------DataReceived
@@ -70,7 +70,7 @@ t_UScmd Boot_Program_App(void)
       {
         for(i = 0; i < 4; i++){
           data = p_rx[(i * 2) + 2] | (p_rx[(i * 2) + 3] << 8);
-          Boot_LoadPageBuffer_Word((word + i), data);}	  //loadOneWord
+          Boot_LoadPageBuffer_Word((word + i), data);}    //loadOneWord
 
         TC0_Wait_msQuery(_init, TC_CAN_MS);
         CAN_TXMOB_ACK_Program();
@@ -90,7 +90,7 @@ t_UScmd Boot_Program_App(void)
 
 
 /* ===================================================================*
- * 						Read Application in UltraSonic
+ *            Read Application in UltraSonic
  * ===================================================================*/
 
 t_UScmd Boot_Read_App(void)
@@ -107,9 +107,9 @@ t_UScmd Boot_Read_App(void)
     //------------------------------------------------1Page-256W
     for(word = 0; word < 128; word += 4)
     {
-      p_rx = CAN_RXMOB();		  //RXMob
+      p_rx = CAN_RXMOB();     //RXMob
       while(!p_rx[0]){
-        p_rx = CAN_RXMOB();		//RXMob
+        p_rx = CAN_RXMOB();   //RXMob
         if(TC0_Wait_msQuery(_exe, TC_CAN_MS))
           return _wait;}
 
@@ -127,7 +127,7 @@ t_UScmd Boot_Read_App(void)
 
 
 /* ------------------------------------------------------------------*
- * 						Write 4 Words to CAN Bus
+ *            Write 4 Words to CAN Bus
  * ------------------------------------------------------------------*/
 
 void Boot_Write4Words2CAN(unsigned char page, unsigned char word)
@@ -137,8 +137,8 @@ void Boot_Write4Words2CAN(unsigned char page, unsigned char word)
 
   for(i = 0; i < 4; i++)
   {
-    send[(i * 2) + 2] = Boot_Read(page, word, 0);	  //readLByte
-		send[(i * 2) + 3] = Boot_Read(page, word, 1);	  //read HByte
+    send[(i * 2) + 2] = Boot_Read(page, word, 0);   //readLByte
+    send[(i * 2) + 3] = Boot_Read(page, word, 1);   //read HByte
     word++;
   }
   CAN_TXMOB(send);
@@ -151,7 +151,7 @@ void Boot_Write4Words2CAN(unsigned char page, unsigned char word)
 
 
 /***********************************************************************
- *	End of file
+ *  End of file
  ***********************************************************************/
 
 

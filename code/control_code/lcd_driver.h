@@ -11,6 +11,14 @@
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
+ *            Backlight 30000 -> ca. 3min
+ * ------------------------------------------------------------------*/
+
+#define BACKLIGHT_TON_FRAMES (3000)
+#define BACKLIGHT_ERROR_ON (400)
+#define BACKLIGHT_ERROR_OFF (2000)
+
+/* ------------------------------------------------------------------*
  *            PORT
  * ------------------------------------------------------------------*/
 
@@ -169,24 +177,18 @@ typedef enum
  * ------------------------------------------------------------------*/
 
 void          LCD_Init            (void);
-unsigned char LCD_SendCmd         (uint8* SCmd, uint8 i);
-void          LCD_SendData        (uint8* SData, uint8 i);
-void          LCD_SetPageAddress  (uint8 PA);
-void          LCD_SetColumnAdress (uint8 CA);
+unsigned char LCD_SendCmd         (unsigned char* SCmd, unsigned char i);
+void          LCD_SendData        (unsigned char* SData, unsigned char i);
+void          LCD_SetPageAddress  (unsigned char PA);
+void          LCD_SetColumnAdress (unsigned char CA);
 
 /* ------------------------------------------------------------------*
  *            Commands
  * ------------------------------------------------------------------*/
 
-void LCD_AllPixelsOn    (void);
-void LCD_AllPixelsOnOff (void);
 void LCD_Rst            (void);
 void LCD_HardwareRst    (void);
 void LCD_Clean          (void);
-void LCD_Fill           (void);
-
-void LCD_Inverse        (void);
-void LCD_NotInverse     (void);
 
 void LCD_Backlight      (t_FuncCmd cmd);
 
@@ -205,54 +207,52 @@ void LCD_WP_Page    (unsigned char startPA, unsigned char endPA);
  *            Write Font
  * ------------------------------------------------------------------*/
 
-void LCD_WriteFont      (uint8 row, uint8 col, uint16 word);
-void LCD_WriteFontNeg   (uint8 row, uint8 col, uint16 word);
-void LCD_WriteFontNum   (uint8 row, uint8 col, unsigned char word);
-void LCD_WriteMyFont    (uint8 row, uint8 col, unsigned char word);
-void LCD_WriteMyFontNeg (uint8 row, uint8 col, unsigned char word);
+void LCD_WriteFont      (unsigned char row, unsigned char col, unsigned short word);
+void LCD_WriteFontNeg   (unsigned char row, unsigned char col, unsigned short word);
+void LCD_WriteFontNum   (unsigned char row, unsigned char col, unsigned char word);
+void LCD_WriteMyFont    (unsigned char row, unsigned char col, unsigned char word);
+void LCD_WriteMyFontNeg (unsigned char row, unsigned char col, unsigned char word);
 
-void LCD_WriteStringFont      (uint8 y, uint8 x, char word[]);
-void LCD_WriteStringFontNeg   (uint8 y, uint8 x, char word[]);
-void LCD_WriteStringMyFont    (uint8 y, uint8 x, char word[]);
-void LCD_WriteStringMyFontNeg (uint8 y, uint8 x, char word[]);
+void LCD_WriteStringFont      (unsigned char y, unsigned char x, char word[]);
+void LCD_WriteStringFontNeg   (unsigned char y, unsigned char x, char word[]);
+void LCD_WriteStringMyFont    (unsigned char y, unsigned char x, char word[]);
 
 
 /* ------------------------------------------------------------------*
  *            Write Value
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue2  (uint8 y, uint8 x, int value);
-void LCD_WriteValueNeg2 (uint8 y, uint8 x, int value);
-void LCD_WriteValue3  (uint8 y, uint8 x, int value);
-void LCD_WriteValueNeg3 (uint8 y, uint8 x, int value);
-void LCD_WriteValue4  (uint8 y, uint8 x, int value);
-void LCD_WriteValueNeg4 (uint8 y, uint8 x, int value);
+void LCD_WriteValue2  (unsigned char y, unsigned char x, int value);
+void LCD_WriteValueNeg2 (unsigned char y, unsigned char x, int value);
+void LCD_WriteValue3  (unsigned char y, unsigned char x, int value);
+void LCD_WriteValueNeg3 (unsigned char y, unsigned char x, int value);
+void LCD_WriteValue4  (unsigned char y, unsigned char x, int value);
 
-void LCD_WriteValue2_MyFont(uint8 y, uint8 x, int value);
-void LCD_WriteValue3_MyFont(uint8 y, uint8 x, int value);
-void LCD_WriteValue4_MyFont(uint8 y, uint8 x, int value);
-void LCD_WriteValue5_MyFont(uint8 y, uint8 x, int value);
+void LCD_WriteValue2_MyFont(unsigned char y, unsigned char x, int value);
+void LCD_WriteValue3_MyFont(unsigned char y, unsigned char x, int value);
+void LCD_WriteValue4_MyFont(unsigned char y, unsigned char x, int value);
+void LCD_WriteValue5_MyFont(unsigned char y, unsigned char x, int value);
 
 
 /* ------------------------------------------------------------------*
  *            Write Symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Write_Symbol_1 (uint8 row, uint8 col, t_Symbols_35x23 sym);
-void LCD_Write_Symbol_2 (uint8 row, uint8 col, t_Symbols_29x17 sym);
-void LCD_Write_Symbol_3 (uint8 row, uint8 col, t_Symbols_19x24 sym);
+void LCD_Write_Symbol_1 (unsigned char row, unsigned char col, t_Symbols_35x23 sym);
+void LCD_Write_Symbol_2 (unsigned char row, unsigned char col, t_Symbols_29x17 sym);
+void LCD_Write_Symbol_3 (unsigned char row, unsigned char col, t_Symbols_19x24 sym);
 
 
 /* ------------------------------------------------------------------*
  *            Write Pin + Text
  * ------------------------------------------------------------------*/
 
-void LCD_Write_Pin      (uint8 row, uint8 col, t_pinSymbols sym, uint8 num);
-void LCD_Write_TextButton (uint8 row, uint8 col, t_textButtons text, uint8 pos);
-void LCD_Write_Purator    (uint8 row, uint8 col);
-void LCD_Write_HECS     (uint8 row, uint8 col);
+void LCD_Write_Pin      (unsigned char row, unsigned char col, t_pinSymbols sym, unsigned char num);
+void LCD_Write_TextButton (unsigned char row, unsigned char col, t_textButtons text, unsigned char pos);
+void LCD_Write_Purator    (unsigned char row, unsigned char col);
+void LCD_Write_HECS     (unsigned char row, unsigned char col);
 
-void LCD_DeathMan     (uint8 row, uint8 col);
+void LCD_DeathMan     (unsigned char row, unsigned char col);
 
 
 /* ------------------------------------------------------------------*
@@ -260,10 +260,10 @@ void LCD_DeathMan     (uint8 row, uint8 col);
  * ------------------------------------------------------------------*/
 
 unsigned char   LCD_ConvertWP (unsigned char con);
-void      LCD_WP_SetFrame (uint8 row, uint8 col, uint8 height, uint8 len);
+void      LCD_WP_SetFrame (unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 
-void      LCD_FillSpace (uint8 row, uint8 col, uint8 height, uint8 len);
-void      LCD_ClrSpace  (uint8 row, uint8 col, uint8 height, uint8 len);
+void      LCD_FillSpace (unsigned char row, unsigned char col, unsigned char height, unsigned char len);
+void      LCD_ClrSpace  (unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 
 #endif
 

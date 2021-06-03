@@ -220,8 +220,5 @@ void MCP2515_BitModify(unsigned char addr, unsigned char mask, unsigned char dat
 
 unsigned char MCP2515_ReadRxB(unsigned char cmd);
 void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer);
-void MCP2515_StartTransmission(void);
-
-void MCP2515_Test(void);
 
 #endif

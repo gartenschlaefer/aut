@@ -1,27 +1,27 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    sonic_app.h
+* Project:      UltraSonic
+* Name:         sonic_app.h
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	UltraSonic send and receive applications
+* UltraSonic send and receive applications
 * ------------------------------------------------------------------
-*	Date:			    12.04.2015
+* Date:         12.04.2015
 * lastChanges:  17.05.2015
 \**********************************************************************/
 
 
 
 /* ==================================================================*
- * 						Defines
+ *            Defines
  * ==================================================================*/
 
 //*-*Configuration
-#define SONIC_TRIGGER	  230		  //Trigger Value
+#define SONIC_TRIGGER   230     //Trigger Value
 #define TSAFE           200     //Time2nextSend in ms
 #define SVERS           0x12    //SortwareVersion x.x
 #define N_SHOTS          5
@@ -51,7 +51,7 @@
 
 
 /* ==================================================================*
- * 						FUNCTIONS - API
+ *            FUNCTIONS - API
  * ==================================================================*/
 
 t_UScmd Sonic_5Shots(t_FuncCmd cmd);

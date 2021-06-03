@@ -1,44 +1,24 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    boot_func.c
+* Project:      UltraSonic
+* Name:         boot_func.c
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	Bootloader Functions Applications
+* Bootloader Functions Applications
 * ------------------------------------------------------------------
-*	Date:			    02.01.2016
+* Date:         02.01.2016
 * lastChanges:  15.08.2016
 \**********************************************************************/
 
-/* ===================================================================*
- * 						Defines
- * ===================================================================*/
-
-//*-*Configuration
-
-#define SVERS         0x02    //SortwareVersion x.x
-#define SONIC_TYPE    0x02    //Boot-Type
-
-
 
 /* ===================================================================*
- * 						FUNSCTION-API
+ *            FUNSCTION-API
  * ===================================================================*/
 
 t_UScmd Boot_Program_App(void);
 t_UScmd Boot_Read_App(void);
 void Boot_Write4Words2CAN(unsigned char page, unsigned char word);
-
-
-
-
-
-
-/***********************************************************************
- *	End of file
- ***********************************************************************/
-

@@ -1,33 +1,33 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    adc_func.h
+* Project:      UltraSonic
+* Name:         adc_func.h
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	ADC Functions Header-File
+* ADC Functions Header-File
 * ------------------------------------------------------------------
-*	Date:			    05.12.2012
+* Date:         05.12.2012
 * lastChanges:
 \**********************************************************************/
 
 
 /* ==================================================================*
- * 						FUNCTIONS - Basics
+ *            FUNCTIONS - Basics
  * ==================================================================*/
 
 
-void ADC_ADC1_Init		(void);
-void ADC_ADC1_TurnOff	(void);
-void ADC_ADC3_Init		(void);
+void ADC_ADC1_Init    (void);
+void ADC_ADC1_TurnOff (void);
+void ADC_ADC3_Init    (void);
 void ADC_Reset        (void);
 
-unsigned char ADC_ReadByte		    (void);
+unsigned char ADC_ReadByte        (void);
 unsigned char ADC_ReadByteComplete(void);
-int ADC_Read10Bit		              (void);
+int ADC_Read10Bit                 (void);
 
 
 

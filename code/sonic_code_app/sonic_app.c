@@ -1,16 +1,16 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    sonic_app.c
+* Project:      UltraSonic
+* Name:         sonic_app.c
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	UltraSonic send and receive applications
+* UltraSonic send and receive applications
 * ------------------------------------------------------------------
-*	Date:			    12.04.2015
+* Date:         12.04.2015
 * lastChanges:  13.08.2019
 \**********************************************************************/
 
@@ -28,20 +28,20 @@
 
 
 /* ==================================================================*
- * 						App Functions
+ *            App Functions
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						Distance - 5 Measurements
+ *            Distance - 5 Measurements
  * ------------------------------------------------------------------*/
 
 t_UScmd Sonic_5Shots(t_FuncCmd cmd)
 {
-	unsigned char sonic = 0;
+  unsigned char sonic = 0;
   unsigned long calc = 0;
-	static unsigned char state = 0;
-	static unsigned char a = 0;
-	static unsigned char time[5][3] = {
+  static unsigned char state = 0;
+  static unsigned char a = 0;
+  static unsigned char time[5][3] = {
     {0x00, 0x00, 0x00},
     {0x00, 0x00, 0x00},
     {0x00, 0x00, 0x00},
@@ -52,7 +52,7 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
   if(cmd == _init)
   {
     state = 0;
-    CAN_USSREG(_reset, DISA);					      //WriteStatusReg
+    CAN_USSREG(_reset, DISA);               //WriteStatusReg
   }
 
   //--------------------------------------------------Exe
@@ -61,7 +61,7 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
     //--------------------------------------------------SendPulses
     if(state == 0)
     {
-      Sonic_StartMeasurement();	//SendPulses&Start
+      Sonic_StartMeasurement(); //SendPulses&Start
       state = 1;
     }
 
@@ -96,7 +96,7 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
       }
 
       // third timer var
-      else if(TIFR3 & (1 << TOV3))	//UltraSonicTimeOut-80cm
+      else if(TIFR3 & (1 << TOV3))  //UltraSonicTimeOut-80cm
       {
         TIFR3 |= (1 << TOV3);
         time[a][2]++;
@@ -162,7 +162,7 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
       if(TC2_16MHzWait_msQuery(_exe, TSAFE))
       {
         state = 0;
-        return _wait;						//Back2Wait
+        return _wait;           //Back2Wait
       }
     }
 
@@ -172,50 +172,50 @@ t_UScmd Sonic_5Shots(t_FuncCmd cmd)
       if(TC2_16MHzWait_msQuery(_exe, TSAFE)) state = 0;
     }
   }
-	return _5Shots;
+  return _5Shots;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Distance - SingleShot
+ *            Distance - SingleShot
  * ------------------------------------------------------------------*/
 
 t_UScmd Sonic_OneShot(void)
 {
-	int result = 0;
-	unsigned char sonic = 0;
-	static unsigned char state = 0;
-	static unsigned char time[3] = {0x00, 0x00, 0x00};
+  int result = 0;
+  unsigned char sonic = 0;
+  static unsigned char state = 0;
+  static unsigned char time[3] = {0x00, 0x00, 0x00};
 
-	//--------------------------------------------------SendPulses
-	if(state == 0)
-	{
-		Sonic_StartMeasurement();	//SendPulses&Start
-		state = 1;
-	}
+  //--------------------------------------------------SendPulses
+  if(state == 0)
+  {
+    Sonic_StartMeasurement(); //SendPulses&Start
+    state = 1;
+  }
 
-	//--------------------------------------------------EchoRecord
-	else if(state == 1)
-	{
-		sonic = ADC_ReadByteComplete();
+  //--------------------------------------------------EchoRecord
+  else if(state == 1)
+  {
+    sonic = ADC_ReadByteComplete();
 
     // read timer
     time[0]= TCNT3L;
     time[1]= TCNT3H;
 
     // adc sonic echo trigger lever
-		if(sonic >= SONIC_TRIGGER)
-		{
-			TC3_Sonic_StopTimer();	//TimerStop
-			state = 2;					    //NextStep
-		}
+    if(sonic >= SONIC_TRIGGER)
+    {
+      TC3_Sonic_StopTimer();  //TimerStop
+      state = 2;              //NextStep
+    }
 
     // third timer var
-		else if(TIFR3 & (1<<TOV3))	//UltraSonicTimeOut-80cm
-		{
-			TIFR3 |= (1 << TOV3);			//ResetFlag
-			time[2]++;					      //DistanceByte3
-		}
+    else if(TIFR3 & (1<<TOV3))  //UltraSonicTimeOut-80cm
+    {
+      TIFR3 |= (1 << TOV3);     //ResetFlag
+      time[2]++;                //DistanceByte3
+    }
 
     // send limit
     else if (time[2] >= SEND_LIMIT_H && time[1] >= SEND_LIMIT_L)
@@ -224,141 +224,141 @@ t_UScmd Sonic_OneShot(void)
       time[2] = 0xFF;
       state = 2;
     }
-	}
+  }
 
-	//--------------------------------------------------StoreData
-	else if(state == 2)
-	{
-		result = Sonic_Time2mm(&time[0]);
-		CAN_USDDREG(_write, result);
-		CAN_USSREG(_set, DISA);
-		time[2] = 0;
-		TC2_16MHzWait_msQuery(_init, TSAFE);
-		state = 3;
-	}
+  //--------------------------------------------------StoreData
+  else if(state == 2)
+  {
+    result = Sonic_Time2mm(&time[0]);
+    CAN_USDDREG(_write, result);
+    CAN_USSREG(_set, DISA);
+    time[2] = 0;
+    TC2_16MHzWait_msQuery(_init, TSAFE);
+    state = 3;
+  }
 
-	//--------------------------------------------------SafetyTimer
-	else if(state == 3)
-	{
-		if(TC2_16MHzWait_msQuery(_exe, TSAFE))
-		{
-			state = 0;
-			return _wait;						//Back2Wait
-		}
-	}
-	return _oneShot;
+  //--------------------------------------------------SafetyTimer
+  else if(state == 3)
+  {
+    if(TC2_16MHzWait_msQuery(_exe, TSAFE))
+    {
+      state = 0;
+      return _wait;           //Back2Wait
+    }
+  }
+  return _oneShot;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Temperature
+ *            Temperature
  * ------------------------------------------------------------------*/
 
 t_UScmd Sonic_Temp(void)
 {
-	static unsigned char state = 0;
-	int adc = 0;
+  static unsigned char state = 0;
+  int adc = 0;
 
-	//--------------------------------------------------Init
-	if(state == 0)
-	{
-		ADC_ADC3_Init();					        //ADC3-Temp-Init
-		TC2_16MHzWait_msQuery(_init, 5);	//Time2Change2InternalVoltage
-		state = 1;
-	}
+  //--------------------------------------------------Init
+  if(state == 0)
+  {
+    ADC_ADC3_Init();                  //ADC3-Temp-Init
+    TC2_16MHzWait_msQuery(_init, 5);  //Time2Change2InternalVoltage
+    state = 1;
+  }
   //--------------------------------------------------StartConv
-	else if(state == 1)
-	{
-		if(TC2_16MHzWait_msQuery(_exe, 5))
-		{
-			ADCSRA |=	(1 << ADSC);		//startConversion
-			state = 2;
-		}
-	}
-	//--------------------------------------------------ReadADC
-	else if(state == 2)
-	{
-		adc = ADC_Read10Bit();		    //ReadADC
-		if(!(adc & 0x8000))			      //Received
-		{
-			adc = Sonic_Temp_Calc(adc);	  //Calc
-			CAN_USDTREG(_write, adc);
-			CAN_USSREG(_set, TEMPA);
-			state = 0;
-			return _wait;			          //Back2Wait
-		}
-	}
-	return _readTemp;
+  else if(state == 1)
+  {
+    if(TC2_16MHzWait_msQuery(_exe, 5))
+    {
+      ADCSRA |= (1 << ADSC);    //startConversion
+      state = 2;
+    }
+  }
+  //--------------------------------------------------ReadADC
+  else if(state == 2)
+  {
+    adc = ADC_Read10Bit();        //ReadADC
+    if(!(adc & 0x8000))           //Received
+    {
+      adc = Sonic_Temp_Calc(adc);   //Calc
+      CAN_USDTREG(_write, adc);
+      CAN_USSREG(_set, TEMPA);
+      state = 0;
+      return _wait;               //Back2Wait
+    }
+  }
+  return _readTemp;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Temperature - Calc
+ *            Temperature - Calc
  * ------------------------------------------------------------------*/
 
 int Sonic_Temp_Calc(int adc)
 {
-	int zero = 200;			  //500mV= 0°C	//Ref= 2,56V
-	int k = 4;				    //k= 10mV/°C
-	int calc = 0;				  //CalcVar
-	unsigned char h = 0;  //°C
-	unsigned char l = 0;	//.°C
+  int zero = 200;       //500mV= 0°C  //Ref= 2,56V
+  int k = 4;            //k= 10mV/°C
+  int calc = 0;         //CalcVar
+  unsigned char h = 0;  //°C
+  unsigned char l = 0;  //.°C
 
-	if(adc > 200)				  //+
-	{
-		calc = adc - zero;  //set2Zero
-		h = calc / k;			  //TempHigh@°C
-		l = calc % 4;			  //TempLow
-		l = l * 25;			    //TempLow2.°C
-	}
-	else if(adc < 200)		//-
-	{
-		calc = zero - adc;	//set2Zero
-		h = calc / k;			  //TempHigh@°C
-		h = (0x80 | h);		  //Minus
-		l = calc % 4;			  //TempLow
-		l = l * 25;			    //TempLow2.°C
-	}
-	else if(adc == 200)		//zero
-	{
-		h = 0;
-		l = 0;
-	}
-	return ((h << 8) | l);
+  if(adc > 200)         //+
+  {
+    calc = adc - zero;  //set2Zero
+    h = calc / k;       //TempHigh@°C
+    l = calc % 4;       //TempLow
+    l = l * 25;         //TempLow2.°C
+  }
+  else if(adc < 200)    //-
+  {
+    calc = zero - adc;  //set2Zero
+    h = calc / k;       //TempHigh@°C
+    h = (0x80 | h);     //Minus
+    l = calc % 4;       //TempLow
+    l = l * 25;         //TempLow2.°C
+  }
+  else if(adc == 200)   //zero
+  {
+    h = 0;
+    l = 0;
+  }
+  return ((h << 8) | l);
 }
 
 
 
 /* ==================================================================*
- * 						UltraSonic Init Measurement
+ *            UltraSonic Init Measurement
  * ==================================================================*/
 
 void Sonic_StartMeasurement(void)
 {
-		ADC_ADC1_TurnOff();			  //SetLow
-		TC3_Sonic_Init();		  	  //Init PulseTimerCounter
+    ADC_ADC1_TurnOff();       //SetLow
+    TC3_Sonic_Init();         //Init PulseTimerCounter
 
-		PORTE &= ~(1 << PE3);			//Disable Low
-		TC3_Sonic_Send();	  		  //Send Sonic Impulses
-		PORTE |= (1 << PE3);			//Disable High
+    PORTE &= ~(1 << PE3);     //Disable Low
+    TC3_Sonic_Send();         //Send Sonic Impulses
+    PORTE |= (1 << PE3);      //Disable High
 
-		TC3_Sonic_StartTimer();		//Start Timer
-		ADC_ADC1_Init();			    //ADC-UltraSonic enable
+    TC3_Sonic_StartTimer();   //Start Timer
+    ADC_ADC1_Init();          //ADC-UltraSonic enable
 }
 
 
 
 /* ==================================================================*
- * 						UltraSonic Time2mmCalc
+ *            UltraSonic Time2mmCalc
  * ==================================================================*/
 
 int Sonic_Time2mm(unsigned char *p_time)
 {
-	unsigned long cycle = 0;
-	unsigned long us = 0;
-	unsigned long um = 0;
-	unsigned long mm = 0;
-	char temp = 0;
+  unsigned long cycle = 0;
+  unsigned long us = 0;
+  unsigned long um = 0;
+  unsigned long mm = 0;
+  char temp = 0;
   long c = 0;
 
   // time limit
@@ -367,9 +367,9 @@ int Sonic_Time2mm(unsigned char *p_time)
     return 0;
   }
 
-	cycle = p_time[2];
-	cycle = ((cycle << 8) | p_time[1]);
-	cycle = ((cycle << 8) | p_time[0]);
+  cycle = p_time[2];
+  cycle = ((cycle << 8) | p_time[1]);
+  cycle = ((cycle << 8) | p_time[0]);
   temp = ((CAN_USDTREG(_read, 0) >> 8) & 0x00FF);
 
   // calculate sonic velocity
@@ -379,10 +379,10 @@ int Sonic_Time2mm(unsigned char *p_time)
   else c = 3315 + (6 * temp);       //331,5m/s + 0,6 * °C
 
   // calculate distance 2 ways
-	us = ((cycle * 625) / 10000);	    //MicroSecs 	0,0625=1Zyclus
-	um = ((us * c) / 20);		          //MicroMeters s=c*T=343,5m/s*t
-	mm = (um / 1000) + SONIC_OFFSET;  //MilliMeters
+  us = ((cycle * 625) / 10000);     //MicroSecs   0,0625=1Zyclus
+  um = ((us * c) / 20);             //MicroMeters s=c*T=343,5m/s*t
+  mm = (um / 1000) + SONIC_OFFSET;  //MilliMeters
 
-	return mm;
+  return mm;
 }
 

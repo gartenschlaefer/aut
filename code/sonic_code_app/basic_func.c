@@ -1,16 +1,16 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    basic_func.c
+* Project:      UltraSonic
+* Name:         basic_func.c
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	PORT, Clock, Watchdog, Runtime
+* PORT, Clock, Watchdog, Runtime
 * ------------------------------------------------------------------
-*	Date:			    12.04.2015
+* Date:         12.04.2015
 * lastChanges:  12.04.2015
 \**********************************************************************/
 
@@ -18,7 +18,7 @@
 #include<avr/interrupt.h>
 
 /* ==================================================================*
- * 						Header
+ *            Header
  * ==================================================================*/
 
 #include "defines.h"
@@ -29,7 +29,7 @@
 
 
 /* ==================================================================*
- * 						FUNCTIONS
+ *            FUNCTIONS
  * ==================================================================*/
 
 void Basic_Init(void)
@@ -49,50 +49,50 @@ void Basic_Init(void)
 
 
 /* ------------------------------------------------------------------*
- * 						PORT Init
+ *            PORT Init
  * ------------------------------------------------------------------*/
 
 void PORT_Init(void)
 {
-	DDRB |= (1 << PB5);			//Output Sonic Pulse
-	DDRD |= (1 << PD4);			//Output STB-CAN
-	DDRE |= (1 << PE3);			//Output Enable
-	DDRF = 0x00;					  //ADC-All-Inputs
+  DDRB |= (1 << PB5);     //Output Sonic Pulse
+  DDRD |= (1 << PD4);     //Output STB-CAN
+  DDRE |= (1 << PE3);     //Output Enable
+  DDRF = 0x00;            //ADC-All-Inputs
 
-	PORTB &= ~(1 << PB5);		//Pulse-Low
-	PORTD &= ~(1 << PD4);		//STB-CAN-Low=HighSpeedCAN
-	PORTE |= (1 << PE3);		//Enable-High=DisablePulse
+  PORTB &= ~(1 << PB5);   //Pulse-Low
+  PORTD &= ~(1 << PD4);   //STB-CAN-Low=HighSpeedCAN
+  PORTE |= (1 << PE3);    //Enable-High=DisablePulse
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Clock Init
+ *            Clock Init
  * ------------------------------------------------------------------*/
 
 void Clock_Init(void)
 {
-	cli();						      //Interrupt Disable
-	CLKPR = (1 << CLKPCE);	//Change Enable
+  cli();                  //Interrupt Disable
+  CLKPR = (1 << CLKPCE);  //Change Enable
 
-	CLKPR = 0x00;				    //no Prescaler
-	//CLKPR= (1<<CLKPS0);		//clk/2
-	//CLKPR= (1<<CLKPS1);		//clk/4
+  CLKPR = 0x00;           //no Prescaler
+  //CLKPR= (1<<CLKPS0);   //clk/2
+  //CLKPR= (1<<CLKPS1);   //clk/4
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Watchdog Init
+ *            Watchdog Init
  * ------------------------------------------------------------------*/
 
 void Watchdog_Init(void)
 {
-	WDTCR |=  (1<<WDE) | (1<<WDCE);					      //Write Protection
-	WDTCR =   (1<<WDE) | (1<<WDP1) | (1<<WDP2);		//1s Timer
+  WDTCR |=  (1<<WDE) | (1<<WDCE);               //Write Protection
+  WDTCR =   (1<<WDE) | (1<<WDP1) | (1<<WDP2);   //1s Timer
 }
 
 
 /* ------------------------------------------------------------------*
- * 						Runtime
+ *            Runtime
  * ------------------------------------------------------------------*/
 
 t_UScmd Basic_Runtime(t_UScmd state)
@@ -108,26 +108,26 @@ t_UScmd Basic_Runtime(t_UScmd state)
 
 
 /* ===================================================================*
- * 						FUNCTIONS Jump
+ *            FUNCTIONS Jump
  * ===================================================================*/
 
 /* -------------------------------------------------------------------*
- * 						Jump to Application
+ *            Jump to Application
  * -------------------------------------------------------------------*/
 
 void Boot_Jump2App(void)
 {
-	asm volatile("jmp 0x0000");			//Jump Instruction
+  asm volatile("jmp 0x0000");     //Jump Instruction
 }
 
 
 /* -------------------------------------------------------------------*
- * 						Jump to Bootloader
+ *            Jump to Bootloader
  * -------------------------------------------------------------------*/
 
 void Boot_Jump2Bootloader(void)
 {
-	asm volatile("jmp 0x3000");			//Jump Instruction
+  asm volatile("jmp 0x3000");     //Jump Instruction
 }
 
 

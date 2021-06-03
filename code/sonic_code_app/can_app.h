@@ -1,50 +1,50 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    can_app.h
+* Project:      UltraSonic
+* Name:         can_app.h
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	CAN Application Header-File for CAN-Participiants
+* CAN Application Header-File for CAN-Participiants
 * ------------------------------------------------------------------
-*	Date:			    08.04.2013
+* Date:         08.04.2013
 * lastChanges:  13.08.2015
 \**********************************************************************/
 
 
 /* ==================================================================*
- * 						Defines
+ *            Defines
  * ==================================================================*/
 
 //--------------------------------USCREG1 - UltraSonicControlRegister1
-#define		USADR0	(1 << 0)		//Addr0
-#define		USADR1	(1 << 1)		//Addr1
-#define		USADR2	(1 << 2)		//Addr2
-#define		USADR3	(1 << 3)		//Addr3
-#define 	USEN	  (1 << 4)		//UltraSonic Enable
-#define		USMOD1	(1 << 5)		//UltraSonic Modus1
-#define		USMOD2	(1 << 6)		//UltraSonic Modus2
-#define		USMOD3	(1 << 7)		//UltraSonic Modus3
+#define   USADR0  (1 << 0)    //Addr0
+#define   USADR1  (1 << 1)    //Addr1
+#define   USADR2  (1 << 2)    //Addr2
+#define   USADR3  (1 << 3)    //Addr3
+#define   USEN    (1 << 4)    //UltraSonic Enable
+#define   USMOD1  (1 << 5)    //UltraSonic Modus1
+#define   USMOD2  (1 << 6)    //UltraSonic Modus2
+#define   USMOD3  (1 << 7)    //UltraSonic Modus3
 
 //--------------------------------USCREG2 - UltraSonicControlRegister2
-#define		RDIS	(1 << 0)		//ReadDistance
-#define		RTEMP	(1 << 1)		//ReadTemp
+#define   RDIS  (1 << 0)    //ReadDistance
+#define   RTEMP (1 << 1)    //ReadTemp
 
 //--------------------------------USSREG - UltraSonic Status Register
-#define		DISA	(1 << 0)		//Data Distance available
-#define		TEMPA	(1 << 1)		//Temp available
-#define		MDIS	(1 << 2)		//MeasureDistance
-#define		MTEMP	(1 << 3)		//MeasureTemp
-#define		USRDY	(1 << 4)		//UltraSonic ReadyBit
-#define		ERR		(1 << 5)		//ErrorBit
+#define   DISA  (1 << 0)    //Data Distance available
+#define   TEMPA (1 << 1)    //Temp available
+#define   MDIS  (1 << 2)    //MeasureDistance
+#define   MTEMP (1 << 3)    //MeasureTemp
+#define   USRDY (1 << 4)    //UltraSonic ReadyBit
+#define   ERR   (1 << 5)    //ErrorBit
 
 
 
 /* ==================================================================*
- * 						FUNCTIONS - API
+ *            FUNCTIONS - API
  * ==================================================================*/
 
 void CAN_TXMOB_Working(void);

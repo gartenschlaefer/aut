@@ -1,25 +1,25 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    defines.h
+* Project:      UltraSonic
+* Name:         defines.h
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	general Defines and Enumerations
+* general Defines and Enumerations
 * ------------------------------------------------------------------
-*	Date:			    18.04.2013
+* Date:         18.04.2013
 * lastChanges:
 \**********************************************************************/
 
 
 /* ==================================================================*
- * 						Defines
+ *            Defines
  * ==================================================================*/
 /* ------------------------------------------------------------------*
- * 	Useful macros for accessing single bytes of int and long variables
+ *  Useful macros for accessing single bytes of int and long variables
  * ------------------------------------------------------------------*/
 
 #define BYTE3(var) *((unsigned char *) &var+3)
@@ -30,36 +30,36 @@
 
 
 /* ==================================================================*
- * 						Enumerations
+ *            Enumerations
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						General Function Commands
+ *            General Function Commands
  * ------------------------------------------------------------------*/
 
 typedef enum
-{	_init,		_exe,		_set,		  _reset,
-	_on,		  _off,		_enabled,	_disabled,
-	_state,		_start,	_stop,		_overload,
-	_charge,	_ready,	_readyOn,	_readyOff,
-	_receive,	_send,	_sending,	_sent,
-	_txok,		_rxok,	_pending,	_read,
-	_clear,		_write
+{ _init,    _exe,   _set,     _reset,
+  _on,      _off,   _enabled, _disabled,
+  _state,   _start, _stop,    _overload,
+  _charge,  _ready, _readyOn, _readyOff,
+  _receive, _send,  _sending, _sent,
+  _txok,    _rxok,  _pending, _read,
+  _clear,   _write
 }t_FuncCmd;
 
 
 typedef enum
 {
-	//--------------------------------------------------Parser
-	_setCanAddress,
-	_oneShot,			  _5Shots,		    _startTemp,
-	_readDistance,	_readTemp,
-	_readUSSREG,		_readUSCREG1,		_readUSCREG2,
-	_writeUSSREG,		_writeUSCREG1,	_writeUSCREG2,
-	_sVersion,
-	_working,			  _ack,				    _wait,
+  //--------------------------------------------------Parser
+  _setCanAddress,
+  _oneShot,       _5Shots,        _startTemp,
+  _readDistance,  _readTemp,
+  _readUSSREG,    _readUSCREG1,   _readUSCREG2,
+  _writeUSSREG,   _writeUSCREG1,  _writeUSCREG2,
+  _sVersion,
+  _working,       _ack,           _wait,
   _boot,          _app,           _program,
-	_readProgram
+  _readProgram
 }t_UScmd;
 
 

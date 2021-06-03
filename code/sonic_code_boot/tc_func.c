@@ -1,17 +1,17 @@
 /*********************************************************************\
-*	Author:			  Christian Walter
+* Author:       Christian Walter
 * ------------------------------------------------------------------
-* Project:		  UltraSonic
-*	Name:			    tc_func.c
+* Project:      UltraSonic
+* Name:         tc_func.c
 * ------------------------------------------------------------------
-*	µ-Controler:	AT90CAN128/32
-*	Compiler:		  avr-gcc (WINAVR 2010)
-*	Description:
+* µ-Controler:  AT90CAN128/32
+* Compiler:     avr-gcc (WINAVR 2010)
+* Description:
 * ------------------------------------------------------------------
-*	TimerCounter Functions Source-File
+* TimerCounter Functions Source-File
 * ------------------------------------------------------------------
-*	Date:			    06.10.2011
-* lastChanges:	11.04.2015
+* Date:         06.10.2011
+* lastChanges:  11.04.2015
 \**********************************************************************/
 
 #include<avr/io.h>
@@ -22,111 +22,90 @@
 
 
 /* ==================================================================*
- * 						FUNCTIONS Timer Counter 16MHz
+ *            FUNCTIONS Timer Counter 16MHz
  * ==================================================================*/
 
 void TC_Wait_1clk(void)
 {
-	asm volatile("nop");
+  asm volatile("nop");
 }
 
 
 
 /* ==================================================================*
- * 						TC0 - 8Bit-MainWaitTimer
+ *            TC0 - 8Bit-MainWaitTimer
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- * 						TC0 - 1ms Init
+ *            TC0 - 1ms Init
  * ------------------------------------------------------------------*/
 
 void TC0_Wait_1ms_Init(void)
 {
-	TCNT0 = 0x00;
-	TCCR0A = (1<<CS00) | (1<<CS01);				//start clk/64
+  TCNT0 = 0x00;
+  TCCR0A = (1<<CS00) | (1<<CS01);       //start clk/64
 }
 
 
 /* ------------------------------------------------------------------*
- * 						TC0 - Query TC0 Overflow -> 1ms
+ *            TC0 - Query TC0 Overflow -> 1ms
  * ------------------------------------------------------------------*/
 
 unsigned char TC0_Wait_1ms_Query(void)
 {
-	if(TIFR0 & (1<<TOV0)){		//wait 1ms
-    TIFR0  |= (1<<TOV0);		//Reset Flag
-		return 1;}
-	return 0;
+  if(TIFR0 & (1<<TOV0)){    //wait 1ms
+    TIFR0  |= (1<<TOV0);    //Reset Flag
+    return 1;}
+  return 0;
 }
 
 
 /* ------------------------------------------------------------------*
- * 						TC0 - Stop
+ *            TC0 - Stop
  * ------------------------------------------------------------------*/
 
 void TC0_Stop(void)
 {
-	TCCR0A &= ~((1<<CS00) | (1<<CS01));		//stop clk/64
+  TCCR0A &= ~((1<<CS00) | (1<<CS01));   //stop clk/64
 }
 
 
 /* ------------------------------------------------------------------*
- * 						TC0 - Timer App While
+ *            TC0 - Timer App While
  * ------------------------------------------------------------------*/
 
 void TC0_Wait_msWhile(int mSec)
 {
-	int i=0;
-	TC0_Wait_1ms_Init();									//InitTimer
-	for(i=0; i<mSec; i++)	while(!TC0_Wait_1ms_Query());	//WaitLoop
+  int i=0;
+  TC0_Wait_1ms_Init();                  //InitTimer
+  for(i=0; i<mSec; i++) while(!TC0_Wait_1ms_Query()); //WaitLoop
 }
 
 
 /* ------------------------------------------------------------------*
- * 						TC0 - Timer App IF
+ *            TC0 - Timer App IF
  * ------------------------------------------------------------------*/
 
 unsigned char TC0_Wait_msQuery(t_FuncCmd cmd, int mSec)
 {
-	static int i = 0;
-	static int ms = 0;
-	if(cmd == _init)
-	{
-		i = 0;
-		ms = mSec;
-		TC0_Wait_1ms_Init();				//InitTimer
-	}
+  static int i = 0;
+  static int ms = 0;
+  if(cmd == _init)
+  {
+    i = 0;
+    ms = mSec;
+    TC0_Wait_1ms_Init();        //InitTimer
+  }
 
-	else if(cmd == _exe)
-	{
-		if(TC0_Wait_1ms_Query()){		//Query
-			i++;
-			if(i > ms){						          //match
-				i = 0;
-				return 1;}}
-	}
-	return 0;
+  else if(cmd == _exe)
+  {
+    if(TC0_Wait_1ms_Query()){   //Query
+      i++;
+      if(i > ms){                     //match
+        i = 0;
+        return 1;}}
+  }
+  return 0;
 }
 
 
-
-/* ==================================================================*
- * 						TC2 - Reserved
- * ==================================================================*/
-
-/* ==================================================================*
- * 						TC3 - Reserved
- * ==================================================================*/
-
-/* ==================================================================*
- * 						TC1 - Reserved
- * ==================================================================*/
-
-
-
-
-
-
-/*********************************************************************\
- * End of file
-\**********************************************************************/

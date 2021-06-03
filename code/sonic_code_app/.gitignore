@@ -1,3 +1,7 @@
+# --
+# gitignore sonic
+
+# files
 *.depend
 *.eep
 *.fuse
@@ -5,4 +9,7 @@
 *.lock
 *.map
 *.sig
-.obj/
+
+# folders
+obj/
+bin/

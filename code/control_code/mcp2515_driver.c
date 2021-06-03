@@ -29,7 +29,7 @@ void MCP2515_Init(void)
 
   MCP2515_SWReset();
   TCC0_wait_ms(10);
-                    //-100kps
+
   MCP2515_WriteReg(CNF1, 0x04);   //BRP-16Mhz/(4+1)*2, SJW=1
   MCP2515_WriteReg(CNF2, 0xDE);   //PRSEG=6+1 PHSEG1=3+1 BTLMode 3xSample
   MCP2515_WriteReg(CNF3, 0x03);   //PHSEG2=3+1
@@ -37,7 +37,7 @@ void MCP2515_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            Reset
+ *            Reset software
  * ------------------------------------------------------------------*/
 
 void MCP2515_SWReset(void)
@@ -47,12 +47,17 @@ void MCP2515_SWReset(void)
   CS_SET;
 }
 
+
+/* ------------------------------------------------------------------*
+ *            Reset hardware
+ * ------------------------------------------------------------------*/
+
 void MCP2515_HWReset(void)
 {
-  TCC0_wait_ms(200);      //Wait
-  PORTE.OUTCLR = PIN2_bm;    //Reset on
-  TCC0_wait_ms(200);      //Wait
-  PORTE.OUTSET = PIN2_bm;    //Reset off
+  TCC0_wait_ms(200);
+  PORTE.OUTCLR = PIN2_bm;
+  TCC0_wait_ms(200);
+  PORTE.OUTSET = PIN2_bm;
 }
 
 
@@ -81,7 +86,7 @@ void MCP2515_WriteReg(unsigned char addr, unsigned char data)
 
 unsigned char MCP2515_ReadReg(unsigned char addr)
 {
-  unsigned char rReg=0;
+  unsigned char rReg = 0;
 
   CS_CLR;
   SPI_WriteByte(0x03);
@@ -97,9 +102,7 @@ unsigned char MCP2515_ReadReg(unsigned char addr)
  *            Bit Modify
  * ------------------------------------------------------------------*/
 
-void MCP2515_BitModify( unsigned char addr,
-            unsigned char mask,
-            unsigned char data)
+void MCP2515_BitModify( unsigned char addr, unsigned char mask, unsigned char data)
 {
   CS_CLR;
   SPI_WriteByte(addr);
@@ -131,7 +134,6 @@ unsigned char MCP2515_ReadRxB(unsigned char cmd)
 }
 
 
-
 /* ------------------------------------------------------------------*
  *            Load TxBuffer -> macros
  * ------------------------------------------------------------------*/
@@ -144,31 +146,3 @@ void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer)
   CS_SET;
 }
 
-
-
-/* ==================================================================*
- *            FUNCTIONS - Apps
- * ==================================================================*/
-
-/* ------------------------------------------------------------------*
- *            Start Transmission
- * ------------------------------------------------------------------*/
-
-void MCP2515_StartTransmission(void)
-{
-  MCP2515_WriteReg(TXB0CTRL, TXREQ);
-}
-
-void MCP2515_WriteComand(unsigned char address, unsigned char cmd)
-{
-  MCP2515_LoadTxBuffer(CMD_TXB0SIDH, address);
-  MCP2515_LoadTxBuffer(CMD_TXB0D0, cmd);
-  MCP2515_StartTransmission();
-}
-
-void MCP2515_Test(void)
-{
-  MCP2515_LoadTxBuffer(CMD_TXB0SIDH, 0xF0);
-  MCP2515_LoadTxBuffer(CMD_TXB0D0, 0xAA);
-  MCP2515_StartTransmission();
-}

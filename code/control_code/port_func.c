@@ -74,12 +74,14 @@ void PORT_Buzzer(t_FuncCmd cmd)
     case _error:
       //*** debug disable buzzer
       if(DEB_BUZ) return;
-      state = _error;       break;  //Error
+      state = _error;       
+      break;
 
     case _off:
       state = _off;
       PORTD.DIRCLR =  PIN6_bm;
-      PORTD.OUTCLR =  PIN6_bm;    break;
+      PORTD.OUTCLR =  PIN6_bm;    
+      break;
 
     case _exe:
       if(state == _error)
@@ -97,8 +99,9 @@ void PORT_Buzzer(t_FuncCmd cmd)
           PORTD.OUTSET =  PIN6_bm;
         }
       }
+      break;
 
-    default:                  break;
+    default: break;
   }
 
 }
@@ -319,7 +322,7 @@ void PORT_Ventil_AutoClose(t_page page)
     case ManualPhosphor:    OUT_Clr_Phosphor();   break;
     case ManualInflowPump:  OUT_Clr_InflowPump(); break;
 
-    default:                    break;
+    default: break;
   }
 }
 
@@ -419,14 +422,16 @@ void PORT_Debug(void)
     refresh = 0;
 
     // print register names
-    if(blink){
+    if(blink)
+    {
       blink = 0;
       LCD_WriteStringFontNeg(y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
       LCD_WriteStringFontNeg(y_pos_v, 0, "V: Ai Mu Cl Re");
     }
     
     // print register states
-    else{
+    else
+    {
       blink = 1;
 
       // relais

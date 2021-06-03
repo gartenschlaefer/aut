@@ -12,47 +12,31 @@
 
 
 /* ==================================================================*
- *            Makro DogXL160 Initialization Commands
- * ==================================================================*/
-
-uint8 LcdInitMacro[]={  Set_Com_End_H,
-                        Set_Com_End_L,
-                        Set_LCD_Mapping_Control,
-                        Set_Scroll_Line_LSB,
-                        Set_Scroll_Line_MSB,
-                        Set_Panel_Loading,
-                        Set_LCD_Bias_Ratio,
-                        Set_Vbias_Potentiometer_H,
-                        Set_Vbias_Potentiometer_L,
-                        Set_RAM_Address_Control,
-                        Set_Display_Enable,};
-
-
-
-/* ==================================================================*
  *            FUNCTIONS     Config and Transfer
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  LCD_Init
- * --------------------------------------------------------------
- *  Init Display, see LcdInitMacro for details
+ *  LCD init LcdInitMacro for details
  * ------------------------------------------------------------------*/
 
 void LCD_Init(void)
 {
-  LCD_LED_DIR;    //LCD-On
-  LCD_RST_DIR;    //LCD-ResetOutput
-  LCD_RST_OFF;    //Reset off
-  LCD_Rst();      //lcd_reset
+
+  unsigned char LcdInitMacro[] = {Set_Com_End_H, Set_Com_End_L, Set_LCD_Mapping_Control, Set_Scroll_Line_LSB, Set_Scroll_Line_MSB, Set_Panel_Loading, Set_LCD_Bias_Ratio, Set_Vbias_Potentiometer_H, Set_Vbias_Potentiometer_L, Set_RAM_Address_Control, Set_Display_Enable};
+
+  // set ports
+  LCD_LED_DIR;
+  LCD_RST_DIR;
+  LCD_RST_OFF;
+  LCD_Rst();
+
+  // init macros
   while(LCD_SendCmd(LcdInitMacro, 11)); //Load Init
 }
 
 
 /*-------------------------------------------------------------------*
- *  LCD_Backlight
- * --------------------------------------------------------------
- *  Set or Clr Backlight
+ *  lcd backlight
  * ------------------------------------------------------------------*/
 
 void LCD_Backlight(t_FuncCmd cmd)
@@ -62,65 +46,62 @@ void LCD_Backlight(t_FuncCmd cmd)
 
   switch(cmd)
   {
-    case _on:
-      LCD_LED_ON;
-      state = _on;
-      count = 0;      break;
+    // turn on
+    case _on: LCD_LED_ON; state = _on; count = 0; break;
 
-    case _off:
-      LCD_LED_OFF;
-      state = _off;   break;
+    // turn off
+    case _off: LCD_LED_OFF; state = _off; break;
 
-    case _error:
-      state = _error; break;
+    // go into error state
+    case _error: state = _error; break;
 
+    // exe
     case _exe:
+
       //***LightAlwaysOn-Debug
       if(DEBUG) return;
 
+      // light is on
       if(state == _on)
       {
+        // counting up
         count++;
-        if(count > 30000){        //Ton= 3min
-          count = 0;
-          LCD_LED_OFF;
-          state = _off;}
+
+        //Ton= 3min
+        if(count > BACKLIGHT_TON_FRAMES){count = 0; LCD_LED_OFF; state = _off;}
       }
-      else if(state == _error)    //ErrorBlink
+
+      // error
+      else if(state == _error)
       {
         count++;
         if(count > 400) LCD_LED_OFF;
-        if(count > 2000){
-          count = 0;
-          LCD_LED_ON;}
-      }             break;
+        if(count > 2000){count = 0; LCD_LED_ON;}
+      }             
+      break;
 
-    case _reset:
-      count = 0;    break;
-    default:        break;
+    // reset
+    case _reset: count = 0; break;
+
+    // default
+    default: break;
   }
 }
 
 
 /*-------------------------------------------------------------------*
  *  LCD_SendCmd
- * --------------------------------------------------------------
- *  Send Commands over TWI to Display
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_SendCmd(uint8* SCmd, uint8 i)
+unsigned char LCD_SendCmd(unsigned char* SCmd, unsigned char i)
 {
-  unsigned char twiErr=0;
+  unsigned char twiErr = 0;
 
-  twiErr= TWI_Master_WriteString( W_CMD,    //Address
-                                  SCmd,     //Command
-                                  i );      //Count of Bytes
+  // address, command, count of bytes
+  twiErr = TWI_Master_WriteString(W_CMD, SCmd, i);
 
-  if( twiErr == E_TWI_NO_DATA ||
-      twiErr == E_TWI_WAIT    ||
-      twiErr == E_TWI_ARBLOST ||
-      twiErr == E_TWI_BUSERR  ||
-      twiErr == E_TWI_NO_SENT   ) return 1;
+  // check if error occured
+  if(twiErr == E_TWI_NO_DATA || twiErr == E_TWI_WAIT || twiErr == E_TWI_ARBLOST || twiErr == E_TWI_BUSERR  || twiErr == E_TWI_NO_SENT) return 1;
 
   return 0;
 }
@@ -128,72 +109,71 @@ unsigned char LCD_SendCmd(uint8* SCmd, uint8 i)
 
 /*-------------------------------------------------------------------*
  *  LCD_SendData
- * --------------------------------------------------------------
- *  Send Data over TWI to Display
  * ------------------------------------------------------------------*/
 
-void LCD_SendData(uint8* SData, uint8 i)
+void LCD_SendData(unsigned char* SData, unsigned char i)
 {
-  TWI_Master_WriteString( W_DATA,   //Address
-                          SData,    //Command
-                          i );      //Count of Bytes
+  TWI_Master_WriteString(W_DATA, SData, i);
 }
 
 
 /*-------------------------------------------------------------------*
  *  LCD_SetPageAddress
- * --------------------------------------------------------------
- *  Send Page Address to Display
  * ------------------------------------------------------------------*/
 
-void LCD_SetPageAddress(uint8 PA)
+void LCD_SetPageAddress(unsigned char PA)
 {
-  uint8 Cmd[] = {Page_Address + PA};              //PageAdressCmd
-  if((Cmd[0] < 0x60) || (Cmd[0] > 0x78)) return;  //Protection
-  while(LCD_SendCmd(Cmd, 1));                     //send PA-Cmd
+  // page adress command
+  unsigned char Cmd[] = {Page_Address + PA};
+
+  // protection
+  if((Cmd[0] < 0x60) || (Cmd[0] > 0x78)) return;
+
+  // send
+  while(LCD_SendCmd(Cmd, 1));
 }
 
 
 /*-------------------------------------------------------------------*
  *  LCD_SetColumnAddress
- * --------------------------------------------------------------
- *  Send Column Address to Display
  * ------------------------------------------------------------------*/
 
-void LCD_SetColumnAdress(uint8 CA)
+void LCD_SetColumnAdress(unsigned char CA)
 {
-  uint8 H = 0x00;
-  uint8 L = 0x00;
-  uint8 ColumnAddress[]  = {Column_LSB0, Column_MSB0};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
+  unsigned char ColumnAddress[]  = {Column_LSB0, Column_MSB0};
 
-  if(CA > 160) return;                    //Protection
+  // protection
+  if(CA > 160) return;
 
   L = (CA & 0x0F);
   H = (CA & 0xF0);
   H = (H >> 4);
 
-  ColumnAddress[0] = (Column_LSB0 + L );  //AddresICTow
-  ColumnAddress[1] = (Column_MSB0 + H );  //AddressHigh
-  while(LCD_SendCmd(ColumnAddress, 2));   //Send CA-Cmd
+  // column addresses
+  ColumnAddress[0] = (Column_LSB0 + L );
+  ColumnAddress[1] = (Column_MSB0 + H );
+
+  // send
+  while(LCD_SendCmd(ColumnAddress, 2));
 }
 
 
 /*-------------------------------------------------------------------*
  *  LCD_WP_Enable / LCD_WP_Disable
- * --------------------------------------------------------------
- *  Enable / Disable Window Programming
  * ------------------------------------------------------------------*/
 
 void LCD_WP_Enable(void)
 {
-  uint8 Cmd[] = {WPEN};       //Command
-  while(LCD_SendCmd(Cmd, 1));   //send CA-Cmd
+  unsigned char Cmd[] = {WPEN};
+  while(LCD_SendCmd(Cmd, 1));
 }
 
 void LCD_WP_Disable(void)
 {
-  uint8 Cmd[] = {WPDIS};      //Command
-  while(LCD_SendCmd(Cmd, 1));   //send CA-Cmd
+  unsigned char Cmd[] = {WPDIS};
+  while(LCD_SendCmd(Cmd, 1));
 }
 
 
@@ -205,7 +185,7 @@ void LCD_WP_Disable(void)
 
 void LCD_WP_Page(unsigned char startPA, unsigned char endPA)
 {
-  uint8 Cmd[] = {WPP0, startPA,   WPP1, endPA};   //Command
+  unsigned char Cmd[] = {WPP0, startPA,   WPP1, endPA};   //Command
   while(LCD_SendCmd(Cmd, 4));           //send PA-Cmd
 }
 
@@ -218,7 +198,7 @@ void LCD_WP_Page(unsigned char startPA, unsigned char endPA)
 
 void LCD_WP_Column(unsigned char startCA, unsigned char endCA)
 {
-  uint8 Cmd[] = {WPC0, startCA,   WPC1, endCA};   //Command
+  unsigned char Cmd[] = {WPC0, startCA,   WPC1, endCA};   //Command
   while(LCD_SendCmd(Cmd, 4));           //send CA-Cmd
 }
 
@@ -228,54 +208,36 @@ void LCD_WP_Column(unsigned char startCA, unsigned char endCA)
  *            FUNCTIONS     Commands
  * ==================================================================*/
 
-/*-------------------------------------------------------------------*
- *  LCD_AllPixelsON
- * ------------------------------------------------------------------*/
-
-void LCD_AllPixelsOn(void)
-{
-  uint8 Cmd[] = {Set_All_Pixels_On};
-  while(LCD_SendCmd(Cmd, 1));
-}
-
 
 /*-------------------------------------------------------------------*
- *  LCD_AllPixelsOnOff
- * ------------------------------------------------------------------*/
-
-void LCD_AllPixelsOnOff(void)
-{
-  uint8 Cmd[] = {Set_All_Pixels_On_Off};
-  while(LCD_SendCmd(Cmd, 1));
-}
-
-
-/*-------------------------------------------------------------------*
- *  LCD_Rst
+ *  lcd software reset
  * ------------------------------------------------------------------*/
 
 void LCD_Rst(void)
 {
-  uint8 Cmd[] = {System_Reset};
+  unsigned char Cmd[] = {System_Reset};
   while(LCD_SendCmd(Cmd, 1));
 }
 
+
+/*-------------------------------------------------------------------*
+ *  lcd hardware reset
+ * ------------------------------------------------------------------*/
+
 void LCD_HardwareRst(void)
 {
-  LCD_RST_DIR;    //Output
-  LCD_RST_ON;     //Reset
+  LCD_RST_DIR;
+  LCD_RST_ON;
 }
 
 
 /*-------------------------------------------------------------------*
  *  LCD_Clean
- * --------------------------------------------------------------
- *  Set all Pixel OFF
  * ------------------------------------------------------------------*/
 
 void LCD_Clean(void)
 {
-  uint8 LcdData[80] = {0x00};
+  unsigned char LcdData[80] = {0x00};
 
   LCD_SetPageAddress(0);    //PageAddress
   LCD_SetColumnAdress(0);   //ColumnAddress
@@ -284,62 +246,14 @@ void LCD_Clean(void)
   LCD_WP_Page(0, 25);     //Page Frame
   LCD_WP_Column(0,159);   //Column Frame
 
-  for(uint8 p=0; p<52; p++)       //25  Pages
+  for(unsigned char p=0; p<52; p++)       //25  Pages
   {
-    for(uint8 c=0; c<2; c++)      //160 Columns
+    for(unsigned char c=0; c<2; c++)      //160 Columns
     {
       LCD_SendData(LcdData, 80);
     }
   }
   LCD_WP_Disable();
-}
-
-
-/*-------------------------------------------------------------------*
- *  LCD_Fill
- * ------------------------------------------------------------------*/
-
-void LCD_Fill(void)
-{
-  uint8 LcdData[20] = {0xFF};
-
-  for(uint8 p=0; p<20; p++) //Fill Array
-  {
-    LcdData[p] = 0xFF;
-  }
-
-  LCD_SetPageAddress(0);    //PageAddress
-  LCD_SetColumnAdress(0);   //ColumnAddress
-
-  LCD_WP_Enable();      //Window Programm Enable
-  LCD_WP_Page(0, 25);     //Page Frame
-  LCD_WP_Column(0,159);   //Column Frame
-
-  for(uint8 p=0; p<52; p++)       //25  Pages
-  {
-    for(uint8 c=0; c<8; c++)      //160 Columns
-    {
-      LCD_SendData(LcdData, 20);
-    }
-  }
-  LCD_WP_Disable();
-}
-
-
-/*-------------------------------------------------------------------*
- *  LCD_Inverse
- * ------------------------------------------------------------------*/
-
-void LCD_Inverse(void)
-{
-  uint8 Cmd[] = {INVERSE};
-  while(LCD_SendCmd(Cmd, 1));
-}
-
-void LCD_NotInverse(void)
-{
-  uint8 Cmd[] = {NOT_INVERSE};
-  while(LCD_SendCmd(Cmd, 1));
 }
 
 
@@ -352,16 +266,16 @@ void LCD_NotInverse(void)
  *  LCD_FillSpace
  * ------------------------------------------------------------------*/
 
-void LCD_FillSpace(uint8 row, uint8 col, uint8 height, uint8 len)
+void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
 {
-  uint8 LcdData[160] = {0xFF};
+  unsigned char LcdData[160] = {0xFF};
 
-  for(uint8 p = 0; p < 160; p++)            //Fill Array
+  for(unsigned char p = 0; p < 160; p++)            //Fill Array
     LcdData[p] = 0xFF;
 
   LCD_WP_SetFrame(row, col, height, len);   //FrameSet
 
-  for(uint8 p = 0; p < height; p++)         //25Pages
+  for(unsigned char p = 0; p < height; p++)         //25Pages
     LCD_SendData(LcdData, (len));
 
   LCD_WP_Disable();
@@ -372,16 +286,16 @@ void LCD_FillSpace(uint8 row, uint8 col, uint8 height, uint8 len)
  *  LCD_ClrSpace
  * ------------------------------------------------------------------*/
 
-void LCD_ClrSpace(uint8 row, uint8 col, uint8 height, uint8 len)
+void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
 {
-  uint8 LcdData[160] = {0x00};
+  unsigned char LcdData[160] = {0x00};
 
-  for(uint8 p = 0; p < 160; p++)
+  for(unsigned char p = 0; p < 160; p++)
     LcdData[p] = 0x00;
 
   LCD_WP_SetFrame(row, col, height, len);   //FrameSet
 
-  for(uint8 p = 0; p < height; p++)         //25Pages
+  for(unsigned char p = 0; p < height; p++)         //25Pages
     LCD_SendData(LcdData, (len));
 
   LCD_WP_Disable();
@@ -406,33 +320,37 @@ void LCD_ClrSpace(uint8 row, uint8 col, uint8 height, uint8 len)
  *  Write Font with WP
  * ------------------------------------------------------------------*/
 
-void LCD_WriteFont(uint8 row, uint8 col, uint16 word)
+void LCD_WriteFont(unsigned char row, unsigned char col, unsigned short word)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-    uint8 L = 0x00;
+  unsigned char LcdData[40] = {0x00};
 
-  unsigned char len=    Font_6X8[0];    //Width  in Dots
-  unsigned char height= Font_6X8[1];    //height in Bytes
+  // dimensions of font
+  unsigned char len = Font_6X8[0];
+  unsigned char height = Font_6X8[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  // set frame
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(uint8 p=0; p<height; p++)     //Pages
+  // pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)      //Columns
+    // columns
+    for(int c=0; c<len; c++)
     {
-      L = (Font_6X8[8 + c + len*p + ((word)*len*height)] & 0x0F);     //LSB
-      LcdData[c] = LCD_ConvertWP(L);
+      LcdData[c] = LCD_ConvertWP(Font_6X8[8 + c + len * p + word * len * height] & 0x0F);
     }
-    LCD_SendData(LcdData, len);     //Write Low Page
 
-    for(int a=0; a<len; a++)      //160 Columns
+    // send
+    LCD_SendData(LcdData, len);
+
+    // columns
+    for(int a=0; a<len; a++)
     {
-      H = (Font_6X8[8 + a + len*p + ((word)*len*height)] & 0xF0);   //MSB
-      H = (H >> 4);
-      LcdData[a] = LCD_ConvertWP(H);
+      LcdData[a] = LCD_ConvertWP((Font_6X8[8 + a + len*p + ((word)*len*height)] & 0xF0) >> 4);
     }
-    LCD_SendData(LcdData, len);     //Write High Page
+
+    // send
+    LCD_SendData(LcdData, len);
   }
   LCD_WP_Disable();
 }
@@ -442,18 +360,18 @@ void LCD_WriteFont(uint8 row, uint8 col, uint16 word)
  *            Font 6x8 Neg
  * ------------------------------------------------------------------*/
 
-void LCD_WriteFontNeg(uint8 row, uint8 col, uint16 word)
+void LCD_WriteFontNeg(unsigned char row, unsigned char col, unsigned short word)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-    uint8 L = 0x00;
+  unsigned char LcdData[40]={0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   unsigned char len=    Font_6X8_Neg[0];    //Width  in Dots
     unsigned char height=   Font_6X8_Neg[1];    //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)     //Pages
+  for(unsigned char p=0; p<height; p++)     //Pages
   {
     for(int c=0; c<len; c++)      //Columns
     {
@@ -481,11 +399,11 @@ void LCD_WriteFontNeg(uint8 row, uint8 col, uint16 word)
  *            Font 8x16 Num
  * ------------------------------------------------------------------*/
 
-void LCD_WriteFontNum(uint8 row, uint8 col, unsigned char word)
+void LCD_WriteFontNum(unsigned char row, unsigned char col, unsigned char word)
 {
-  uint8 LcdData[20] = {0x00};
-  uint8 H = 0x00;
-  uint8 L = 0x00;
+  unsigned char LcdData[20] = {0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   unsigned char len=    Font_Numbers_8X16[0];   //Width  in Dots
   unsigned char height= Font_Numbers_8X16[1];   //height in Bytes
@@ -498,7 +416,7 @@ void LCD_WriteFontNum(uint8 row, uint8 col, unsigned char word)
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)     //Pages
+  for(unsigned char p=0; p<height; p++)     //Pages
   {
     for(int c=0; c<len; c++)      //Columns
     {
@@ -524,18 +442,18 @@ void LCD_WriteFontNum(uint8 row, uint8 col, unsigned char word)
  *            Font 4x6
  * ------------------------------------------------------------------*/
 
-void LCD_WriteMyFont(uint8 row, uint8 col, unsigned char word)
+void LCD_WriteMyFont(unsigned char row, unsigned char col, unsigned char word)
 {
-  uint8 LcdData[10]={0x00};
-  uint8 H = 0x00;
-  uint8 L = 0x00;
+  unsigned char LcdData[10]={0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   unsigned char len=    FontNumbers_4X6[0];   //Width  in Dots
   unsigned char height= FontNumbers_4X6[1];   //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)     //Pages
+  for(unsigned char p=0; p<height; p++)     //Pages
   {
     for(int c=0; c<len; c++)      //Columns
     {
@@ -560,18 +478,18 @@ void LCD_WriteMyFont(uint8 row, uint8 col, unsigned char word)
  *            Font 4x6 Neg
  * ------------------------------------------------------------------*/
 
-void LCD_WriteMyFontNeg(uint8 row, uint8 col, unsigned char word)
+void LCD_WriteMyFontNeg(unsigned char row, unsigned char col, unsigned char word)
 {
-  uint8 LcdData[10]={0x00};
-  uint8 H = 0x00;
-  uint8 L = 0x00;
+  unsigned char LcdData[10]={0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   unsigned char len=    FontNumbers_4X6_Neg[0];   //Width  in Dots
   unsigned char height= FontNumbers_4X6_Neg[1];   //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)     //Pages
+  for(unsigned char p=0; p<height; p++)     //Pages
   {
     for(int c=0; c<len; c++)        //Columns
     {
@@ -609,10 +527,10 @@ void LCD_WriteMyFontNeg(uint8 row, uint8 col, unsigned char word)
  *  Write String Font with WP
  * ------------------------------------------------------------------*/
 
-void LCD_WriteStringFont(uint8 y, uint8 x, char word[])
+void LCD_WriteStringFont(unsigned char y, unsigned char x, char word[])
 {
-  uint8 k=0;
-  uint8 a=0;
+  unsigned char k=0;
+  unsigned char a=0;
 
   do
   {
@@ -630,10 +548,10 @@ void LCD_WriteStringFont(uint8 y, uint8 x, char word[])
  *            StringFont 6x8 Neg
  * ------------------------------------------------------------------*/
 
-void LCD_WriteStringFontNeg(uint8 y, uint8 x, char word[])
+void LCD_WriteStringFontNeg(unsigned char y, unsigned char x, char word[])
 {
-  uint8 k=0;
-  uint8 a=0;
+  unsigned char k=0;
+  unsigned char a=0;
 
   do
   {
@@ -651,37 +569,16 @@ void LCD_WriteStringFontNeg(uint8 y, uint8 x, char word[])
  *            StringFont 4x6
  * ------------------------------------------------------------------*/
 
-void LCD_WriteStringMyFont(uint8 y, uint8 x, char word[])
+void LCD_WriteStringMyFont(unsigned char y, unsigned char x, char word[])
 {
-  uint8 k=0;
-  uint8 a=0;
+  unsigned char k=0;
+  unsigned char a=0;
 
   do
   {
     k = word[a];
     LCD_WriteMyFont(y, x, k-48);
     x = x + FontNumbers_4X6[0];
-    a++;
-    k = word[a];
-  }
-  while(k!=0);
-}
-
-
-/* ------------------------------------------------------------------*
- *            StringFont 4x6 Neg
- * ------------------------------------------------------------------*/
-
-void LCD_WriteStringMyFontNeg(uint8 y, uint8 x, char word[])
-{
-  uint8 k=0;
-  uint8 a=0;
-
-  do
-  {
-    k = word[a];
-    LCD_WriteMyFontNeg( y, x, k-48);
-    x = x + FontNumbers_4X6_Neg[0];
     a++;
     k = word[a];
   }
@@ -698,7 +595,7 @@ void LCD_WriteStringMyFontNeg(uint8 y, uint8 x, char word[])
  *            Value 6x8     2Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue2(uint8 y, uint8 x, int value)
+void LCD_WriteValue2(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -724,7 +621,7 @@ void LCD_WriteValue2(uint8 y, uint8 x, int value)
  *            Value 6x8 Neg   2Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValueNeg2(uint8 y, uint8 x, int value)
+void LCD_WriteValueNeg2(unsigned char y, unsigned char x, int value)
 {
   char      cValue[10]={0x00};
   int       con=0;
@@ -750,7 +647,7 @@ void LCD_WriteValueNeg2(uint8 y, uint8 x, int value)
  *            Value 6x8 Neg   3Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue3(uint8 y, uint8 x, int value)
+void LCD_WriteValue3(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0};
   unsigned char i = 0;
@@ -774,7 +671,7 @@ void LCD_WriteValue3(uint8 y, uint8 x, int value)
  *            Value 6x8 Neg 3Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValueNeg3(uint8 y, uint8 x, int value)
+void LCD_WriteValueNeg3(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -801,7 +698,7 @@ void LCD_WriteValueNeg3(uint8 y, uint8 x, int value)
  *            Value 4x6   2Pos
  * ==================================================================*/
 
-void LCD_WriteValue2_MyFont(uint8 y, uint8 x, int value)
+void LCD_WriteValue2_MyFont(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -827,7 +724,7 @@ void LCD_WriteValue2_MyFont(uint8 y, uint8 x, int value)
  *            Value 4x6     3Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue3_MyFont(uint8 y, uint8 x, int value)
+void LCD_WriteValue3_MyFont(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -853,7 +750,7 @@ void LCD_WriteValue3_MyFont(uint8 y, uint8 x, int value)
  *            Value 4x6     4Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue4_MyFont(uint8 y, uint8 x, int value)
+void LCD_WriteValue4_MyFont(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -884,7 +781,7 @@ void LCD_WriteValue4_MyFont(uint8 y, uint8 x, int value)
  *            Value 4x6     5Pos
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue5_MyFont(uint8 y, uint8 x, int value)
+void LCD_WriteValue5_MyFont(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -918,7 +815,7 @@ void LCD_WriteValue5_MyFont(uint8 y, uint8 x, int value)
  *            Value 6x8       4Pos
  * ==================================================================*/
 
-void LCD_WriteValue4(uint8 y, uint8 x, int value)
+void LCD_WriteValue4(unsigned char y, unsigned char x, int value)
 {
   char cValue[10] = {0x00};
   int con = 0;
@@ -946,43 +843,6 @@ void LCD_WriteValue4(uint8 y, uint8 x, int value)
 
 
 
-/* ------------------------------------------------------------------*
- *            Value 6x8 Neg   4Pos
- * ------------------------------------------------------------------*/
-
-void LCD_WriteValueNeg4(uint8 y, uint8 x, int value)
-{
-  char      cValue[10]={0x00};
-  int       con=0;
-  unsigned char i=0;
-
-  int       v0=0;
-  int       v1=0;
-
-  con= value;
-
-  if(con>60000) con= 60000;
-  if(con<1) con= 0;
-
-  //--------------------------------------------------Hex2Bcd1Byte
-  cValue[0]= (con/1000);
-  v0= 1000 * cValue[0];
-
-  cValue[1]= ((con - (v0))/100);
-  v1= 100 * cValue[1];
-
-  cValue[2]= ((con - (v0 + v1))/10);
-  cValue[3]= ((con - (v0 + v1 + (cValue[2]*10))));
-
-
-  //--------------------------------------------------AsciiConversion
-  for(i=0; i<4; i++) cValue[i]= cValue[i]+48;
-
-  LCD_WriteStringFontNeg(y, x, cValue);
-}
-
-
-
 /* ==================================================================*
  *            Symbols
  * ==================================================================*/
@@ -998,18 +858,18 @@ void LCD_WriteValueNeg4(uint8 y, uint8 x, int value)
  * ------------------------------------------------------------------*/
 
 
-void LCD_Write_Symbol_1(uint8 row, uint8 col, t_Symbols_35x23 sym)
+void LCD_Write_Symbol_1(unsigned char row, unsigned char col, t_Symbols_35x23 sym)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-  uint8 L = 0x00;
+  unsigned char LcdData[40]={0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   int len = Symbols_35x23_bmp[0];             //Width  in Dots
   unsigned char height= Symbols_35x23_bmp[1]; //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)           //Pages
+  for(unsigned char p=0; p<height; p++)           //Pages
   {
     for(int c=0; c<len; c++)            //Columns
     {
@@ -1037,18 +897,18 @@ void LCD_Write_Symbol_1(uint8 row, uint8 col, t_Symbols_35x23 sym)
  *            Symbols 2 29x17
  * ------------------------------------------------------------------*/
 
-void LCD_Write_Symbol_2(uint8 row, uint8 col, t_Symbols_29x17 sym)
+void LCD_Write_Symbol_2(unsigned char row, unsigned char col, t_Symbols_29x17 sym)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-    uint8 L = 0x00;
+  unsigned char LcdData[40]={0x00};
+  unsigned char H = 0x00;
+    unsigned char L = 0x00;
 
   int       len=    Symbols_29x17_bmp[0];   //Width  in Dots
     unsigned char height=   Symbols_29x17_bmp[1];   //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);         //FrameSet
 
-  for(uint8 p=0; p<height; p++)             //Pages
+  for(unsigned char p=0; p<height; p++)             //Pages
   {
     for(int c=0; c<len; c++)              //Columns
     {
@@ -1076,18 +936,18 @@ void LCD_Write_Symbol_2(uint8 row, uint8 col, t_Symbols_29x17 sym)
  *            Symbols 3 19x19
  * ------------------------------------------------------------------*/
 
-void LCD_Write_Symbol_3(uint8 row, uint8 col, t_Symbols_19x24 sym)
+void LCD_Write_Symbol_3(unsigned char row, unsigned char col, t_Symbols_19x24 sym)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-    uint8 L = 0x00;
+  unsigned char LcdData[40]={0x00};
+  unsigned char H = 0x00;
+    unsigned char L = 0x00;
 
   int       len=    Symbols_19x19_bmp[0];   //Width  in Dots
     unsigned char height=   Symbols_19x19_bmp[1];   //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)           //Pages
+  for(unsigned char p=0; p<height; p++)           //Pages
   {
     for(int c=0; c<len; c++)            //Columns
     {
@@ -1116,18 +976,18 @@ void LCD_Write_Symbol_3(uint8 row, uint8 col, t_Symbols_19x24 sym)
  *            Pin
  * ==================================================================*/
 
-void LCD_Write_Pin(uint8 row, uint8 col, t_pinSymbols sym, uint8 num)
+void LCD_Write_Pin(unsigned char row, unsigned char col, t_pinSymbols sym, unsigned char num)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-    uint8 L = 0x00;
+  unsigned char LcdData[40]={0x00};
+  unsigned char H = 0x00;
+    unsigned char L = 0x00;
 
   int       len=    Pin_34x21_bmp[0];   //Width  in Dots
     unsigned char height=   Pin_34x21_bmp[1];   //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)           //Pages
+  for(unsigned char p=0; p<height; p++)           //Pages
   {
     for(int c=0; c<len; c++)            //Columns
     {
@@ -1161,18 +1021,18 @@ void LCD_Write_Pin(uint8 row, uint8 col, t_pinSymbols sym, uint8 num)
  *            Text
  * ==================================================================*/
 
-void LCD_Write_TextButton(uint8 row, uint8 col, t_textButtons text, uint8 pos)
+void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons text, unsigned char pos)
 {
-  uint8 LcdData[40]={0x00};
-  uint8 H = 0x00;
-  uint8 L = 0x00;
+  unsigned char LcdData[40]={0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   int           len=    textButton_39x16_bmp[0];    //Width  in Dots
   unsigned char height= textButton_39x16_bmp[1];    //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)           //Pages
+  for(unsigned char p=0; p<height; p++)           //Pages
   {
     for(int c=0; c<len; c++)            //Columns
     {
@@ -1233,18 +1093,18 @@ void LCD_Write_TextButton(uint8 row, uint8 col, t_textButtons text, uint8 pos)
  *            Text Purator
  * ------------------------------------------------------------------*/
 
-void LCD_Write_Purator(uint8 row, uint8 col)
+void LCD_Write_Purator(unsigned char row, unsigned char col)
 {
-  uint8 LcdData[160]={0x00};
-  uint8 H = 0x00;
-  uint8 L = 0x00;
+  unsigned char LcdData[160]={0x00};
+  unsigned char H = 0x00;
+  unsigned char L = 0x00;
 
   int           len=    Text_Purator[0];    //Width  in Dots
   unsigned char height= Text_Purator[1];    //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);   //FrameSet
 
-  for(uint8 p=0; p<height; p++)             //Pages
+  for(unsigned char p=0; p<height; p++)             //Pages
   {
     for(int c=0; c<len; c++)                //Columns
     {
@@ -1272,18 +1132,18 @@ void LCD_Write_Purator(uint8 row, uint8 col)
  *            Text HECS
  * ------------------------------------------------------------------*/
 
-void LCD_Write_HECS(uint8 row, uint8 col)
+void LCD_Write_HECS(unsigned char row, unsigned char col)
 {
-  uint8 LcdData[80]={0x00};
-  uint8 H = 0x00;
-    uint8 L = 0x00;
+  unsigned char LcdData[80]={0x00};
+  unsigned char H = 0x00;
+    unsigned char L = 0x00;
 
   int       len=    Text_HECS[0];     //Width  in Dots
     unsigned char height=   Text_HECS[1];     //height in Bytes
 
   LCD_WP_SetFrame(row, col, height, len);       //FrameSet
 
-  for(uint8 p=0; p<height; p++)           //Pages
+  for(unsigned char p=0; p<height; p++)           //Pages
   {
     for(int c=0; c<len; c++)            //Columns
     {
@@ -1311,7 +1171,7 @@ void LCD_Write_HECS(uint8 row, uint8 col)
  *            DeathMan
  * ------------------------------------------------------------------*/
 
-void LCD_DeathMan(uint8 row, uint8 col)
+void LCD_DeathMan(unsigned char row, unsigned char col)
 {
   static unsigned char state=1;
 
@@ -1346,7 +1206,7 @@ void LCD_DeathMan(uint8 row, uint8 col)
  * ------------------------------------------------------------------*/
 
 
-void LCD_WP_SetFrame(uint8 row, uint8 col, uint8 height, uint8 len)
+void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
 {
   LCD_SetPageAddress(row);        //PageAddress
   LCD_SetColumnAdress(col);       //ColumnAddress

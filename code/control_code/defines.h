@@ -35,7 +35,7 @@
 // SoftwareVersion
 #define SV1       1       //x.-.-
 #define SV2       3       //-.x.-
-#define SV3       1       //-.-.x
+#define SV3       11       //-.-.x
 
 // TimeDefault
 #define DEF_SEC   0x30    //::30 = 0x30
@@ -48,20 +48,7 @@
 
 
 /* ==================================================================*
- *            Types
- * ==================================================================*/
-
-typedef signed   char   int8;
-typedef unsigned char   uint8;
-typedef signed   short  int16;
-typedef unsigned short  uint16;
-typedef signed   long   int32;
-typedef unsigned long   uint32;
-typedef uint16          halDataAlign_t;
-
-
-/* ==================================================================*
- *            Stuct
+ *            Stucts
  * ==================================================================*/
 
 typedef struct _TelNr
@@ -70,20 +57,6 @@ typedef struct _TelNr
   char tel;
   unsigned char pos;
 }TelNr;
-
-
-/* ==================================================================*
- *            Defines
- * ==================================================================*/
-
-/* ------------------------------------------------------------------*
- *  Useful macros for accessing single bytes of int and long variables
- * ------------------------------------------------------------------*/
-
-#define BYTE3(var) *((unsigned char *) &var+3)
-#define BYTE2(var) *((unsigned char *) &var+2)
-#define BYTE1(var) *((unsigned char *) &var+1)
-#define BYTE0(var) *((unsigned char *) &var)
 
 
 /* ==================================================================*
