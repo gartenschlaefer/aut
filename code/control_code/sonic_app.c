@@ -363,18 +363,23 @@ unsigned char Sonic_sVersion(void)
     rec = CAN_SonicVersion(_exe);
     if(rec[0] >= 11) return 10;
   }
+
+  // application version
   switch(rec[1])
   {
-    case 0: LCD_WriteStringFont(1,2, "75kHz");  break;
-    case 1: LCD_WriteStringFont(1,2, "125kHz"); break;
-    case 2: LCD_WriteStringFont(1,2, "Boot  "); break;
+    case 0: LCD_WriteStringFont(1, 2, "75kHz");  break;
+    case 1: LCD_WriteStringFont(1, 2, "125kHz"); break;
+    case 2: LCD_WriteStringFont(1, 2, "Boot  "); break;
     default:                                    break;
   }
 
-  LCD_WriteMyFont(1,52, 21);      //S
+  // S
+  LCD_WriteMyFont(1, 52, 21);
   ver = ((rec[2] & 0xF0) >> 4);
   LCD_WriteMyFont(1, 57, ver);
-  LCD_WriteMyFont(1,61, 22);      //.
+
+  // .
+  LCD_WriteMyFont(1,61, 22);
   ver = (rec[2] & 0x0F);
   LCD_WriteMyFont(1, 65, ver);
 
@@ -388,12 +393,16 @@ unsigned char Sonic_sVersion(void)
 
 void Sonic_Data_Boot(t_FuncCmd cmd)
 {
-  TCE1_WaitMilliSec_Init(25);     //SafetyTimer
+  // safety timer
+  TCE1_WaitMilliSec_Init(25);
+
+  // sonic boot in data section clicked
   if(cmd == _on)
   {
-    if(Sonic_sVersion() != 2)       //Boot
+    // boot
+    if(Sonic_sVersion() != 2)
     {
-      CAN_TxCmd(_boot);               //CANTxCmd
+      CAN_TxCmd(_boot);
       while(CAN_RxACK() != _boot){
         if(TCE1_Wait_Query()){
           LCD_Data_SonicWrite(_noUS, 0);
@@ -402,9 +411,9 @@ void Sonic_Data_Boot(t_FuncCmd cmd)
   }
   else if(cmd == _off)
   {
-    if(Sonic_sVersion() == 2)       //Boot
+    if(Sonic_sVersion() == 2)
     {
-      CAN_TxCmd(_app);                //CANTxCmd
+      CAN_TxCmd(_app);
       while(CAN_RxACK() != _ack){
         if(TCE1_Wait_Query()){
           LCD_Data_SonicWrite(_noUS, 0);
@@ -429,9 +438,9 @@ void Sonic_Data_BootRead(void)
 
   switch(state)
   {
-    case 4:  LCD_Data_SonicWrite(_success, 0);     break;
+    case 4:  LCD_Data_SonicWrite(_success, 0); break;
     case 11: LCD_Data_SonicWrite(_noBoot, 0); break;
-    case 12: LCD_Data_SonicWrite(_error, 0);  break;
+    case 12: LCD_Data_SonicWrite(_error, 0); break;
     case 13: LCD_Data_SonicWrite(_noData, 0); break;
     default: break;
   }

@@ -1,4 +1,5 @@
-control_code
+# --
+# gitignore for control code
 
 # file endings
 *.eep

@@ -434,11 +434,6 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
 
 /* ------------------------------------------------------------------*
  *            Sonic Read Application Program
- * -------------------------------------------------------------------*
- *  Parameter:      --------------------------------------------------
- *  cmd: _init      - Start Read App
- *  cmd: _exe       - Read Application Section from Sonic
- *  return:         - state
  * ------------------------------------------------------------------*/
 
 unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
@@ -451,7 +446,7 @@ unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
   unsigned char byte = 0;
   int adr = 0;
 
-  //--------------------------------------------Init
+  // start read application
   if(cmd == _init)
   {
     state = 0;
@@ -459,7 +454,8 @@ unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
     CAN_TxCmd(_readProgram);      //CANTxCmd
     state = 1;
   }
-  //--------------------------------------------Exe
+
+  // read application from sonic
   else if(cmd == _exe)
   {
     //------------------------------------------------CheckBootloaderOK
