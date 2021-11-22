@@ -1,6 +1,8 @@
 # makefile
 # adapted from: https://wiki.archlinux.org/title/AVR
 # other source: https://www.avrfreaks.net/forum/compile-script-avr-gcc-linux
+# program by:
+# avrdude -p x128a1 -c avrispmkII -B 1MHz -U flash:w:$(TARGET).hex
 
 # --
 # variables for make
@@ -58,12 +60,12 @@ LDFLAGS += -Wl,--print-gc-sections
 # avrdude
 AVRDUDE_MCU = x128a1
 AVRDUDE_PROGRAMMER = avrispmkII
-AVRDUDE_SPEED = -B 1MHz
+AVRDUDE_SPEED = 1MHz
 
 # avrdude flags
 AVRDUDE_FLAGS = -p $(AVRDUDE_MCU)
 AVRDUDE_FLAGS += -c $(AVRDUDE_PROGRAMMER)
-AVRDUDE_FLAGS += $(AVRDUDE_SPEED)
+AVRDUDE_FLAGS += -B $(AVRDUDE_SPEED)
 
 # messages
 MSG_LINKING = Linking:

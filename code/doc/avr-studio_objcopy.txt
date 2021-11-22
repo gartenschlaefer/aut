@@ -1,0 +1,19 @@
+
+# Creating load file for Flash: bin/control_code.hex
+avr-objcopy -O ihex -R .eeprom -R .fuse -R .lock bin/control_code.elf bin/control_code.hex
+
+# Creating load file for EEPROM: bin/control_code.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 --no-change-warnings -O ihex bin/control_code.elf bin/control_code.eep || exit 0
+
+# Creating Extended Listing: bin/control_code.lss
+avr-objdump -h -S -z bin/control_code.elf > bin/control_code.lss
+
+# Creating Symbol Table: bin/control_code.sym
+avr-nm -n bin/control_code.elf > bin/control_code.sym
+
+avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex control_code control_code.hex
+
+avr-objcopy --no-change-warnings -j .eeprom --change-section-lma .eeprom=0 -O ihex control_code control_code.eep
+avr-objcopy --no-change-warnings -j .lock --change-section-lma .lock=0 -O ihex control_code control_code.lock
+avr-objcopy --no-change-warnings -j .signature --change-section-lma .signature=0 -O ihex control_code control_code.sig
+avr-objcopy --no-change-warnings -j .fuse --change-section-lma .fuse=0 -O ihex control_code control_code.fuse
