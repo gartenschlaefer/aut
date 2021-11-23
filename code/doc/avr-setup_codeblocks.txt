@@ -1,0 +1,84 @@
+=======================================================================
+AVR on Codeblocks
+=======================================================================
+
+Packetverwaltung
+gcc-lib
+avr-libc
+codeblocks
+avrdude
+
+
+=======================================================================
+Errors:
+=======================================================================
+
+/usr/include/features.h|374|fatal error: sys/cdefs.h: No such file or directory|
+
+Lösung: 
+sudo apt-get install libc6-dev-i386
+
+=======================================================================
+
+/usr/lib/avr/include/avr/pgmspace.h|1067|error: unknown type name ‘uint_farptr_t’|
+
+Lösung:
+1.) Konsole Öffnen
+2.) Befehl "sudo pico /usr/lib/avr/include/avr/pgmspace.h"
+3.) <inttypes.h> mit "../inttypes.h" ersetzen
+4.) STRG+X  Y  ENTER
+
+
+
+=======================================================================
+AVRDude
+=======================================================================
+
+=======================================================================
+xmega128a1
+=======================================================================
+
+sudo avrdude
+-p x128a1 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+
+
+=======================================================================
+At90Can
+=======================================================================
+
+sudo avrdude
+-p c32 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+
+
+
+----------------------------------------------------------------
+xmega128a1
+sudo avrdude
+-p x128a1 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+90can32
+sudo avrdude
+-p c32 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+90can32_Bootloader
+sudo avrdude
+-p c32 -c avrisp2 -D -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+90can128
+sudo avrdude
+-p c128 -c avrisp2 -P usb -U ${TARGET_OUTPUT_BASENAME}.hex
+${TARGET_OUTPUT_DIR}
+----------------------------------------------------------------
+
+

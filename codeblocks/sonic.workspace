@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<CodeBlocks_workspace_file>
-	<Workspace title="Workspace">
-		<Project filename="../sonic_code_app/sonic_code_app.cbp" />
-		<Project filename="../sonic_code_boot/sonic_code_boot.cbp" />
-	</Workspace>
-</CodeBlocks_workspace_file>
