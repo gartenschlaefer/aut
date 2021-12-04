@@ -1,0 +1,64 @@
+# --
+# infos:
+
+https://www.mikrocontroller.net/articles/Datei:Bootloader-Config-Linker.png
+
+https://www.mikrocontroller.net/topic/402889?goto=4665003#4665003
+https://www.mikrocontroller.net/topic/423123
+
+
+ Deinen Code brauchst du in keiner Weise anzufassen...
+
+ Wenn man es dem Linker nicht anders sagt, wird alles in der Sektion
+ .text (default) ab der Adresse 0x00 aufwärts gelinkt.
+ Damit du einen funktionierenden Bootloader schreiben kannst, muss
+ dem Linker mitgeteilt werden, dass die Sektion .text z.B. nach
+ Adresse 0x7800 verschoben werden soll.
+ Deswegen hast du aber bei deiner bisherigen Lösung zwei getrennte
+ Programme, die du jetzt gerne als ein einziges .elf File haben
+ möchtest, richtig ?
+
+ Bei der von mir geposteten Lösung bleibt die Sektion
+
+.text  // (und das ist die Applikation)
+
+ da wo sie ist, du definierst aber zusätzlich eine neue Sektion
+
+.myboot // (und das ist der Bootloader)
+
+ mit
+
+ __attribute__ ((section (".myboot")))
+
+
+ Jetzt brauchst du nur mitzuteilen, dass sich die paar Routinen,
+ die sich im Bootloader befinden, alle zur Sektion .myboot
+ gehören.
+ Also, wird am Programmanfang mit dieser Definition:
+
+void bootcode(void) __attribute__ ((section (".myboot")));)
+
+ dieses auch mitgeteilt.
+ Natürlich werden anstatt void bootcode etc. alle deine bestehenden
+ Routinen im Bootloader angeführt - und es können normalerweise nicht
+ mehr als 4-5 zusätzliche Routinen sein - wenn es mehr sind, stimmt
+ etwas mit deinem Bootloader nicht. Deine schon bestehenden Routinen
+ sowohl in der Applikationsektion als auch in der Bootloadersektion
+ brauchst du weder zu ändern noch überhaupt anzufassen.
+ Wie du die Fuses setzst, steht hier:
+ Beitrag "Re: AVR Bootloader + Hauptprogramm zusammenfügen"
+ Und damit ist schon alles beendet und deine Voraussetzung
+ will grundsätzlich nicht anfassen und nicht ändern und nicht testen
+ ist auch erfüllt.
+
+ Bleibt nur noch dem Linker mitzuteilen, dass die Sektion .myboot
+ nach 0x7800 verschoben werden soll und das machst du mit:
+
+-Wl,--section-start=.myboot=0x7800
+
+
+ Und damit hast du alles in einem .elf File in einem Durchgang.
+ Einfacher geht es nicht.
+
+> Die Zeit, die ich darein stecke, ist Budgetiert).
+ Meine leider nicht.
