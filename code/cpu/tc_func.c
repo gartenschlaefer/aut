@@ -22,15 +22,15 @@
 void TCC0_WaitMicroSec_Init(int microSec)
 {
   int microHerz = 16;
-  int time = microSec*microHerz;
+  int time = microSec * microHerz;
 
-  TCC0_CTRLA = TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCC0.CTRLB = TC_WGMODE_NORMAL_gc;    //Mode
+  TCC0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC0.CNT = 0;
-  TCC0.PER = 60000;           //Max microSek= 3700
-  TCC0.CCA = time;            //OputCompare auf
-  TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);   //reset INTFlag
+  TCC0.PER = 60000;
+  TCC0.CCA = time;
+  TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
   TCC0_CTRLA = TC_CLKSEL_DIV1_gc;      //clk/1
 }
@@ -42,18 +42,18 @@ void TCC0_WaitMicroSec_Init(int microSec)
 
 void TCC0_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCC0_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCC0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCC0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC0.CNT = 0;
-  TCC0.PER = 60000;           //Max milliSek= 900
-  TCC0.CCA = time;            //OputCompare
-  TCC0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCC0.PER = 60000;
+  TCC0.CCA = time;
+  TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCC0_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCC0_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -66,15 +66,15 @@ void TCC0_WaitSec_Init(int Sec)
   int Herz = 15625;
   int time = Sec * Herz;
 
-  TCC0_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCC0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCC0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC0.CNT = 0;
-  TCC0.PER = 60000;           //Max Sek= 3s
-  TCC0.CCA = time;            //OputCompare
-  TCC0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCC0.PER = 60000;
+  TCC0.CCA = time;
+  TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCC0_CTRLA = TC_CLKSEL_DIV1024_gc;      //clk/8
+  TCC0_CTRLA = TC_CLKSEL_DIV1024_gc;
 }
 
 
@@ -84,10 +84,10 @@ void TCC0_WaitSec_Init(int Sec)
 
 unsigned char TCC0_Wait_Query(void)
 {
-  if(TCC0.INTFLAGS & (1<<TC0_CCAIF_bp))
+  if(TCC0.INTFLAGS & (1 << TC0_CCAIF_bp))
   {
-    TCC0.CNT= 0;
-    TCC0.INTFLAGS |= (1<<TC0_CCAIF_bp); //reset INTFlag
+    TCC0.CNT = 0;
+    TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -95,7 +95,7 @@ unsigned char TCC0_Wait_Query(void)
 
 void TCC0_Stop(void)
 {
-  TCC0_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
+  TCC0_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -105,27 +105,27 @@ void TCC0_Stop(void)
 
 void TCC0_wait_us(int us)
 {
-  TCC0_WaitMicroSec_Init(us); //startTimer
-  while(!(TCC0_Wait_Query()));  //Query
-  TCC0_Stop();          //stopTimer
+  TCC0_WaitMicroSec_Init(us);
+  while(!(TCC0_Wait_Query()));
+  TCC0_Stop();
 }
 
 void TCC0_wait_ms(int ms)
 {
-  TCC0_WaitMilliSec_Init(ms); //startTimer
-  while(!(TCC0_Wait_Query()));  //Query
-  TCC0_Stop();          //stopTimer
+  TCC0_WaitMilliSec_Init(ms);
+  while(!(TCC0_Wait_Query()));
+  TCC0_Stop();
 }
 
 void TCC0_wait_sec(int sec)
 {
   while(sec)
   {
-    TCC0_WaitSec_Init(1);     //startTimer
-    while(!(TCC0_Wait_Query()));  //Query
+    TCC0_WaitSec_Init(1);
+    while(!(TCC0_Wait_Query()));
     sec--;
   }
-  TCC0_Stop();          //stopTimer
+  TCC0_Stop();
 }
 
 
@@ -135,37 +135,44 @@ void TCC0_wait_sec(int sec)
 
 void TCC0_Main_Wait(void)
 {
-  TCC0_wait_ms(200);    //Wait
+  TCC0_wait_ms(200);
 }
 
 void TCC0_DisplayManual_Wait(void)
 {
-  TCC0_wait_ms(5);    //Wait
+  TCC0_wait_ms(5);
 }
 
 void TCC0_DisplaySetup_Wait(void)
 {
-  TCC0_wait_ms(10);   //Wait
+  TCC0_wait_ms(10);
 }
 
 void TCC0_DisplayData_Wait(void)
 {
-  TCC0_wait_ms(10);   //Wait
+  TCC0_wait_ms(10);
 }
 
 void TCC0_Touch_Wait(void)
 {
-  TCC0_wait_ms(15);   //Wait
+  TCC0_wait_ms(15);
 }
 
+
 /* ------------------------------------------------------------------*
- *            TCC0 - misc
+ *            TCC0 - open and close Ventil
  * ------------------------------------------------------------------*/
 
-void TCC0_wait_3s5(void)
+void TCC0_wait_openVentil(void)
 {
   TCC0_wait_sec(3);
-  TCC0_wait_ms(500);
+}
+
+
+void TCC0_wait_closeVentil(void)
+{
+  TCC0_wait_sec(3);
+  TCC0_wait_ms(100);
 }
 
 
@@ -184,18 +191,18 @@ void TCC0_wait_3s5(void)
 
 void TCC1_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCC1_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCC1.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCC1_CTRLA = TC_CLKSEL_OFF_gc;
+  TCC1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC1.CNT = 0;
-  TCC1.PER = 60000;           //Max milliSek= 900
-  TCC1.CCA = time;            //OputCompare auf x*1us
-  TCC1.INTFLAGS |= (1<<TC1_CCAIF_bp);   //reset INTFlag
+  TCC1.PER = 60000;
+  TCC1.CCA = time;
+  TCC1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
-  TCC1_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCC1_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -205,10 +212,10 @@ void TCC1_WaitMilliSec_Init(int milliSec)
 
 unsigned char TCC1_Wait_Query(void)
 {
-  if(TCC1.INTFLAGS & (1<<TC1_CCAIF_bp))
+  if(TCC1.INTFLAGS & (1 << TC1_CCAIF_bp))
   {
-    TCC1.CNT= 0;
-    TCC1.INTFLAGS |= (1<<TC1_CCAIF_bp); //reset INTFlag
+    TCC1.CNT = 0;
+    TCC1.INTFLAGS |= (1 << TC1_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -216,7 +223,7 @@ unsigned char TCC1_Wait_Query(void)
 
 void TCC1_Stop(void)
 {
-  TCC1_CTRLA = TC_CLKSEL_OFF_gc;      //TCC0 OFF
+  TCC1_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -235,39 +242,39 @@ void TCC1_Stop(void)
 
 void TCD0_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCD0_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCD0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCD0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCD0.CNT = 0;
-  TCD0.PER = 60000;           //Max milliSek= 900
-  TCD0.CCA = time;            //OputCompare auf x*1us
-  TCD0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCD0.PER = 60000;
+  TCD0.CCA = time;
+  TCD0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCD0_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCD0_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
 /* ------------------------------------------------------------------*
- *            TCD0 - Sec
+ *            TCD0 - Sec: max 3s
  * ------------------------------------------------------------------*/
 
 void TCD0_WaitSec_Init(int Sec)
 {
-  int Herz= 15625;
-  int time= Sec*Herz;
+  int Herz = 15625;
+  int time = Sec * Herz;
 
-  TCD0_CTRLA= TC_CLKSEL_OFF_gc;     //TCD0 OFF
-  TCD0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCD0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCD0.CNT = 0;
-  TCD0.PER = 60000;           //Max Sek= 3s
-  TCD0.CCA = time;            //OputCompare auf x*1us
-  TCD0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCD0.PER = 60000;
+  TCD0.CCA = time;
+  TCD0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCD0_CTRLA= TC_CLKSEL_DIV1024_gc;     //clk/8
+  TCD0_CTRLA = TC_CLKSEL_DIV1024_gc;
 }
 
 
@@ -277,10 +284,10 @@ void TCD0_WaitSec_Init(int Sec)
 
 unsigned char TCD0_Wait_Query(void)
 {
-  if(TCD0.INTFLAGS & (1<<TC0_CCAIF_bp))
+  if(TCD0.INTFLAGS & (1 << TC0_CCAIF_bp))
   {
-    TCD0.CNT= 0;
-    TCD0.INTFLAGS |= (1<<TC0_CCAIF_bp); //reset INTFlag
+    TCD0.CNT = 0;
+    TCD0.INTFLAGS |= (1 << TC0_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -288,7 +295,7 @@ unsigned char TCD0_Wait_Query(void)
 
 void TCD0_Stop(void)
 {
-  TCD0_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
+  TCD0_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -296,7 +303,7 @@ void TCD0_Stop(void)
 /* ==================================================================*
  *            TimerIC Safety Timer TCD1
  * --------------------------------------------------------------
- *  If Timer IC don´t work, safetyTimer TCD1 will be used
+ *  If Timer IC do not work, safetyTimer TCD1 will be used
  * --------------------------------------------------------------
  * ==================================================================*/
 
@@ -306,18 +313,18 @@ void TCD0_Stop(void)
 
 void TCD1_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCD1_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCD1.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCD1_CTRLA = TC_CLKSEL_OFF_gc;
+  TCD1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCD1.CNT = 0;
-  TCD1.PER = 60000;           //Max milliSek= 900
-  TCD1.CCA = time;            //OputCompare auf x*1us
-  TCD1.INTFLAGS |= (1<<TC1_CCAIF_bp);   //reset INTFlag
+  TCD1.PER = 60000;
+  TCD1.CCA = time;
+  TCD1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
-  TCD1_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCD1_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -327,10 +334,10 @@ void TCD1_WaitMilliSec_Init(int milliSec)
 
 unsigned char TCD1_Wait_Query(void)
 {
-  if(TCD1.INTFLAGS & (1<<TC1_CCAIF_bp))
+  if(TCD1.INTFLAGS & (1 << TC1_CCAIF_bp))
   {
-    TCD1.CNT= 0;
-    TCD1.INTFLAGS |= (1<<TC1_CCAIF_bp); //reset INTFlag
+    TCD1.CNT = 0;
+    TCD1.INTFLAGS |= (1 << TC1_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -338,7 +345,7 @@ unsigned char TCD1_Wait_Query(void)
 
 void TCD1_Stop(void)
 {
-  TCD1_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
+  TCD1_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -348,7 +355,7 @@ void TCD1_Stop(void)
 
 unsigned char TCD1_MainAuto_SafetyTC(t_FuncCmd cmd)
 {
-  static unsigned char i=0;
+  static unsigned char i = 0;
 
   switch(cmd)
   {
@@ -378,8 +385,7 @@ unsigned char TCD1_MainAuto_SafetyTC(t_FuncCmd cmd)
       }
       break;
 
-    default:
-      break;
+    default: break;
   }
   return 0;
 }
@@ -399,18 +405,18 @@ unsigned char TCD1_MainAuto_SafetyTC(t_FuncCmd cmd)
 
 void TCE0_WaitSec_Init(int Sec)
 {
-  int Herz= 15625;
-  int time= Sec*Herz;
+  int Herz = 15625;
+  int time = Sec * Herz;
 
-  TCE0_CTRLA= TC_CLKSEL_OFF_gc;     //TCE0 OFF
-  TCE0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCE0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCE0.CNT = 0;
-  TCE0.PER = 60000;           //Max Sek= 3s
-  TCE0.CCA = time;            //OputCompare
-  TCE0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCE0.PER = 60000;
+  TCE0.CCA = time;
+  TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCE0_CTRLA= TC_CLKSEL_DIV1024_gc;     //clk/8
+  TCE0_CTRLA = TC_CLKSEL_DIV1024_gc;
 }
 
 
@@ -420,18 +426,18 @@ void TCE0_WaitSec_Init(int Sec)
 
 void TCE0_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCE0_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
-  TCE0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCE0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCE0.CNT = 0;
-  TCE0.PER = 60000;           //Max milliSek= 900
-  TCE0.CCA = time;            //OputCompare
-  TCE0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCE0.PER = 60000;
+  TCE0.CCA = time;
+  TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCE0_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCE0_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -441,10 +447,10 @@ void TCE0_WaitMilliSec_Init(int milliSec)
 
 unsigned char TCE0_Wait_Query(void)
 {
-  if(TCE0.INTFLAGS & (1<<TC0_CCAIF_bp))
+  if(TCE0.INTFLAGS & (1 << TC0_CCAIF_bp))
   {
-    TCE0.CNT= 0;
-    TCE0.INTFLAGS |= (1<<TC0_CCAIF_bp); //reset INTFlag
+    TCE0.CNT = 0;
+    TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -452,7 +458,7 @@ unsigned char TCE0_Wait_Query(void)
 
 void TCE0_Stop(void)
 {
-  TCE0_CTRLA= TC_CLKSEL_OFF_gc;     //TCE0 OFF
+  TCE0_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -462,69 +468,66 @@ void TCE0_Stop(void)
 
 unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
 {
-  static unsigned char i=0;
+  static unsigned char i = 0;
 
   if(cmd == _ton)
   {
-    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc))
-      TCE0_WaitSec_Init(3);             //Init3Sec
+    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)) TCE0_WaitSec_Init(3);
 
-    if(TCE0_Wait_Query()) i++;          //increaseCounter
-    if(i>2)
+    // increase time counter
+    if(TCE0_Wait_Query()) i++;
+
+    // error time ends: 4*3s
+    if(i > 2)
     {
-      i=0;
+      i = 0;
       TCE0_Stop();
-      return 1;                         //12sec
+      return 1;
     }
   }
-  //--------------------------------------------------openVentil
+
+  // open ventil
   else if(cmd == _ovent)
   {
-    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc))
-      TCE0_WaitSec_Init(3);
+    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)) TCE0_WaitSec_Init(3);
 
     if(TCE0_Wait_Query())
     {
-      i=0;
+      i = 0;
       TCE0_Stop();
       return 1;
     }
   }
-  //--------------------------------------------------closeVentil
+
+  // close ventil
   else if(cmd == _cvent)
   {
-    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)){
-      i=0;
-      TCE0_WaitSec_Init(3);}
-
-    if(TCE0_Wait_Query()){
-      if(!i){
-        i=1;
-        TCE0_WaitMilliSec_Init(300);}
-      else{
-        i=0;
-        TCE0_Stop();
-        return 1;}}
-  }
-
-  //--------------------------------------------------openVentil
-  else if(cmd == _cvent_s)
-  {
     if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc))
-      TCE0_WaitSec_Init(1);
+    {
+      i = 0;
+      TCE0_WaitSec_Init(3);
+    }
 
     if(TCE0_Wait_Query())
     {
-      i=0;
-      TCE0_Stop();
-      return 1;
+      if(!i)
+      {
+        i = 1;
+        TCE0_WaitMilliSec_Init(100);
+      }
+      else
+      {
+        i = 0;
+        TCE0_Stop();
+        return 1;
+      }
     }
   }
 
   else if(cmd == _reset)
   {
     TCE0_Stop();
-    i=0;
+    i = 0;
   }
 
   return 0;
@@ -545,18 +548,18 @@ unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
 
 void TCE1_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCE1_CTRLA= TC_CLKSEL_OFF_gc;     //TCCE1 OFF
-  TCE1.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCE1_CTRLA = TC_CLKSEL_OFF_gc;
+  TCE1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCE1.CNT = 0;
-  TCE1.PER = 60000;           //Max milliSek= 900
-  TCE1.CCA = time;            //OputCompare auf x*1us
-  TCE1.INTFLAGS |= (1<<TC1_CCAIF_bp);   //reset INTFlag
+  TCE1.PER = 60000;
+  TCE1.CCA = time;
+  TCE1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
-  TCE1_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCE1_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -566,10 +569,10 @@ void TCE1_WaitMilliSec_Init(int milliSec)
 
 unsigned char TCE1_Wait_Query(void)
 {
-  if(TCE1.INTFLAGS & (1<<TC1_CCAIF_bp))
+  if(TCE1.INTFLAGS & (1 << TC1_CCAIF_bp))
   {
-    TCE1.CNT= 0;
-    TCE1.INTFLAGS |= (1<<TC1_CCAIF_bp); //reset INTFlag
+    TCE1.CNT = 0;
+    TCE1.INTFLAGS |= (1 << TC1_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -577,7 +580,7 @@ unsigned char TCE1_Wait_Query(void)
 
 void TCE1_Stop(void)
 {
-  TCE1_CTRLA= TC_CLKSEL_OFF_gc;     //TCCE1 OFF
+  TCE1_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -595,18 +598,18 @@ void TCE1_Stop(void)
 
 void TCF0_WaitSec_Init(int Sec)
 {
-  int Herz= 15625;
-  int time= Sec*Herz;
+  int Herz = 15625;
+  int time = Sec * Herz;
 
-  TCF0_CTRLA= TC_CLKSEL_OFF_gc;     //TCF0 OFF
-  TCF0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCF0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF0.CNT = 0;
-  TCF0.PER = 60000;           //Max Sek= 3s
-  TCF0.CCA = time;            //OputCompare
-  TCF0.INTFLAGS |= (1<<TC0_CCAIF_bp);   //reset INTFlag
+  TCF0.PER = 60000;
+  TCF0.CCA = time;
+  TCF0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCF0_CTRLA= TC_CLKSEL_DIV1024_gc;     //clk/8
+  TCF0_CTRLA = TC_CLKSEL_DIV1024_gc;
 }
 
 /* ------------------------------------------------------------------*
@@ -615,18 +618,18 @@ void TCF0_WaitSec_Init(int Sec)
 
 void TCF0_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCF0_CTRLA= TC_CLKSEL_OFF_gc;     //TCCF0 OFF
-  TCF0.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCF0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF0.CNT = 0;
-  TCF0.PER = 60000;           //Max milliSek= 900
-  TCF0.CCA = time;            //OputCompare auf x*1us
-  TCF0.INTFLAGS |= (1<<TC1_CCAIF_bp);   //reset INTFlag
+  TCF0.PER = 60000;
+  TCF0.CCA = time;
+  TCF0.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
-  TCF0_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCF0_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -636,10 +639,10 @@ void TCF0_WaitMilliSec_Init(int milliSec)
 
 unsigned char TCF0_Wait_Query(void)
 {
-  if(TCF0.INTFLAGS & (1<<TC1_CCAIF_bp))
+  if(TCF0.INTFLAGS & (1 << TC1_CCAIF_bp))
   {
-    TCF0.CNT= 0;
-    TCF0.INTFLAGS |= (1<<TC1_CCAIF_bp); //reset INTFlag
+    TCF0.CNT = 0;
+    TCF0.INTFLAGS |= (1 << TC1_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -647,7 +650,7 @@ unsigned char TCF0_Wait_Query(void)
 
 void TCF0_Stop(void)
 {
-  TCF0_CTRLA= TC_CLKSEL_OFF_gc;     //TCF0 OFF
+  TCF0_CTRLA = TC_CLKSEL_OFF_gc;
 }
 
 
@@ -666,18 +669,18 @@ void TCF0_Stop(void)
 
 void TCF1_WaitSec_Init(int Sec)
 {
-  int Herz= 15625;
-  int time= Sec*Herz;
+  int Herz = 15625;
+  int time = Sec * Herz;
 
-  TCF1_CTRLA= TC_CLKSEL_OFF_gc;       //TCF1 OFF
-  TCF1.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCF1_CTRLA = TC_CLKSEL_OFF_gc;
+  TCF1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF1.CNT = 0;
-  TCF1.PER = 60000;                   //Max Sek= 3s
-  TCF1.CCA = time;                    //OputCompare
-  TCF1.INTFLAGS |= (1<<TC0_CCAIF_bp); //reset INTFlag
+  TCF1.PER = 60000;
+  TCF1.CCA = time;
+  TCF1.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCF1_CTRLA= TC_CLKSEL_DIV1024_gc;   //clk/8
+  TCF1_CTRLA = TC_CLKSEL_DIV1024_gc;
 }
 
 /* ------------------------------------------------------------------*
@@ -686,18 +689,18 @@ void TCF1_WaitSec_Init(int Sec)
 
 void TCF1_WaitMilliSec_Init(int milliSec)
 {
-  int milliHerz= 63;
-  int time= milliSec*milliHerz;
+  int milliHerz = 63;
+  int time = milliSec * milliHerz;
 
-  TCF1_CTRLA= TC_CLKSEL_OFF_gc;     //TCF1 OFF
-  TCF1.CTRLB= TC_WGMODE_NORMAL_gc;    //Mode
+  TCF1_CTRLA = TC_CLKSEL_OFF_gc;
+  TCF1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF1.CNT = 0;
-  TCF1.PER = 60000;           //Max milliSek= 900
-  TCF1.CCA = time;            //OputCompare auf x*1us
-  TCF1.INTFLAGS |= (1<<TC1_CCAIF_bp);   //reset INTFlag
+  TCF1.PER = 60000;
+  TCF1.CCA = time;
+  TCF1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
-  TCF1_CTRLA= TC_CLKSEL_DIV256_gc;      //clk/8
+  TCF1_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -707,10 +710,10 @@ void TCF1_WaitMilliSec_Init(int milliSec)
 
 unsigned char TCF1_Wait_Query(void)
 {
-  if(TCF1.INTFLAGS & (1<<TC1_CCAIF_bp))
+  if(TCF1.INTFLAGS & (1 << TC1_CCAIF_bp))
   {
-    TCF1.CNT= 0;
-    TCF1.INTFLAGS |= (1<<TC1_CCAIF_bp); //reset INTFlag
+    TCF1.CNT = 0;
+    TCF1.INTFLAGS |= (1 << TC1_CCAIF_bp);
     return 1;
   }
   return 0;
@@ -718,6 +721,6 @@ unsigned char TCF1_Wait_Query(void)
 
 void TCF1_Stop(void)
 {
-  TCF1_CTRLA= TC_CLKSEL_OFF_gc;     //TCC0 OFF
+  TCF1_CTRLA = TC_CLKSEL_OFF_gc;
 }
 

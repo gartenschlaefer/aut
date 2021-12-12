@@ -29,7 +29,6 @@ void Eval_Oxygen(t_FuncCmd cmd, int min)
 {
   static int o2 = 0;
   static int o2Min = 0;
-  static int o2Counter = 0;
 
   switch(cmd)
   {
@@ -39,12 +38,14 @@ void Eval_Oxygen(t_FuncCmd cmd, int min)
 
     case _clear:
       o2 = 0;
-      o2Counter = 0;
       break;
 
     case _count:
-      if(o2Min != min){ o2Counter++;  o2Min = min;}
-      if(o2Counter >= 1){ o2Counter = 0;  o2++;}
+      if(o2Min != min)
+      {
+        o2Min = min;
+        o2++;
+      }
       break;
 
     case _dec:
@@ -62,22 +63,18 @@ void Eval_Oxygen(t_FuncCmd cmd, int min)
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  Eval_PinWrite
- * --------------------------------------------------------------
- *  Writes on Number to Display, corresponding to pressed NumButton
+ *  Eval_PinWrite: Writes Number on Display, corresponding to pressed NumButton
  * ------------------------------------------------------------------*/
 
 void Eval_PinWrite(unsigned char pin, unsigned char codePos)
 {
-  LCD_nPinButtons(pin);             //Mark Pin
-  LCD_WriteFont(3, (125+(6*codePos)), pin+15);  //Write Number
+  LCD_nPinButtons(pin);
+  LCD_WriteFont(3, (125 + (6 * codePos)), pin + 15);
 }
 
 
 /*-------------------------------------------------------------------*
- *  Eval_PinDel
- * --------------------------------------------------------------
- *  Delete written Numbers
+ *  Eval_PinDel: Delete written Numbers
  * ------------------------------------------------------------------*/
 
 void Eval_PinDel(void)
@@ -87,16 +84,14 @@ void Eval_PinDel(void)
 
 
 /*-------------------------------------------------------------------*
- *  Eval_PinDel
- * --------------------------------------------------------------
- *  unmark all Buttons
+ *  Eval_PinDel: unmark all Buttons
  * ------------------------------------------------------------------*/
 
 void Eval_PinClr(unsigned char *pin)
 {
-  unsigned char i=0;
+  unsigned char i = 0;
 
-  for(i=0; i<11; i++)
+  for(i = 0; i < 11; i++)
   {
     if(pin[i]) LCD_pPinButtons(i);
   }
@@ -109,9 +104,7 @@ void Eval_PinClr(unsigned char *pin)
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  Eval Comp_OpHours
- * --------------------------------------------------------------
- *  Returns operating hours of Compressor, if add hours++
+ *  Eval Comp_OpHours: Returns operating hours of Compressor, if add hours++
  * ------------------------------------------------------------------*/
 
 int Eval_Comp_OpHours(t_FuncCmd cmd)
@@ -136,9 +129,7 @@ int Eval_Comp_OpHours(t_FuncCmd cmd)
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  Eval_Countdown
- * --------------------------------------------------------------
- *  If *value==0, return 1  else return 0
+ *  Eval_Countdown: If *value==0, return 1  else return 0
  * ------------------------------------------------------------------*/
 
 unsigned char Eval_CountDown(int *cMin, int *cSec)
@@ -156,7 +147,9 @@ unsigned char Eval_CountDown(int *cMin, int *cSec)
   if(sec < 0 || sec > 61) sec = 0;  
   
   count = MCP7941_ReadByte(TIC_SEC);
-  sTC = TCD1_MainAuto_SafetyTC(_exe);     //Timer Safety
+
+  // safety timer
+  sTC = TCD1_MainAuto_SafetyTC(_exe);
 
   // Countdown
   if(count != ctOld || sTC)
@@ -238,16 +231,15 @@ void Eval_SetupCircSensorMark(unsigned char sensor)
     case 0:   
       LCD_Write_Symbol_2(15, 0, p_sensor);
       LCD_FillSpace (15, 39, 4, 31);
-      LCD_WriteStringFontNeg(16,40,"Time:"); 
+      LCD_WriteStringFontNeg(16, 40, "Time:"); 
       break;
 
     case 1:   
       LCD_Write_Symbol_2(15, 0, n_sensor);
       LCD_ClrSpace  (15, 39, 4, 31);
-      LCD_WriteStringFont(16,40,"Time:");
+      LCD_WriteStringFont(16, 40, "Time:");
       break;
 
-    // default
     default: break;
   }
 }
@@ -261,12 +253,12 @@ void Eval_SetupCircSensorMark(unsigned char sensor)
 
 void Eval_SetupCircTextMark(unsigned char on, unsigned char *p_var)
 {
-  unsigned char var[4]={0};
-  unsigned char i=0;
+  unsigned char var[4] = {0};
+  unsigned char i = 0;
 
   LCD_ClrSpace(15, 70, 4, 20);
 
-  for(i=0; i<4; i++)
+  for(i = 0; i < 4; i++)
   {
     var[i]= *p_var;
     p_var++;
@@ -274,43 +266,49 @@ void Eval_SetupCircTextMark(unsigned char on, unsigned char *p_var)
 
   LCD_OnValue(var[0]);
   LCD_OffValue(var[1]);
-  LCD_WriteValue3(16,72, ((var[3]<<8) | var[2]));
+  LCD_WriteValue3(16, 72, ((var[3] << 8) | var[2]));
 
   switch (on)
   {
-    case 0:   LCD_OnValueNeg(var[0]);               break;
-    case 1:   LCD_OffValueNeg(var[1]);              break;
-    case 2:   LCD_FillSpace (15, 70, 4, 20);
-          LCD_WriteValueNeg3(16,72, ((var[3]<<8) | var[2]));  break;
-    default:                            break;
+    case 0: LCD_OnValueNeg(var[0]); break;
+    case 1: LCD_OffValueNeg(var[1]); break;
+    case 2: 
+      LCD_FillSpace (15, 70, 4, 20);
+      LCD_WriteValueNeg3(16, 72, ((var[3] << 8) | var[2])); 
+      break;
+
+    default: break;
   }
 }
 
 void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
 {
-  unsigned char var[4]={0};
-  unsigned char i=0;
+  unsigned char var[4] = {0};
+  unsigned char i = 0;
 
   LCD_ClrSpace(15, 39, 4, 51);
   LCD_WriteStringFont(16,40,"Time:");
 
-  for(i=0; i<4; i++)
+  for(i = 0; i < 4; i++)
   {
-    var[i]= *p_var;
+    var[i] = *p_var;
     p_var++;
   }
 
   LCD_OnValue(var[0]);
   LCD_OffValue(var[1]);
-  LCD_WriteValue3(16,72, ((var[3]<<8) | var[2]));
+  LCD_WriteValue3(16,72, ((var[3] << 8) | var[2]));
 
   switch (on)
   {
-    case 0:   LCD_OnValueNeg(var[0]);               break;
-    case 1:   LCD_OffValueNeg(var[1]);              break;
-    case 2:   LCD_FillSpace (15, 70, 4, 20);
-          LCD_WriteValueNeg3(16,72, ((var[3]<<8) | var[2]));  break;
-    default:                            break;
+    case 0: LCD_OnValueNeg(var[0]); break;
+    case 1: LCD_OffValueNeg(var[1]); break;
+    case 2:
+      LCD_FillSpace (15, 70, 4, 20);
+      LCD_WriteValueNeg3(16,72, ((var[3] << 8) | var[2]));
+      break;
+
+    default: break;
   }
 }
 
@@ -329,10 +327,10 @@ void Eval_SetupPumpMark(unsigned char mark)
 
   switch (mark)
   {
-    case 0:   LCD_Write_Symbol_2(15, 45, n_compressor);     break;
-    case 1:   LCD_Write_Symbol_3(15, 90, n_pump);       break;
-    case 2:   LCD_Write_Symbol_1(15, 120, n_pump2);       break;
-    default:                          break;
+    case 0: LCD_Write_Symbol_2(15, 45, n_compressor); break;
+    case 1: LCD_Write_Symbol_3(15, 90, n_pump); break;
+    case 2: LCD_Write_Symbol_1(15, 120, n_pump2); break;
+    default: break;
   }
 }
 
@@ -345,17 +343,17 @@ void Eval_SetupPumpMark(unsigned char mark)
 
 void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
 {
-  unsigned char i=0;
+  unsigned char i = 0;
   unsigned char var;
 
-  for(i=5; i<11; i++)
+  for(i = 5; i < 11; i++)
   {
     LCD_DateTime(i, *p_dT);
     p_dT++;
   }
 
-  p_dT= p_dT-6+time;
-  var= *p_dT;
+  p_dT = p_dT-6+time;
+  var = *p_dT;
 
   switch (time)
   {
@@ -364,7 +362,7 @@ void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
     case n_day:   LCD_DateTime(n_day, var);     break;
     case n_month: LCD_DateTime(n_month, var);   break;
     case n_year:  LCD_DateTime(n_year, var);    break;
-    default:                    break;
+    default: break;
   }
 }
 
@@ -480,7 +478,7 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
   for(eep = startPa; eep <= endPa; eep++)
   {
     // entries
-    for(i=0; i<4; i++)
+    for(i = 0; i < 4; i++)
     {
       rDay=   MEM_EEPROM_ReadData(eep, i, DATA_day);
       rMonth= MEM_EEPROM_ReadData(eep, i, DATA_month);
@@ -552,13 +550,13 @@ unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
   for(eep = startPa; eep <= endPa; eep++)
   {
     // entries
-    for(i=0; i<4; i++)
+    for(i = 0; i < 4; i++)
     {
-      rDay=   MEM_EEPROM_ReadData(eep, i, DATA_day);
-      rMonth= MEM_EEPROM_ReadData(eep, i, DATA_month);
-      rYear=  MEM_EEPROM_ReadData(eep, i, DATA_year);
-      rH=   MEM_EEPROM_ReadData(eep, i, DATA_hour);
-      rMin= MEM_EEPROM_ReadData(eep, i, DATA_minute);
+      rDay = MEM_EEPROM_ReadData(eep, i, DATA_day);
+      rMonth = MEM_EEPROM_ReadData(eep, i, DATA_month);
+      rYear = MEM_EEPROM_ReadData(eep, i, DATA_year);
+      rH = MEM_EEPROM_ReadData(eep, i, DATA_hour);
+      rMin = MEM_EEPROM_ReadData(eep, i, DATA_minute);
 
       if( (rDay)      &&  (
         (rYear  > year) ||

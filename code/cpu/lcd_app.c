@@ -125,11 +125,11 @@ t_page LCD_AutoPage(t_page page)
   LCD_Auto_Phosphor(sec, _exe);
   MPX_ReadAverage(Auto, _exe);
 
-  //--------------------------------------------------lcd_reset
-  if(lcd_reset == 10)                   //30s default: 32000
+  // lcd_reset 30s default: 32000
+  if(lcd_reset == 10)
   {
-    LCD_Init();                           //InitLCD
-    TCC0_wait_ms(2);                      //Wait
+    LCD_Init();
+    TCC0_wait_ms(2);
   }
   else if(lcd_reset == 10000)
   {
@@ -137,7 +137,7 @@ t_page LCD_AutoPage(t_page page)
   }
   else if(lcd_reset == 20000)
   {
-    if(!COMPANY)   LCD_Write_Purator(0,0);
+    if(!COMPANY) LCD_Write_Purator(0,0);
     else LCD_Write_HECS(0,0);
   }
   else if(lcd_reset > 30000)
@@ -178,10 +178,9 @@ t_page LCD_AutoPage_Zone(int *p_min, int *p_sec)
 t_page LCD_AutoPage_SetDown(int *p_min, int *p_sec)
 {
   t_page page = AutoSetDown;
-  LCD_WriteAutoVar(*p_min, *p_sec);             //Variables
+  LCD_WriteAutoVar(*p_min, *p_sec);
   page = Error_Detection(page, *p_min, *p_sec);
-  if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
-    return AutoPumpOff;   //Next Auto Page
+  if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat)) return AutoPumpOff;
   return AutoSetDown;
 }
 
@@ -193,12 +192,12 @@ t_page LCD_AutoPage_SetDown(int *p_min, int *p_sec)
 t_page LCD_AutoPage_PumpOff(int *p_min, int *p_sec)
 {
   t_page page = AutoPumpOff;
-  LCD_WriteAutoVar_Comp(*p_min, *p_sec);      //Variables
+  LCD_WriteAutoVar_Comp(*p_min, *p_sec);
   page = Error_Detection(page, *p_min, *p_sec);
   if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
   {
     OUT_Clr_PumpOff();
-    return AutoMud;       //Next Auto Page
+    return AutoMud;
   }
   return AutoPumpOff;
 }
@@ -211,20 +210,21 @@ t_page LCD_AutoPage_PumpOff(int *p_min, int *p_sec)
 t_page LCD_AutoPage_Mud(int *p_min, int *p_sec)
 {
   t_page page = AutoMud;
-  LCD_WriteAutoVar_Comp(*p_min, *p_sec);      //Write Variables
+  LCD_WriteAutoVar_Comp(*p_min, *p_sec);
   page = Error_Detection(page, *p_min, *p_sec);
   if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
   {
+    // close mud ventil
     OUT_Clr_Mud();
-    //------------------------------------------------WriteEntry
-    Eval_Oxygen(_entry, 0);                       //O2 Write2Entry
-    MEM_EEPROM_WriteAutoEntry(0, 0, Write_Entry); //WriteAutoEntry
-    Eval_Oxygen(_clear, 0);                       //02=0
 
-    if(MEM_EEPROM_ReadVar(CAL_Redo_on) &&
-    !(MEM_EEPROM_ReadVar(SONIC_on))){
-      return AutoZone;}
-    else return AutoCirc;         //Next Auto Page
+    // oxygen entry
+    Eval_Oxygen(_entry, 0);
+    MEM_EEPROM_WriteAutoEntry(0, 0, Write_Entry);
+    Eval_Oxygen(_clear, 0);
+
+    // calibration for pressure sensing
+    if(MEM_EEPROM_ReadVar(CAL_Redo_on) && !(MEM_EEPROM_ReadVar(SONIC_on))) return AutoZone;
+    else return AutoCirc;
   }
   return AutoMud;
 }
@@ -239,18 +239,19 @@ t_page LCD_AutoPage_Circ(t_page page, int *p_min, int *p_sec)
   int min = *p_min;
   int sec = *p_sec;
 
-  t_page sPage = page;                        //SafeBack4ErrTreat
-  page = Error_Detection(page, min, sec);     //ErrorDet
-  page = LCD_Write_AirVar(page, sec,  _exe);  //WriteVar
+  // save for error treat
+  t_page sPage = page;                        
+  page = Error_Detection(page, min, sec);
+  page = LCD_Write_AirVar(page, sec, _exe);
 
-  if(Eval_CountDown(p_min, p_sec) && (page != ErrorTreat) &&
-  (!MEM_EEPROM_ReadVar(SENSOR_inTank) || LCD_Sym_NoUS(page, _check)))
+  // change page condition
+  if(Eval_CountDown(p_min, p_sec) && (page != ErrorTreat) && (!MEM_EEPROM_ReadVar(SENSOR_inTank) || LCD_Sym_NoUS(page, _check)))
   {
-    LCD_Auto_InflowPump(page, 0, _reset);     //ResetIP
-    if(page == AutoCirc) OUT_Clr_Air();       //ClearAir
-    return AutoAir;                           //NextAutoPage
+    LCD_Auto_InflowPump(page, 0, _reset);
+    if(page == AutoCirc) OUT_Clr_Air();
+    return AutoAir;
   }
-  if(page == ErrorTreat) page = sPage;        //SafeBack4ErrTreat
+  if(page == ErrorTreat) page = sPage;
   return page;
 }
 
@@ -264,14 +265,14 @@ t_page LCD_AutoPage_Air(t_page page, int *p_min, int *p_sec)
   int min = *p_min;
   int sec = *p_sec;
 
-  page = Error_Detection(page, min, sec);   //ErrorDet
-  page = LCD_Write_AirVar(page, sec, _exe); //WriteVar
+  page = Error_Detection(page, min, sec);
+  page = LCD_Write_AirVar(page, sec, _exe);
 
   if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
   {
-    LCD_Auto_InflowPump(page, 0, _reset);   //ResetIP
-    if(page == AutoAir) OUT_Clr_Air();      //ClearAir
-    return AutoSetDown;                     //Next-AutoPage
+    LCD_Auto_InflowPump(page, 0, _reset);
+    if(page == AutoAir) OUT_Clr_Air();
+    return AutoSetDown;
   }
   return page;
 }
@@ -293,14 +294,14 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 
   t_page cPage = AutoAir;
 
-  //--------------------------------------------------------Init
+  // init
   if(cmd == _init)
   {
     airMin = LCD_AutoRead_StartTime(page);  //Read On
     airSec = 0;
   }
 
-  //--------------------------------------------------------Set
+  // set
   else if(cmd == _set)
   {
     if(page == AutoAir || page == AutoCirc)
@@ -309,7 +310,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
     }
   }
 
-  //--------------------------------------------------------Set
+  // reset
   else if(cmd == _reset)
   {
     if(page == AutoAir || page == AutoCirc)
@@ -318,72 +319,80 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
     }
   }
 
-  //--------------------------------------------------------WriteSym
+  // symbols
   else if(cmd == _write)
   {
-    LCD_AutoAirSym(page);               //Symbols
-    LCD_AutoCountDown(airMin, airSec);  //CountDownVar
+    LCD_AutoAirSym(page);
+    LCD_AutoCountDown(airMin, airSec);
   }
 
-  //--------------------------------------------------------exe
+  // exe
   else if(cmd == _exe)
   {
-    if(!airMin && !airSec)      //--Change2Off
+    // change to off
+    if(!airMin && !airSec)
     {
       switch(page)
       {
+        // auto air on
         case AutoAir:
         case AutoCirc:
           cPage = page;
-          page = MPX_ReadTank(page, _exe);          //MPX
-          MPX_ReadTank(page, _write);               //MPX
-          OUT_Clr_Air();                            //ClearAir
+          page = MPX_ReadTank(page, _exe);
+          MPX_ReadTank(page, _write);
+          OUT_Clr_Air();
           if(cPage != page)
           {
-            LCD_Auto_InflowPump(page, 0, _reset);   //IP-Reset
+            LCD_Auto_InflowPump(page, 0, _reset);
             return page;
           }
-          //SetPages
+
+          // set pages
           if(page == AutoAir) page = AutoAirOff;
           else if(page == AutoCirc) page = AutoCircOff;
           LCD_AutoAirSym(page);
-          LCD_Auto_InflowPump(page, 0, _set);       //IP-Set
-          airMin = LCD_AutoRead_StartTime(page);    //Read Off
+          LCD_Auto_InflowPump(page, 0, _set);
+          airMin = LCD_AutoRead_StartTime(page);
           airSec = 0;
           break;
 
+        // auto air off
         case AutoAirOff:
         case AutoCircOff:
-          LCD_Auto_InflowPump(page, 0, _reset);       //IP-Reset
-          OUT_Set_Air();                              //SetAir
-          //SetPages
+          LCD_Auto_InflowPump(page, 0, _reset);
+          OUT_Set_Air();
+
+          // set pages
           if(page == AutoAirOff)  page = AutoAir;
           else if(page == AutoCircOff)  page = AutoCirc;
           LCD_AutoAirSym(page);
-          airMin = LCD_AutoRead_StartTime(page);      //Read On
+          airMin = LCD_AutoRead_StartTime(page);
           airSec = 0;
           break;
 
+        // manual air on
         case ManualCirc:
-          if(page == ManualCirc)  page = ManualCircOff;   //Set2Off
-          MPX_ReadTank(ManualCirc, _exe);                 //MPX
-          MPX_ReadTank(ManualCirc, _write);               //MPX
-          OUT_Clr_Air();                                  //ClearAir
-          airMin = LCD_AutoRead_StartTime(page);          //Read Off
+          if(page == ManualCirc)  page = ManualCircOff;
+          MPX_ReadTank(ManualCirc, _exe);
+          MPX_ReadTank(ManualCirc, _write);
+          OUT_Clr_Air();
+          airMin = LCD_AutoRead_StartTime(page);
           airSec = 0;
           break;
 
+        // manual air off
         case ManualCircOff:
-          if(page == ManualCircOff)  page = ManualCirc; //Set2On
+          if(page == ManualCircOff)  page = ManualCirc;
           OUT_Set_Air();
-          airMin = LCD_AutoRead_StartTime(page);        //ReadOn
+          airMin = LCD_AutoRead_StartTime(page);
           airSec = 0;
           break;
-        default:              break;
+
+        default: break;
       }
     }
 
-    //------------------------------------------------CountDown
+    // countdown
     if(sec != cOld)
     {
       cOld = sec;
@@ -395,17 +404,16 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
       if(airSec)  airSec--;
     }
 
-    //------------------------------------------------ManualReturn
+    // manual return page
     if(page == ManualCirc || page == ManualCircOff) return page;
 
-    //------------------------------------------------WriteAutoVar
-    if((page == AutoCirc) || (page == AutoAir) ||
-    (page == ErrorTreat))
+    // auto variables
+    if((page == AutoCirc) || (page == AutoAir) || (page == ErrorTreat))
     {
-      LCD_WriteAutoVar_Comp(airMin, airSec);      //compVar
+      LCD_WriteAutoVar_Comp(airMin, airSec);
       Eval_Oxygen(_count, airMin);
     }
-    else LCD_WriteAutoVar(airMin, airSec);        //normalVar
+    else LCD_WriteAutoVar(airMin, airSec);
   }
   return page;
 }
@@ -1546,8 +1554,8 @@ t_page LCD_PinPage(t_page page)
   int *p_min;
   int *p_sec;
 
-  p_min= &pinMin;
-  p_sec= &pinSec;
+  p_min = &pinMin;
+  p_sec = &pinSec;
 
   if(!init)
   {
@@ -1558,7 +1566,7 @@ t_page LCD_PinPage(t_page page)
   }
 
   Watchdog_Restart();
-  TCC0_DisplayManual_Wait();            //Wait
+  TCC0_DisplayManual_Wait();
 
   matrix = Touch_Matrix();
   page = Touch_PinLinker(matrix, page);
@@ -1567,9 +1575,13 @@ t_page LCD_PinPage(t_page page)
     LCD_Clean();
     return page;}
 
-  if(Eval_CountDown(p_min, p_sec)){   init=0;
+  // end condition
+  if(Eval_CountDown(p_min, p_sec))
+  { 
+    init = 0;
     LCD_Clean();
-    return AutoPage;}       //Back to AutoPage
+    return AutoPage;
+  }
 
   return page;
 }
@@ -1586,7 +1598,7 @@ t_page LCD_PinPage(t_page page)
 
 void LCD_Entry_Clr(void)
 {
-  LCD_ClrSpace(4,1,24,135);
+  LCD_ClrSpace(4, 1, 24, 135);
 }
 
 
@@ -1637,9 +1649,9 @@ void LCD_WriteAutoEntryPage(unsigned char page)
 
 void LCD_WriteManualEntryPage(unsigned char page)
 {
-  unsigned char entry=0;
-  unsigned char eep=0;
-  unsigned char *p_ct= Eval_Memory_LatestEntry(Manual);
+  unsigned char entry = 0;
+  unsigned char eep = 0;
+  unsigned char *p_ct = Eval_Memory_LatestEntry(Manual);
 
   // pointer stuff
   eep = *p_ct;

@@ -147,65 +147,66 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
   switch(ventil)
   {
     case OPEN_Reserve:
-      P_VENTIL.OUTSET= O_RES;
-      TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_RES; 
+      P_VENTIL.OUTSET = O_RES;
+      TCC0_wait_openVentil();
+      
+      P_VENTIL.OUTCLR = O_RES; 
       state |= V_RES;
       break;
 
     case CLOSE_Reserve:
-      P_VENTIL.OUTSET= C_RES;
-      TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_RES;
+      P_VENTIL.OUTSET = C_RES;
+      TCC0_wait_closeVentil();
+      P_VENTIL.OUTCLR = C_RES;
       state &= ~V_RES;      
       break;
 
     case OPEN_MudPump:
-      P_VENTIL.OUTSET= O_MUD;
-      TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_MUD;
+      P_VENTIL.OUTSET = O_MUD;
+      TCC0_wait_openVentil();
+      P_VENTIL.OUTCLR = O_MUD;
       state |= V_MUD;     
       break;
 
     case CLOSE_MudPump:
-      P_VENTIL.OUTSET= C_MUD;
-      TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_MUD;
+      P_VENTIL.OUTSET = C_MUD;
+      TCC0_wait_closeVentil();
+      P_VENTIL.OUTCLR = C_MUD;
       state &= ~V_MUD;
       break;
 
     case OPEN_Air:
-      P_VENTIL.OUTSET= O_AIR;
-      TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_AIR;
+      P_VENTIL.OUTSET = O_AIR;
+      TCC0_wait_openVentil();
+      P_VENTIL.OUTCLR = O_AIR;
       state |= V_AIR;   
       break;
 
     case CLOSE_Air:
-      P_VENTIL.OUTSET= C_AIR;
-      TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_AIR;
+      P_VENTIL.OUTSET = C_AIR;
+      TCC0_wait_closeVentil();
+      P_VENTIL.OUTCLR = C_AIR;
       state &= ~V_AIR;
       break;
 
     case OPEN_ClearWater:
-      P_VENTIL.OUTSET= O_CLRW;
-      TCC0_wait_sec(3);
-      P_VENTIL.OUTCLR= O_CLRW;
+      P_VENTIL.OUTSET = O_CLRW;
+      TCC0_wait_openVentil();
+      P_VENTIL.OUTCLR = O_CLRW;
       state |= V_CLW;   
       break;
 
     case CLOSE_ClearWater:
-      P_VENTIL.OUTSET= C_CLRW;
-      TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_CLRW;
+      P_VENTIL.OUTSET = C_CLRW;
+      TCC0_wait_closeVentil();
+      P_VENTIL.OUTCLR = C_CLRW;
       state &= ~V_CLW;
       break;
 
     case CLOSE_IPAir:
-      P_VENTIL.OUTSET= C_AIR | C_RES;
-      TCC0_wait_3s5();
-      P_VENTIL.OUTCLR= C_AIR | C_RES;  
+      P_VENTIL.OUTSET = C_AIR | C_RES;
+      TCC0_wait_closeVentil();
+      P_VENTIL.OUTCLR = C_AIR | C_RES;  
       break;
 
     case SET_STATE_CLOSE:
@@ -241,24 +242,24 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
 void PORT_Ventil_AllOpen(void)
 {
   Watchdog_Restart();
-  P_VENTIL.OUTSET= O_RES;
+  P_VENTIL.OUTSET = O_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET= O_MUD;
+  P_VENTIL.OUTSET = O_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET= O_AIR;
+  P_VENTIL.OUTSET = O_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET= O_CLRW;
+  P_VENTIL.OUTSET = O_CLRW;
 
   TCC0_wait_sec(1);
   TCC0_wait_ms(500);
 
-  P_VENTIL.OUTCLR= O_RES;
+  P_VENTIL.OUTCLR = O_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR= O_MUD;
+  P_VENTIL.OUTCLR = O_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR= O_AIR;
+  P_VENTIL.OUTCLR = O_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR= O_CLRW;
+  P_VENTIL.OUTCLR = O_CLRW;
   TCC0_wait_ms(500);
 
   PORT_Ventil(SET_STATE_ALL_OPEN, 0);
@@ -273,24 +274,24 @@ void PORT_Ventil_AllOpen(void)
 void PORT_Ventil_AllClose(void)
 {
   Watchdog_Restart();
-  P_VENTIL.OUTSET= C_RES;
+  P_VENTIL.OUTSET = C_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET= C_MUD;
+  P_VENTIL.OUTSET = C_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET= C_AIR;
+  P_VENTIL.OUTSET = C_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET= C_CLRW;
+  P_VENTIL.OUTSET = C_CLRW;
   TCC0_wait_ms(500);
 
   TCC0_wait_sec(2);
 
-  P_VENTIL.OUTCLR= C_RES;
+  P_VENTIL.OUTCLR = C_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR= C_MUD;
+  P_VENTIL.OUTCLR = C_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR= C_AIR;
+  P_VENTIL.OUTCLR = C_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR= C_CLRW;
+  P_VENTIL.OUTCLR = C_CLRW;
   TCC0_wait_ms(500);
 
   PORT_Ventil(SET_STATE_ALL_CLOSED, 0);
@@ -328,25 +329,23 @@ void PORT_Ventil_AutoClose(t_page page)
 
 
 
-
-
 /* ==================================================================*
  *            FUNCTIONS Relais
  * ==================================================================*/
 
 void PORT_RelaisSet(unsigned char relais)
 {
-  P_RELAIS.OUTSET= relais;
+  P_RELAIS.OUTSET = relais;
 }
 
 void PORT_RelaisClr(unsigned char relais)
 {
-  P_RELAIS.OUTCLR= relais;
+  P_RELAIS.OUTCLR = relais;
 }
 
 void PORT_Relais_AllOff(void)
 {
-  P_RELAIS.OUT= 0x00;
+  P_RELAIS.OUT = 0x00;
 }
 
 

@@ -38,19 +38,18 @@ void OUT_Set_PumpOff(void)
     PORT_RelaisSet(R_COMP);
     PORT_RelaisSet(R_EXT_COMP);
   }
-  else  PORT_RelaisSet(R_CLEARWATER);
+  else PORT_RelaisSet(R_CLEARWATER);
 }
 
 void OUT_Clr_PumpOff(void)
 {
+  // relais
   PORT_RelaisClr(R_COMP);
   PORT_RelaisClr(R_EXT_COMP);
   PORT_RelaisClr(R_CLEARWATER);
+
   // mammut pump
-  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff)))
-  {
-    PORT_Ventil(CLOSE_ClearWater, 0);
-  }
+  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))) PORT_Ventil(CLOSE_ClearWater, 0);
 }
 
 
@@ -129,8 +128,8 @@ void OUT_Clr_Phosphor(void)
 
 void OUT_Set_InflowPump(void)
 {
-  static unsigned char pumpChange=0;
-  unsigned char pump=0;
+  static unsigned char pumpChange = 0;
+  unsigned char pump = 0;
 
   pump = MEM_EEPROM_ReadVar(PUMP_inflowPump);
   switch(pump)

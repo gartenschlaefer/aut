@@ -20,20 +20,23 @@
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  MPX_Read
- * --------------------------------------------------------------
- *  Wait until Conversion Complete and return Data
+ *  MPX_Read: Wait until the conversion is complete and return data
  * ------------------------------------------------------------------*/
 
 int MPX_Read(void)
 {
-  int data= 0;
+  int data = 0;
 
-  ADCB.CTRLA |= ADC_CH0START_bm;                //Start Conversion
-  while(!(ADCB.INTFLAGS & (1<<ADC_CH0IF_bp)));  //Wait
-  ADCB.INTFLAGS |= (1<<ADC_CH0IF_bp);           //Reset INT-Flag
-  data= ADCB.CH0RES;                            //Data at LEFT
-  data= data>>2;
+  // start Conversion
+  ADCB.CTRLA |= ADC_CH0START_bm;
+  while(!(ADCB.INTFLAGS & (1 << ADC_CH0IF_bp)));
+
+  // reset INT-Flag
+  ADCB.INTFLAGS |= (1 << ADC_CH0IF_bp);
+
+  // get data
+  data = ADCB.CH0RES;
+  data = data >> 2;
 
   return data;
 }
@@ -45,15 +48,14 @@ int MPX_Read(void)
 
 int MPX_ReadCal(void)
 {
-  int cal=0;
-  int data=0;
+  int cal = 0;
+  int data = 0;
 
-  data= MPX_Read();
-  cal= ((MEM_EEPROM_ReadVar(CAL_H_druck)<<8) |
-    (MEM_EEPROM_ReadVar(CAL_L_druck)));
-  data= data - cal;
-  if(data<0)    data= 0;
-  if(data>999)  data= 999;
+  data = MPX_Read();
+  cal = ((MEM_EEPROM_ReadVar(CAL_H_druck) << 8) | (MEM_EEPROM_ReadVar(CAL_L_druck)));
+  data = data - cal;
+  if(data < 0) data = 0;
+  if(data > 999) data = 999;
 
   return data;
 }
@@ -73,25 +75,27 @@ int MPX_ReadCal(void)
 
 int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
 {
-  static unsigned char  mpxCount=0;
-  static int            mpx[10]={0x00};
-  int                   add=0;
-  unsigned char         a= 0;
+  static unsigned char mpxCount = 0;
+  static int mpx[10] = {0x00};
+  int add = 0;
+  unsigned char a = 0;
 
   //--------------------------------------------------------Clean
   if(cmd == _clean)
   {
-    mpxCount= 0;
+    mpxCount = 0;
     for(a = 0; a < 10; a++) mpx[a] = 0x00;
   }
 
   //--------------------------------------------------------exe
   else if(cmd == _exe)
   {
-    mpx[mpxCount] = MPX_ReadCal();            //Pressure
+    // read preassure
+    mpx[mpxCount] = MPX_ReadCal();
     mpxCount++;
 
-    if(mpxCount > 9)                    //Print
+    // print
+    if(mpxCount > 9)
     {
       mpxCount = 0;
       for(a = 0; a < 10; a++) add = add + mpx[a];
@@ -99,14 +103,16 @@ int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
 
       switch(page)
       {
-        case Auto:    LCD_WriteValue3_MyFont(13,43, add);
-                      return add; break;
+        case Auto:    
+          LCD_WriteValue3_MyFont(13,43, add);
+          return add;
 
-        case Manual:  LCD_WriteValue3(17,42, add);
-                      return add; break;
+        case Manual:  
+          LCD_WriteValue3(17,42, add);
+          return add;
 
-        case Data:    return add; break; 
-        default:                  break;
+        case Data: return add;
+        default: break;
       }
     }
   }
@@ -120,15 +126,17 @@ int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
 
 int MPX_ReadAverage_Value(void)
 {
-  unsigned char i=0;
-  int avAge=0;
+  unsigned char i = 0;
+  int avAge = 0;
 
-  MPX_ReadAverage(Data, _clean);          //MPX_Clean
-  for(i=0; i<10; i++)
+  // clean data
+  MPX_ReadAverage(Data, _clean);
+
+  for(i = 0; i < 10; i++)
   {
-    avAge= MPX_ReadAverage(Data, _exe);     //Read 1Value
-    TCC0_wait_ms(100);              //Wait
-    if(!(avAge == 0xFF00))  return avAge;
+    avAge = MPX_ReadAverage(Data, _exe);
+    TCC0_wait_ms(100);
+    if(!(avAge == 0xFF00)) return avAge;
   }
 
   return avAge;
@@ -141,21 +149,24 @@ int MPX_ReadAverage_Value(void)
 
 int MPX_ReadAverage_UnCal(void)
 {
-  static unsigned char  mpxCount=0;
-  static int        mpx[10]={0x00};
-  int           unCal=0;
-  unsigned char     a= 0;
+  static unsigned char mpxCount = 0;
+  static int mpx[10] = {0x00};
+  int unCal = 0;
+  unsigned char a = 0;
 
-  mpx[mpxCount]= MPX_Read();        //Pressure
+  // collect pressure values
+  mpx[mpxCount]= MPX_Read();
   mpxCount++;
-  if(mpxCount>4)              //5Values
+
+  // average values
+  if(mpxCount > 4)
   {
-    mpxCount=0;
-    for(a=0; a<5; a++)  unCal= unCal+mpx[a];
-    unCal= unCal/5;
+    mpxCount = 0;
+    for(a = 0; a < 5; a++) unCal += unCal + mpx[a];
+    unCal = unCal / 5;
     return unCal;
   }
-  TCC0_wait_ms(100);            //Wait
+  TCC0_wait_ms(100);
 
   return 0xFF00;
 }
@@ -167,14 +178,15 @@ int MPX_ReadAverage_UnCal(void)
 
 int MPX_ReadAverage_UnCal_Value(void)
 {
-  unsigned char i=0;
-  int avAge=0;
+  unsigned char i = 0;
+  int avAge = 0;
 
-  for(i=0; i<6; i++)
+  for(i = 0; i < 6; i++)
   {
-    avAge= MPX_ReadAverage_UnCal();       //Read 1Value
-    TCC0_wait_ms(100);                    //Wait
-    if(!(avAge == 0xFF00))  return avAge;
+    // average values
+    avAge = MPX_ReadAverage_UnCal();
+    TCC0_wait_ms(100);
+    if(!(avAge == 0xFF00)) return avAge;
   }
   return avAge;
 }
@@ -186,14 +198,13 @@ int MPX_ReadAverage_UnCal_Value(void)
 
 int MPX_LevelCal(t_FuncCmd cmd)
 {
-  static int    level = 0;
+  static int level = 0;
 
   switch(cmd)
   {
     //------------------------------------------------ReadFromEEPROM
     case _init:
-      level = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) |
-               (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+      level = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
       LCD_WriteValue3(17, 40, level);
       break;
 
@@ -205,12 +216,11 @@ int MPX_LevelCal(t_FuncCmd cmd)
 
     //------------------------------------------------Meassure
     case _new:
-      level = MPX_ReadAverage_Value();        //ReadValue
+      level = MPX_ReadAverage_Value();
       break;
 
-    case _write:
-      LCD_WriteValue3(17, 40, level); break;  //WriteInSetupCalPage
-    default:                          break;
+    case _write: LCD_WriteValue3(17, 40, level); break;
+    default: break;
   }
   return level;
 }
@@ -235,63 +245,63 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
 
   // return if Ultrasonic
   if(MEM_EEPROM_ReadVar(SONIC_on)) return page;
-  //--------------------------------------------------DisabledReadTank
-  if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) ||
-  page == AutoPumpOff                     ||
-  page == AutoMud)
+
+  // disabled read tank
+  if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) || page == AutoPumpOff || page == AutoMud)
   {
-    if(page == ManualCirc || page == ManualCircOff ||
-    page == ManualAir)
+    // manual
+    if(page == ManualCirc || page == ManualCircOff || page == ManualAir)
     {
-      LCD_Sym_MPX(_mmbar, perP);    //Manual
+      LCD_Sym_MPX(_mmbar, perP);
       return page;
     }
+
+    // auto zone
     else if(page == AutoZone)
     {
-      LCD_Sym_MPX(_notav, 0);       //---
-      return AutoCirc;              //NextStep
+      LCD_Sym_MPX(_notav, 0);
+      return AutoCirc;
     }
-    LCD_Sym_MPX(_notav, 0);         //---
+    LCD_Sym_MPX(_notav, 0);
     return page;
   }
-  //------------------------------------------------ReadVars
-  hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2)<<8) |
-        (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ)<<8) |
-          (MEM_EEPROM_ReadVar(TANK_L_Circ)));
-  minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP)<<8) |
-          (MEM_EEPROM_ReadVar(TANK_L_MinP)));
 
-  //--------------------------------------------------exe
+  // read variables
+  hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2)<<8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ)<<8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
+  minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP)<<8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+
+  // exe
   if(cmd == _exe)
   {
-    mpxAv = MPX_LevelCal(_new);           //ReadValue
-    if(page == ManualCirc)  return page;  //Return
+    // read pressure
+    mpxAv = MPX_LevelCal(_new);
+    if(page == ManualCirc) return page;
     LCD_Sym_MPX(_mbar, mpxAv);
 
-    //------------------------------------------------Circulate
+    // circulate
     if(page == AutoCirc)
     {
       if(mpxAv >= (hO2 + minP))
       {
-        error++;                //Error-Counter
-        return AutoSetDown;     //2SetDown
+        error++;
+        return AutoSetDown;
       }
       error = 0;
       if(mpxAv >= (hCirc + minP)) return AutoAir;
     }
 
-    //------------------------------------------------Air
-    else if(page == AutoAir)      //--Air
+    // air
+    else if(page == AutoAir)
     {
-      if(mpxAv >= (hO2 + minP))   return AutoSetDown;
+      if(mpxAv >= (hO2 + minP)) return AutoSetDown;
     }
 
-    //------------------------------------------------Zone
-    else if(page == AutoZone)     //--Zone
+    // zone
+    else if(page == AutoZone)
     {
-      if((mpxAv < (minP - 5)) || (mpxAv > (minP + 5)))  //diff
-        return AutoCirc;
+      // difference
+      if((mpxAv < (minP - 5)) || (mpxAv > (minP + 5))) return AutoCirc;
 
       MPX_LevelCal(_save);
       if(mpxAv >= (hO2 + minP))   return AutoSetDown;
@@ -299,7 +309,8 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
       else                        return AutoCirc;
     }
   }
-  //------------------------------------------------write
+
+  // write
   else if(cmd == _write)
   {
     perP = mpxAv - minP;
@@ -313,7 +324,8 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
     }
     LCD_Sym_MPX(_debug, perP);
   }
-  //------------------------------------------------error
+
+  // error
   else if(cmd == _error)  if(error >= 2) return ErrorMPX;
   return page;
 }
