@@ -1,7 +1,7 @@
 // --
 // MCP2525-CAN-Controller-IC
 
-// Include guard
+// include guard
 #ifndef MCP2515_DRIVER_H   
 #define MCP2515_DRIVER_H
 
@@ -37,12 +37,12 @@
 #define TXB1CTRL  0x40
 #define TXB2CTRL  0x50
 
-#define ABTF    (1<<6)
-#define MLOA    (1<<5)
-#define TXERR   (1<<4)
-#define TXREQ   (1<<3)
-#define TXP1    (1<<1)
-#define TXP0    (1<<0)
+#define ABTF    (1 << 6)
+#define MLOA    (1 << 5)
+#define TXERR   (1 << 4)
+#define TXREQ   (1 << 3)
+#define TXP1    (1 << 1)
+#define TXP0    (1 << 0)
 
 /* ------------------------------------------------------------------*
  *            Standard Identifier + Datalength Code
@@ -101,14 +101,14 @@
 #define RXB0CTRL  0x60
 #define RXB1CTRL  0x70
 
-#define RXM1_bm   (1<<6)
-#define RXM0_bm   (1<<5)
-#define RXRTR_bm  (1<<3)
-#define BUKT_bm   (1<<2)
-#define BUKT1_bm  (1<<1)
-#define FILHIT0_bm  (1<<0)
-#define FILHIT1_bm  (1<<1)
-#define FILHIT2_bm  (1<<2)
+#define RXM1_bm     (1 << 6)
+#define RXM0_bm     (1 << 5)
+#define RXRTR_bm    (1 << 3)
+#define BUKT_bm     (1 << 2)
+#define BUKT1_bm    (1 << 1)
+#define FILHIT0_bm  (1 << 0)
+#define FILHIT1_bm  (1 << 1)
+#define FILHIT2_bm  (1 << 2)
 
 /* ------------------------------------------------------------------*
  *            Standard Identifier + Datalength Code
@@ -188,14 +188,14 @@
 #define CANINTE   0x2B    //Register
 #define CANINTF   0x2C    //Register
 
-#define MERRF_bm  (1<<7)
-#define WAKIF_bm  (1<<6)
-#define ERRIF_bm  (1<<5)
-#define TX2IF_bm  (1<<4)
-#define TX1IF_bm  (1<<3)
-#define TX0IF_bm  (1<<2)
-#define RX1IF_bm  (1<<1)
-#define RX0IF_bm  (1<<0)
+#define MERRF_bm  (1 << 7)
+#define WAKIF_bm  (1 << 6)
+#define ERRIF_bm  (1 << 5)
+#define TX2IF_bm  (1 << 4)
+#define TX1IF_bm  (1 << 3)
+#define TX0IF_bm  (1 << 2)
+#define RX1IF_bm  (1 << 1)
+#define RX0IF_bm  (1 << 0)
 
 
 /* ------------------------------------------------------------------*

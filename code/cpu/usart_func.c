@@ -120,17 +120,14 @@ int USART_ReadByte(void)
 
 unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
 {
-  static unsigned char rx_buffer[50]={0};
-  static unsigned char pos=0;
+  static unsigned char rx_buffer[50] = {0};
+  static unsigned char pos = 0;
 
   // add byte to buffer
   if(cmd == _add)
   {
-    if(pos >= 49)
-    {
-      return &rx_buffer[0];
-    }
-    rx_buffer[pos+1] = c;     //store char
+    if(pos >= 49) return &rx_buffer[0];
+    rx_buffer[pos+1] = c;
     pos++;
   }
 
@@ -145,11 +142,8 @@ unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
   // clear buffer
   else if(cmd == _clear)
   {
-    for(pos=0; pos<50; pos++)
-    {
-      rx_buffer[pos] = 0x00;
-    }
-    pos=0;
+    for(pos = 0; pos < 50; pos++) rx_buffer[pos] = 0x00;
+    pos = 0;
   }
 
   return &rx_buffer[0];
@@ -175,9 +169,9 @@ void USART_WriteByte(char write)
 
 void USART_WriteString(char write[])
 {
-  unsigned char i=0;
+  unsigned char i = 0;
 
-  while(write[i]!=0)
+  while(write[i] != 0)
   {
     USART_WriteByte(write[i]);
     i++;

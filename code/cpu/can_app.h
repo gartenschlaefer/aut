@@ -1,7 +1,7 @@
 // --
 // CAN-Bus applications over MCP2515 ic
 
-// Include guard
+// include guard
 #ifndef CAN_APP_H   
 #define CAN_APP_H
 
@@ -10,26 +10,26 @@
  * ==================================================================*/
 
 //--------------------------------USCREG1 - UltraSonic Control Register1
-#define   USADR0  (1<<0)    //Addr0
-#define   USADR1  (1<<1)    //Addr1
-#define   USADR2  (1<<2)    //Addr2
-#define   USADR3  (1<<3)    //Addr3
-#define   USEN    (1<<4)    //UltraSonic Enable
-#define   USMOD1  (1<<5)    //UltraSonic Modus1
-#define   USMOD2  (1<<6)    //UltraSonic Modus2
-#define   USMOD3  (1<<7)    //UltraSonic Modus3
+#define   USADR0  (1 << 0)    //Addr0
+#define   USADR1  (1 << 1)    //Addr1
+#define   USADR2  (1 << 2)    //Addr2
+#define   USADR3  (1 << 3)    //Addr3
+#define   USEN    (1 << 4)    //UltraSonic Enable
+#define   USMOD1  (1 << 5)    //UltraSonic Modus1
+#define   USMOD2  (1 << 6)    //UltraSonic Modus2
+#define   USMOD3  (1 << 7)    //UltraSonic Modus3
 
 //--------------------------------USCREG2 - UltraSonic Control Register2
-#define   RDIS  (1<<0)    //Read Distance
-#define   RTEMP (1<<1)    //Read Temp
+#define   RDIS  (1 << 0)    //Read Distance
+#define   RTEMP (1 << 1)    //Read Temp
 
 //--------------------------------USSREG - UltraSonic Status Register
-#define   DISA  (1<<0)    //Data Distance available
-#define   TEMPA (1<<1)    //Temp available
-#define   MDIS  (1<<2)    //MeasureDistance
-#define   MTEMP (1<<3)    //MeasureTemp
-#define   USRDY (1<<4)    //UltraSonic ReadyBit
-#define   ERR   (1<<5)    //Error
+#define   DISA  (1 << 0)    //Data Distance available
+#define   TEMPA (1 << 1)    //Temp available
+#define   MDIS  (1 << 2)    //MeasureDistance
+#define   MTEMP (1 << 3)    //MeasureTemp
+#define   USRDY (1 << 4)    //UltraSonic ReadyBit
+#define   ERR   (1 << 5)    //Error
 
 
 /* ==================================================================*

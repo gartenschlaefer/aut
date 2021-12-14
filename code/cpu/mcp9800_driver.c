@@ -22,36 +22,31 @@
 
 void MCP9800_Init(void)
 {
-  unsigned char init =  ( MCP_ONESHOT_OFF |
-                          MCP_RES         |
-                          MCP_FAULTQ      |
-                          MCP_ALERTPOL    |
-                          MCP_COMP_INT    |
-                          MCP_SHUTDOWN_OFF    );
+  unsigned char init = ( MCP_ONESHOT_OFF | MCP_RES | MCP_FAULTQ | MCP_ALERTPOL | MCP_COMP_INT | MCP_SHUTDOWN_OFF);
 
-  MCP9800_SendByte(MCP_CONFREG, init);  //Write CONF-Reg
-  MCP_PORT.DIRCLR = MCP_ALERT;          //Alert Input
+  // write config register
+  MCP9800_SendByte(MCP_CONFREG, init);
+
+  // alert as input
+  MCP_PORT.DIRCLR = MCP_ALERT;
 }
 
 
 /*-------------------------------------------------------------------*
  *  MCP9800_OneShot
  * --------------------------------------------------------------
- *  One Conversion in Shutdown Mode
- *  Remain in Shutdown Mode, go back to Init
+ *  One Conversion in Shutdown Mode, remain in Shutdown Mode, go back to init
  * ------------------------------------------------------------------*/
 
 void MCP9800_OneShot(void)
 {
-  unsigned char shutdown= ( MCP_ONESHOT_OFF   |
-                MCP_RES       |
-                MCP_FAULTQ      |
-                MCP_ALERTPOL    |
-                MCP_COMP_INT    |
-                MCP_SHUTDOWN_ON     );
+  unsigned char shutdown = ( MCP_ONESHOT_OFF | MCP_RES | MCP_FAULTQ | MCP_ALERTPOL | MCP_COMP_INT | MCP_SHUTDOWN_ON);
 
-  MCP9800_SendByte(MCP_CONFREG, shutdown);            //Shutdown Mode
-  MCP9800_SendByte(MCP_CONFREG, (shutdown | MCP_ONESHOT_ON));   //One Shot
+  // shutdown mode
+  MCP9800_SendByte(MCP_CONFREG, shutdown);
+
+  // one shot
+  MCP9800_SendByte(MCP_CONFREG, (shutdown | MCP_ONESHOT_ON));
 }
 
 
@@ -61,9 +56,7 @@ void MCP9800_OneShot(void)
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  MCP9800_ReceiveByte
- * --------------------------------------------------------------
- *  Receives Byte from MCP9800 Temperatur Sensor
+ *  MCP9800 receive byte
  * ------------------------------------------------------------------*/
 
 unsigned char MCP9800_ReceiveByte(unsigned char pointer)
@@ -73,7 +66,7 @@ unsigned char MCP9800_ReceiveByte(unsigned char pointer)
   unsigned char rData;
 
   TWI2_Master_WriteString(MCP_ADDR, send, 1);
-  rec = TWI2_Master_ReadString(MCP_ADDR, 1);  //Read Data
+  rec = TWI2_Master_ReadString(MCP_ADDR, 1);
   rec++;
   rData = *rec;
   return rData;
@@ -81,14 +74,12 @@ unsigned char MCP9800_ReceiveByte(unsigned char pointer)
 
 
 /*-------------------------------------------------------------------*
- *  MCP9800 SendByte
- * --------------------------------------------------------------
- *  Sends Byte to MCP9800 Temperatur Sensor
+ *  MCP9800 send byte
  * ------------------------------------------------------------------*/
 
 void MCP9800_SendByte(unsigned char pointer, unsigned char sData)
 {
-  unsigned char send[]= {pointer, sData};
+  unsigned char send[] = {pointer, sData};
   TWI2_Master_WriteString(MCP_ADDR, send, 2);
 }
 
@@ -106,11 +97,13 @@ unsigned char MCP9800_PlusTemp(void)
 {
   unsigned char temp = 0;
 
-  temp = MCP9800_ReceiveByte(0x00);   //ReadTempFromIC
-  if(temp & 0x80) temp = 0;           //Minus?
-  temp = (temp & 0x7F);
+  // read temperature
+  temp = MCP9800_ReceiveByte(0x00);
 
-  return temp;
+  // minus sign
+  if(temp & 0x80) temp = 0;
+
+  return (temp & 0x7F);
 }
 
 
@@ -124,17 +117,27 @@ void MCP9800_WriteTemp(void)
   static unsigned char run = 0;
 
   run++;
-  if(run > 10)                    //1s
+
+  // 1 second
+  if(run > 10)
   {
+    // reset run
     run = 0;
-    temp = MCP9800_ReceiveByte(0x00);   //ReadTempFromIC
+
+    // read temperature
+    temp = MCP9800_ReceiveByte(0x00);
+
+    // indicate minus
     if(temp & 0x80)
     {
-      LCD_WriteStringFont(17,84,"-");     //write Minus
+      LCD_WriteStringFont(17,84,"-");
       temp = -temp;
     }
-    else LCD_ClrSpace(17, 84, 2, 6);      //Clear Minus
-    temp = (temp & 0x7F);
-    LCD_WriteValue2(17,90, temp);       //Write Temperature
+
+    // clear minus sign
+    else LCD_ClrSpace(17, 84, 2, 6);
+
+    // write temperature
+    LCD_WriteValue2(17, 90, (temp & 0x7F));
   }
 }

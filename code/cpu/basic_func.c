@@ -78,21 +78,27 @@ void Basic_Init(void)
 
 void Basic_Init_Mem(void)
 {
-  AT24C_Init();                       //Tel-Nr.
-  MEM_EEPROM_SetZero();               //SetDataPagesZero
+  // tel. nr. in EEPROM
+  AT24C_Init();
+
+  // set data pages zero
+  MEM_EEPROM_SetZero();
 
   if(DEBUG)
   {
     //***VarDefaultShort
-    MEM_EEPROM_WriteVarDefault_Short(); //Just4Debug
+    MEM_EEPROM_WriteVarDefault_Short();
   }
   else
   {
     MEM_EEPROM_WriteVarDefault();
   }
 
-  MCP7941_InitDefault();              //Timer IC Init
-  LCD_Calibration();                  //LCD Calibration
+  // timer ic init
+  MCP7941_InitDefault();
+
+  // lcd calibration
+  LCD_Calibration();
 }
 
 
@@ -103,13 +109,18 @@ void Basic_Init_Mem(void)
 
 void Clock_Init(void)
 {
-  OSC.XOSCCTRL =  OSC_FRQRANGE_12TO16_gc  |     //Frequenz
-                  OSC_XOSCSEL_XTAL_16KCLK_gc;   //Start-Up
-  OSC.CTRL =      OSC_XOSCEN_bm;                //Enable
+  // init oscillator
+  OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
+  OSC.CTRL = OSC_XOSCEN_bm;
 
-  while(!(OSC.STATUS & OSC_XOSCRDY_bm));  //Wait
-  CCP = 0xD8;                             //Protection
-  CLK.CTRL = CLK_SCLKSEL_XOSC_gc;         //Selection
+  // wait until clock is ready
+  while(!(OSC.STATUS & OSC_XOSCRDY_bm));
+
+  // protection
+  CCP = 0xD8;
+
+  // selection
+  CLK.CTRL = CLK_SCLKSEL_XOSC_gc;
 }
 
 
@@ -124,21 +135,9 @@ void Clock_Init(void)
 
 void Watchdog_Init(void)
 {
-  CCP = CCP_IOREG_gc;               //IO Protection
+  // io protection
+  CCP = CCP_IOREG_gc;
 
-  WDT.CTRL =  WDT_CEN_bm        |   //Watchdog writeEnable
-              WDT_PER_8KCLK_gc  |   //1s open
-              WDT_ENABLE_bm;        //Watchdog Enable
+  // watchdog init
+  WDT.CTRL =  WDT_CEN_bm | WDT_PER_8KCLK_gc | WDT_ENABLE_bm;
 }
-
-
-/*-------------------------------------------------------------------*
- *  Watchdog_Restart
- * ------------------------------------------------------------------*/
-
-void Watchdog_Restart(void)
-{
-  WDT_RESET;
-}
-
-

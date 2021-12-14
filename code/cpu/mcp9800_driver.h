@@ -1,7 +1,7 @@
 // --
 //  MCP9800 Temperature Sensor
 
-// Include guard
+// include guard
 #ifndef MCP_9800_DRIVER_H   
 #define MCP_9800_DRIVER_H
 
@@ -13,8 +13,9 @@
  *            PORT
  * ------------------------------------------------------------------*/
 
-#define MCP_PORT  (PORTC)       //PORTC, TWI PC0 and PC1
-#define MCP_ALERT (1<<2)        //PC2
+// //PORTC, TWI PC0 and PC1
+#define MCP_PORT  (PORTC)
+#define MCP_ALERT (1 << 2)
 
 
 /* ------------------------------------------------------------------*
@@ -46,15 +47,15 @@
  *            Config REG
  * ------------------------------------------------------------------*/
 
-#define MCP_ONESHOT_ON    (1<<7)
-#define MCP_ONESHOT_OFF   (0<<7)
-#define MCP_SHUTDOWN_ON   (1<<0)
-#define MCP_SHUTDOWN_OFF  (0<<0)
+#define MCP_ONESHOT_ON    (1 << 7)
+#define MCP_ONESHOT_OFF   (0 << 7)
+#define MCP_SHUTDOWN_ON   (1 << 0)
+#define MCP_SHUTDOWN_OFF  (0 << 0)
 
-#define MCP_RES         (1<<5)      //10Bit Resolution
-#define MCP_FAULTQ      (1<<3)      //2 Fault Queue
-#define MCP_ALERTPOL    (0<<2)      //Alert Aktive Low
-#define MCP_COMP_INT    (0<<1)      //Comparator Mode
+#define MCP_RES           (1 << 5)      //10Bit Resolution
+#define MCP_FAULTQ        (1 << 3)      //2 Fault Queue
+#define MCP_ALERTPOL      (0 << 2)      //Alert Aktive Low
+#define MCP_COMP_INT      (0 << 1)      //Comparator Mode
 
 
 
@@ -70,7 +71,7 @@ void MCP9800_Init(void);
 void MCP9800_OneShot(void);
 
 unsigned char MCP9800_ReceiveByte(unsigned char pointer);
-void MCP9800_SendByte (unsigned char pointer, unsigned char sData);
+void MCP9800_SendByte(unsigned char pointer, unsigned char sData);
 
 
 /* ------------------------------------------------------------------*
@@ -81,5 +82,3 @@ unsigned char MCP9800_PlusTemp(void);
 void MCP9800_WriteTemp(void);
 
 #endif
-
-

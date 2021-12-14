@@ -3,7 +3,7 @@
 // author: Christian Walter
 // uC: ATxmega128A1
 
-// Include guard
+// include guard
 #ifndef DEFINES_H
 #define DEFINES_H
 
@@ -11,33 +11,33 @@
  *            Configuration
  * ==================================================================*/
 
-//*-*Configuration
+//*-* Configuration
 
-// Start Page
+// start page
 #define START_PAGE AutoSetDown
 
-// CompanyID - 0 = Purator; 1 = HECS
+// company id: 0 = Purator; 1 = HECS
 #define COMPANY   1
 
-// Memory Init set to zero
+// memory init set to zero
 #define MEM_INIT  0
 
-// SMS Usage
+// SMS usage
 #define SMS_ON    1
 
-// Debug set to zero for no debugging: general, buzzer off, modem off, port ventile, data entry
+// debug: set to zero for no debugging with buzzer off, modem off, port ventile, data entry
 #define DEBUG     0
 #define DEB_BUZ   0
 #define DEB_MODEM 0
 #define DEB_PORT  0
 #define DEB_ENTRY 0
 
-// SoftwareVersion
+// software version
 #define SV1       1       //x.-.-
 #define SV2       3       //-.x.-
 #define SV3       11       //-.-.x
 
-// TimeDefault
+// default time: release time
 #define DEF_SEC   0x30    //::30 = 0x30
 #define DEF_MIN   0x30    //:30: = 0x30
 #define DEF_HOUR  0x21    //08:: = 0x08

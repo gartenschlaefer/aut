@@ -1,7 +1,7 @@
 // --
 //  MCP7941-Timer-IC
 
-// Include guard
+// include guard
 #ifndef MCP_7941_DRIVER_H   
 #define MCP_7941_DRIVER_H
 
@@ -13,12 +13,12 @@
  *            Control Bytes
  * ------------------------------------------------------------------*/
 
-#define WRITE_RTC_RAM (0xDE>>1)
-#define READ_RTC_RAM  (0xDF>>1)
+#define WRITE_RTC_RAM (0xDE >> 1)
+#define READ_RTC_RAM  (0xDF >> 1)
 
-#define VBATEN          (1<<3)
-#define VBAT            (1<<4)
-#define OSCON           (1<<5)
+#define VBATEN        (1 << 3)
+#define VBAT          (1 << 4)
+#define OSCON         (1 << 5)
 
 
 /* ------------------------------------------------------------------*
@@ -36,8 +36,8 @@
 #define TIC_CAL     0x08
 #define TIC_UNLOCK  0x09
 
-#define TIC_EXTOSC  (1<<3)    //ExternalOszillator->TIC_CTRL
-#define TIC_ST      (1<<7)    //Start->TIC_SEC
+#define TIC_EXTOSC  (1 << 3)    //ExternalOszillator->TIC_CTRL
+#define TIC_ST      (1 << 7)    //Start->TIC_SEC
 
 
 /* ------------------------------------------------------------------*
@@ -53,21 +53,20 @@
  *            FUCNTION API
  * ==================================================================*/
 
-void MCP7941_Init       (void);
+void MCP7941_Init(void);
 void MCP7941_InitDefault(void);
 
-void MCP7941_Write         (unsigned char *send, unsigned char i);
+void MCP7941_Write(unsigned char *send, unsigned char i);
 unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i);
 
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData);
 unsigned char MCP7941_ReadByte(unsigned char addr);
 
 void MCP7941_Write_Comp_OpHours(int hours);
-int  MCP7941_Read_Comp_OpHours(void);
+int MCP7941_Read_Comp_OpHours(void);
 
-unsigned char MCP7941_ReadTime      (unsigned char cmd);
-void          MCP7941_LCD_WriteTime (t_FuncCmd cmd);
-void          MCP7941_LCD_WriteDate (void);
+unsigned char MCP7941_ReadTime(unsigned char cmd);
+void MCP7941_LCD_WriteTime(t_FuncCmd cmd);
+void MCP7941_LCD_WriteDate(void);
 
 #endif
-

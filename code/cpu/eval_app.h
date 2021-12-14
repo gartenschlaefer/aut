@@ -1,7 +1,7 @@
 // --
 // evaluation and build-in functions
 
-// Include guard
+// include guard
 #ifndef EVAL_APP_H   
 #define EVAL_APP_H
 
@@ -20,8 +20,8 @@ typedef enum
  *            FUNCTIONS - API
  * ==================================================================*/
 
-unsigned char Eval_CountDown    (int *cMin, int *cSec);
-void          Eval_Oxygen(t_FuncCmd cmd, int min);
+unsigned char Eval_CountDown(int *cMin, int *cSec);
+void Eval_Oxygen(t_FuncCmd cmd, int min);
 
 
 /* ------------------------------------------------------------------*
@@ -54,4 +54,3 @@ void Eval_PinDel(void);
 void Eval_PinClr(unsigned char *pin);
 
 #endif
-

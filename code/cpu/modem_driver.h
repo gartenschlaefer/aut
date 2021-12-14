@@ -1,7 +1,7 @@
 // --
 //  Telit-GSM-Modem GC864Quad_v2
 
-// Include guard
+// include guard
 #ifndef MODEM_DRIVER_H
 #define MODEM_DRIVER_H
 

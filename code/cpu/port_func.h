@@ -1,7 +1,7 @@
 // --
 // port functions
 
-// Include guard
+// include guard
 #ifndef PORT_FUNC_H   
 #define PORT_FUNC_H
 
@@ -15,9 +15,9 @@
  *            PORT
  * ------------------------------------------------------------------*/
 
-#define P_OPTO    (PORTH)   //PORTH
-#define P_VENTIL  (PORTJ)   //PORTJ
-#define P_RELAIS  (PORTK)   //PORTK
+#define P_OPTO    (PORTH)
+#define P_VENTIL  (PORTJ)
+#define P_RELAIS  (PORTK)
 
 
 /* ------------------------------------------------------------------*
@@ -53,7 +53,7 @@ struct InputHandler {
 #define C_CLRW    0x80
 //--------------------------*/
 
-/*--------------------------Rverse
+/*--------------------------Reverse
 #define ALL_OPEN  0xAA
 #define ALL_CLOSE 0x55
 #define O_RES     0x02

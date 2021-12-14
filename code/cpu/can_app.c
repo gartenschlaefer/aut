@@ -477,26 +477,38 @@ unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
         for(byte8 = 0; byte8 < 128; byte8 += 8)
         {
           rec = CAN_RxB0_Read();
-          while(!rec[0]){
-            if(TCE1_Wait_Query()) return state = 12;
-            rec = CAN_RxB0_Read();}       //ReadCan
 
-          for(byte = 0; byte < 8; byte++)
-            data[byte8 + byte] = rec[byte + 2];
+          // wait until data arrives
+          while(!rec[0])
+          {
+            if(TCE1_Wait_Query()) return state = 12;
+            rec = CAN_RxB0_Read();
+          }
+
+          // read data
+          for(byte = 0; byte < 8; byte++) data[byte8 + byte] = rec[byte + 2];
 
           //------------------------------------------checkFile
           if(!page && !byte8)
+          {
             if((rec[2] != 0x0C) && (rec[3] != 0x94)) return state = 13;
+          }
 
           TCE1_WaitMilliSec_Init(TC_CAN_MS);      //SafetyTimer
           CAN_TxCmd(_readProgram);                //CANTxCmd
         }
+
+        // watchdog restart
         WDT_RESET;
-        adr = ((AT24C_BOOT_PAGE_OS + page) << 8); //SetPageAdr
-        AT24C_WritePage(adr, &data[0]);             //WritePage
+
+        // set page address and write
+        adr = ((AT24C_BOOT_PAGE_OS + page) << 8);
+        AT24C_WritePage(adr, &data[0]);
       }
       state = 4;
-      CAN_TxCmd(_ack);                            //CANTxCmd - END
+
+      // end
+      CAN_TxCmd(_ack);
     }
   }
   return state;

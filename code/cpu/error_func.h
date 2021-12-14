@@ -1,7 +1,7 @@
 // --
 // error detection and treatment
 
-// Include guard
+// include guard
 #ifndef ERROR_FUNC_H   
 #define ERROR_FUNC_H
 

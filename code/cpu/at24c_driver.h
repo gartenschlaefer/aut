@@ -1,7 +1,7 @@
 // --
 // EEPROM AT24C512 driver
 
-// Include guard
+// include guard
 #ifndef AT24C_DRIVER_H   
 #define AT24C_DRIVER_H
 

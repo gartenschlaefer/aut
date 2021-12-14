@@ -1,7 +1,7 @@
 // --
 // EADOGXL160-7 Display applications
 
-// Include guard
+// include guard
 #ifndef LCD_APP_H   
 #define LCD_APP_H
 
@@ -128,12 +128,12 @@ t_page LCD_DataPage_Sonic(t_page page, int *p_Min, int *p_Sec);
  *            Set up Pages
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet        (t_page aPage, int *p_Min, int *p_Sec);
-void LCD_AutoSet_Symbol (t_page aPage, int aMin, int aSec);
+void LCD_AutoSet(t_page aPage, int *p_Min, int *p_Sec);
+void LCD_AutoSet_Symbol(t_page aPage, int aMin, int aSec);
 
-void LCD_ManualSet  (t_page manPage, int *p_Min, int *p_Sec);
-void LCD_SetupSet   (t_page setPage, int *p_Min, int *p_Sec);
-void LCD_DataSet    (t_page setPage, int *p_Min, int *p_Sec);
+void LCD_ManualSet(t_page manPage, int *p_Min, int *p_Sec);
+void LCD_SetupSet(t_page setPage, int *p_Min, int *p_Sec);
+void LCD_DataSet(t_page setPage, int *p_Min, int *p_Sec);
 
 
 /* ------------------------------------------------------------------*
@@ -141,9 +141,9 @@ void LCD_DataSet    (t_page setPage, int *p_Min, int *p_Sec);
  * ------------------------------------------------------------------*/
 
 void LCD_Entry_Clr(void);
-void LCD_WriteAutoEntryPage   (unsigned char page);
-void LCD_WriteManualEntryPage (unsigned char page);
-void LCD_WriteSetupEntryPage  (unsigned char page);
+void LCD_WriteAutoEntryPage(unsigned char page);
+void LCD_WriteManualEntryPage(unsigned char page);
+void LCD_WriteSetupEntryPage(unsigned char page);
 
 void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool half);
 unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char cnt);

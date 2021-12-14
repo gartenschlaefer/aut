@@ -1,7 +1,7 @@
 // --
 // usart - serial interface
 
-// Include guard
+// include guard
 #ifndef USART_FUNC_H   
 #define USART_FUNC_H
 

@@ -155,14 +155,14 @@ int MPX_ReadAverage_UnCal(void)
   unsigned char a = 0;
 
   // collect pressure values
-  mpx[mpxCount]= MPX_Read();
+  mpx[mpxCount] = MPX_Read();
   mpxCount++;
 
   // average values
   if(mpxCount > 4)
   {
     mpxCount = 0;
-    for(a = 0; a < 5; a++) unCal += unCal + mpx[a];
+    for(a = 0; a < 5; a++) unCal += mpx[a];
     unCal = unCal / 5;
     return unCal;
   }
@@ -202,23 +202,24 @@ int MPX_LevelCal(t_FuncCmd cmd)
 
   switch(cmd)
   {
-    //------------------------------------------------ReadFromEEPROM
+    // init: read from EEPROM
     case _init:
       level = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
       LCD_WriteValue3(17, 40, level);
       break;
 
-    //------------------------------------------------Save2EEPROM
+    // save to EEPROM
     case _save:
       MEM_EEPROM_WriteVar(TANK_L_MinP, level & 0x00FF);
       MEM_EEPROM_WriteVar(TANK_H_MinP, ((level >> 8) & 0x00FF));
       break;
 
-    //------------------------------------------------Meassure
+    // measure
     case _new:
       level = MPX_ReadAverage_Value();
       break;
 
+    // write
     case _write: LCD_WriteValue3(17, 40, level); break;
     default: break;
   }
@@ -267,9 +268,9 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
   }
 
   // read variables
-  hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2)<<8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ)<<8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
-  minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP)<<8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+  hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
+  minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
 
   // exe
   if(cmd == _exe)
@@ -313,9 +314,11 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
   // write
   else if(cmd == _write)
   {
+    // calculate percentage
     perP = mpxAv - minP;
     if(perP <= 0) perP = 0;
     perP = ((perP * 100) / hO2);
+
     //ManualWrite
     if(page == ManualCirc)
     {

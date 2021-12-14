@@ -1,7 +1,7 @@
 // --
 // EEPROM AT24C512 applications
 
-// Include guard
+// include guard
 #ifndef AT24C_APP_H
 #define AT24C_APP_H
 

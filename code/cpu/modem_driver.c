@@ -21,8 +21,7 @@
  /* ------------------------------------------------------------------*
  *            Modem Object init
  * ------------------------------------------------------------------*/
-// TODO (christian#1#): Modem_object_init ...
-//
+
 void Modem_init(struct Modem *mo)
 {
    mo->turned_on = 0;
@@ -242,16 +241,15 @@ void Modem_ReadCTS(void)
 
 char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
 {
-  static char tmp[16]={ 11,11,11,11,11, 11,11,11,11,11,
-                        11,11,11,11,11, 11};
-  unsigned char i=0;
+  static char tmp[16] = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 };
+  unsigned char i = 0;
 
   //--------------------------------------------------Init
   if(cmd == _init)
   {
-    for(i=0; i<16; i++)
+    for(i = 0; i < 16; i++)
     {
-      tmp[i]= AT24C_ReadVar(i + 16 * (nr.id - 1));
+      tmp[i] = AT24C_ReadVar(i + 16 * (nr.id - 1));
       TCC0_wait_us(50);
     }
   }
@@ -259,28 +257,28 @@ char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
   //--------------------------------------------------WriteTmp
   else if(cmd == _write)
   {
-    tmp[nr.pos]= nr.tel;
+    tmp[nr.pos] = nr.tel;
   }
 
   //--------------------------------------------------ReadEEPROM
   else if(cmd == _read)
   {
-    if(!nr.id)  return 'X';     //NoNumberSelected
+    if(!nr.id)  return 'X';
     return AT24C_ReadVar(nr.pos + 16 * (nr.id - 1));
   }
 
   //--------------------------------------------------ReadTmp
   else if(cmd == _read2)
   {
-    if(!nr.id)  return 'X';     //NoNumberSelected
+    if(!nr.id)  return 'X';
     return tmp[nr.pos];
   }
 
   //--------------------------------------------------Write2EEPROM
   else if(cmd == _save)
   {
-    if(!nr.id)  return 'X';     //NoNumberSelected
-    for(i=0; i<16; i++)
+    if(!nr.id)  return 'X';
+    for(i = 0; i < 16; i++)
     {
       AT24C_WriteVar(i + 16*(nr.id - 1), tmp[i]);
       TCC0_wait_ms(10);
@@ -290,10 +288,10 @@ char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
   //--------------------------------------------------ResetTemp
   else if(cmd == _reset)
   {
-    if(!nr.id)  return 'X';     //NoNumberSelected
-    for(i=0; i<16; i++)
+    if(!nr.id)  return 'X';
+    for(i = 0; i < 16; i++)
     {
-      tmp[i]= 11;
+      tmp[i] = 11;
       TCC0_wait_ms(10);
     }
   }
@@ -333,11 +331,11 @@ unsigned char Modem_Call(TelNr nr)
   unsigned char point_pos = 0;
   for(nr.pos = 0; nr.pos < MO_HANG_UP_TIME; nr.pos++)
   {
-    Watchdog_Restart();
+    WDT_RESET;
     if(point_pos > 5)
     {
       point_pos = 0;
-      LCD_ClrSpace(16,119,2,41);
+      LCD_ClrSpace(16, 119, 2, 41);
     }
 
     // ...
@@ -350,7 +348,7 @@ unsigned char Modem_Call(TelNr nr)
   USART_WriteString("ATH");
   USART_WriteByte(CHAR_CR);
   TCC0_wait_sec(1);
-  LCD_ClrSpace(16,119,2,41);
+  LCD_ClrSpace(16, 119, 2, 41);
 
   return 0;
 }
@@ -414,13 +412,13 @@ void Modem_SMSAllNumbers(char msg[])
   // fist number
   nr.id = 1;
 
-  Watchdog_Restart();
+  WDT_RESET;
   Modem_SMS(nr, msg);
   TCC0_wait_sec(5);
 
   // second number
   nr.id = 2;
-  Watchdog_Restart();
+  WDT_RESET;
   Modem_SMS(nr, msg);
 }
 
@@ -464,19 +462,19 @@ void Modem_SendTest(void)
       //Modem_DialNumber();
 
       // sms
-      Watchdog_Restart();
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 30");
       TCC0_wait_sec(3);
 
-      Watchdog_Restart();
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 31");
       TCC0_wait_sec(3);
 
-      Watchdog_Restart();
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 32");
       TCC0_wait_sec(3);
 
-      Watchdog_Restart();
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 33");
       TCC0_wait_sec(3);
 
@@ -513,8 +511,8 @@ void Modem_Test(void)
   // loop
   while(1)
   {
-    // Watchdog
-    Watchdog_Restart();
+    // watchdog
+    WDT_RESET;
 
     // check modem status -> turn on
     Modem_Check(page, &modem);

@@ -1,7 +1,7 @@
 // --
 // Amplifier for Pressure Sensor MPX
 
-// Include guard
+// include guard
 #ifndef AD8555_driver_H   
 #define AD8555_driver_H
 
@@ -10,10 +10,10 @@
  *            Defines
  * ==================================================================*/
 
-#define AD8555_OUTPUT   (PORTA.DIRSET= PIN5_bm)
-#define AD8555_INPUT    (PORTA.DIRCLR= PIN5_bm)
-#define AD8555_HIGH     (PORTA.OUTSET= PIN5_bm)
-#define AD8555_LOW      (PORTA.OUTCLR= PIN5_bm)
+#define AD8555_OUTPUT   (PORTA.DIRSET = PIN5_bm)
+#define AD8555_INPUT    (PORTA.DIRCLR = PIN5_bm)
+#define AD8555_HIGH     (PORTA.OUTSET = PIN5_bm)
+#define AD8555_LOW      (PORTA.OUTCLR = PIN5_bm)
 
 #define AD8555_FC_SIM     (0x01)
 #define AD8555_FC_2GAIN   (0x00)

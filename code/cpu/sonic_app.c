@@ -26,48 +26,56 @@ void Sonic_Data_Shot(void)
 {
   unsigned char run = 1;
   unsigned char *rec;
+
   // Temp
   CAN_SonicQuery(_init, _startTemp);
   while(run)
   {
     rec = CAN_SonicQuery(_exe, 0);
-    //error
-    if(rec[0] >= _usErrTimeout1)
-    {
-      LCD_Data_SonicWrite(_noUS, 0);
-      run = 0;
-    }
-    // OK
-    else if(rec[0] == _usTempSuccess)
-    {
-      LCD_Data_SonicWrite(_temp, (rec[1] << 8) | rec[2]);
-      run = 0;
-    }
-    // Wrong one
-    else if(rec[0] == _usDistSuccess || rec[0] == _usWait)
-    {
-      CAN_SonicQuery(_init, _startTemp);
-    }
-  }
-  // 5shots
-  run = 1;
-  CAN_SonicQuery(_init, _5Shots);
-  while(run)
-  {
-    rec = CAN_SonicQuery(_exe, 0);
+
     // error
     if(rec[0] >= _usErrTimeout1)
     {
       LCD_Data_SonicWrite(_noUS, 0);
       run = 0;
     }
-    // OK
+
+    // ok
+    else if(rec[0] == _usTempSuccess)
+    {
+      LCD_Data_SonicWrite(_temp, (rec[1] << 8) | rec[2]);
+      run = 0;
+    }
+
+    // wrong one
+    else if(rec[0] == _usDistSuccess || rec[0] == _usWait)
+    {
+      CAN_SonicQuery(_init, _startTemp);
+    }
+  }
+
+  // 5shots
+  run = 1;
+  CAN_SonicQuery(_init, _5Shots);
+  while(run)
+  {
+    rec = CAN_SonicQuery(_exe, 0);
+
+    // error
+    if(rec[0] >= _usErrTimeout1)
+    {
+      LCD_Data_SonicWrite(_noUS, 0);
+      run = 0;
+    }
+
+    // ok
     else if(rec[0] == _usDistSuccess)
     {
       LCD_Data_SonicWrite(_shot, (rec[1] << 8) | rec[2]);
       run = 0;
     }
-    // Wrong one
+
+    // wrong one
     else if(rec[0] == _usTempSuccess || rec[0] == _usWait)
     {
       CAN_SonicQuery(_init, _5Shots);
@@ -85,18 +93,21 @@ void Sonic_Data_Auto(void)
   unsigned char *rec;
 
   rec = CAN_SonicQuery(_exe, 0);
+
   // error
   if(rec[0] >= _usErrTimeout1)
   {
     LCD_Data_SonicWrite(_noUS, 0);
   }
-  // Distance
+
+  // distance
   else if(rec[0] == _usDistSuccess)
   {
     LCD_Data_SonicWrite(_shot1, (rec[1] << 8) | rec[2]);
     CAN_SonicQuery(_init, _startTemp);
   }
-  // Temperature
+
+  // temperature
   else if(rec[0] == _usTempSuccess)
   {
     LCD_Data_SonicWrite(_temp1, (rec[1] << 8) | rec[2]);
@@ -117,25 +128,29 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
 
   // deactivated sonic
   if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
-  //--------------------------------------------------init
-  else if(cmd == _init)
+
+  // init
+  if(cmd == _init)
   {
     state = 1;
   }
-  //--------------------------------------------------exe
+
+  // exe
   else if(cmd == _exe)
   {
-    //------------------------------------------------Read
+    // read
     if(state == 0)
     {
       rec = CAN_SonicQuery(_exe, 0);
-      // Error
+
+      // error
       if(rec[0] >= _usErrTimeout1)
       {
         CAN_SonicQuery(_init, _5Shots);
         LCD_Sym_NoUS(page, _write);
       }
-      // Distance
+
+      // distance
       else if(rec[0] == _usDistSuccess)
       {
         sonic = (rec[1] << 8) | rec[2];
@@ -144,19 +159,22 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
         LCD_Sym_NoUS(page, _clear);
         state = 1;
       }
-      // Temperature
+
+      // temperature
       else if(rec[0] == _usTempSuccess || rec[0] == _usWait)
       {
         CAN_SonicQuery(_init, _5Shots);
       }
     }
-    //------------------------------------------------TC-Init
+
+    // tc init
     else if(state == 1)
     {
       TCF0_WaitSec_Init(2);
       state = 2;
     }
-    //------------------------------------------------NextShot
+
+    // next shot
     else if(state >= 2)
     {
       if(TCF0_Wait_Query()) state++;    //2s
@@ -168,7 +186,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     }
   }
 
-  //--------------------------------------------------write
+  // write
   else if(cmd == _write)
   {
     if(!LCD_Sym_NoUS(page, _check)) LCD_Auto_SonicVal(page, sonic);
@@ -241,15 +259,12 @@ t_page Sonic_ChangePage(t_page page, int sonic)
   }
   if(error) return page;
 
-  //--------------------------------------------------Percentage
-  zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) |
-          (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) |
-          (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) |
-          (MEM_EEPROM_ReadVar(TANK_L_Circ)));
+  // percentage
+  zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
+  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
 
-  //--------------------------------------------------change-Page
+  // change page
   switch(page)
   {
     case AutoZone:
@@ -299,26 +314,26 @@ int Sonic_LevelCal(t_FuncCmd cmd)
 
   switch(cmd)
   {
-    //------------------------------------------------ReadFromEEPROM
+    // read from EEPROM
     case _init:
-      level = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) |
-               (MEM_EEPROM_ReadVar(SONIC_L_LV)));
+      level = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
       LCD_WriteValue4(17, 40, level);
       break;
 
-    //------------------------------------------------Save2EEPROM
+    // save to EEPROM
     case _save:
       if(level){
         MEM_EEPROM_WriteVar(SONIC_L_LV, level & 0x00FF);
         MEM_EEPROM_WriteVar(SONIC_H_LV, ((level >> 8) & 0x00FF));}
       break;
 
-    //------------------------------------------------Meassure
+    // measure
     case _new:
       CAN_SonicQuery(_init, _5Shots);
       while(run)
       {
         rec = CAN_SonicQuery(_exe, 0);
+
         // error
         if(rec[0] >= _usErrTimeout1)
         {
@@ -326,14 +341,16 @@ int Sonic_LevelCal(t_FuncCmd cmd)
           level = 0;
           run = 0;
         }
-        // OK
+
+        // ok
         else if(rec[0] == _usDistSuccess)
         {
           level = (rec[1] << 8) | rec[2];
           LCD_Sym_NoUS(SetupCal, _clear);
           run = 0;
         }
-        // Wrong one
+
+        // wrong one
         else if(rec[0] == _usTempSuccess || rec[0] == _usWait)
         {
           CAN_SonicQuery(_init, _5Shots);
@@ -343,7 +360,7 @@ int Sonic_LevelCal(t_FuncCmd cmd)
 
     case _write:
       LCD_WriteValue4(17, 40, level); break;
-    default:                          break;
+    default: break;
   }
   return level;
 }

@@ -32,7 +32,7 @@ void TCC0_WaitMicroSec_Init(int microSec)
   TCC0.CCA = time;
   TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
-  TCC0_CTRLA = TC_CLKSEL_DIV1_gc;      //clk/1
+  TCC0_CTRLA = TC_CLKSEL_DIV1_gc;
 }
 
 

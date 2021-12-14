@@ -40,7 +40,7 @@ int main(void)
 
   while(1)
   {
-    Watchdog_Restart();
+    WDT_RESET;
     PORT_Bootloader();
     Modem_Check(page, &modem);
 

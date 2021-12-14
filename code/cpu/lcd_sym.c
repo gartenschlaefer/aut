@@ -24,14 +24,11 @@
 
 /* ==================================================================*
  *            Auto Page
- * --------------------------------------------------------------
- *  Auto Pages layout
- * --------------------------------------------------------------
  * ==================================================================*/
 
-/* ==================================================================*
+/* ------------------------------------------------------------------*
  *            Set Auto Pages
- * ==================================================================*/
+ * ------------------------------------------------------------------*/
 
 void LCD_AutoSet_Page(void)
 {
@@ -39,8 +36,8 @@ void LCD_AutoSet_Page(void)
   LCD_Clean();
   LCD_MarkTextButton(Auto);
 
-  if(!COMPANY)   LCD_Write_Purator(0,0);
-  else LCD_Write_HECS(0,0);
+  if(!COMPANY)   LCD_Write_Purator(0, 0);
+  else LCD_Write_HECS(0, 0);
   MCP7941_LCD_WriteTime(_init);
 }
 
@@ -51,8 +48,8 @@ void LCD_AutoSet_Page(void)
 
 void LCD_AutoCountDown(int min, int sec)
 {
-  LCD_WriteValue2_MyFont(13,5, min);
-  LCD_WriteValue2_MyFont(13,17, sec);
+  LCD_WriteValue2_MyFont(13, 5, min);
+  LCD_WriteValue2_MyFont(13, 17, sec);
 }
 
 

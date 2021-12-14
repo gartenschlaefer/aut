@@ -17,23 +17,19 @@
 
 void SPI_Init(void)
 {
-  PORTE.DIR =   PIN4_bm |         //CS Output
-                PIN5_bm |         //MOSI Output
-                PIN7_bm;          //SCK Output
-
+  // output: CS, MOSI, SCK
+  PORTE.DIR =   PIN4_bm | PIN5_bm | PIN7_bm;
   PORTE.DIRCLR = PIN6_bm;
+  PORTE.OUTCLR =  PIN5_bm | PIN6_bm | PIN7_bm;
 
-  PORTE.OUTCLR =  PIN5_bm |
-                  PIN6_bm |
-                  PIN7_bm;
+  // SPI setup
+  SPIE.CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV64_gc;
 
-  SPIE.CTRL = SPI_ENABLE_bm     | //SPI Enable
-              SPI_MASTER_bm     | //MasterMode
-              SPI_MODE_0_gc       | //RisingSampleFallingSetup
-              SPI_PRESCALER_DIV64_gc;   //clk/64
+  // interrupt off
+  SPIE.INTCTRL = SPI_INTLVL_OFF_gc;
 
-  SPIE.INTCTRL = SPI_INTLVL_OFF_gc;      //Interrupt Off
-  CS_SET;                   //No CS
+  // no cs
+  CS_SET;
 }
 
 
@@ -48,12 +44,17 @@ void SPI_Init(void)
 
 unsigned char SPI_WriteByte(unsigned char wByte)
 {
-  unsigned char dummy=0;
+  unsigned char dummy = 0;
 
-  SPIE.DATA= wByte;                     //Start Transmission
-  while(!(SPIE.STATUS & SPI_IF_bm));    //WaitUntilComplete
-  dummy= SPIE.DATA;                     //Read Dummy Reset-SPIE
-  dummy= dummy;                         //4CompilerWarning
+  // start transmission
+  SPIE.DATA = wByte;
+  while(!(SPIE.STATUS & SPI_IF_bm));
+
+  // read dummy: reset SPIE
+  dummy = SPIE.DATA;
+
+  // to disregard compiler warning                     
+  dummy = dummy;
   return 0;
 }
 
@@ -64,14 +65,17 @@ unsigned char SPI_WriteByte(unsigned char wByte)
 
 unsigned char SPI_WriteString(unsigned char *sendData, unsigned char i)
 {
-  unsigned char sendPuffer=0;
+  unsigned char sendPuffer = 0;
 
   while(i)
   {
-    sendPuffer= *sendData;        //update send Puffer
-    SPI_WriteByte(sendPuffer);      //WriteByte
-    sendData++;             //increase Pointer
-    i--;                //decrease Counter
+    // update send puffer
+    sendPuffer = *sendData;
+
+    // send via SPI
+    SPI_WriteByte(sendPuffer);
+    sendData++;
+    i--;
   }
 
   return F_SPI_SENT;
@@ -84,6 +88,7 @@ unsigned char SPI_WriteString(unsigned char *sendData, unsigned char i)
 
 unsigned char SPI_ReadByte(void)
 {
-  SPI_WriteByte(0xFF);          //Write DummyByte
+  // write dummy byte
+  SPI_WriteByte(0xFF);
   return SPIE.DATA;;
 }

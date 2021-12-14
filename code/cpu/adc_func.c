@@ -30,16 +30,16 @@ void ADC_Init(void)
   ADCB.CALH = ReadCalibrationByte(offsetof(NVM_PROD_SIGNATURES_t, ADCBCAL1));
 
   // ADC-A
-  ADCA.CTRLB =     ADC_RESOLUTION_12BIT_gc;  //Resolution 12BIT right
-  ADCA.REFCTRL =   ADC_REFSEL_AREFA_gc;      //ReferenceVoltage
-  ADCA.PRESCALER = ADC_PRESCALER_DIV16_gc;   //Prescaler clk/16
-  ADCA.CTRLA =     ADC_ENABLE_bm;            //ADC ENABLE
+  ADCA.CTRLB = ADC_RESOLUTION_12BIT_gc;
+  ADCA.REFCTRL = ADC_REFSEL_AREFA_gc;
+  ADCA.PRESCALER = ADC_PRESCALER_DIV16_gc;
+  ADCA.CTRLA = ADC_ENABLE_bm;
 
   // ADC-B
-  ADCB.CTRLB =     ADC_RESOLUTION_12BIT_gc;  //Resolution 12BIT right
-  ADCB.REFCTRL =   ADC_REFSEL_AREFA_gc;      //ReferenceVoltage
-  ADCB.PRESCALER = ADC_PRESCALER_DIV8_gc;    //Prescaler-clk/8
-  ADCB.CTRLA =     ADC_ENABLE_bm;            //ADC ENABLE
+  ADCB.CTRLB = ADC_RESOLUTION_12BIT_gc;
+  ADCB.REFCTRL = ADC_REFSEL_AREFA_gc;
+  ADCB.PRESCALER = ADC_PRESCALER_DIV8_gc;
+  ADCB.CTRLA = ADC_ENABLE_bm;
 
   // ADC channels init
   ADC_Touch_Ch();
@@ -58,7 +58,9 @@ unsigned char ReadCalibrationByte(unsigned char index)
 
   NVM_CMD = NVM_CMD_READ_CALIB_ROW_gc;
   result = pgm_read_byte(index);
-  NVM_CMD = NVM_CMD_NO_OPERATION_gc;      //CleanUp NVM CommandReg
+
+  // cleanup NVM command register
+  NVM_CMD = NVM_CMD_NO_OPERATION_gc;
 
   return(result);
 }
@@ -147,4 +149,3 @@ void ADC_USV_Check(void)
   }
   else c = 0;
 }
-

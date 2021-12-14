@@ -1,7 +1,7 @@
 // --
 // timer
 
-// Include guard
+// include guard
 #ifndef TC_FUNC_H   
 #define TC_FUNC_H
 

@@ -45,7 +45,7 @@ void AD8555_Write_FC_SimFirstGain(void)
   unsigned char bit = 0;
   unsigned char i = 0;
 
-  write= (AD8555_FC_SIM << 4) | (AD8555_FC_1GAIN << 2) | (AD8555_FC_DUMMY);
+  write = (AD8555_FC_SIM << 4) | (AD8555_FC_1GAIN << 2) | (AD8555_FC_DUMMY);
 
   for(i = 0; i < 6; i++)
   {
@@ -64,7 +64,7 @@ void AD8555_Write_FC_SimSecondGain(void)
 
   for(i = 0; i < 6; i++)
   {
-    bit = ((write>>i) & 0x01);
+    bit = ((write >> i) & 0x01);
     AD8555_Write_Bit(bit);
   }
 }
@@ -115,7 +115,7 @@ void AD8555_Write_StartPacket(void)
   int i = 0;
   int bit = 0;
 
-  for(i = 0; i<12; i++)
+  for(i = 0; i < 12; i++)
   {
     bit = ((start >> i) & 0x01);
     AD8555_Write_Bit(bit);
@@ -134,7 +134,6 @@ void AD8555_Write_EndPacket(void)
     AD8555_Write_Bit(bit);
   }
 }
-
 
 
 

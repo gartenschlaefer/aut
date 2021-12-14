@@ -1,7 +1,7 @@
 // --
 // ultrasonic applications
 
-// Include guard
+// include guard
 #ifndef SONIC_APP_H   
 #define SONIC_APP_H
 
@@ -9,10 +9,10 @@
  *            Defines
  * ==================================================================*/
 
-#define   DISA  (1<<0)    //Data Distance available
-#define   TEMPA (1<<1)    //Temp available
-#define   DERR  (1<<2)    //DistanceError
-#define   TERR  (1<<3)    //TempError
+#define SONIC_DISA  (1 << 0)    //Data Distance available
+#define SONIC_TEMPA (1 << 1)    //Temp available
+#define SONIC_DERR  (1 << 2)    //DistanceError
+#define SONIC_TERR  (1 << 3)    //TempError
 
 #define D_LIM 50
 

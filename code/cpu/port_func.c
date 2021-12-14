@@ -119,9 +119,12 @@ void PORT_Ventilator(void)
   unsigned char hystOn = 0;
   unsigned char hystOff = 0;
 
-  temp = MCP9800_PlusTemp();                        //ReadPlusTemp
-  hystOn =  (MEM_EEPROM_ReadVar(ALARM_temp) - 15);  //HysteresisON
-  hystOff = (MEM_EEPROM_ReadVar(ALARM_temp) - 20);  //HysteresisOFF
+  // temperature
+  temp = MCP9800_PlusTemp();
+
+  // hysteresis
+  hystOn =  (MEM_EEPROM_ReadVar(ALARM_temp) - 15);
+  hystOff = (MEM_EEPROM_ReadVar(ALARM_temp) - 20);
 
   if(!(temp & 0x80))
   {
@@ -142,14 +145,14 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
 {
   static unsigned char state = 0;
 
-  Watchdog_Restart();
+  // watchdog reset
+  WDT_RESET;
 
   switch(ventil)
   {
     case OPEN_Reserve:
       P_VENTIL.OUTSET = O_RES;
       TCC0_wait_openVentil();
-      
       P_VENTIL.OUTCLR = O_RES; 
       state |= V_RES;
       break;
@@ -228,11 +231,8 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
     default: 
       break;
   }
-
-  Watchdog_Restart();
   return state;
 }
-
 
 
 /* ------------------------------------------------------------------*
@@ -241,8 +241,11 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
 
 void PORT_Ventil_AllOpen(void)
 {
-  Watchdog_Restart();
-  P_VENTIL.OUTSET = O_RES;
+  // watchdog reset
+  WDT_RESET;
+
+  // ventil open
+  P_VENTIL.OUTSET= O_RES;
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = O_MUD;
   TCC0_wait_ms(500);
@@ -250,10 +253,12 @@ void PORT_Ventil_AllOpen(void)
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = O_CLRW;
 
+  // time
   TCC0_wait_sec(1);
   TCC0_wait_ms(500);
 
-  P_VENTIL.OUTCLR = O_RES;
+  // stop opening
+  P_VENTIL.OUTCLR= O_RES;
   TCC0_wait_ms(500);
   P_VENTIL.OUTCLR = O_MUD;
   TCC0_wait_ms(500);
@@ -263,7 +268,6 @@ void PORT_Ventil_AllOpen(void)
   TCC0_wait_ms(500);
 
   PORT_Ventil(SET_STATE_ALL_OPEN, 0);
-  Watchdog_Restart();
 }
 
 
@@ -273,8 +277,10 @@ void PORT_Ventil_AllOpen(void)
 
 void PORT_Ventil_AllClose(void)
 {
-  Watchdog_Restart();
-  P_VENTIL.OUTSET = C_RES;
+  // watchdog reset
+  WDT_RESET;
+  
+  P_VENTIL.OUTSET= C_RES;
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = C_MUD;
   TCC0_wait_ms(500);
@@ -295,7 +301,6 @@ void PORT_Ventil_AllClose(void)
   TCC0_wait_ms(500);
 
   PORT_Ventil(SET_STATE_ALL_CLOSED, 0);
-  Watchdog_Restart();
 }
 
 
@@ -307,22 +312,21 @@ void PORT_Ventil_AutoClose(t_page page)
 {
   switch(page)
   {
-    case AutoZone:    OUT_Clr_Air();      break;
-    case AutoSetDown:                     break;
-    case AutoPumpOff: OUT_Clr_PumpOff();  break;
-    case AutoMud:     OUT_Clr_Mud();      break;
-    case AutoCirc:    OUT_Clr_IPAir();    break;
-    case AutoAir:     OUT_Clr_IPAir();    break;
+    case AutoZone: OUT_Clr_Air(); break;
+    case AutoSetDown: break;
+    case AutoPumpOff: OUT_Clr_PumpOff(); break;
+    case AutoMud: OUT_Clr_Mud(); break;
+    case AutoCirc: OUT_Clr_IPAir(); break;
+    case AutoAir: OUT_Clr_IPAir(); break;
 
-    case ManualCirc:        OUT_Clr_Air();        break;
-    case ManualAir:         OUT_Clr_Air();        break;
-    case ManualSetDown:                           break;
-    case ManualPumpOff:     OUT_Clr_PumpOff();    break;
-    case ManualMud:         OUT_Clr_Mud();        break;
-    case ManualCompressor:  OUT_Clr_Compressor(); break;
-    case ManualPhosphor:    OUT_Clr_Phosphor();   break;
-    case ManualInflowPump:  OUT_Clr_InflowPump(); break;
-
+    case ManualCirc: OUT_Clr_Air(); break;
+    case ManualAir: OUT_Clr_Air(); break;
+    case ManualSetDown: break;
+    case ManualPumpOff: OUT_Clr_PumpOff(); break;
+    case ManualMud: OUT_Clr_Mud(); break;
+    case ManualCompressor: OUT_Clr_Compressor(); break;
+    case ManualPhosphor: OUT_Clr_Phosphor(); break;
+    case ManualInflowPump: OUT_Clr_InflowPump(); break;
     default: break;
   }
 }
@@ -433,7 +437,7 @@ void PORT_Debug(void)
     {
       blink = 1;
 
-      // relais
+      // relays
       for(int relais = 0; relais < 8; relais++)
       {
         if(P_RELAIS.OUT & (1<<relais)) 

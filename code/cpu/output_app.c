@@ -1,8 +1,10 @@
 // --
-// outpust for relais and ventils
+// outputs for relays and valves
 
 
 #include "defines.h"
+
+#include "output_app.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
 
@@ -17,9 +19,8 @@
 
 void OUT_SetDown(void)
 {
-  PORT_RelaisClr(R_COMP);     
-  PORT_RelaisClr(R_EXT_COMP);
-  PORT_RelaisClr(R_INFLOW1);    
+  OUT_Clr_Compressor();
+  PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
   PORT_RelaisClr(R_CLEARWATER);
 }
@@ -31,24 +32,22 @@ void OUT_SetDown(void)
 
 void OUT_Set_PumpOff(void)
 {
-  // mammut pump
+  // mammoth pump
   if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff)))
   {
     PORT_Ventil(OPEN_ClearWater, 0);
-    PORT_RelaisSet(R_COMP);
-    PORT_RelaisSet(R_EXT_COMP);
+    OUT_Set_Compressor();
   }
   else PORT_RelaisSet(R_CLEARWATER);
 }
 
 void OUT_Clr_PumpOff(void)
 {
-  // relais
-  PORT_RelaisClr(R_COMP);
-  PORT_RelaisClr(R_EXT_COMP);
+  // relays
+  OUT_Clr_Compressor();
   PORT_RelaisClr(R_CLEARWATER);
 
-  // mammut pump
+  // mammoth pump
   if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))) PORT_Ventil(CLOSE_ClearWater, 0);
 }
 
@@ -60,14 +59,12 @@ void OUT_Clr_PumpOff(void)
 void OUT_Set_Mud(void)
 {
   PORT_Ventil(OPEN_MudPump, 0);
-  PORT_RelaisSet(R_COMP);
-  PORT_RelaisSet(R_EXT_COMP);
+  OUT_Set_Compressor();
 }
 
 void OUT_Clr_Mud(void)
 {
-  PORT_RelaisClr(R_COMP);
-  PORT_RelaisClr(R_EXT_COMP);
+  OUT_Clr_Compressor();
   PORT_Ventil(CLOSE_MudPump, 0);
 }
 
@@ -79,14 +76,12 @@ void OUT_Clr_Mud(void)
 void OUT_Set_Air(void)
 {
   PORT_Ventil(OPEN_Air, 0);
-  PORT_RelaisSet(R_COMP);
-  PORT_RelaisSet(R_EXT_COMP);
+  OUT_Set_Compressor();
 }
 
 void OUT_Clr_Air(void)
 {
-  PORT_RelaisClr(R_COMP);
-  PORT_RelaisClr(R_EXT_COMP);
+  OUT_Clr_Compressor();
   PORT_Ventil(CLOSE_Air, 0);
 }
 
@@ -98,11 +93,12 @@ void OUT_Clr_Air(void)
 void OUT_Set_Compressor(void)
 {
   PORT_RelaisSet(R_COMP);
+  PORT_RelaisSet(R_EXT_COMP);
 }
 
 void OUT_Clr_Compressor(void)
 {
-  PORT_RelaisClr(R_COMP);   
+  PORT_RelaisClr(R_COMP);
   PORT_RelaisClr(R_EXT_COMP);
 }
 
@@ -134,42 +130,34 @@ void OUT_Set_InflowPump(void)
   pump = MEM_EEPROM_ReadVar(PUMP_inflowPump);
   switch(pump)
   {
-    // mammut pump
+    // mammoth pump
     case 0:
       PORT_Ventil(OPEN_Reserve, 0);
-      PORT_RelaisSet(R_COMP);
-      PORT_RelaisSet(R_EXT_COMP);     
+      OUT_Set_Compressor();
       break;
 
-    // ext. pump1
+    // ext. pump 1
     case 1:
-      PORT_RelaisSet(R_INFLOW1);      
+      PORT_RelaisSet(R_INFLOW1);
       break;
 
-    // ext. pump2
+    // ext. pump 2
     case 2:
-      if(!pumpChange){
-        pumpChange = 1;
-        PORT_RelaisSet(R_INFLOW1);}
-      else{
-        pumpChange = 0;
-        PORT_RelaisSet(R_INFLOW2);}   
+      if(!pumpChange){ pumpChange = 1; PORT_RelaisSet(R_INFLOW1); }
+      else{ pumpChange = 0; PORT_RelaisSet(R_INFLOW2); }   
       break;
 
-    default:                          
-      break;
+    default: break;
   }
 }
 
 void OUT_Clr_InflowPump(void)
 {
-  PORT_RelaisClr(R_COMP);
-  PORT_RelaisClr(R_EXT_COMP);
+  OUT_Clr_Compressor();
   PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
 
-  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump))
-    PORT_Ventil(CLOSE_Reserve, 0);
+  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump)) PORT_Ventil(CLOSE_Reserve, 0);
 }
 
 
@@ -179,8 +167,7 @@ void OUT_Clr_InflowPump(void)
 
 void OUT_Clr_IPAir(void)
 {
-  PORT_RelaisClr(R_COMP);
-  PORT_RelaisClr(R_EXT_COMP);
+  OUT_Clr_Compressor();
   PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
   PORT_Ventil(CLOSE_IPAir, 0);

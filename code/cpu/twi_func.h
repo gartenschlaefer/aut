@@ -1,7 +1,7 @@
 // --
 // twi - two wire interface
 
-// Include guard
+// include guard
 #ifndef TWI_FUNC_H   
 #define TWI_FUNC_H
 
@@ -61,4 +61,3 @@ unsigned char TWI2_Master_Send(unsigned char send);
 unsigned char TWI2_Master_AddressWriteMode(unsigned char f_address);
 
 #endif
-

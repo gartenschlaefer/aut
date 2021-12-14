@@ -1,5 +1,5 @@
 // --
-//  MCP7941-Timer-IC
+// MCP7941-Timer-IC
 
 #include<avr/io.h>
 
@@ -21,8 +21,11 @@
 
 void MCP7941_Init(void)
 {
-  MCP7941_WriteByte(TIC_DAY,  (DEF_DAY | VBATEN));    //extBatt
-  MCP7941_WriteByte(TIC_SEC,  TIC_ST);                //StartTimer
+  // external battery
+  MCP7941_WriteByte(TIC_DAY,  (DEF_DAY | VBATEN));
+
+  // start timer
+  MCP7941_WriteByte(TIC_SEC,  TIC_ST);
 }
 
 
@@ -34,13 +37,14 @@ void MCP7941_InitDefault(void)
 {
   MCP7941_Write_Comp_OpHours(0);
 
-  MCP7941_WriteByte(TIC_CTRL, 0);              //ControlReg
-  MCP7941_WriteByte(TIC_SEC,    DEF_SEC);
-  MCP7941_WriteByte(TIC_MIN,    DEF_MIN);
-  MCP7941_WriteByte(TIC_HOUR,   DEF_HOUR);
-  MCP7941_WriteByte(TIC_DATE,   DEF_DATE);
-  MCP7941_WriteByte(TIC_MONTH,  DEF_MONTH);
-  MCP7941_WriteByte(TIC_YEAR,   DEF_YEAR);
+  // control register
+  MCP7941_WriteByte(TIC_CTRL, 0);
+  MCP7941_WriteByte(TIC_SEC, DEF_SEC);
+  MCP7941_WriteByte(TIC_MIN, DEF_MIN);
+  MCP7941_WriteByte(TIC_HOUR, DEF_HOUR);
+  MCP7941_WriteByte(TIC_DATE, DEF_DATE);
+  MCP7941_WriteByte(TIC_MONTH, DEF_MONTH);
+  MCP7941_WriteByte(TIC_YEAR, DEF_YEAR);
 }
 
 
@@ -50,9 +54,8 @@ void MCP7941_InitDefault(void)
 
 void MCP7941_Write(unsigned char *send, unsigned char i)
 {
-  TWI2_Master_WriteString(WRITE_RTC_RAM,  //ControlByte
-                          send,     //DataBytes
-                          i );      //CountofBytes
+  // control byte | data bytes | count of bytes
+  TWI2_Master_WriteString(WRITE_RTC_RAM, send, i );
 }
 
 
@@ -80,8 +83,8 @@ unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i)
 
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
 {
-  unsigned char send[]= {addr, sData};
-  MCP7941_Write(send, 2);           //Write Pointer+Data
+  unsigned char send[] = {addr, sData};
+  MCP7941_Write(send, 2);
 }
 
 
@@ -91,13 +94,13 @@ void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
 
 unsigned char MCP7941_ReadByte(unsigned char addr)
 {
-  unsigned char send[]= {addr};
+  unsigned char send[] = {addr};
   unsigned char *rec;
   unsigned char rData;
 
-  rec= MCP7941_Read(send, 1);   //Read Data
+  rec = MCP7941_Read(send, 1);
   rec++;
-  rData= *rec;
+  rData = *rec;
 
   return rData;
 }
@@ -198,26 +201,32 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
   switch(cmd)
   {
     case _init:
-      LCD_WriteMyFont(2, 128, 10);        //:  Time
-      LCD_WriteMyFont(2, 140, 10);        //:  Time
-      //----------------------------------------------------Time
+
+      // : symbol
+      LCD_WriteMyFont(2, 128, 10);
+      LCD_WriteMyFont(2, 140, 10);
+
+      // time
       LCD_WriteValue2_MyFont(2,120, MCP7941_ReadTime(TIC_HOUR));
       LCD_WriteValue2_MyFont(2,132, MCP7941_ReadTime(TIC_MIN));
       LCD_WriteValue2_MyFont(2,144, MCP7941_ReadTime(TIC_SEC));
       break;
 
     case _exe:
-      //----------------------------------------------------Sec------
-      time= MCP7941_ReadTime(TIC_SEC);
+
+      // sec
+      time = MCP7941_ReadTime(TIC_SEC);
       LCD_WriteValue2_MyFont(2,144, time);
-      //----------------------------------------------------Min------
+
+      // min
       if(!time)
       {
         time= MCP7941_ReadTime(TIC_MIN);
         LCD_WriteValue2_MyFont(2,132, time);
       }
       else break;
-      //----------------------------------------------------Hour-----
+
+      // hour
       if(!time)
       {
         time= MCP7941_ReadTime(TIC_HOUR);
@@ -226,7 +235,7 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
       else break;
       break;
 
-    default:  break;
+    default: break;
   }
 }
 
@@ -237,12 +246,15 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
 
 void MCP7941_LCD_WriteDate(void)
 {
-  LCD_WriteMyFont(0, 128, 11);          //-
-  LCD_WriteMyFont(0, 140, 11);          //-
-  LCD_WriteStringMyFont(0, 144,"20");   //20xx
+  // - symbol
+  LCD_WriteMyFont(0, 128, 11);
+  LCD_WriteMyFont(0, 140, 11);
 
+  // year 20xx
+  LCD_WriteStringMyFont(0, 144,"20");
+
+  // date
   LCD_WriteValue2_MyFont(0,120, MCP7941_ReadTime(TIC_DATE));
   LCD_WriteValue2_MyFont(0,132, MCP7941_ReadTime(TIC_MONTH));
   LCD_WriteValue2_MyFont(0,152, MCP7941_ReadTime(TIC_YEAR));
 }
-

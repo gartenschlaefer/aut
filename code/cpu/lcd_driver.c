@@ -31,7 +31,7 @@ void LCD_Init(void)
   LCD_Rst();
 
   // init macros
-  while(LCD_SendCmd(LcdInitMacro, 11)); //Load Init
+  while(LCD_SendCmd(LcdInitMacro, 11));
 }
 
 
@@ -67,7 +67,7 @@ void LCD_Backlight(t_FuncCmd cmd)
         // counting up
         count++;
 
-        //Ton= 3min
+        //Ton = 3min
         if(count > BACKLIGHT_TON_FRAMES){count = 0; LCD_LED_OFF; state = _off;}
       }
 
@@ -185,8 +185,8 @@ void LCD_WP_Disable(void)
 
 void LCD_WP_Page(unsigned char startPA, unsigned char endPA)
 {
-  unsigned char Cmd[] = {WPP0, startPA,   WPP1, endPA};   //Command
-  while(LCD_SendCmd(Cmd, 4));           //send PA-Cmd
+  unsigned char Cmd[] = {WPP0, startPA, WPP1, endPA};
+  while(LCD_SendCmd(Cmd, 4));
 }
 
 
@@ -198,8 +198,8 @@ void LCD_WP_Page(unsigned char startPA, unsigned char endPA)
 
 void LCD_WP_Column(unsigned char startCA, unsigned char endCA)
 {
-  unsigned char Cmd[] = {WPC0, startCA,   WPC1, endCA};   //Command
-  while(LCD_SendCmd(Cmd, 4));           //send CA-Cmd
+  unsigned char Cmd[] = {WPC0, startCA, WPC1, endCA};
+  while(LCD_SendCmd(Cmd, 4));
 }
 
 
@@ -239,16 +239,19 @@ void LCD_Clean(void)
 {
   unsigned char LcdData[80] = {0x00};
 
-  LCD_SetPageAddress(0);    //PageAddress
-  LCD_SetColumnAdress(0);   //ColumnAddress
+  // page and column address
+  LCD_SetPageAddress(0);
+  LCD_SetColumnAdress(0);
 
   LCD_WP_Enable();      //Window Programm Enable
   LCD_WP_Page(0, 25);     //Page Frame
   LCD_WP_Column(0,159);   //Column Frame
 
-  for(unsigned char p=0; p<52; p++)       //25  Pages
+  // 25 pages
+  for(unsigned char p = 0; p < 52; p++)
   {
-    for(unsigned char c=0; c<2; c++)      //160 Columns
+    // 160 columns
+    for(unsigned char c = 0; c < 2; c++)
     {
       LCD_SendData(LcdData, 80);
     }
@@ -270,13 +273,13 @@ void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, u
 {
   unsigned char LcdData[160] = {0xFF};
 
-  for(unsigned char p = 0; p < 160; p++)            //Fill Array
-    LcdData[p] = 0xFF;
+  // fill array
+  for(unsigned char p = 0; p < 160; p++) LcdData[p] = 0xFF;
 
-  LCD_WP_SetFrame(row, col, height, len);   //FrameSet
-
-  for(unsigned char p = 0; p < height; p++)         //25Pages
-    LCD_SendData(LcdData, (len));
+  LCD_WP_SetFrame(row, col, height, len);
+  
+  // 25 pages
+  for(unsigned char p = 0; p < height; p++) LCD_SendData(LcdData, (len));
 
   LCD_WP_Disable();
 }
@@ -290,13 +293,13 @@ void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, un
 {
   unsigned char LcdData[160] = {0x00};
 
-  for(unsigned char p = 0; p < 160; p++)
-    LcdData[p] = 0x00;
+  // zero
+  for(unsigned char p = 0; p < 160; p++) LcdData[p] = 0x00;
 
-  LCD_WP_SetFrame(row, col, height, len);   //FrameSet
-
-  for(unsigned char p = 0; p < height; p++)         //25Pages
-    LCD_SendData(LcdData, (len));
+  LCD_WP_SetFrame(row, col, height, len);
+  
+  // 25 pages
+  for(unsigned char p = 0; p < height; p++) LCD_SendData(LcdData, (len));
 
   LCD_WP_Disable();
 }
@@ -335,7 +338,7 @@ void LCD_WriteFont(unsigned char row, unsigned char col, unsigned short word)
   for(unsigned char p = 0; p < height; p++)
   {
     // columns
-    for(int c=0; c<len; c++)
+    for(unsigned char c = 0; c < len; c++)
     {
       LcdData[c] = LCD_ConvertWP(Font_6X8[8 + c + len * p + word * len * height] & 0x0F);
     }
@@ -344,9 +347,9 @@ void LCD_WriteFont(unsigned char row, unsigned char col, unsigned short word)
     LCD_SendData(LcdData, len);
 
     // columns
-    for(int a=0; a<len; a++)
+    for(unsigned char a = 0; a < len; a++)
     {
-      LcdData[a] = LCD_ConvertWP((Font_6X8[8 + a + len*p + ((word)*len*height)] & 0xF0) >> 4);
+      LcdData[a] = LCD_ConvertWP((Font_6X8[8 + a + len * p + ((word) * len * height)] & 0xF0) >> 4);
     }
 
     // send
@@ -362,33 +365,33 @@ void LCD_WriteFont(unsigned char row, unsigned char col, unsigned short word)
 
 void LCD_WriteFontNeg(unsigned char row, unsigned char col, unsigned short word)
 {
-  unsigned char LcdData[40]={0x00};
+  unsigned char LcdData[40] = {0x00};
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  unsigned char len=    Font_6X8_Neg[0];    //Width  in Dots
-    unsigned char height=   Font_6X8_Neg[1];    //height in Bytes
+  unsigned char len = Font_6X8_Neg[0];
+  unsigned char height = Font_6X8_Neg[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)     //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)      //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Font_6X8_Neg[8 + c + len*p + ((word)*len*height)] & 0x0F);     //LSB
+      L = (Font_6X8_Neg[8 + c + len * p + ((word) * len * height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Font_6X8_Neg[8 + a + len*p + ((word)*len*height)] & 0xF0);   //MSB
+      H = (Font_6X8_Neg[8 + a + len * p + ((word) * len * height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -405,33 +408,38 @@ void LCD_WriteFontNum(unsigned char row, unsigned char col, unsigned char word)
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  unsigned char len=    Font_Numbers_8X16[0];   //Width  in Dots
-  unsigned char height= Font_Numbers_8X16[1];   //height in Bytes
-  unsigned char n= 0;
+  unsigned char len = Font_Numbers_8X16[0];
+  unsigned char height = Font_Numbers_8X16[1];
+  unsigned char n = 0;
 
-  if(word & 0xF0) n= 1;   //Write negative Numbers
-  else n= 0;              //Write positive Numbers
+  // negative / positive numbers
+  if(word & 0xF0) n = 1;
+  else n = 0;
 
-  word= word & 0x0F;
+  word = word & 0x0F;
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  // frame set
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)     //Pages
+  // pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)      //Columns
+    // column
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Font_Numbers_8X16[2 + c + len*p + ((word)*len*height) + (n*10*len*height)] & 0x0F);    //LSB
+      L = (Font_Numbers_8X16[2 + c + len * p + ((word) * len * height) + (n*10*len*height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    // 160 columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Font_Numbers_8X16[2 + a + len*p + ((word)*len*height) + (n*10*len*height)] & 0xF0);    //MSB
+      H = (Font_Numbers_8X16[2 + a + len * p + ((word) * len * height) + (n*10*len*height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -444,31 +452,31 @@ void LCD_WriteFontNum(unsigned char row, unsigned char col, unsigned char word)
 
 void LCD_WriteMyFont(unsigned char row, unsigned char col, unsigned char word)
 {
-  unsigned char LcdData[10]={0x00};
+  unsigned char LcdData[10] = {0x00};
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  unsigned char len=    FontNumbers_4X6[0];   //Width  in Dots
-  unsigned char height= FontNumbers_4X6[1];   //height in Bytes
+  unsigned char len = FontNumbers_4X6[0];
+  unsigned char height = FontNumbers_4X6[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)     //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)      //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (FontNumbers_4X6[2 + c + len*p + ((word)*len*height)] & 0x0F);    //LSB
+      L = (FontNumbers_4X6[2 + c + len * p + ((word) * len * height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)        //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (FontNumbers_4X6[2 + a + len*p + ((word)*len*height)] & 0xF0);    //MSB
+      H = (FontNumbers_4X6[2 + a + len * p + ((word) * len * height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
   LCD_WP_Disable();
 }
@@ -480,31 +488,31 @@ void LCD_WriteMyFont(unsigned char row, unsigned char col, unsigned char word)
 
 void LCD_WriteMyFontNeg(unsigned char row, unsigned char col, unsigned char word)
 {
-  unsigned char LcdData[10]={0x00};
+  unsigned char LcdData[10] = {0x00};
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  unsigned char len=    FontNumbers_4X6_Neg[0];   //Width  in Dots
-  unsigned char height= FontNumbers_4X6_Neg[1];   //height in Bytes
+  unsigned char len = FontNumbers_4X6_Neg[0];
+  unsigned char height = FontNumbers_4X6_Neg[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)     //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)        //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (FontNumbers_4X6_Neg[2 + c + len * p + ((word)*len*height)] & 0x0F);    //LSB
+      L = (FontNumbers_4X6_Neg[2 + c + len * p + ((word)*len*height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)        //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (FontNumbers_4X6_Neg[2 + a + len * p + ((word)*len*height)] & 0xF0);    //MSB
+      H = (FontNumbers_4X6_Neg[2 + a + len * p + ((word)*len*height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -607,11 +615,11 @@ void LCD_WriteValue2(unsigned char y, unsigned char x, int value)
   if(con < 1)   con = 0;
 
   //--------------------------------------------------Hex2Bcd1Byte
-  cValue[0]= (con / 10);
-  cValue[1]= (con - (10 * cValue[0]));
+  cValue[0] = (con / 10);
+  cValue[1] = (con - (10 * cValue[0]));
 
   //--------------------------------------------------AsciiConversion
-  for(i=0; i<2; i++) cValue[i]= cValue[i]+48;
+  for(i = 0; i < 2; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringFont(y, x, cValue);
 }
 
@@ -623,21 +631,21 @@ void LCD_WriteValue2(unsigned char y, unsigned char x, int value)
 
 void LCD_WriteValueNeg2(unsigned char y, unsigned char x, int value)
 {
-  char      cValue[10]={0x00};
-  int       con=0;
-  unsigned char i=0;
+  char cValue[10] = {0x00};
+  int con = 0;
+  unsigned char i = 0;
 
-  con= value;
+  con = value;
 
-  if(con>99) con= 99;
-  if(con<1) con= 0;
+  if(con > 99) con = 99;
+  if(con < 1) con = 0;
 
   //--------------------------------------------------Hex2Bcd1Byte
-  cValue[0]= (con/10);
-  cValue[1]= (con - (10*cValue[0]));
+  cValue[0] = (con / 10);
+  cValue[1] = (con - (10 * cValue[0]));
 
   //--------------------------------------------------AsciiConversion
-  for(i=0; i<2; i++) cValue[i]= cValue[i]+48;
+  for(i = 0; i < 2; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringFontNeg(y, x, cValue);
 }
 
@@ -656,12 +664,12 @@ void LCD_WriteValue3(unsigned char y, unsigned char x, int value)
   if(value < 1) value = 0;
 
   //--------------------------------------------------Hex2Bcd1Byte
-  cValue[0]= (value / 100);
-  cValue[1]= ((value - (100 * cValue[0])) / 10);
-  cValue[2]= (value - ((cValue[0] * 100) + (cValue[1] * 10)));
+  cValue[0] = (value / 100);
+  cValue[1] = ((value - (100 * cValue[0])) / 10);
+  cValue[2] = (value - ((cValue[0] * 100) + (cValue[1] * 10)));
 
   //--------------------------------------------------AsciiConversion
-  for(i=0; i<3; i++) cValue[i]= cValue[i]+48;
+  for(i = 0; i < 3; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringFont(y, x, cValue);
 }
 
@@ -679,8 +687,8 @@ void LCD_WriteValueNeg3(unsigned char y, unsigned char x, int value)
 
   con = value;
 
-  if(con > 999) con= 999;
-  if(con < 1) con= 0;
+  if(con > 999) con = 999;
+  if(con < 1) con = 0;
 
   //--------------------------------------------------Hex2Bcd1Byte
   cValue[0] = (con / 100);
@@ -688,7 +696,7 @@ void LCD_WriteValueNeg3(unsigned char y, unsigned char x, int value)
   cValue[2] = (con - ((cValue[0] * 100) + (cValue[1] * 10)));
 
   //--------------------------------------------------AsciiConversion
-  for(i=0; i<3; i++) cValue[i]= cValue[i] + 48;
+  for(i = 0; i < 3; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringFontNeg(y, x, cValue);
 }
 
@@ -704,18 +712,18 @@ void LCD_WriteValue2_MyFont(unsigned char y, unsigned char x, int value)
   int con = 0;
   unsigned char i = 0;
 
-  con= value;
+  con = value;
 
 
-  if(con>99) con= 99;
-  if(con<1) con= 0;
+  if(con>99) con = 99;
+  if(con<1) con = 0;
 
   //--------------------------------------------------Hex2Bcd1Byte
-  cValue[0]= (con/10);
-  cValue[1]= (con - (10*cValue[0]));
+  cValue[0] = (con / 10);
+  cValue[1] = (con - (10 * cValue[0]));
 
   //--------------------------------------------------AsciiConversion
-  for(i=0; i<2; i++) cValue[i]= cValue[i]+48;
+  for(i = 0; i < 2; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringMyFont(y, x, cValue);
 }
 
@@ -741,7 +749,7 @@ void LCD_WriteValue3_MyFont(unsigned char y, unsigned char x, int value)
   cValue[2] = (con - ((cValue[0] * 100) + (cValue[1] * 10)));
 
   //--------------------------------------------------AsciiConversion
-  for(i=0; i<3; i++) cValue[i] = cValue[i] + 48;
+  for(i = 0; i < 3; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringMyFont(y, x, cValue);
 }
 
@@ -772,7 +780,7 @@ void LCD_WriteValue4_MyFont(unsigned char y, unsigned char x, int value)
   cValue[3] = ((con - (v0 + v1 + (cValue[2] * 10))));
 
   //--------------------------------------------------AsciiConversion
-  for(i = 0; i < 4; i++) cValue[i]= cValue[i] + 48;
+  for(i = 0; i < 4; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringMyFont(y, x, cValue);
 }
 
@@ -794,15 +802,15 @@ void LCD_WriteValue5_MyFont(unsigned char y, unsigned char x, int value)
   if(con < 1) con = 0;
 
   //--------------------------------------------------Hex2Bcd1Byte
-  cValue[0]= (con / 10000);
-  v0= 10000 * cValue[0];
+  cValue[0] = (con / 10000);
+  v0 = 10000 * cValue[0];
 
-  cValue[1]= ((con - (v0)) / 1000);
+  cValue[1] = ((con - (v0)) / 1000);
   v1= 1000 * cValue[1];
 
-  cValue[2]= ((con - (v0 + v1)) / 100);
-  cValue[3]= ((con - (v0 + v1 + cValue[2]* 100)) / 10);
-  cValue[4]= (con -  (v0 + v1 + cValue[2]* 100 + cValue[3] * 10));
+  cValue[2] = ((con - (v0 + v1)) / 100);
+  cValue[3] = ((con - (v0 + v1 + cValue[2]* 100)) / 10);
+  cValue[4] = (con -  (v0 + v1 + cValue[2]* 100 + cValue[3] * 10));
 
   //--------------------------------------------------AsciiConversion
   for(i = 0; i < 5; i++) cValue[i] = cValue[i] + 48;
@@ -837,7 +845,7 @@ void LCD_WriteValue4(unsigned char y, unsigned char x, int value)
   cValue[3] = ((con - (v0 + v1 + (cValue[2] * 10))));
 
   //--------------------------------------------------AsciiConversion
-  for(i = 0; i < 4; i++) cValue[i]= cValue[i] + 48;
+  for(i = 0; i < 4; i++) cValue[i] = cValue[i] + 48;
   LCD_WriteStringFont(y, x, cValue);
 }
 
@@ -860,33 +868,33 @@ void LCD_WriteValue4(unsigned char y, unsigned char x, int value)
 
 void LCD_Write_Symbol_1(unsigned char row, unsigned char col, t_Symbols_35x23 sym)
 {
-  unsigned char LcdData[40]={0x00};
+  unsigned char LcdData[40] = {0x00};
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  int len = Symbols_35x23_bmp[0];             //Width  in Dots
-  unsigned char height= Symbols_35x23_bmp[1]; //height in Bytes
+  unsigned char len = Symbols_35x23_bmp[0];
+  unsigned char height= Symbols_35x23_bmp[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)           //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)            //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Symbols_35x23_bmp[2  + c + len*p + ((sym)*len*height)] & 0x0F);    //LSB
+      L = (Symbols_35x23_bmp[2  + c + len * p + ((sym) * len * height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);           //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)            //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Symbols_35x23_bmp[2  + a + len*p + ((sym)*len*height)] & 0xF0);    //MSB
+      H = (Symbols_35x23_bmp[2  + a + len * p + ((sym) * len * height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -899,33 +907,33 @@ void LCD_Write_Symbol_1(unsigned char row, unsigned char col, t_Symbols_35x23 sy
 
 void LCD_Write_Symbol_2(unsigned char row, unsigned char col, t_Symbols_29x17 sym)
 {
-  unsigned char LcdData[40]={0x00};
+  unsigned char LcdData[40] = {0x00};
   unsigned char H = 0x00;
-    unsigned char L = 0x00;
+  unsigned char L = 0x00;
 
-  int       len=    Symbols_29x17_bmp[0];   //Width  in Dots
-    unsigned char height=   Symbols_29x17_bmp[1];   //height in Bytes
+  unsigned char len = Symbols_29x17_bmp[0];
+  unsigned char height = Symbols_29x17_bmp[1];
 
-  LCD_WP_SetFrame(row, col, height, len);         //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)             //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)              //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Symbols_29x17_bmp[2  + c + len*p + ((sym)*len*height)] & 0x0F);    //LSB
+      L = (Symbols_29x17_bmp[2  + c + len * p + ((sym) * len * height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);             //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)              //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Symbols_29x17_bmp[2  + a + len*p + ((sym)*len*height)] & 0xF0);    //MSB
+      H = (Symbols_29x17_bmp[2  + a + len * p + ((sym) * len * height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -938,33 +946,33 @@ void LCD_Write_Symbol_2(unsigned char row, unsigned char col, t_Symbols_29x17 sy
 
 void LCD_Write_Symbol_3(unsigned char row, unsigned char col, t_Symbols_19x24 sym)
 {
-  unsigned char LcdData[40]={0x00};
+  unsigned char LcdData[40] = {0x00};
   unsigned char H = 0x00;
-    unsigned char L = 0x00;
+  unsigned char L = 0x00;
 
-  int       len=    Symbols_19x19_bmp[0];   //Width  in Dots
-    unsigned char height=   Symbols_19x19_bmp[1];   //height in Bytes
+  unsigned char len = Symbols_19x19_bmp[0];
+  unsigned char height = Symbols_19x19_bmp[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)           //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)            //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Symbols_19x19_bmp[2  + c + len*p + ((sym)*len*height)] & 0x0F);    //LSB
+      L = (Symbols_19x19_bmp[2  + c + len * p + ((sym) * len * height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Symbols_19x19_bmp[2  + a + len*p + ((sym)*len*height)] & 0xF0);    //MSB
+      H = (Symbols_19x19_bmp[2  + a + len * p + ((sym) * len * height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -978,39 +986,36 @@ void LCD_Write_Symbol_3(unsigned char row, unsigned char col, t_Symbols_19x24 sy
 
 void LCD_Write_Pin(unsigned char row, unsigned char col, t_pinSymbols sym, unsigned char num)
 {
-  unsigned char LcdData[40]={0x00};
+  unsigned char LcdData[40] = {0x00};
   unsigned char H = 0x00;
-    unsigned char L = 0x00;
+  unsigned char L = 0x00;
 
-  int       len=    Pin_34x21_bmp[0];   //Width  in Dots
-    unsigned char height=   Pin_34x21_bmp[1];   //height in Bytes
+  unsigned char len = Pin_34x21_bmp[0];
+  unsigned char height = Pin_34x21_bmp[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)           //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)            //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Pin_34x21_bmp[2  + c + len*p + ((sym)*len*height)] & 0x0F);    //LSB
+      L = (Pin_34x21_bmp[2  + c + len * p + ((sym) * len * height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Pin_34x21_bmp[2  + a + len*p + ((sym)*len*height)] & 0xF0);    //MSB
+      H = (Pin_34x21_bmp[2  + a + len * p + ((sym) * len * height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
-  if(num<0x20)
-  {
-    LCD_WriteFontNum((row+1), (col+13), num);
-  }
+  if(num < 0x20) LCD_WriteFontNum((row + 1), (col + 13), num);
 
   LCD_WP_Disable();
 }
@@ -1023,36 +1028,39 @@ void LCD_Write_Pin(unsigned char row, unsigned char col, t_pinSymbols sym, unsig
 
 void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons text, unsigned char pos)
 {
-  unsigned char LcdData[40]={0x00};
+  unsigned char LcdData[40] = {0x00};
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  int           len=    textButton_39x16_bmp[0];    //Width  in Dots
-  unsigned char height= textButton_39x16_bmp[1];    //height in Bytes
+  unsigned char len = textButton_39x16_bmp[0];
+  unsigned char height = textButton_39x16_bmp[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)           //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)            //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (textButton_39x16_bmp[2  + c + len*p + ((pos)*len*height)] & 0x0F);     //LSB
+      L = (textButton_39x16_bmp[2  + c + len*p + ((pos)*len*height)] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);     //Write Low Page
+    // write low page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (textButton_39x16_bmp[2  + a + len*p + ((pos)*len*height)] & 0xF0);   //MSB
+      H = (textButton_39x16_bmp[2  + a + len*p + ((pos)*len*height)] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    // write high page
+    LCD_SendData(LcdData, len);
   }
 
-  if(pos)                 //positive Text
+  // positive text
+  if(pos)
   {
     switch(text)
     {
@@ -1095,33 +1103,33 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons te
 
 void LCD_Write_Purator(unsigned char row, unsigned char col)
 {
-  unsigned char LcdData[160]={0x00};
+  unsigned char LcdData[160] = {0x00};
   unsigned char H = 0x00;
   unsigned char L = 0x00;
 
-  int           len=    Text_Purator[0];    //Width  in Dots
-  unsigned char height= Text_Purator[1];    //height in Bytes
+  unsigned char len = Text_Purator[0];
+  unsigned char height = Text_Purator[1];
 
-  LCD_WP_SetFrame(row, col, height, len);   //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)             //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)                //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Text_Purator[2  + c + len*p] & 0x0F);    //LSB
+      L = (Text_Purator[2  + c + len*p] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Text_Purator[2  + a + len*p] & 0xF0);    //MSB
+      H = (Text_Purator[2  + a + len*p] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -1134,33 +1142,34 @@ void LCD_Write_Purator(unsigned char row, unsigned char col)
 
 void LCD_Write_HECS(unsigned char row, unsigned char col)
 {
-  unsigned char LcdData[80]={0x00};
+  unsigned char LcdData[80] = {0x00};
   unsigned char H = 0x00;
-    unsigned char L = 0x00;
+  unsigned char L = 0x00;
 
-  int       len=    Text_HECS[0];     //Width  in Dots
-    unsigned char height=   Text_HECS[1];     //height in Bytes
+  // width in dots and height in Bytes
+  unsigned char len = Text_HECS[0];
+  unsigned char height = Text_HECS[1];
 
-  LCD_WP_SetFrame(row, col, height, len);       //FrameSet
+  LCD_WP_SetFrame(row, col, height, len);
 
-  for(unsigned char p=0; p<height; p++)           //Pages
+  for(unsigned char p = 0; p < height; p++)
   {
-    for(int c=0; c<len; c++)            //Columns
+    for(unsigned char c = 0; c < len; c++)
     {
-      L = (Text_HECS[2  + c + len*p] & 0x0F);   //LSB
+      L = (Text_HECS[2  + c + len*p] & 0x0F);
       LcdData[c] = LCD_ConvertWP(L);
     }
 
-    LCD_SendData(LcdData, len);     //Write Low Page
+    LCD_SendData(LcdData, len);
 
-    for(int a=0; a<len; a++)      //160 Columns
+    for(unsigned char a = 0; a < len; a++)
     {
-      H = (Text_HECS[2  + a + len*p] & 0xF0);   //MSB
+      H = (Text_HECS[2  + a + len*p] & 0xF0);
       H = (H >> 4);
       LcdData[a] = LCD_ConvertWP(H);
     }
 
-    LCD_SendData(LcdData, len);     //Write High Page
+    LCD_SendData(LcdData, len);
   }
 
   LCD_WP_Disable();
@@ -1173,17 +1182,17 @@ void LCD_Write_HECS(unsigned char row, unsigned char col)
 
 void LCD_DeathMan(unsigned char row, unsigned char col)
 {
-  static unsigned char state=1;
+  static unsigned char state = 1;
 
   if(state)
   {
     LCD_FillSpace(row, col, 1, 4);
-    state=0;
+    state = 0;
   }
   else
   {
     LCD_ClrSpace(row, col, 1, 4);
-    state=1;
+    state = 1;
   }
 }
 
@@ -1207,13 +1216,15 @@ void LCD_DeathMan(unsigned char row, unsigned char col)
 
 
 void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
-{
-  LCD_SetPageAddress(row);        //PageAddress
-  LCD_SetColumnAdress(col);       //ColumnAddress
+{ 
+  // page and column address
+  LCD_SetPageAddress(row);
+  LCD_SetColumnAdress(col);
 
-  LCD_WP_Enable();                      //WP-
-  LCD_WP_Page(row, (row+(height*2)));   //Frame-
-  LCD_WP_Column(col, (col+len-1));      //Set
+  // set frame
+  LCD_WP_Enable();
+  LCD_WP_Page(row, (row + (height * 2)));
+  LCD_WP_Column(col, (col + len - 1));
 }
 
 
@@ -1227,7 +1238,7 @@ void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height,
 
 unsigned char LCD_ConvertWP(unsigned char con)
 {
-  unsigned char convert=0;
+  unsigned char convert = 0;
 
   if((con & 0x01) == 0x01) convert = convert + 0x03;
   if((con & 0x02) == 0x02) convert = convert + 0x0C;

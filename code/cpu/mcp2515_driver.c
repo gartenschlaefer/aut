@@ -23,8 +23,10 @@ void MCP2515_Init(void)
 {
   SPI_Init();
   TCC0_wait_ms(200);
-  PORTE.DIRSET = PIN2_bm;        //Reset Output
-  PORTE.OUTSET = PIN2_bm;        //Reset off
+
+  // reset output -> off
+  PORTE.DIRSET = PIN2_bm;
+  PORTE.OUTSET = PIN2_bm;
   TCC0_wait_ms(200);
 
   MCP2515_SWReset();
@@ -123,7 +125,7 @@ void MCP2515_BitModify( unsigned char addr, unsigned char mask, unsigned char da
 
 unsigned char MCP2515_ReadRxB(unsigned char cmd)
 {
-  unsigned char rReg=0;
+  unsigned char rReg = 0;
 
   CS_CLR;
   SPI_WriteByte(cmd);
@@ -145,4 +147,3 @@ void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer)
   SPI_WriteByte(buffer);
   CS_SET;
 }
-

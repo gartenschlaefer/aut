@@ -22,40 +22,43 @@
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  Touch_Cal
- * --------------------------------------------------------------
- *  Safes Calibration Data in EEPROM
+ *  Touch_Cal: safes calibration data in EEPROM
  * ------------------------------------------------------------------*/
 
 void Touch_Cal(void)
 {
-  int calX= 0;
-  int calY= 0;
+  int calX = 0;
+  int calY = 0;
 
   //-----------------------------------------------NoTouchValue-----
   LCD_Clean();
   LCD_WriteStringFont(2, 0, "Do not Touch!");
   LCD_WriteStringFont(5, 0, "If you Touched, restart!");
 
-  MEM_EEPROM_WriteVar(TOUCH_X_min, (Touch_X_ReadData()>>4));  //Save noTouch-Value X
-  MEM_EEPROM_WriteVar(TOUCH_Y_min, (Touch_Y_ReadData()>>4));  //Save noTouch-Value Y
+  // save no touch value to EEPROM
+  MEM_EEPROM_WriteVar(TOUCH_X_min, (Touch_X_ReadData() >> 4));
+  MEM_EEPROM_WriteVar(TOUCH_Y_min, (Touch_Y_ReadData() >> 4));
 
   TCD0_WaitSec_Init(2);
-  while(!(TCD0_Wait_Query()));    //wait
-  Watchdog_Restart();
+  while(!(TCD0_Wait_Query()));
+
+  // watchdog restart
+  WDT_RESET;
 
   //-----------------------------------------------TouchValue-----
   LCD_Clean();
   LCD_WriteStringFont(2, 0, "Touch me!");
-  while(!(TCD0_Wait_Query()));    //wait
-  Watchdog_Restart();
+  while(!(TCD0_Wait_Query()));
 
-  calX= Touch_X_Cal_Init();       //Read-X-Cal
-  calY= Touch_Y_Cal_Init();       //Read-Y-Cal
-  Watchdog_Restart();
+  // x, y calibration
+  WDT_RESET;
+  calX = Touch_X_Cal_Init();
+  WDT_RESET;
+  calY = Touch_Y_Cal_Init();
+  WDT_RESET;
 
-  MEM_EEPROM_WriteVar(TOUCH_X_max, (calX>>4));  //Save Touch-Value X
-  MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY>>4));  //Save Touch-Value Y
+  MEM_EEPROM_WriteVar(TOUCH_X_max, (calX >> 4));
+  MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY >> 4));
 
   LCD_Clean();
   LCD_WriteStringFont(2,0,"Touchpanel Calibrated");
@@ -70,19 +73,18 @@ void Touch_Cal(void)
 
 int Touch_X_Cal_Init(void)
 {
-  int calData=0;
-  int xCal=0;
+  int calData = 0;
+  int xCal = 0;
 
   Touch_Clean();
   LCD_Clean();
-  LCD_WriteStringFont(2,0,"Touchpanel X-Calibrating");
+  LCD_WriteStringFont(2, 0, "Touchpanel X-Calibrating");
   TCC0_Touch_Wait();
 
-  for(int i=0; i<CAL_READS; i++)
+  for(int i = 0; i < CAL_READS; i++)
   {
-    Watchdog_Restart();
-    calData= Touch_X_ReadData();
-    if(calData>xCal) xCal= calData;
+    calData = Touch_X_ReadData();
+    if(calData > xCal) xCal = calData;
   }
 
   Touch_Clean();
@@ -96,19 +98,18 @@ int Touch_X_Cal_Init(void)
 
 int Touch_Y_Cal_Init(void)
 {
-  int calData=0;
-  int yCal=0;
+  int calData = 0;
+  int yCal = 0;
 
   Touch_Clean();
   LCD_Clean();
-  LCD_WriteStringFont(2,0,"Touchpanel Y-Calibrating");
+  LCD_WriteStringFont(2, 0, "Touchpanel Y-Calibrating");
   TCC0_Touch_Wait();
 
-  for(int i=0; i<CAL_READS; i++)
+  for(int i = 0; i < CAL_READS; i++)
   {
-    Watchdog_Restart();
-    calData= Touch_Y_ReadData();
-    if(calData>yCal) yCal= calData;
+    calData = Touch_Y_ReadData();
+    if(calData > yCal) yCal = calData;
   }
 
   Touch_Clean();
@@ -117,46 +118,42 @@ int Touch_Y_Cal_Init(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_X_Cal
- * --------------------------------------------------------------
- *  X-space will be calibrated
+ *  Touch_X_Cal: x-space will be calibrated
  * ------------------------------------------------------------------*/
 
-int Touch_X_Cal(int xBereich)
+int Touch_X_Cal(int x_space)
 {
-  int xCal=0;
-  int maxCal=0;
-  int minCal=0;
+  int xCal = 0;
+  int maxCal = 0;
+  int minCal = 0;
 
-  maxCal= MEM_EEPROM_ReadVar(TOUCH_X_max);    //maximum Value
-  minCal= MEM_EEPROM_ReadVar(TOUCH_X_min);    //minimum Value
+  maxCal = MEM_EEPROM_ReadVar(TOUCH_X_max);
+  minCal = MEM_EEPROM_ReadVar(TOUCH_X_min);
 
-  xCal=   xBereich - minCal;
-  if(xCal<0)  xCal=0;
-  xCal= ((xCal * 155) / maxCal);          //Berechnung
+  xCal = x_space - minCal;
+  if(xCal < 0) xCal = 0;
+  xCal = ((xCal * 155) / maxCal);
 
   return xCal;
 }
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Y_Cal
- * --------------------------------------------------------------
- *  Y-space will be calibrated
+ *  Touch_Y_Cal: y-space will be calibrated
  * ------------------------------------------------------------------*/
 
-int Touch_Y_Cal(int yBereich)
+int Touch_Y_Cal(int y_space)
 {
-  int yCal=0;
-  int maxCal=0;
-  int minCal=0;
+  int yCal = 0;
+  int maxCal = 0;
+  int minCal = 0;
 
-  maxCal= MEM_EEPROM_ReadVar(TOUCH_Y_max);    //maximum Value
-  minCal= MEM_EEPROM_ReadVar(TOUCH_Y_min);    //minimum Value
+  maxCal= MEM_EEPROM_ReadVar(TOUCH_Y_max);
+  minCal= MEM_EEPROM_ReadVar(TOUCH_Y_min);
 
-  yCal= yBereich - minCal;
-  if(yCal<0)  yCal=0;
-  yCal= (((yCal) * 105) / maxCal);        //Berechnung
+  yCal= y_space - minCal;
+  if(yCal < 0)  yCal = 0;
+  yCal = (((yCal) * 105) / maxCal);
 
   return yCal;
 }
@@ -176,8 +173,11 @@ int Touch_Y_Cal(int yBereich)
 
 void Touch_Clean(void)
 {
-  PORTA.DIRSET=   LEFT | RIGHT | TOP | BOTTOM;  //Output
-  PORTA.OUTCLR= LEFT | RIGHT | TOP | BOTTOM;  //Set LOW
+  // output config
+  PORTA.DIRSET = LEFT | RIGHT | TOP | BOTTOM;
+
+  // set output to low
+  PORTA.OUTCLR = LEFT | RIGHT | TOP | BOTTOM;
 }
 
 
@@ -189,17 +189,21 @@ void Touch_Clean(void)
 /*-------------------------------------------------------------------*
  *  Touch_Y_Measure
  * --------------------------------------------------------------
- *  Set TOP   and BOTTOM  as Output, TOP=0, BOTTOM=1
+ *  Set TOP   and BOTTOM  as Output, TOP = 0, BOTTOM=1
  *  Set LEFT  and RIGHT   as Input, Read at LEFT (ADC0)
  * ------------------------------------------------------------------*/
 
 void Touch_Y_Measure(void)
 {
-  PORTA.DIRSET= TOP   | BOTTOM;   //Set Output
-  PORTA.DIRCLR= LEFT  | RIGHT;    //Set Input
+  // output
+  PORTA.DIRSET = TOP | BOTTOM;
 
-  PORTA.OUTCLR= TOP;        //TOP= L
-  PORTA.OUTSET= BOTTOM;       //BOTTOM= H
+  // input
+  PORTA.DIRCLR = LEFT | RIGHT;
+
+  // set voltage
+  PORTA.OUTCLR = TOP;
+  PORTA.OUTSET = BOTTOM;
 }
 
 
@@ -212,13 +216,18 @@ void Touch_Y_Measure(void)
 
  int Touch_Y_Read(void)
  {
-  int data= 0;
+  int data = 0;
 
-  ADCA.CTRLA |= ADC_CH0START_bm;                //Start Conversion
+  // start conversion
+  ADCA.CTRLA |= ADC_CH0START_bm;
 
-  while(!(ADCA.INTFLAGS & (1<<ADC_CH0IF_bp)));  //Wait
-  ADCA.INTFLAGS |= (1<<ADC_CH0IF_bp);           //Reset INT-Flag
-  data= ADCA.CH0RES;                            //Data at LEFT
+  while(!(ADCA.INTFLAGS & (1 << ADC_CH0IF_bp)));
+
+  // reset INT-flag
+  ADCA.INTFLAGS |= (1 << ADC_CH0IF_bp);
+
+  // data
+  data = ADCA.CH0RES;
 
   return data;
 }
@@ -243,7 +252,7 @@ int Touch_Y_ReadData(void)
   TCC0_Touch_Wait();
 
   // Read at ADC0
-  yData= Touch_Y_Read();
+  yData = Touch_Y_Read();
   Touch_Clean();
 
   return yData;
@@ -258,17 +267,21 @@ int Touch_Y_ReadData(void)
 /*-------------------------------------------------------------------*
  *  Touch_X_Measure
  * --------------------------------------------------------------
- *  Set LEFT  and RIGHT   as Output,  LEFT=1, RIGTH=0
+ *  Set LEFT  and RIGHT   as Output,  LEFT=1, RIGTH = 0
  *  Set TOP   and BOTTOM  as Input,   Read at TOP (ADC1)
  * ------------------------------------------------------------------*/
 
 void Touch_X_Measure(void)
 {
-  PORTA.DIRSET= LEFT  | RIGHT;    //Set Output
-  PORTA.DIRCLR= TOP   | BOTTOM;   //Set Input
+  // output
+  PORTA.DIRSET = LEFT | RIGHT;
 
-  PORTA.OUTCLR= LEFT;       //LEFT=   L
-  PORTA.OUTSET= RIGHT;        //RIGHT=  H
+  // input
+  PORTA.DIRCLR = TOP | BOTTOM;
+
+  // voltage channel
+  PORTA.OUTCLR = LEFT;
+  PORTA.OUTSET = RIGHT;
 }
 
 
@@ -283,11 +296,12 @@ void Touch_X_Measure(void)
  {
   int data= 0;
 
-  ADCA.CTRLA |= ADC_CH1START_bm;          //Start Conversion
+  // start conversion
+  ADCA.CTRLA |= ADC_CH1START_bm;
 
-  while(!(ADCA.INTFLAGS & (1<<ADC_CH1IF_bp)));    //Wait
-  ADCA.INTFLAGS |= (1<<ADC_CH1IF_bp);             //Reset INT-Flag
-  data= ADCA.CH1RES;                              //Data at TOP
+  while(!(ADCA.INTFLAGS & (1 << ADC_CH1IF_bp)));
+  ADCA.INTFLAGS |= (1 << ADC_CH1IF_bp);
+  data = ADCA.CH1RES;
 
   return data;
 }
@@ -312,7 +326,7 @@ void Touch_X_Measure(void)
   TCC0_Touch_Wait();
 
   // Read at ADC0
-  xData= Touch_X_Read();
+  xData = Touch_X_Read();
   Touch_Clean();
 
   return xData;
@@ -321,12 +335,10 @@ void Touch_X_Measure(void)
 
 unsigned char *Touch_Read(void)
 {
-  static unsigned char touch[3] = {
-    _clean,   //State
-    0x00,     //Y-Value
-    0x00 };   //X-Value
+  // state, y, x
+  static unsigned char touch[3] = {_clean, 0x00, 0x00 };
 
-  //--------------------------------------------------X-Measure
+  // x-measure
   if(touch[0] == _clean)
   {
     Touch_Clean();
@@ -343,13 +355,13 @@ unsigned char *Touch_Read(void)
 
   else if((touch[0] == _write1) && TCD0_Wait_Query())
   {
-    touch[2] = (Touch_X_Read()>>4);
+    touch[2] = (Touch_X_Read() >> 4);
     Touch_Clean();
     TCD0_WaitMilliSec_Init(5);
     touch[0] = _read2;
   }
 
-  //--------------------------------------------------Y-Measure
+  // y-measure
   else if((touch[0] == _read2) && TCD0_Wait_Query())
   {
     Touch_Y_Measure();
@@ -359,7 +371,7 @@ unsigned char *Touch_Read(void)
 
   else if((touch[0] == _write2) && TCD0_Wait_Query())
   {
-    touch[1] = (Touch_Y_Read()>>4);
+    touch[1] = (Touch_Y_Read() >> 4);
     Touch_Clean();
     TCD0_Stop();
     touch[0] = _ready;
@@ -373,4 +385,3 @@ unsigned char *Touch_Read(void)
 
   return &touch[0];
 }
-
