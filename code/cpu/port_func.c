@@ -1,8 +1,8 @@
 // --
 // port functions
 
-#include<avr/io.h>
-#include<avr/interrupt.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -53,7 +53,7 @@ void PORT_Bootloader(void)
   if(!(PORTD.IN & PIN5_bm))
   {
     LCD_Clean();
-    LCD_WriteStringFont(1, 1, "Bootloader-Modus");
+    LCD_WriteAnyStringFont(f_6x8_p, 1, 1, "Bootloader-Modus");
     asm volatile("jmp 0x20000");
   }
 }
@@ -428,8 +428,8 @@ void PORT_Debug(void)
     if(blink)
     {
       blink = 0;
-      LCD_WriteStringFontNeg(y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
-      LCD_WriteStringFontNeg(y_pos_v, 0, "V: Ai Mu Cl Re");
+      LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
+      LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 0, "V: Ai Mu Cl Re");
     }
     
     // print register states
@@ -440,19 +440,15 @@ void PORT_Debug(void)
       // relays
       for(int relais = 0; relais < 8; relais++)
       {
-        if(P_RELAIS.OUT & (1<<relais)) 
-          LCD_WriteStringFontNeg(y_pos_r, 18 + 18 * relais, "1 ");
-        else
-          LCD_WriteStringFontNeg(y_pos_r, 18 + 18 * relais, "0 ");
+        if(P_RELAIS.OUT & (1<<relais)) LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "1 ");
+        else LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 ");
       }
 
       // ventils
       for(int ventil = 0; ventil < 4; ventil++)
       {
-        if(PORT_Ventil(READ_STATE, 0) & (1<<ventil)) 
-          LCD_WriteStringFontNeg(y_pos_v, 18 + 18 * ventil, "1 ");
-        else
-          LCD_WriteStringFontNeg(y_pos_v, 18 + 18 * ventil, "0 ");
+        if(PORT_Ventil(READ_STATE, 0) & (1<<ventil)) LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * ventil, "1 ");
+        else LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * ventil, "0 ");
       }
     }
 

@@ -1,8 +1,8 @@
 // --
 // basic functions, such as init, watchdog, clock
 
-#include<avr/io.h>
-#include<avr/interrupt.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #include "defines.h"
 #include "lcd_driver.h"

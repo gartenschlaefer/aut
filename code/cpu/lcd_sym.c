@@ -1,7 +1,7 @@
 // --
 // lcd symbolds
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -36,8 +36,8 @@ void LCD_AutoSet_Page(void)
   LCD_Clean();
   LCD_MarkTextButton(Auto);
 
-  if(!COMPANY)   LCD_Write_Purator(0, 0);
-  else LCD_Write_HECS(0, 0);
+  if(!COMPANY) LCD_WriteAnySymbol(s_logo_purator, 0, 0, logo_purator);
+  else LCD_WriteAnySymbol(s_logo_hecs, 0, 0, logo_hecs);
   MCP7941_LCD_WriteTime(_init);
 }
 
@@ -48,8 +48,8 @@ void LCD_AutoSet_Page(void)
 
 void LCD_AutoCountDown(int min, int sec)
 {
-  LCD_WriteValue2_MyFont(13, 5, min);
-  LCD_WriteValue2_MyFont(13, 17, sec);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
 }
 
 
@@ -60,21 +60,21 @@ void LCD_AutoCountDown(int min, int sec)
 void LCD_AutoText(void)
 {
   // mbar
-  LCD_WriteMyFont(13, 57, 13);
-  LCD_WriteMyFont(13, 61, 14);
-  LCD_WriteMyFont(13, 65, 15);
-  LCD_WriteMyFont(13, 69, 16);
+  LCD_WriteAnyFont(f_4x6_p, 13, 57, 13);
+  LCD_WriteAnyFont(f_4x6_p, 13, 61, 14);
+  LCD_WriteAnyFont(f_4x6_p, 13, 65, 15);
+  LCD_WriteAnyFont(f_4x6_p, 13, 69, 16);
 
   // h
-  LCD_WriteMyFont(15, 69, 17);
-  LCD_WriteMyFont(13, 13, 10);
+  LCD_WriteAnyFont(f_4x6_p, 15, 69, 17);
+  LCD_WriteAnyFont(f_4x6_p, 13, 13, 10);
 
   // ip
-  LCD_WriteMyFont(13, 105, 10);
-  LCD_WriteMyFont(13, 93, 10);
+  LCD_WriteAnyFont(f_4x6_p, 13, 105, 10);
+  LCD_WriteAnyFont(f_4x6_p, 13, 93, 10);
 
   // ph
-  LCD_WriteMyFont(13, 143, 10);
+  LCD_WriteAnyFont(f_4x6_p, 13, 143, 10);
 
   MCP7941_LCD_WriteTime(_init);
   MCP7941_LCD_WriteDate();
@@ -83,7 +83,7 @@ void LCD_AutoText(void)
   MPX_ReadTank(AutoPage, _write);
   LCD_Auto_SonicVal(AutoPage, _write);
 
-  LCD_WriteValue5_MyFont(15,43, Eval_Comp_OpHours(_init));
+  LCD_WriteAnyValue(f_4x6_p, 5, 15,43, Eval_Comp_OpHours(_init));
 
   LCD_WriteAuto_IP_Sensor();
   Sonic_ReadTank(AutoPage, _write);
@@ -110,11 +110,11 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCirc:    case AutoCircOff:
     case AutoAir:   case AutoAirOff:  case AutoPage:
-      LCD_WriteValue4_MyFont(17, 5, sonic);
+      LCD_WriteAnyValue(f_4x6_p, 4, 17, 5, sonic);
 
       // mm
-      LCD_WriteMyFont(17, 22, 13);
-      LCD_WriteMyFont(17, 26, 13);
+      LCD_WriteAnyFont(f_4x6_p, 17, 22, 13);
+      LCD_WriteAnyFont(f_4x6_p, 17, 26, 13);
       break;
 
     default: break;
@@ -135,18 +135,18 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCirc:    case AutoCircOff:
     case AutoAir:   case AutoAirOff:  case AutoPage:
-      LCD_WriteValue3_MyFont(15, 5, per);
+      LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, per);
 
       // %
-      LCD_WriteMyFont(15, 18, 19);
+      LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
       break;
 
     case ManualMain:  case ManualCirc:  case ManualCircOff:
     case ManualAir:   case ManualSetDown: case ManualPumpOff:
     case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
     case ManualPhosphor:  case ManualInflowPump:
-      LCD_WriteValue3(17, 2, per);
-      LCD_WriteStringFont(17, 22, "%");
+      LCD_WriteAnyValue(f_6x8_p, 3, 17, 2, per);
+      LCD_WriteAnyStringFont(f_6x8_p, 17, 22, "%");
       break;
 
     default: break;
@@ -161,9 +161,9 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
 
 void LCD_AutoSet_Zone(int min, int sec)
 {
-  LCD_Write_Symbol_2(6, 0, n_circulate);
-  LCD_Write_Symbol_2(6, 45, n_compressor);
-  LCD_WriteStringFontNeg(8, 1, "z");
+  LCD_WriteAnySymbol(s_29x17, 6, 0, n_circulate);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
+  LCD_WriteAnyStringFont(f_6x8_n, 8, 1, "z");
   LCD_AutoCountDown(min, sec);
 }
 
@@ -174,8 +174,8 @@ void LCD_AutoSet_Zone(int min, int sec)
 
 void LCD_AutoSet_SetDown(int min, int sec)
 {
-  LCD_Write_Symbol_2(6, 0, n_setDown);
-  LCD_Write_Symbol_2(6, 45, p_compressor);
+  LCD_WriteAnySymbol(s_29x17, 6, 0, n_setDown);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
   LCD_AutoCountDown(min, sec);
 }
 
@@ -186,9 +186,9 @@ void LCD_AutoSet_SetDown(int min, int sec)
 
 void LCD_AutoSet_PumpOff(int min, int sec)
 {
-  LCD_Write_Symbol_1(5, 0, n_pumpOff);
-  if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)) LCD_Write_Symbol_2(6, 45, n_compressor);
-  else LCD_Write_Symbol_2(6, 45, p_compressor);
+  LCD_WriteAnySymbol(s_35x23, 5, 0, n_pumpOff);
+  if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)) LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
+  else LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
   LCD_AutoCountDown(min, sec);
 }
 
@@ -199,8 +199,8 @@ void LCD_AutoSet_PumpOff(int min, int sec)
 
 void LCD_AutoSet_Mud(int min, int sec)
 {
-  LCD_Write_Symbol_1(5, 0, n_mud);
-  LCD_Write_Symbol_2(6, 45, n_compressor);
+  LCD_WriteAnySymbol(s_35x23, 5, 0, n_mud);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
   LCD_AutoCountDown(min, sec);
 }
 
@@ -224,12 +224,12 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
     switch (pump)
     {
       case 0:
-        LCD_Write_Symbol_1(5, 89, p_inflowPump);
-        if(page == AutoAirOff || page == AutoCircOff) LCD_Write_Symbol_2(6, 45, p_compressor);
+        LCD_WriteAnySymbol(s_35x23, 5, 89, p_inflowPump);
+        if(page == AutoAirOff || page == AutoCircOff) LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
         break;
 
-      case 1: LCD_Write_Symbol_3(5, 90, p_pump); break;
-      case 2: LCD_Write_Symbol_1(5, 90, p_pump2); break;
+      case 1: LCD_WriteAnySymbol(s_19x19, 5, 90, p_pump); break;
+      case 2: LCD_WriteAnySymbol(s_35x23, 5, 90, p_pump2); break;
       default: break;
     }
   }
@@ -238,12 +238,12 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
     switch (pump)
     {
       case 0:
-        LCD_Write_Symbol_1(5, 89, n_inflowPump);
-        if(page == AutoAirOff || page == AutoCircOff) LCD_Write_Symbol_2(6, 45, n_compressor);
+        LCD_WriteAnySymbol(s_35x23, 5, 89, n_inflowPump);
+        if(page == AutoAirOff || page == AutoCircOff) LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
         break;
 
-      case 1: LCD_Write_Symbol_3(5, 90, n_pump); break;
-      case 2: LCD_Write_Symbol_1(5, 90, n_pump2); break;
+      case 1: LCD_WriteAnySymbol(s_19x19, 5, 90, n_pump); break;
+      case 2: LCD_WriteAnySymbol(s_35x23, 5, 90, n_pump2); break;
       default: break;
     }
   }
@@ -257,9 +257,9 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
 void LCD_WriteAutoVar_IP(unsigned char cho, unsigned char *t_ip)
 {
   // sec, min, h
-  if(cho & 0x01)  LCD_WriteValue2_MyFont(13,109, t_ip[0]);
-  if(cho & 0x02)  LCD_WriteValue2_MyFont(13,97, t_ip[1]);
-  if(cho & 0x04)  LCD_WriteValue2_MyFont(13,85, t_ip[2]);
+  if(cho & 0x01) LCD_WriteAnyValue(f_4x6_p, 2, 13, 109, t_ip[0]);
+  if(cho & 0x02) LCD_WriteAnyValue(f_4x6_p, 2, 13, 97, t_ip[1]);
+  if(cho & 0x04) LCD_WriteAnyValue(f_4x6_p, 2, 13,85, t_ip[2]);
 }
 
 
@@ -271,7 +271,7 @@ void LCD_WriteAuto_IP_Sensor(void)
 {
   unsigned char sensor = 0;
   sensor = MEM_EEPROM_ReadVar(SENSOR_outTank);
-  if(sensor)  LCD_Write_Symbol_2(16, 90, p_sensor);
+  if(sensor) LCD_WriteAnySymbol(s_29x17, 16, 90, p_sensor);
 }
 
 
@@ -283,14 +283,10 @@ void LCD_SymbolAuto_Ph(t_FuncCmd state)
 {
   switch(state)
   {
-    case _on:
-      LCD_Write_Symbol_3(6, 134, n_phosphor); break;
-
+    case _on: LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor); break;
     case _disabled:
-    case _off:
-      LCD_Write_Symbol_3(6, 134, p_phosphor); break;
-
-    default:                          break;
+    case _off: LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor); break;
+    default: break;
   }
 }
 
@@ -301,8 +297,8 @@ void LCD_SymbolAuto_Ph(t_FuncCmd state)
 
 void LCD_WriteAutoVar_Ph(int min, int sec)
 {
-  LCD_WriteValue2_MyFont(13,135, min);
-  LCD_WriteValue2_MyFont(13,147, sec);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, min);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, sec);
 }
 
 
@@ -320,9 +316,9 @@ void LCD_WriteAutoVar(int min, int sec)
 
     // time
     MCP7941_LCD_WriteTime(_exe);
-    LCD_WriteValue2_MyFont(13, 17, sec);
+    LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
   }
-  if(sec == 59) LCD_WriteValue2_MyFont(13, 5, min);
+  if(sec == 59) LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
 }
 
 
@@ -344,9 +340,9 @@ void LCD_WriteAutoVar_Comp(int min, int sec)
 
     // time
     MCP7941_LCD_WriteTime(_exe);
-    LCD_WriteValue2_MyFont(13, 17, sec);
+    LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
   }
-  if(sec == 59) LCD_WriteValue2_MyFont(13,5, min);
+  if(sec == 59) LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
 
   if(opMin != min)
   {
@@ -357,7 +353,7 @@ void LCD_WriteAutoVar_Comp(int min, int sec)
   {
     opCounter = 0;
     opHour = Eval_Comp_OpHours(_add);
-    LCD_WriteValue5_MyFont(15, 43, opHour);
+    LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, opHour);
   }
 }
 
@@ -373,19 +369,15 @@ int LCD_AutoRead_StartTime(t_page page)
   switch(page)
   {
     case AutoCirc:
-    case ManualCirc:
-      sMin = MEM_EEPROM_ReadVar(ON_circ); break;
+    case ManualCirc: sMin = MEM_EEPROM_ReadVar(ON_circ); break;
 
     case AutoCircOff:
-    case ManualCircOff:
-      sMin = MEM_EEPROM_ReadVar(OFF_circ);  break;
+    case ManualCircOff: sMin = MEM_EEPROM_ReadVar(OFF_circ); break;
 
     case AutoAir:
-    case ManualAir:
-      sMin = MEM_EEPROM_ReadVar(ON_air); break;
+    case ManualAir: sMin = MEM_EEPROM_ReadVar(ON_air); break;
 
-    case AutoAirOff:
-      sMin = MEM_EEPROM_ReadVar(OFF_air); break;
+    case AutoAirOff: sMin = MEM_EEPROM_ReadVar(OFF_air); break;
 
     default: break;
   }
@@ -402,26 +394,26 @@ void LCD_AutoAirSym(t_page page)
   switch(page)
   {
     case AutoCirc:
-      LCD_Write_Symbol_2(6, 0, n_circulate);
-      LCD_Write_Symbol_2(6, 45, n_compressor);
+      LCD_WriteAnySymbol(s_29x17, 6, 0, n_circulate);
+      LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
       break;
 
     case AutoAir:
-      LCD_Write_Symbol_2(6, 0, n_air);
-      LCD_Write_Symbol_2(6, 45, n_compressor);
+      LCD_WriteAnySymbol(s_29x17, 6, 0, n_air);
+      LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
       break;
 
     case AutoCircOff:
-      LCD_Write_Symbol_2(6, 0, p_circulate);
-      LCD_Write_Symbol_2(6, 45, p_compressor);
+      LCD_WriteAnySymbol(s_29x17, 6, 0, p_circulate);
+      LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
       break;
 
     case AutoAirOff:
-      LCD_Write_Symbol_2(6, 0, p_air);
-      LCD_Write_Symbol_2(6, 45, p_compressor);
+      LCD_WriteAnySymbol(s_29x17, 6, 0, p_air);
+      LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
       break;
 
-    default:  break;
+    default: break;
   }
 }
 
@@ -436,10 +428,10 @@ void LCD_AutoAirSym(t_page page)
 
 void LCD_ManualText(int min, int sec)
 {
-  LCD_WriteValue2(17, 124, min);
-  LCD_WriteValue2(17, 142, sec);
-  LCD_WriteStringFont(17, 136, ":");
-  LCD_WriteStringFont(17, 61, "mbar");
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, min);
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, sec);
+  LCD_WriteAnyStringFont(f_6x8_p, 17, 136, ":");
+  LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
   MPX_ReadTank(ManualCirc, _write);
 }
 
@@ -455,12 +447,12 @@ void LCD_WriteManualVar(int min, int sec)
   if(oldSec != sec)
   {
     oldSec = sec;
-    LCD_WriteValue2(17,142, sec);
+    LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, sec);
   }
   if(sec == 59)
   {
-    if(min >= 100) LCD_WriteValue3(17,118, min);
-    else LCD_WriteValue2(17,124, min);
+    if(min >= 100) LCD_WriteAnyValue(f_6x8_p, 3, 17, 118, min);
+    else LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, min);
   }
 }
 
@@ -500,15 +492,9 @@ void LCD_ManualSet_Page(int min, int sec)
 
 void LCD_SetupSet_Page(void)
 {
-  unsigned char i = 0;
-
   LCD_MarkTextButton(Setup);
   LCD_Clean();
-
-  for(i = 12; i < 24; i++)
-  {
-    LCD_SetupSymbols(i);
-  }
+  for(unsigned char i = 12; i < 24; i++){ LCD_SetupSymbols(i); }
   LCD_MarkTextButton(Setup);
 }
 
@@ -522,8 +508,8 @@ void LCD_SetupSet_Circulate(void)
   LCD_SetupSymbols(sn_circulate);
   LCD_Clean();
 
-  LCD_WriteStringFont(16,40,"Time:");
-  LCD_Write_Symbol_2(3, 0, n_circulate);
+  LCD_WriteAnyStringFont(f_6x8_p, 16,40,"Time:");
+  LCD_WriteAnySymbol(s_29x17, 3, 0, n_circulate);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -538,7 +524,7 @@ void LCD_SetupSet_Air(void)
   LCD_SetupSymbols(sn_air);
   LCD_Clean();
 
-  LCD_Write_Symbol_2(3, 0, n_air);
+  LCD_WriteAnySymbol(s_29x17, 3, 0, n_air);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -553,10 +539,10 @@ void LCD_SetupSet_SetDown(void)
   LCD_SetupSymbols(sn_setDown);
   LCD_Clean();
 
-  LCD_Write_Symbol_2(3, 0, n_setDown);
+  LCD_WriteAnySymbol(s_29x17, 3, 0, n_setDown);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
-  LCD_WriteStringFont(10, 0,"Time:");
+  LCD_WriteAnyStringFont(f_6x8_p, 10, 0,"Time:");
 }
 
 
@@ -569,7 +555,7 @@ void LCD_SetupSet_PumpOff(void)
   LCD_SetupSymbols(sn_pumpOff);
   LCD_Clean();
 
-  LCD_Write_Symbol_1(3, 0, n_pumpOff);
+  LCD_WriteAnySymbol(s_35x23, 3, 0, n_pumpOff);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -584,7 +570,7 @@ void LCD_SetupSet_Mud(void)
   LCD_SetupSymbols(sn_mud);
   LCD_Clean();
 
-  LCD_Write_Symbol_1(2, 0, n_mud);
+  LCD_WriteAnySymbol(s_35x23, 2, 0, n_mud);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -599,9 +585,9 @@ void LCD_SetupSet_Compressor(void)
   LCD_SetupSymbols(sn_compressor);
   LCD_Clean();
 
-  LCD_WriteStringFont(11,28, "mbar MIN.");
-  LCD_WriteStringFont(16,28, "mbar MAX.");
-  LCD_Write_Symbol_2(3, 0, n_compressor);
+  LCD_WriteAnyStringFont(f_6x8_p, 11,28, "mbar MIN.");
+  LCD_WriteAnyStringFont(f_6x8_p, 16,28, "mbar MAX.");
+  LCD_WriteAnySymbol(s_29x17, 3, 0, n_compressor);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -616,7 +602,7 @@ void LCD_SetupSet_Phosphor(void)
   LCD_SetupSymbols(sn_phosphor);
   LCD_Clean();
 
-  LCD_Write_Symbol_3(3, 0, n_phosphor);
+  LCD_WriteAnySymbol(s_19x19, 3, 0, n_phosphor);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -631,7 +617,7 @@ void LCD_SetupSet_InflowPump(void)
   LCD_SetupSymbols(sn_inflowPump);
   LCD_Clean();
 
-  LCD_Write_Symbol_1(1, 0, n_inflowPump);
+  LCD_WriteAnySymbol(s_35x23, 1, 0, n_inflowPump);
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
 }
@@ -644,16 +630,19 @@ void LCD_SetupSet_InflowPump(void)
 
 void LCD_Setup_IPValues(unsigned char select, unsigned char *val)
 {
-  if(select & (1 << 0)) LCD_WriteValueNeg2(5, 47, *val);   //h
-  if(select & (1 << 4)) LCD_WriteValue2(5, 47, *val);
+  // h
+  if(select & (1 << 0)) LCD_WriteAnyValue(f_6x8_n, 2, 5, 47, *val);
+  if(select & (1 << 4)) LCD_WriteAnyValue(f_6x8_p, 2, 5, 47, *val);
   val++;
 
-  if(select & (1 << 1)) LCD_WriteValueNeg2(10, 47, *val);  //min
-  if(select & (1 << 5)) LCD_WriteValue2(10, 47, *val);
+  // min
+  if(select & (1 << 1)) LCD_WriteAnyValue(f_6x8_n, 2, 10, 47, *val);
+  if(select & (1 << 5)) LCD_WriteAnyValue(f_6x8_p, 2, 10, 47, *val);
   val++;
 
-  if(select & (1 << 2)) LCD_WriteValueNeg2(10, 19, *val);  //on
-  if(select & (1 << 6)) LCD_WriteValue2(10, 19, *val);
+  // on
+  if(select & (1 << 2)) LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, *val);
+  if(select & (1 << 6)) LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, *val);
 }
 
 
@@ -665,17 +654,17 @@ void LCD_Setup_IPValues(unsigned char select, unsigned char *val)
 
 void LCD_Setup_IPText(unsigned char select)
 {
-  if(select & (1 << 0)) LCD_WriteStringFontNeg(5, 59, "h");
-  if(select & (1 << 4)) LCD_WriteStringFont(5, 59, "h");
+  if(select & (1 << 0)) LCD_WriteAnyStringFont(f_6x8_n, 5, 59, "h");
+  if(select & (1 << 4)) LCD_WriteAnyStringFont(f_6x8_p, 5, 59, "h");
 
-  if(select & (1 << 1)) LCD_WriteStringFontNeg(10, 59, "min");
-  if(select & (1 << 5)) LCD_WriteStringFont(10, 59, "min");
+  if(select & (1 << 1)) LCD_WriteAnyStringFont(f_6x8_n, 10, 59, "min");
+  if(select & (1 << 5)) LCD_WriteAnyStringFont(f_6x8_p, 10, 59, "min");
 
-  if(select & (1 << 2)) LCD_WriteStringFontNeg(10, 1,"ON:");
-  if(select & (1 << 6)) LCD_WriteStringFont(10, 1,"ON:");
+  if(select & (1 << 2)) LCD_WriteAnyStringFont(f_6x8_n, 10, 1,"ON:");
+  if(select & (1 << 6)) LCD_WriteAnyStringFont(f_6x8_p, 10, 1,"ON:");
 
-  if(select & (1 << 3)) LCD_WriteStringFontNeg(1,47,"OFF");
-  if(select & (1 << 7)) LCD_WriteStringFont(1,47,"OFF");
+  if(select & (1 << 3)) LCD_WriteAnyStringFont(f_6x8_n, 1,47,"OFF");
+  if(select & (1 << 7)) LCD_WriteAnyStringFont(f_6x8_p, 1,47,"OFF");
 }
 
 
@@ -690,31 +679,35 @@ void LCD_SetupSet_Cal(void)
   unsigned char calRedo = 0;
   LCD_SetupSymbols(sn_cal);
   LCD_Clean();
-
-  LCD_Write_Symbol_2(2, 0, n_cal);
-  LCD_Write_Symbol_2(15,1, p_level);
-
+  LCD_WriteAnySymbol(s_29x17, 2, 0, n_cal);
+  LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
   LCD_ControlButtons(sp_esc);
   LCD_ControlButtons(sp_ok);
   LCD_Write_TextButton(9, 80, OpenV, 1);
-  LCD_Write_Symbol_2(9,125, p_cal);
+  LCD_WriteAnySymbol(s_29x17, 9, 125, p_cal);
+  LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "mbar:");
 
-  LCD_WriteStringFont(10, 1, "mbar:");
-
+  // sonic
   sonic = MEM_EEPROM_ReadVar(SONIC_on);
-  if(sonic){ LCD_Write_Symbol_3(2, 40, n_sonic);   //SonicON
-    LCD_WriteStringFont(17,66, "mm");
-    Sonic_LevelCal(_init);}
-
-  else{ LCD_Write_Symbol_3(2, 40, p_sonic);        //SonicOff
-    LCD_WriteStringFont(17,60, "mbar");
-    MPX_LevelCal(_init);}
+  if(sonic)
+  { 
+    LCD_WriteAnySymbol(s_19x19, 2, 40, n_sonic);
+    LCD_WriteAnyStringFont(f_6x8_p, 17,66, "mm");
+    Sonic_LevelCal(_init);
+  }
+  else
+  { 
+    LCD_WriteAnySymbol(s_19x19, 2, 40, p_sonic);
+    LCD_WriteAnyStringFont(f_6x8_p, 17,60, "mbar");
+    MPX_LevelCal(_init);
+  }
 
   // Cal redo with pressure -> Auto Zone page
-  if(!MEM_EEPROM_ReadVar(SONIC_on)){
+  if(!MEM_EEPROM_ReadVar(SONIC_on))
+  {
     calRedo = MEM_EEPROM_ReadVar(CAL_Redo_on);
-    if(calRedo) LCD_Write_Symbol_3(15,130, n_arrowRedo);
-    else        LCD_Write_Symbol_3(15,130, p_arrowRedo);
+    if(calRedo) LCD_WriteAnySymbol(s_19x19, 15, 130, n_arrowRedo);
+    else LCD_WriteAnySymbol(s_19x19, 15, 130, p_arrowRedo);
   }
 
 
@@ -731,15 +724,18 @@ void LCD_SetupSet_Alarm(void)
   LCD_SetupSymbols(sn_alarm);
   LCD_Clean();
 
-  LCD_Write_Symbol_2(3, 0, n_alarm);
-  LCD_WriteStringFontNeg(10,3, "T:");
+  LCD_WriteAnySymbol(s_29x17, 3, 0, n_alarm);
+  LCD_WriteAnyStringFont(f_6x8_n, 10,3, "T:");
 
-  LCD_WriteFont(10,32, 94);         //Grad
-  LCD_WriteStringFont(10,38,  "C");     //Celsius
+  // degree symbol
+  LCD_WriteAnyFont(f_6x8_p, 10, 32, 94);
+  LCD_WriteAnyStringFont(f_6x8_p, 10, 38, "C");
 
   MCP9800_WriteTemp();
-  LCD_WriteFont(17,104, 94);          //Grad
-  LCD_WriteStringFont(17,110, "C");     //Celsius
+
+  // degree symbol
+  LCD_WriteAnyFont(f_6x8_p, 17, 104, 94);
+  LCD_WriteAnyStringFont(f_6x8_p, 17, 110, "C");
 
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
@@ -755,20 +751,20 @@ void LCD_SetupSet_Watch(void)
   LCD_SetupSymbols(sn_watch);
   LCD_Clean();
 
-  LCD_Write_Symbol_2(3, 0, n_watch);
+  LCD_WriteAnySymbol(s_29x17, 3, 0, n_watch);
   LCD_MarkTextButton(Setup);
   LCD_WriteCtrlButton2();
 
-  LCD_WriteStringFont(11,10, "hh");
-  LCD_WriteStringFont(11,50, "mm");
-  LCD_WriteStringFont(17,10, "dd");
-  LCD_WriteStringFont(17,50, "mm");
-  LCD_WriteStringFont(17,96, "yy");
+  LCD_WriteAnyStringFont(f_6x8_p, 11, 10, "hh");
+  LCD_WriteAnyStringFont(f_6x8_p, 11, 50, "mm");
+  LCD_WriteAnyStringFont(f_6x8_p, 17, 10, "dd");
+  LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "mm");
+  LCD_WriteAnyStringFont(f_6x8_p, 17, 96, "yy");
 
-  LCD_WriteStringFont(9,33, ":");
-  LCD_WriteStringFont(15,33, "/");
-  LCD_WriteStringFont(15,70, "/");
-  LCD_WriteStringFont(15,84, "20");
+  LCD_WriteAnyStringFont(f_6x8_p, 9,33, ":");
+  LCD_WriteAnyStringFont(f_6x8_p, 15,33, "/");
+  LCD_WriteAnyStringFont(f_6x8_p, 15,70, "/");
+  LCD_WriteAnyStringFont(f_6x8_p, 15,84, "20");
 }
 
 
@@ -781,7 +777,7 @@ void LCD_SetupSet_Zone(void)
   LCD_SetupSymbols(sn_zone);
   LCD_Clean();
 
-  LCD_Write_Symbol_2(2, 0, n_zone);
+  LCD_WriteAnySymbol(s_29x17, 2, 0, n_zone);
 
   LCD_WriteCtrlButton();
   LCD_MarkTextButton(Setup);
@@ -797,33 +793,32 @@ void LCD_SetupSymbols(t_SetupSym sym)
 {
   switch(sym)
   {
-    case sp_circulate:  LCD_Write_Symbol_2(3, 0, p_circulate);    break;
-    case sp_air:        LCD_Write_Symbol_2(3, 40, p_air);     break;
-    case sp_setDown:    LCD_Write_Symbol_2(3, 80, p_setDown);     break;
-    case sp_pumpOff:    LCD_Write_Symbol_1(2, 120, p_pumpOff);    break;
-    case sp_mud:        LCD_Write_Symbol_1(8, 0, p_mud);      break;
-    case sp_compressor: LCD_Write_Symbol_2(9, 40, p_compressor);  break;
-    case sp_phosphor:   LCD_Write_Symbol_3(9, 85, p_phosphor);    break;
-    case sp_inflowPump: LCD_Write_Symbol_1(8, 120, p_inflowPump); break;
-    case sp_cal:        LCD_Write_Symbol_2(15, 0, p_cal);     break;
-    case sp_alarm:      LCD_Write_Symbol_2(15, 40, p_alarm);    break;
-    case sp_watch:      LCD_Write_Symbol_2(15, 80, p_watch);    break;
-    case sp_zone:       LCD_Write_Symbol_2(15, 120, p_zone);    break;
+    case sp_circulate: LCD_WriteAnySymbol(s_29x17, 3, 0, p_circulate); break;
+    case sp_air: LCD_WriteAnySymbol(s_29x17, 3, 40, p_air); break;
+    case sp_setDown: LCD_WriteAnySymbol(s_29x17, 3, 80, p_setDown); break;
+    case sp_pumpOff: LCD_WriteAnySymbol(s_35x23, 2, 120, p_pumpOff); break;
+    case sp_mud: LCD_WriteAnySymbol(s_35x23, 8, 0, p_mud); break;
+    case sp_compressor: LCD_WriteAnySymbol(s_29x17, 9, 40, p_compressor); break;
+    case sp_phosphor: LCD_WriteAnySymbol(s_19x19, 9, 85, p_phosphor); break;
+    case sp_inflowPump: LCD_WriteAnySymbol(s_35x23, 8, 120, p_inflowPump); break;
+    case sp_cal: LCD_WriteAnySymbol(s_29x17, 15, 0, p_cal); break;
+    case sp_alarm: LCD_WriteAnySymbol(s_29x17, 15, 40, p_alarm); break;
+    case sp_watch: LCD_WriteAnySymbol(s_29x17, 15, 80, p_watch); break;
+    case sp_zone: LCD_WriteAnySymbol(s_29x17, 15, 120, p_zone); break;
 
-    case sn_circulate:  LCD_Write_Symbol_2(3, 0, n_circulate);    break;
-    case sn_air:        LCD_Write_Symbol_2(3, 40, n_air);     break;
-    case sn_setDown:    LCD_Write_Symbol_2(3, 80, n_setDown);     break;
-    case sn_pumpOff:    LCD_Write_Symbol_1(2, 120, n_pumpOff);    break;
-    case sn_mud:        LCD_Write_Symbol_1(8, 0, n_mud);      break;
-    case sn_compressor: LCD_Write_Symbol_2(9, 40, n_compressor);  break;
-    case sn_phosphor:   LCD_Write_Symbol_3(9, 85, n_phosphor);    break;
-    case sn_inflowPump: LCD_Write_Symbol_1(8, 120, n_inflowPump); break;
-    case sn_cal:        LCD_Write_Symbol_2(15, 0, n_cal);     break;
-    case sn_alarm:      LCD_Write_Symbol_2(15, 40, n_alarm);    break;
-    case sn_watch:      LCD_Write_Symbol_2(15, 80, n_watch);    break;
-    case sn_zone:       LCD_Write_Symbol_2(15, 120, n_zone);    break;
-
-    default:                            break;
+    case sn_circulate: LCD_WriteAnySymbol(s_29x17, 3, 0, n_circulate); break;
+    case sn_air: LCD_WriteAnySymbol(s_29x17, 3, 40, n_air); break;
+    case sn_setDown: LCD_WriteAnySymbol(s_29x17, 3, 80, n_setDown); break;
+    case sn_pumpOff: LCD_WriteAnySymbol(s_35x23, 2, 120, n_pumpOff); break;
+    case sn_mud: LCD_WriteAnySymbol(s_35x23, 8, 0, n_mud); break;
+    case sn_compressor: LCD_WriteAnySymbol(s_29x17, 9, 40, n_compressor); break;
+    case sn_phosphor: LCD_WriteAnySymbol(s_19x19, 9, 85, n_phosphor); break;
+    case sn_inflowPump: LCD_WriteAnySymbol(s_35x23, 8, 120, n_inflowPump); break;
+    case sn_cal: LCD_WriteAnySymbol(s_29x17, 15, 0, n_cal); break;
+    case sn_alarm: LCD_WriteAnySymbol(s_29x17, 15, 40, n_alarm); break;
+    case sn_watch: LCD_WriteAnySymbol(s_29x17, 15, 80, n_watch); break;
+    case sn_zone: LCD_WriteAnySymbol(s_29x17, 15, 120, n_zone); break;
+    default: break;
   }
 }
 
@@ -837,18 +832,18 @@ void LCD_DateTime(t_DateTime time, unsigned char value)
 {
   switch(time)
   {
-    case p_h:     LCD_WriteValue2(9,10, value);     break;
-    case p_min:   LCD_WriteValue2(9,50, value);     break;
-    case p_day:   LCD_WriteValue2(15,10, value);    break;
-    case p_month: LCD_WriteValue2(15,50, value);    break;
-    case p_year:  LCD_WriteValue2(15,96, value);    break;
+    case p_h: LCD_WriteAnyValue(f_6x8_p, 2, 9, 10, value); break;
+    case p_min: LCD_WriteAnyValue(f_6x8_p, 2, 9, 50, value); break;
+    case p_day: LCD_WriteAnyValue(f_6x8_p, 2, 15, 10, value); break;
+    case p_month: LCD_WriteAnyValue(f_6x8_p, 2, 15, 50, value); break;
+    case p_year: LCD_WriteAnyValue(f_6x8_p, 2, 15, 96, value); break;
 
-    case n_h:     LCD_WriteValueNeg2(9,10, value);  break;
-    case n_min:   LCD_WriteValueNeg2(9,50, value);  break;
-    case n_day:   LCD_WriteValueNeg2(15,10, value);   break;
-    case n_month: LCD_WriteValueNeg2(15,50, value);   break;
-    case n_year:  LCD_WriteValueNeg2(15,96, value); break;
-    default:                        break;
+    case n_h: LCD_WriteAnyValue(f_6x8_n, 2, 9, 10, value); break;
+    case n_min: LCD_WriteAnyValue(f_6x8_n, 2, 9, 50, value); break;
+    case n_day: LCD_WriteAnyValue(f_6x8_n, 2, 15, 10, value); break;
+    case n_month: LCD_WriteAnyValue(f_6x8_n, 2, 15, 50, value); break;
+    case n_year: LCD_WriteAnyValue(f_6x8_n, 2, 15, 96, value); break;
+    default: break;
   }
 }
 
@@ -856,16 +851,11 @@ void LCD_DateTime(t_DateTime time, unsigned char value)
 
 /* ==================================================================*
  *            Data Page
- * --------------------------------------------------------------
- *  Description:
- * --------------------------------------------------------------
- *  Data Pages layout
- * --------------------------------------------------------------
  * ==================================================================*/
 
-/* ==================================================================*
+/* ------------------------------------------------------------------*
  *            Set Data Pages
- * ==================================================================*/
+ * ------------------------------------------------------------------*/
 
 void LCD_DataSet_Page(void)
 {
@@ -873,16 +863,16 @@ void LCD_DataSet_Page(void)
   LCD_Clean();
   LCD_MarkTextButton(Data);
 
-  LCD_WriteMyFont(1,0, 21);     //S
-  LCD_WriteMyFont(1,8, SV1);    //x.-.-
-  LCD_WriteMyFont(1,16, SV2);   //-.x.-
-  LCD_WriteMyFont(1,24, SV3);   //-.-.x
+  // Sx.x.x
+  LCD_WriteAnyFont(f_4x6_p, 1, 0, 21);
+  LCD_WriteAnyFont(f_4x6_p, 1,8, SV1);
+  LCD_WriteAnyFont(f_4x6_p, 1, 16, SV2);
+  LCD_WriteAnyFont(f_4x6_p, 1,24, SV3);
+  LCD_WriteAnyFont(f_4x6_p, 1,4, 22);
+  LCD_WriteAnyFont(f_4x6_p, 1, 12, 22);
+  LCD_WriteAnyFont(f_4x6_p, 1,20, 22);
 
-  LCD_WriteMyFont(1,4, 22);     //.
-  LCD_WriteMyFont(1,12, 22);    //.
-  LCD_WriteMyFont(1,20, 22);    //.
-
-  LCD_WriteStringFont(6,0,"Choose Data:");
+  LCD_WriteAnyStringFont(f_6x8_p, 6, 0, "Choose Data:");
 
   LCD_Write_TextButton(9, 0, Auto, 1);
   LCD_Write_TextButton(9, 40, Manual, 1);
@@ -897,12 +887,12 @@ void LCD_DataSet_Page(void)
 
 void LCD_DataSet_Auto(void)
 {
-  LCD_ClrSpace(4,0,9,160);
+  LCD_ClrSpace(4, 0, 9, 160);
   LCD_WriteDataHeader_Auto();
   LCD_Write_TextButton(22, 0, Auto, 0);
   LCD_WriteDataArrows();
 
-  LCD_WriteStringMyFont(1, 140, "01;16");
+  LCD_WriteAnyStringFont(f_4x6_p, 1, 140, "01;16");
   LCD_WriteAutoEntryPage(0);
 }
 
@@ -913,12 +903,12 @@ void LCD_DataSet_Auto(void)
 
 void LCD_DataSet_Manual(void)
 {
-  LCD_ClrSpace(4,0,9,160);
+  LCD_ClrSpace(4, 0, 9, 160);
   LCD_WriteDataHeader_Manual();
   LCD_Write_TextButton(22, 40, Manual, 0);
   LCD_WriteDataArrows();
 
-  LCD_WriteStringMyFont(1, 144, "1;3");
+  LCD_WriteAnyStringFont(f_4x6_p, 1, 144, "1;3");
   LCD_WriteManualEntryPage(0);
 }
 
@@ -929,12 +919,12 @@ void LCD_DataSet_Manual(void)
 
 void LCD_DataSet_Setup(void)
 {
-  LCD_ClrSpace(4,0,9,160);
+  LCD_ClrSpace(4, 0, 9, 160);
   LCD_WriteDataHeader_Setup();
   LCD_Write_TextButton(22, 80, Setup, 0);
   LCD_WriteDataArrows();
 
-  LCD_WriteStringMyFont(1, 144, "1;3");
+  LCD_WriteAnyStringFont(f_4x6_p, 1, 144, "1;3");
   LCD_WriteSetupEntryPage(0);
 }
 
@@ -948,14 +938,16 @@ void LCD_DataSet_Sonic(void)
 {
   LCD_ClrSpace(1, 0, 12, 160);
   Sonic_Data_Boot(_off);
-  LCD_WriteStringFont(1, 91, "[ C]");
-  LCD_WriteFont(1, 97, 94);             //Grad
-  LCD_WriteStringFont(1, 124, "[mm]");
+  LCD_WriteAnyStringFont(f_6x8_p, 1, 91, "[ C]");
+
+  // degree symbol
+  LCD_WriteAnyFont(f_6x8_p, 1, 97, 94);
+  LCD_WriteAnyStringFont(f_6x8_p, 1, 124, "[mm]");
   LCD_Write_TextButton(4, 0, Shot, 1);
   LCD_Write_TextButton(10, 0, Auto, 1);
   LCD_Write_TextButton(16, 0, Boot, 1);
 
-  LCD_Write_Symbol_3(3, 50, p_sonic);
+  LCD_WriteAnySymbol(s_19x19, 3, 50, p_sonic);
 }
 
 
@@ -968,38 +960,38 @@ void LCD_DataSet_Sonic(void)
 void LCD_WriteDataHeader_Auto(void)
 {
   LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteStringFontNeg(1, 1, "Date");
-  LCD_WriteStringFontNeg(1, 37, "|");
-  LCD_WriteStringFontNeg(1, 45, "Time");
-  LCD_WriteStringFontNeg(1, 73, "|");
-  LCD_WriteStringFontNeg(1, 85, "O2");
-  LCD_WriteStringFontNeg(1, 103, "|");
-  LCD_WriteStringFontNeg(1, 113, "Err");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 73, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 85, "O2");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 103, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 113, "Err");
 }
 
 void LCD_WriteDataHeader_Manual(void)
 {
   LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteStringFontNeg(1, 1, "Date");
-  LCD_WriteStringFontNeg(1, 37, "|");
-  LCD_WriteStringFontNeg(1, 45, "Begin");
-  LCD_WriteStringFontNeg(1, 77, "|");
-  LCD_WriteStringFontNeg(1, 88, "End");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Begin");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 77, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 88, "End");
 }
 
 void LCD_WriteDataHeader_Setup(void)
 {
   LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteStringFontNeg(1, 1, "Date");
-  LCD_WriteStringFontNeg(1, 37, "|");
-  LCD_WriteStringFontNeg(1, 45, "Time");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
 }
 
 void LCD_WriteDataArrows(void)
 {
-  LCD_Write_Symbol_3(3, 140, p_arrowUp);
-  LCD_Write_Symbol_3(14, 140, p_arrowDown);
-  LCD_Write_Symbol_3(8, 140, p_line);
+  LCD_WriteAnySymbol(s_19x19, 3, 140, p_arrowUp);
+  LCD_WriteAnySymbol(s_19x19, 14, 140, p_arrowDown);
+  LCD_WriteAnySymbol(s_19x19, 8, 140, p_line);
 }
 
 
@@ -1032,13 +1024,13 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
   //--------------------------------------------------OneShot
   else if(cmd == _shot)
   {
-    LCD_WriteValue5_MyFont(i, 126, shot); //WriteOneShot
+    LCD_WriteAnyValue(f_4x6_p, 5, i, 126, shot); //WriteOneShot
     i = i + 3;
   }
   //--------------------------------------------------AutoShot
   else if(cmd == _shot1)
   {
-    LCD_WriteValue5_MyFont(5, 126, shot);
+    LCD_WriteAnyValue(f_4x6_p, 5, 5, 126, shot);
 
     // could not meassure a distance
     if (shot <= 0) return;
@@ -1055,12 +1047,12 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
     if(shot > max)
     {
       max = shot;
-      LCD_WriteValue5_MyFont(11, 126, max);
+      LCD_WriteAnyValue(f_4x6_p, 5, 11, 126, max);
     }
     if(shot < min)
     {
       min = shot;
-      LCD_WriteValue5_MyFont(17, 126, min);
+      LCD_WriteAnyValue(f_4x6_p, 5, 17, 126, min);
     }
   }
   //--------------------------------------------------Temperature
@@ -1076,12 +1068,12 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
       shot &= 0x7FFF;
 
       //-
-      LCD_WriteMyFont(i, 91, 11);
+      LCD_WriteAnyFont(f_4x6_p, i, 91, 11);
     }
     //.
-    LCD_WriteMyFont(i, 102, 22);
-    LCD_WriteValue2_MyFont(i, 105, (shot & 0x00FF));
-    LCD_WriteValue2_MyFont(i, 95, ((shot >> 8) & 0x00FF));
+    LCD_WriteAnyFont(f_4x6_p, i, 102, 22);
+    LCD_WriteAnyValue(f_4x6_p, 2, i, 105, (shot & 0x00FF));
+    LCD_WriteAnyValue(f_4x6_p, 2, i, 95, ((shot >> 8) & 0x00FF));
   }
   //--------------------------------------------------AutoTemp
   else if(cmd == _temp1)
@@ -1093,51 +1085,51 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
       shot &= 0x7FFF;
 
       //-
-      LCD_WriteMyFont(5, 91, 11);
+      LCD_WriteAnyFont(f_4x6_p, 5, 91, 11);
     }
-    LCD_WriteValue2_MyFont(5, 105, (shot & 0x00FF));
-    LCD_WriteValue2_MyFont(5, 95, ((shot >> 8) & 0x00FF));
+    LCD_WriteAnyValue(f_4x6_p, 2, 5, 105, (shot & 0x00FF));
+    LCD_WriteAnyValue(f_4x6_p, 2, 5, 95, ((shot >> 8) & 0x00FF));
     if(shot > max_temp)
     {
       max_temp = shot;
 
       //-
-      if(minus_sign)  LCD_WriteMyFont(11, 91, 11);
-      LCD_WriteValue2_MyFont(11, 105, (max_temp & 0x00FF));
-      LCD_WriteValue2_MyFont(11, 95, ((max_temp >> 8) & 0x00FF));
+      if(minus_sign) LCD_WriteAnyFont(f_4x6_p, 11, 91, 11);
+      LCD_WriteAnyValue(f_4x6_p, 2, 11, 105, (max_temp & 0x00FF));
+      LCD_WriteAnyValue(f_4x6_p, 2, 11, 95, ((max_temp >> 8) & 0x00FF));
     }
     if(shot < min_temp)
     {
       min_temp = shot;
 
       //-
-      if(minus_sign)  LCD_WriteMyFont(17, 91, 11);
-      LCD_WriteValue2_MyFont(17, 105, (min_temp & 0x00FF));
-      LCD_WriteValue2_MyFont(17, 95, ((min_temp >> 8) & 0x00FF));
+      if(minus_sign) LCD_WriteAnyFont(f_4x6_p, 17, 91, 11);
+      LCD_WriteAnyValue(f_4x6_p, 2, 17, 105, (min_temp & 0x00FF));
+      LCD_WriteAnyValue(f_4x6_p, 2, 17, 95, ((min_temp >> 8) & 0x00FF));
     }
   }
   //--------------------------------------------------AutoTemp
   else if(cmd == _autotext)
   {
     LCD_Write_TextButton(10, 0, Auto, 0);
-    LCD_WriteMyFont(9, 113, 13); //m
-    LCD_WriteMyFont(9, 117, 15); //a
-    LCD_WriteMyFont(9, 121, 25); //x
-    LCD_WriteMyFont(15, 113, 13); //m
-    LCD_WriteMyFont(15, 117, 23); //i
-    LCD_WriteMyFont(15, 121, 24); //n
-    LCD_WriteMyFont(17, 102, 22); //.
-    LCD_WriteMyFont(11, 102, 22); //.
-    LCD_WriteMyFont(5, 102, 22);  //.
+    LCD_WriteAnyFont(f_4x6_p, 9, 113, 13); //m
+    LCD_WriteAnyFont(f_4x6_p, 9, 117, 15); //a
+    LCD_WriteAnyFont(f_4x6_p, 9, 121, 25); //x
+    LCD_WriteAnyFont(f_4x6_p, 15, 113, 13); //m
+    LCD_WriteAnyFont(f_4x6_p, 15, 117, 23); //i
+    LCD_WriteAnyFont(f_4x6_p, 15, 121, 24); //n
+    LCD_WriteAnyFont(f_4x6_p, 17, 102, 22); //.
+    LCD_WriteAnyFont(f_4x6_p, 11, 102, 22); //.
+    LCD_WriteAnyFont(f_4x6_p, 5, 102, 22);  //.
   }
   //--------------------------------------------------Messages
-  else if(cmd == _noUS)   LCD_WriteStringFont(17, 50, "NoUS");
-  else if(cmd == _noBoot) LCD_WriteStringFont(17, 50, "NoBoot");
-  else if(cmd == _error)  LCD_WriteStringFont(17, 50, "Error");
-  else if(cmd == _ok) LCD_WriteStringFont(17, 50, "OK...Cycle Power!");
-  else if(cmd == _noData) LCD_WriteStringFont(17, 50, "NoData");
-  else if(cmd == _success) LCD_WriteStringFont(17, 50, "Success");
-  else if(cmd == _mcp_fail) LCD_WriteStringFont(17, 100, "MCP-fail");
+  else if(cmd == _noUS) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoUS");
+  else if(cmd == _noBoot) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoBoot");
+  else if(cmd == _error) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Error");
+  else if(cmd == _ok) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "OK...Cycle Power!");
+  else if(cmd == _noData) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoData");
+  else if(cmd == _success) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Success");
+  else if(cmd == _mcp_fail) LCD_WriteAnyStringFont(f_6x8_p, 17, 100, "MCP-fail");
 }
 
 
@@ -1147,9 +1139,7 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
  * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  LCD_WriteAutoEntry
- * --------------------------------------------------------------
- *  Reads Variable from EEPROM  PageSize: 32Bytes
+ *  reads variable from EEPROM, PageSize: 32Bytes
  * ------------------------------------------------------------------*/
 
 void LCD_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigned char entry)
@@ -1160,7 +1150,7 @@ void LCD_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigned char en
 
   for(i = 0; i < 8; i++)
   {
-    varEnt[i]= MEM_EEPROM_ReadData(eePage, entry, i);
+    varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i);
   }
   o2 = ((varEnt[5] << 8) | (varEnt[6]));
 
@@ -1168,43 +1158,47 @@ void LCD_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigned char en
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
   {
     // 11: -
-    for(i = 1; i < 130; i = i + 4){ LCD_WriteMyFont(pa, i, 11);}
+    for(i = 1; i < 130; i = i + 4){ LCD_WriteAnyFont(f_4x6_p, pa, i, 11);}
   }
 
   //--------------------------------------------------Write-Data-
   else
   {
-    LCD_WriteValue2_MyFont(pa, 1,  varEnt[0]);  //day
-    LCD_WriteMyFont(pa, 9, 11);      //-
-    LCD_WriteValue2_MyFont(pa, 13, varEnt[1]);  //month
+    // day - month
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 1,  varEnt[0]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 9, 11);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 13, varEnt[1]);
 
-    LCD_WriteMyFont(pa, 21, 11);     //-
-    LCD_WriteValue2_MyFont(pa, 25, varEnt[2]);  //year
-    LCD_WriteMyFont(pa, 38, 12);     //|
+    // - year |
+    LCD_WriteAnyFont(f_4x6_p, pa, 21, 11);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 25, varEnt[2]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 38, 12);
 
-    LCD_WriteValue2_MyFont(pa, 47, varEnt[3]);  //hour
-    LCD_WriteMyFont(pa, 55, 10);     //:
-    LCD_WriteValue2_MyFont(pa, 59, varEnt[4]);  //minutes
+    // hour : minutes
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 47, varEnt[3]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 55, 10);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 59, varEnt[4]);
 
-    LCD_WriteMyFont(pa, 74, 12);     //|
-    LCD_WriteValue3_MyFont(pa, 85, o2);     //O2/min
-    LCD_WriteMyFont(pa, 104, 12);      //|
+    // | 02 in min |
+    LCD_WriteAnyFont(f_4x6_p, pa, 74, 12);
+    LCD_WriteAnyValue(f_4x6_p, 3, pa, 85, o2);
+    LCD_WriteAnyFont(f_4x6_p, pa, 104, 12);
 
     //------------------------------------------------Write-AlarmCode
-    if(varEnt[7] & 0x01)  LCD_WriteMyFont(pa, 113, 1);
-    else LCD_WriteMyFont(pa, 113, 0);
+    if(varEnt[7] & 0x01) LCD_WriteAnyFont(f_4x6_p, pa, 113, 1);
+    else LCD_WriteAnyFont(f_4x6_p, pa, 113, 0);
 
-    if(varEnt[7] & 0x02)  LCD_WriteMyFont(pa, 117, 2);
-    else LCD_WriteMyFont(pa, 117, 0);
+    if(varEnt[7] & 0x02) LCD_WriteAnyFont(f_4x6_p, pa, 117, 2);
+    else LCD_WriteAnyFont(f_4x6_p, pa, 117, 0);
 
-    if(varEnt[7] & 0x04)  LCD_WriteMyFont(pa, 121, 3);
-    else LCD_WriteMyFont(pa, 121, 0);
+    if(varEnt[7] & 0x04) LCD_WriteAnyFont(f_4x6_p, pa, 121, 3);
+    else LCD_WriteAnyFont(f_4x6_p, pa, 121, 0);
 
-    if(varEnt[7] & 0x08)  LCD_WriteMyFont(pa, 125, 4);
-    else LCD_WriteMyFont(pa, 125, 0);
+    if(varEnt[7] & 0x08) LCD_WriteAnyFont(f_4x6_p, pa, 125, 4);
+    else LCD_WriteAnyFont(f_4x6_p, pa, 125, 0);
 
-    if(varEnt[7] & 0x10)  LCD_WriteMyFont(pa, 129, 5);
-    else LCD_WriteMyFont(pa, 129, 0);
+    if(varEnt[7] & 0x10) LCD_WriteAnyFont(f_4x6_p, pa, 129, 5);
+    else LCD_WriteAnyFont(f_4x6_p, pa, 129, 0);
   }
 }
 
@@ -1220,35 +1214,40 @@ void LCD_WriteManualEntry(unsigned char pa, unsigned char eePage, unsigned char 
 
   for(i = 0; i < 7; i++)
   {
-    varEnt[i]= MEM_EEPROM_ReadData(eePage, entry, i);
+    varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i);
   }
 
   //---------------------------------------------------------------Write-No-Data
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
   {
-    for(i = 1; i < 108; i = i + 4){LCD_WriteMyFont(pa, i, 11);}
+    for(i = 1; i < 108; i = i + 4){ LCD_WriteAnyFont(f_4x6_p, pa, i, 11); }
   }
 
   //-----------------------------------------------------------------Write-Data-
   else
   {
-    LCD_WriteValue2_MyFont  (pa, 1,  varEnt[0]);  //day
-    LCD_WriteMyFont     (pa, 9, 11);      //-
-    LCD_WriteValue2_MyFont  (pa, 13, varEnt[1]);  //month
+    // day - month
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 1,  varEnt[0]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 9, 11);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 13, varEnt[1]);
 
-    LCD_WriteMyFont     (pa, 21, 11);     //-
-    LCD_WriteValue2_MyFont  (pa, 25, varEnt[2]);  //year
-    LCD_WriteMyFont     (pa, 38, 12);     //|
+    // - year |
+    LCD_WriteAnyFont(f_4x6_p, pa, 21, 11);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 25, varEnt[2]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 38, 12);
 
-    LCD_WriteValue2_MyFont  (pa, 47, varEnt[3]);  //hour
-    LCD_WriteMyFont     (pa, 55, 10);     //:
-    LCD_WriteValue2_MyFont  (pa, 59, varEnt[4]);  //minutes
+    // hour : minutes
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 47, varEnt[3]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 55, 10);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 59, varEnt[4]);
 
-    LCD_WriteMyFont     (pa, 78, 12);     //|
+    // |
+    LCD_WriteAnyFont(f_4x6_p, pa, 78, 12);
 
-    LCD_WriteValue2_MyFont  (pa, 88, varEnt[5]);  //hour
-    LCD_WriteMyFont     (pa, 96, 10);     //:
-    LCD_WriteValue2_MyFont  (pa, 100, varEnt[6]); //minutes
+    // hour : minutes
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 88, varEnt[5]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 96, 10);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 100, varEnt[6]);
   }
 }
 
@@ -1264,29 +1263,33 @@ void LCD_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsigned char e
 
   for(i = 0; i < 5; i++)
   {
-    varEnt[i]= MEM_EEPROM_ReadData(eePage, entry, i);
+    varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i);
   }
 
   //---------------------------------------------------------------Write-No-Data
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
   {
-    for(i = 1; i < 68; i = i + 4){ LCD_WriteMyFont(pa, i, 11);}    //--------
+    //--------
+    for(i = 1; i < 68; i = i + 4){ LCD_WriteAnyFont(f_4x6_p, pa, i, 11); }
   }
 
   //-----------------------------------------------------------------Write-Data-
   else
   {
-    LCD_WriteValue2_MyFont  (pa, 1,  varEnt[0]);  //day
-    LCD_WriteMyFont     (pa, 9, 11);      //-
-    LCD_WriteValue2_MyFont  (pa, 13, varEnt[1]);  //month
+    // day - month
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 1,  varEnt[0]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 9, 11);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 13, varEnt[1]);
 
-    LCD_WriteMyFont     (pa, 21, 11);     //-
-    LCD_WriteValue2_MyFont  (pa, 25, varEnt[2]);  //year
-    LCD_WriteMyFont     (pa, 38, 12);     //|
+    // - year |
+    LCD_WriteAnyFont(f_4x6_p, pa, 21, 11);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 25, varEnt[2]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 38, 12);
 
-    LCD_WriteValue2_MyFont  (pa, 47, varEnt[3]);  //hour
-    LCD_WriteMyFont     (pa, 55, 10);     //:
-    LCD_WriteValue2_MyFont  (pa, 59, varEnt[4]);  //minutes
+    // hour : minutes
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 47, varEnt[3]);
+    LCD_WriteAnyFont(f_4x6_p, pa, 55, 10);
+    LCD_WriteAnyValue(f_4x6_p, 2, pa, 59, varEnt[4]);
   }
 }
 
@@ -1294,11 +1297,6 @@ void LCD_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsigned char e
 
 /* ==================================================================*
  *            MPX - Layout
- * --------------------------------------------------------------
- *  Description:
- * --------------------------------------------------------------
- *  MPX Pressure Sensor - Set text and vars
- * --------------------------------------------------------------
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
@@ -1310,34 +1308,34 @@ void LCD_Sym_MPX(t_FuncCmd cmd, int value)
   //--------------------------------------------------NoMbarInAuto
   if(cmd == _notav)
   {
-    LCD_WriteMyFont(15, 5, 11);   //-
-    LCD_WriteMyFont(15, 9, 11);   //-
-    LCD_WriteMyFont(15, 13, 11);  //-
-    LCD_WriteMyFont(15, 18, 19);  //%
+    LCD_WriteAnyFont(f_4x6_p, 15, 5, 11);   //-
+    LCD_WriteAnyFont(f_4x6_p, 15, 9, 11);   //-
+    LCD_WriteAnyFont(f_4x6_p, 15, 13, 11);  //-
+    LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);  //%
   }
 
   //--------------------------------------------------mbarInAuto
   else if(cmd == _mbar)
   {
-    LCD_WriteValue3_MyFont(17, 43, value);    //Write Value
-    LCD_WriteMyFont(17, 57, 13);    //m
-    LCD_WriteMyFont(17, 61, 14);    //b
-    LCD_WriteMyFont(17, 65, 15);    //a
-    LCD_WriteMyFont(17, 69, 16);    //r
+    LCD_WriteAnyValue(f_4x6_p, 3, 17, 43, value);    //Write Value
+    LCD_WriteAnyFont(f_4x6_p, 17, 57, 13);    //m
+    LCD_WriteAnyFont(f_4x6_p, 17, 61, 14);    //b
+    LCD_WriteAnyFont(f_4x6_p, 17, 65, 15);    //a
+    LCD_WriteAnyFont(f_4x6_p, 17, 69, 16);    //r
   }
 
   //--------------------------------------------------mbarInManual
   else if(cmd == _mmbar)
   {
-    LCD_WriteValue3(17, 2, value);
-    LCD_WriteStringFont(17,22,"%");
+    LCD_WriteAnyValue(f_6x8_p, 3, 17, 2, value);
+    LCD_WriteAnyStringFont(f_6x8_p, 17,22,"%");
   }
 
   //--------------------------------------------------2ControlValue
   else if(cmd == _debug)
   {
-    LCD_WriteValue3_MyFont(15, 5, value);   //Write
-    LCD_WriteMyFont(15, 18, 19);            //%
+    LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, value);   //Write
+    LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);            //%
   }
 }
 
@@ -1345,53 +1343,72 @@ void LCD_Sym_MPX(t_FuncCmd cmd, int value)
 
 /* ==================================================================*
  *            Pin Page
- * --------------------------------------------------------------
- *  Pin Pages layout
- * --------------------------------------------------------------
  * ==================================================================*/
 
 void LCD_pPinButtons(unsigned char pPin)
 {
+  unsigned char row = 0;
+  unsigned char col = 0;
+  t_any_symbol any_symbol = frame;
+  unsigned char num = 0;
+
   switch(pPin)
   {
-    case 1: LCD_Write_Pin(2, 0, frame, 0x11);     break;
-    case 4: LCD_Write_Pin(8, 0, frame, 0x14);     break;
-    case 7: LCD_Write_Pin(14, 0, frame, 0x17);    break;
-    case 11: LCD_Write_Pin(20, 0, p_escape, 0x20);  break;
+    case 1: row = 2; col = 0; any_symbol = frame; num = 0x01; break;
+    case 4: row = 8; col = 0; any_symbol = frame; num = 0x04; break;
+    case 7: row = 14; col = 0; any_symbol = frame; num = 0x07; break;
+    case 11: row = 20; col = 0; any_symbol = p_escape; num = 0x20; break;
 
-    case 2: LCD_Write_Pin(2, 40, frame, 0x12);    break;
-    case 5: LCD_Write_Pin(8, 40, frame, 0x15);    break;
-    case 8: LCD_Write_Pin(14, 40, frame, 0x18);   break;
-    case 0: LCD_Write_Pin(20, 40, frame, 0x10);   break;
+    case 2: row = 2; col = 40; any_symbol = frame; num = 0x02; break;
+    case 5: row = 8; col = 40; any_symbol = frame; num = 0x05; break;
+    case 8: row = 14; col = 40; any_symbol = frame; num = 0x08; break;
+    case 0: row = 20; col = 40; any_symbol = frame; num = 0x00; break;
 
-    case 3: LCD_Write_Pin(2, 80, frame, 0x13);    break;
-    case 6: LCD_Write_Pin(8, 80, frame, 0x16);    break;
-    case 9: LCD_Write_Pin(14, 80, frame, 0x19);   break;
-    case 10:LCD_Write_Pin(20, 80, p_del, 0x20);   break;
-    default:                    break;
+    case 3: row = 2; col = 80; any_symbol = frame; num = 0x03; break;
+    case 6: row = 8; col = 80; any_symbol = frame; num = 0x06; break;
+    case 9: row = 14; col = 80; any_symbol = frame; num = 0x09; break;
+    case 10: row = 20; col = 80; any_symbol = p_del; num = 0x20; break;
+    default: break;
   }
+
+  // write symbol
+  LCD_WriteAnySymbol(s_34x21, row, col, any_symbol);
+
+  // write number if it is one
+  if(num < 0x20) LCD_WriteAnyFont(f_8x16_p, row + 1, col + 13, num);
 }
+
 
 void LCD_nPinButtons(unsigned char nPin)
 {
+  unsigned char row = 0;
+  unsigned char col = 0;
+  t_any_symbol any_symbol = frame;
+  unsigned char num = 0;
+
   switch(nPin)
   {
-    case 1: LCD_Write_Pin(2, 0, black, 0x01);     break;
-    case 4: LCD_Write_Pin(8, 0, black, 0x04);     break;
-    case 7: LCD_Write_Pin(14, 0, black, 0x07);    break;
-    case 11: LCD_Write_Pin(20, 0, n_escape, 0x20);  break;
+    case 1: row = 2; col = 0; any_symbol = black; num = 0x01; break;
+    case 4: row = 8; col = 0; any_symbol = black; num = 0x04; break;
+    case 7: row = 14; col = 0; any_symbol = black; num = 0x07; break;
+    case 11: row = 20; col = 0; any_symbol = n_escape; num = 0x20; break;
 
-    case 2: LCD_Write_Pin(2, 40, black, 0x02);    break;
-    case 5: LCD_Write_Pin(8, 40, black, 0x05);    break;
-    case 8: LCD_Write_Pin(14, 40, black, 0x08);   break;
-    case 0: LCD_Write_Pin(20, 40, black, 0x00);   break;
+    case 2: row = 2; col = 40; any_symbol = black; num = 0x02; break;
+    case 5: row = 8; col = 40; any_symbol = black; num = 0x05; break;
+    case 8: row = 14; col = 40; any_symbol = black; num = 0x08; break;
+    case 0: row = 20; col = 40; any_symbol = black; num = 0x00; break;
 
-    case 3: LCD_Write_Pin(2, 80, black, 0x03);    break;
-    case 6: LCD_Write_Pin(8, 80, black, 0x06);    break;
-    case 9: LCD_Write_Pin(14, 80, black, 0x09);   break;
-    case 10: LCD_Write_Pin(20, 80, n_del, 0x20);   break;
-    default:                                      break;
+    case 3: row = 2; col = 80; any_symbol = black; num = 0x03; break;
+    case 6: row = 8; col = 80; any_symbol = black; num = 0x06; break;
+    case 9: row = 14; col = 80; any_symbol = black; num = 0x09; break;
+    case 10: row = 20; col = 80; any_symbol = n_del; num = 0x20; break;
+    default: break;
   }
+
+  LCD_WriteAnySymbol(s_34x21, row, col, any_symbol);
+
+  // write number if it is one
+  if(num < 0x20) LCD_WriteAnyFont(f_8x16_n, row + 1, col + 13, num);
 }
 
 
@@ -1420,40 +1437,38 @@ void LCD_Pin_Write(t_FuncCmd cmd, TelNr nr)
 
   switch(cmd)
   {
-    case _right:
-      LCD_WriteStringFont(6,125,"right!");  break;
+    case _right: LCD_WriteAnyStringFont(f_6x8_p, 6, 125,"right!"); break;
 
-    case _op:
-      LCD_WriteStringFont(6,119,"OP");      break;
+    case _op: LCD_WriteAnyStringFont(f_6x8_p, 6, 119,"OP"); break;
 
     //------------------------------------------------WriteWholeNumber
     case _write:
-      LCD_WriteStringFont(6, 119, "Tel");
-      LCD_WriteFont(6, 137, nr.id + 14);
-      LCD_WriteStringFont(6,143,":");
+      LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "Tel");
+      LCD_WriteAnyFont(f_6x8_p, 6, 137, nr.id + 14);
+      LCD_WriteAnyStringFont(f_6x8_p, 6, 143,":");
 
       // +
-      LCD_WriteMyFont(9, 119, 20); 
+      LCD_WriteAnyFont(f_4x6_p, 9, 119, 20); 
 
       // 43
       for(i = 0; i < 2; i++)
       {
         nr.pos = i;
-        LCD_WriteMyFont(9, 123 + 4 * i, Modem_TelNr(_read2, nr));
+        LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * i, Modem_TelNr(_read2, nr));
       }
 
       // 680
       for(i = 2; i < 5; i++)
       {               
         nr.pos = i;
-        LCD_WriteMyFont(9, 135 + 4 * (i - 2), Modem_TelNr(_read2, nr));
+        LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (i - 2), Modem_TelNr(_read2, nr));
       }
 
       // number
       for(i = 5; i < 14; i++)
       {                   
         nr.pos = i;
-        LCD_WriteMyFont(11, 119 + 4 * (i - 5), Modem_TelNr(_read2, nr));
+        LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (i - 5), Modem_TelNr(_read2, nr));
       }
       break;
 
@@ -1462,38 +1477,35 @@ void LCD_Pin_Write(t_FuncCmd cmd, TelNr nr)
       LCD_nPinButtons(nr.tel);
       if(nr.pos < 2)
       {
-        LCD_WriteMyFont(9, 123 + 4 * nr.pos, nr.tel);
+        LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * nr.pos, nr.tel);
         nr.pos++;
-        if(nr.pos < 2)  LCD_WriteMyFontNeg(9, 127, 14);
-        else            LCD_WriteMyFontNeg(9, 135, 14);
+        if(nr.pos < 2) LCD_WriteAnyFont(f_4x6_n, 9, 127, 14);
+        else LCD_WriteAnyFont(f_4x6_n, 9, 135, 14);
       }
 
       else if((nr.pos > 1) && (nr.pos < 5))
       {
-        LCD_WriteMyFont(9, 135 + 4 * (nr.pos - 2), nr.tel);
+        LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (nr.pos - 2), nr.tel);
         nr.pos++;
-        if(nr.pos < 5)
-          LCD_WriteMyFontNeg(9, 135 + 4 * (nr.pos - 2), 14);
-        else
-          LCD_WriteMyFontNeg(11, 119, 14);
+        if(nr.pos < 5) LCD_WriteAnyFont(f_4x6_n, 9, 135 + 4 * (nr.pos - 2), 14);
+        else LCD_WriteAnyFont(f_4x6_n, 11, 119, 14);
       }
       else
       {
-        LCD_WriteMyFont(11, 119 + 4 * (nr.pos - 5), nr.tel);
+        LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (nr.pos - 5), nr.tel);
         nr.pos++;
-        if(nr.pos < 14)
-          LCD_WriteMyFontNeg(11, 119 + 4 * (nr.pos - 5), 14);
+        if(nr.pos < 14) LCD_WriteAnyFont(f_4x6_n, 11, 119 + 4 * (nr.pos - 5), 14);
       }
       break;
 
     case _wrong:
-      LCD_WriteStringFont(6,119,"wrong!");
-      LCD_WriteStringFont(9,119,"try");
-      LCD_WriteStringFont(11,119,"again");    break;
+      LCD_WriteAnyStringFont(f_6x8_p, 6, 119,"wrong!");
+      LCD_WriteAnyStringFont(f_6x8_p, 9, 119,"try");
+      LCD_WriteAnyStringFont(f_6x8_p, 11, 119,"again"); break;
 
-    case _clear:  LCD_ClrSpace(6,119,25,41);   break;
+    case _clear: LCD_ClrSpace(6, 119,25,41); break;
 
-    default:                                  break;
+    default: break;
   }
 }
 
@@ -1501,14 +1513,11 @@ void LCD_Pin_Write(t_FuncCmd cmd, TelNr nr)
 
 /* ==================================================================*
  *            Control Utilities
- * --------------------------------------------------------------
- *  Buttons and highlight
- * --------------------------------------------------------------
  * ==================================================================*/
 
-/* ==================================================================*
- *            Buttons
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            text buttons
+ * ------------------------------------------------------------------*/
 
 void LCD_TextButton(t_textButtons text, unsigned char pos)
 {
@@ -1516,26 +1525,25 @@ void LCD_TextButton(t_textButtons text, unsigned char pos)
   {
     switch(text)
     {
-      case Auto:    LCD_Write_TextButton(22, 0, Auto, 1);     break;
-      case Manual:  LCD_Write_TextButton(22, 40, Manual, 1);  break;
-      case Setup:   LCD_Write_TextButton(22, 80, Setup, 1);   break;
-      case Data:    LCD_Write_TextButton(22, 120, Data, 1);   break;
-      default:                          break;
+      case Auto: LCD_Write_TextButton(22, 0, Auto, 1); break;
+      case Manual: LCD_Write_TextButton(22, 40, Manual, 1); break;
+      case Setup: LCD_Write_TextButton(22, 80, Setup, 1); break;
+      case Data: LCD_Write_TextButton(22, 120, Data, 1); break;
+      default: break;
     }
   }
   else
   {
     switch(text)
     {
-      case Auto:    LCD_Write_TextButton(22, 0, Auto, 0);     break;
-      case Manual:  LCD_Write_TextButton(22, 40, Manual, 0);  break;
-      case Setup:   LCD_Write_TextButton(22, 80, Setup, 0);   break;
-      case Data:    LCD_Write_TextButton(22, 120, Data, 0);   break;
-      default:                          break;
+      case Auto: LCD_Write_TextButton(22, 0, Auto, 0); break;
+      case Manual: LCD_Write_TextButton(22, 40, Manual, 0); break;
+      case Setup: LCD_Write_TextButton(22, 80, Setup, 0); break;
+      case Data: LCD_Write_TextButton(22, 120, Data, 0); break;
+      default: break;
     }
   }
 }
-
 
 
 /* ------------------------------------------------------------------*
@@ -1546,17 +1554,17 @@ void LCD_ControlButtons(t_CtrlButtons ctrl)
 {
   switch(ctrl)
   {
-    case sp_esc:  LCD_Write_Symbol_3(3, 90, p_esc); break;
-    case sp_ok:   LCD_Write_Symbol_3(3, 130, p_ok); break;
-    case sp_minus:  LCD_Write_Symbol_3(9, 90, p_minus); break;
-    case sp_plus: LCD_Write_Symbol_3(9, 130, p_plus); break;
+    case sp_esc: LCD_WriteAnySymbol(s_19x19, 3, 90, p_esc); break;
+    case sp_ok: LCD_WriteAnySymbol(s_19x19, 3, 130, p_ok); break;
+    case sp_minus: LCD_WriteAnySymbol(s_19x19, 9, 90, p_minus); break;
+    case sp_plus: LCD_WriteAnySymbol(s_19x19, 9, 130, p_plus); break;
 
-    case sn_esc:  LCD_Write_Symbol_3(3, 90, n_esc); break;
-    case sn_ok:   LCD_Write_Symbol_3(3, 130, n_ok); break;
-    case sn_minus:  LCD_Write_Symbol_3(9, 90, n_minus); break;
-    case sn_plus: LCD_Write_Symbol_3(9, 130, n_plus); break;
+    case sn_esc: LCD_WriteAnySymbol(s_19x19, 3, 90, n_esc); break;
+    case sn_ok: LCD_WriteAnySymbol(s_19x19, 3, 130, n_ok); break;
+    case sn_minus: LCD_WriteAnySymbol(s_19x19, 9, 90, n_minus); break;
+    case sn_plus: LCD_WriteAnySymbol(s_19x19, 9, 130, n_plus); break;
 
-    default:                      break;
+    default: break;
   }
 }
 
@@ -1564,17 +1572,17 @@ void LCD_ControlButtons2(t_CtrlButtons ctrl)
 {
   switch(ctrl)
   {
-    case sp_esc:  LCD_Write_Symbol_3( 3,  90, p_esc);   break;
-    case sp_ok:   LCD_Write_Symbol_3( 3,  130, p_ok);   break;
-    case sp_minus:  LCD_Write_Symbol_3( 15, 130, p_minus);  break;
-    case sp_plus: LCD_Write_Symbol_3( 9,  130, p_plus); break;
+    case sp_esc: LCD_WriteAnySymbol(s_19x19,  3,  90, p_esc); break;
+    case sp_ok: LCD_WriteAnySymbol(s_19x19,  3,  130, p_ok); break;
+    case sp_minus: LCD_WriteAnySymbol(s_19x19,  15, 130, p_minus); break;
+    case sp_plus: LCD_WriteAnySymbol(s_19x19,  9,  130, p_plus); break;
 
-    case sn_esc:  LCD_Write_Symbol_3( 3,  90, n_esc);   break;
-    case sn_ok:   LCD_Write_Symbol_3( 3,  130, n_ok);   break;
-    case sn_minus:  LCD_Write_Symbol_3( 15, 130, n_minus);  break;
-    case sn_plus: LCD_Write_Symbol_3( 9,  130, n_plus); break;
+    case sn_esc: LCD_WriteAnySymbol(s_19x19,  3,  90, n_esc); break;
+    case sn_ok: LCD_WriteAnySymbol(s_19x19,  3,  130, n_ok); break;
+    case sn_minus: LCD_WriteAnySymbol(s_19x19,  15, 130, n_minus); break;
+    case sn_plus: LCD_WriteAnySymbol(s_19x19,  9,  130, n_plus); break;
 
-    default:                        break;
+    default: break;
   }
 }
 
@@ -1587,9 +1595,9 @@ void LCD_Pin_WriteOK(unsigned char on)
 {
   switch(on)
   {
-    case 0:   LCD_Write_Symbol_3(20, 130, p_ok);  break;
-    case 1:   LCD_Write_Symbol_3(20, 130, n_ok);  break;
-    default:  LCD_Write_Symbol_3(20, 130, n_ok);  break;
+    case 0: LCD_WriteAnySymbol(s_19x19, 20, 130, p_ok); break;
+    case 1: LCD_WriteAnySymbol(s_19x19, 20, 130, n_ok); break;
+    default: LCD_WriteAnySymbol(s_19x19, 20, 130, n_ok); break;
   }
 }
 
@@ -1600,20 +1608,12 @@ void LCD_Pin_WriteOK(unsigned char on)
 
 void LCD_WriteCtrlButton(void)
 {
-  unsigned char i = 0;
-  for(i = 4; i < 9; i++)
-  {
-    LCD_ControlButtons(i);
-  }
+  for(unsigned char i = 4; i < 9; i++){ LCD_ControlButtons(i); }
 }
 
 void LCD_WriteCtrlButton2(void)
 {
-  unsigned char i = 0;
-  for(i =4; i < 9; i++)
-  {
-    LCD_ControlButtons2(i);
-  }
+  for(unsigned char i = 4; i < 9; i++){ LCD_ControlButtons2(i); }
 }
 
 
@@ -1623,26 +1623,26 @@ void LCD_WriteCtrlButton2(void)
 
 void LCD_OnValue(unsigned char value)
 {
-  LCD_WriteStringFont(10, 1, "ON:");
-  LCD_WriteValue2(10, 19, value);
+  LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "ON:");
+  LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, value);
 }
 
 void LCD_OffValue(unsigned char value)
 {
-  LCD_WriteStringFont(10, 40, "OFF:");
-  LCD_WriteValue2(10, 64, value);
+  LCD_WriteAnyStringFont(f_6x8_p, 10, 40, "OFF:");
+  LCD_WriteAnyValue(f_6x8_p, 2, 10, 64, value);
 }
 
 void LCD_OnValueNeg(unsigned char value)
 {
-  LCD_WriteStringFontNeg(10, 1, "ON:");
-  LCD_WriteValueNeg2(10, 19, value);
+  LCD_WriteAnyStringFont(f_6x8_n, 10, 1, "ON:");
+  LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, value);
 }
 
 void LCD_OffValueNeg(unsigned char value)
 {
-  LCD_WriteStringFontNeg(10, 40, "OFF:");
-  LCD_WriteValueNeg2(10, 64, value);
+  LCD_WriteAnyStringFont(f_6x8_n, 10, 40, "OFF:");
+  LCD_WriteAnyValue(f_6x8_n, 2, 10, 64, value);
 }
 
 
@@ -1657,13 +1657,9 @@ void LCD_OffValueNeg(unsigned char value)
 
 void LCD_MarkTextButton(t_textButtons text)
 {
-  unsigned char i = 0;
-  for(i = 0; i < 4; i++)
+  for(unsigned char i = 0; i < 4; i++)
   {
-    if(i != text)
-    {
-      LCD_TextButton(i, 1);
-    }
+    if(i != text) LCD_TextButton(i, 1);
   }
   LCD_TextButton(text, 0);
 }
@@ -1675,8 +1671,7 @@ void LCD_MarkTextButton(t_textButtons text)
 
 void LCD_Mark_ManualSymbol(t_SetupSym sym)
 {
-  unsigned char i = 0;
-  for(i = 12; i < 20; i++)
+  for(unsigned char i = 12; i < 20; i++)
   {
     // write negative / positive Manual Symbol
     if((12 + sym == i)) LCD_SetupSymbols(sym);
@@ -1698,34 +1693,28 @@ unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd)
 
   switch(page)
   {
-    case AutoSetDown: case AutoMud:     case AutoPumpOff:
-    case AutoCirc:    case AutoCircOff: case AutoPage:
-    case AutoAir:     case AutoAirOff:
-      row = 17; col = 5; break;
+    case AutoSetDown: case AutoMud: case AutoPumpOff:
+    case AutoCirc: case AutoCircOff: case AutoPage:
+    case AutoAir: case AutoAirOff: row = 17; col = 5; break;
 
-    case ManualMain:  case ManualCirc:  case ManualCircOff:
-    case ManualAir:   case ManualSetDown: case ManualPumpOff:
-    case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
-    case ManualPhosphor:  case ManualInflowPump:
-      row = 17; col = 2; break;
+    case ManualMain: case ManualCirc: case ManualCircOff:
+    case ManualAir: case ManualSetDown: case ManualPumpOff:
+    case ManualPumpOff_On: case ManualMud: case ManualCompressor:
+    case ManualPhosphor: case ManualInflowPump: row = 17; col = 2; break;
 
     case SetupCal: row = 0; col = 38; break;
-    default:                          break;
+    default: break;
   }
 
   if(cmd == _clear)
   {
-    if(errC)
-    {
-      errC = 0;
-      LCD_ClrSpace(row, col, 2, 24);
-    }
+    if(errC){ errC = 0; LCD_ClrSpace(row, col, 2, 24); }
   }
   //--------------------------------------------------Write
   else if(cmd == _write)
   {
     errC++;
-    if(errC == 10) LCD_WriteStringFont(row, col, "noUS");
+    if(errC == 10) LCD_WriteAnyStringFont(f_6x8_p, row, col, "noUS");
   }
   //--------------------------------------------------Check
   else if(cmd == _check)

@@ -317,7 +317,7 @@ int Sonic_LevelCal(t_FuncCmd cmd)
     // read from EEPROM
     case _init:
       level = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-      LCD_WriteValue4(17, 40, level);
+      LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, level);
       break;
 
     // save to EEPROM
@@ -359,7 +359,7 @@ int Sonic_LevelCal(t_FuncCmd cmd)
       break;
 
     case _write:
-      LCD_WriteValue4(17, 40, level); break;
+      LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, level); break;
     default: break;
   }
   return level;
@@ -384,21 +384,21 @@ unsigned char Sonic_sVersion(void)
   // application version
   switch(rec[1])
   {
-    case 0: LCD_WriteStringFont(1, 2, "75kHz");  break;
-    case 1: LCD_WriteStringFont(1, 2, "125kHz"); break;
-    case 2: LCD_WriteStringFont(1, 2, "Boot  "); break;
+    case 0: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "75kHz");  break;
+    case 1: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "125kHz"); break;
+    case 2: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "Boot  "); break;
     default:                                    break;
   }
 
   // S
-  LCD_WriteMyFont(1, 52, 21);
+  LCD_WriteAnyFont(f_4x6_p, 1, 52, 21);
   ver = ((rec[2] & 0xF0) >> 4);
-  LCD_WriteMyFont(1, 57, ver);
+  LCD_WriteAnyFont(f_4x6_p, 1, 57, ver);
 
   // .
-  LCD_WriteMyFont(1,61, 22);
+  LCD_WriteAnyFont(f_4x6_p, 1,61, 22);
   ver = (rec[2] & 0x0F);
-  LCD_WriteMyFont(1, 65, ver);
+  LCD_WriteAnyFont(f_4x6_p, 1, 65, ver);
 
   return rec[1];
 }

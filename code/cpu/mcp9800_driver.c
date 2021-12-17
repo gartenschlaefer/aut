@@ -1,7 +1,7 @@
 // --
 //  MCP9800 Temperature Sensor
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -130,7 +130,7 @@ void MCP9800_WriteTemp(void)
     // indicate minus
     if(temp & 0x80)
     {
-      LCD_WriteStringFont(17,84,"-");
+      LCD_WriteAnyStringFont(f_6x8_p, 17,84,"-");
       temp = -temp;
     }
 
@@ -138,6 +138,6 @@ void MCP9800_WriteTemp(void)
     else LCD_ClrSpace(17, 84, 2, 6);
 
     // write temperature
-    LCD_WriteValue2(17, 90, (temp & 0x7F));
+    LCD_WriteAnyValue(f_6x8_p, 2, 17, 90, (temp & 0x7F));
   }
 }

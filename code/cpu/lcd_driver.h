@@ -11,7 +11,7 @@
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            Backlight 30000 -> ca. 3min
+ *            Backlight 30000 -> ca. 3 min
  * ------------------------------------------------------------------*/
 
 #define BACKLIGHT_TON_FRAMES (3000)
@@ -78,41 +78,53 @@
 
 
 /* ------------------------------------------------------------------*
- *            Symbols
+ *            font types
  * ------------------------------------------------------------------*/
 
 typedef enum
 {
-  n_pumpOff,  n_mud,  n_inflowPump, n_pump2,
-  p_pumpOff,  p_mud,  p_inflowPump, p_pump2
-}t_Symbols_35x23;
+  f_6x8_p, f_6x8_n, 
+  f_4x6_p, f_4x6_n,
+  f_8x16_p, f_8x16_n
+}t_font_type;
+
+
+/* ------------------------------------------------------------------*
+ *            symbols
+ * ------------------------------------------------------------------*/
+
+typedef enum
+{
+  s_35x23, s_29x17, s_19x19, s_34x21, s_39x16, s_logo_hecs, s_logo_purator
+}t_symbol_type;
 
 
 typedef enum
 {
-  n_setDown,    n_alarm,      n_air,      n_sensor, n_watch,
-  n_compressor, n_circulate,  n_cal,      n_zone,   n_level,
-  p_setDown,    p_alarm,      p_air,      p_sensor, p_watch,
-  p_compressor, p_circulate,  p_cal,      p_zone,   p_level
-}t_Symbols_29x17;
+  // 35 x 23 [8]
+  n_pumpOff, n_mud, n_inflowPump, n_pump2, p_pumpOff, p_mud, p_inflowPump, p_pump2,
 
+  // 29 x 17 [20]
+  n_setDown, n_alarm, n_air, n_sensor, n_watch, n_compressor, n_circulate, n_cal, n_zone, n_level,
+  p_setDown, p_alarm, p_air, p_sensor, p_watch, p_compressor, p_circulate, p_cal, p_zone, p_level,
 
-typedef enum
-{
-  n_phosphor, n_pump,       n_esc,        n_plus,
-  n_minus,    n_arrowUp,    n_arrowDown,  n_ok,   n_grad,
-  n_sonic,    n_arrowRedo,
-  p_phosphor, p_pump,       p_esc,        p_plus,
-  p_minus,    p_arrowUp,    p_arrowDown,  p_ok,
-  p_line,     p_grad,       p_sonic,      p_arrowRedo
-}t_Symbols_19x24;
+  // 19 x 19 [23]
+  n_phosphor, n_pump, n_esc, n_plus, n_minus, n_arrowUp, n_arrowDown, n_ok, n_grad, n_sonic, n_arrowRedo,
+  p_phosphor, p_pump, p_esc, p_plus, p_minus, p_arrowUp, p_arrowDown, p_ok, p_line, p_grad, p_sonic, p_arrowRedo,
 
+  // 34 x 21 [6]
+  frame, p_escape, p_del, black, n_escape, n_del,
 
-typedef enum
-{
-  frame,      p_escape,   p_del,
-  black,      n_escape,   n_del
-}t_pinSymbols;
+  // 39 x 16 [2]
+  n_text_frame, p_text_frame,
+
+  // hecs [1]
+  logo_hecs,
+
+  // purator [1]
+  logo_purator
+
+}t_any_symbol;
 
 
 typedef enum
@@ -197,59 +209,25 @@ void LCD_WP_Page(unsigned char startPA, unsigned char endPA);
 
 
 /* ------------------------------------------------------------------*
- *            Write Font
+ *            font, strings and values
  * ------------------------------------------------------------------*/
 
-void LCD_WriteFont(unsigned char row, unsigned char col, unsigned short word);
-void LCD_WriteFontNeg(unsigned char row, unsigned char col, unsigned short word);
-void LCD_WriteFontNum(unsigned char row, unsigned char col, unsigned char word);
-void LCD_WriteMyFont(unsigned char row, unsigned char col, unsigned char word);
-void LCD_WriteMyFontNeg(unsigned char row, unsigned char col, unsigned char word);
-
-void LCD_WriteStringFont(unsigned char y, unsigned char x, char word[]);
-void LCD_WriteStringFontNeg(unsigned char y, unsigned char x, char word[]);
-void LCD_WriteStringMyFont(unsigned char y, unsigned char x, char word[]);
+unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word);
+void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char word[]);
+void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value);
 
 
 /* ------------------------------------------------------------------*
- *            Write Value
+ *            symbols and other
  * ------------------------------------------------------------------*/
 
-void LCD_WriteValue2(unsigned char y, unsigned char x, int value);
-void LCD_WriteValueNeg2(unsigned char y, unsigned char x, int value);
-void LCD_WriteValue3(unsigned char y, unsigned char x, int value);
-void LCD_WriteValueNeg3(unsigned char y, unsigned char x, int value);
-void LCD_WriteValue4(unsigned char y, unsigned char x, int value);
-
-void LCD_WriteValue2_MyFont(unsigned char y, unsigned char x, int value);
-void LCD_WriteValue3_MyFont(unsigned char y, unsigned char x, int value);
-void LCD_WriteValue4_MyFont(unsigned char y, unsigned char x, int value);
-void LCD_WriteValue5_MyFont(unsigned char y, unsigned char x, int value);
-
-
-/* ------------------------------------------------------------------*
- *            Write Symbols
- * ------------------------------------------------------------------*/
-
-void LCD_Write_Symbol_1(unsigned char row, unsigned char col, t_Symbols_35x23 sym);
-void LCD_Write_Symbol_2(unsigned char row, unsigned char col, t_Symbols_29x17 sym);
-void LCD_Write_Symbol_3(unsigned char row, unsigned char col, t_Symbols_19x24 sym);
-
-
-/* ------------------------------------------------------------------*
- *            Write Pin + Text
- * ------------------------------------------------------------------*/
-
-void LCD_Write_Pin(unsigned char row, unsigned char col, t_pinSymbols sym, unsigned char num);
+unsigned char LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, unsigned char col, t_any_symbol any_symbol);
 void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons text, unsigned char pos);
-void LCD_Write_Purator(unsigned char row, unsigned char col);
-void LCD_Write_HECS(unsigned char row, unsigned char col);
-
 void LCD_DeathMan(unsigned char row, unsigned char col);
 
 
 /* ------------------------------------------------------------------*
- *            Built in Functions
+ *            built in functions
  * ------------------------------------------------------------------*/
 
 unsigned char LCD_ConvertWP(unsigned char con);

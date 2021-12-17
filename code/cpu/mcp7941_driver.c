@@ -1,7 +1,7 @@
 // --
 // MCP7941-Timer-IC
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -203,26 +203,26 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
     case _init:
 
       // : symbol
-      LCD_WriteMyFont(2, 128, 10);
-      LCD_WriteMyFont(2, 140, 10);
+      LCD_WriteAnyFont(f_4x6_p, 2, 128, 10);
+      LCD_WriteAnyFont(f_4x6_p, 2, 140, 10);
 
       // time
-      LCD_WriteValue2_MyFont(2,120, MCP7941_ReadTime(TIC_HOUR));
-      LCD_WriteValue2_MyFont(2,132, MCP7941_ReadTime(TIC_MIN));
-      LCD_WriteValue2_MyFont(2,144, MCP7941_ReadTime(TIC_SEC));
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,120, MCP7941_ReadTime(TIC_HOUR));
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,132, MCP7941_ReadTime(TIC_MIN));
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,144, MCP7941_ReadTime(TIC_SEC));
       break;
 
     case _exe:
 
       // sec
       time = MCP7941_ReadTime(TIC_SEC);
-      LCD_WriteValue2_MyFont(2,144, time);
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,144, time);
 
       // min
       if(!time)
       {
         time= MCP7941_ReadTime(TIC_MIN);
-        LCD_WriteValue2_MyFont(2,132, time);
+        LCD_WriteAnyValue(f_4x6_p, 2, 2,132, time);
       }
       else break;
 
@@ -230,7 +230,7 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
       if(!time)
       {
         time= MCP7941_ReadTime(TIC_HOUR);
-        LCD_WriteValue2_MyFont(2,132, time);
+        LCD_WriteAnyValue(f_4x6_p, 2, 2,132, time);
       }
       else break;
       break;
@@ -247,14 +247,14 @@ void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
 void MCP7941_LCD_WriteDate(void)
 {
   // - symbol
-  LCD_WriteMyFont(0, 128, 11);
-  LCD_WriteMyFont(0, 140, 11);
+  LCD_WriteAnyFont(f_4x6_p, 0, 128, 11);
+  LCD_WriteAnyFont(f_4x6_p, 0, 140, 11);
 
   // year 20xx
-  LCD_WriteStringMyFont(0, 144,"20");
+  LCD_WriteAnyStringFont(f_4x6_p, 0, 144, "20");
 
   // date
-  LCD_WriteValue2_MyFont(0,120, MCP7941_ReadTime(TIC_DATE));
-  LCD_WriteValue2_MyFont(0,132, MCP7941_ReadTime(TIC_MONTH));
-  LCD_WriteValue2_MyFont(0,152, MCP7941_ReadTime(TIC_YEAR));
+  LCD_WriteAnyValue(f_4x6_p, 2, 0,120, MCP7941_ReadTime(TIC_DATE));
+  LCD_WriteAnyValue(f_4x6_p, 2, 0,132, MCP7941_ReadTime(TIC_MONTH));
+  LCD_WriteAnyValue(f_4x6_p, 2, 0,152, MCP7941_ReadTime(TIC_YEAR));
 }

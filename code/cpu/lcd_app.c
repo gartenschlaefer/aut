@@ -123,8 +123,8 @@ t_page LCD_AutoPage(t_page page)
   }
   else if(lcd_reset == 20000)
   {
-    if(!COMPANY) LCD_Write_Purator(0,0);
-    else LCD_Write_HECS(0,0);
+    if(!COMPANY) LCD_WriteAnySymbol(s_logo_purator, 0, 0, logo_purator);
+    else LCD_WriteAnySymbol(s_logo_hecs, 0, 0, logo_hecs);
   }
   else if(lcd_reset > 30000)
   {
@@ -573,10 +573,10 @@ void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
       {
         sec = 60;
         if(min) min--;
-        LCD_WriteValue2_MyFont(13, 135, min);
+        LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, min);
       }
       if(sec) sec--;
-      LCD_WriteValue2_MyFont(13, 147, sec);
+      LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, sec);
     }
 
     // change to off state
@@ -585,7 +585,7 @@ void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
       state =_off;
       min = MEM_EEPROM_ReadVar(OFF_phosphor);
       sec = 0;
-      LCD_Write_Symbol_3(6, 134, p_phosphor);
+      LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor);
       OUT_Clr_Phosphor();
     }
 
@@ -595,7 +595,7 @@ void LCD_Auto_Phosphor(int s_sec, t_FuncCmd cmd)
       state = _on;
       min = MEM_EEPROM_ReadVar(ON_phosphor);
       sec = 0;
-      LCD_Write_Symbol_3(6, 134, n_phosphor);
+      LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor);
       OUT_Set_Phosphor();
     }
   }
@@ -832,7 +832,7 @@ t_page LCD_ManualPage_PumpOff(t_page page, int *p_min, int *p_sec)
     if(page != ManualPumpOff_On)
     {
       LCD_ClrSpace(15, 2, 5, 120);
-      LCD_WriteStringFont(17, 61, "mbar");
+      LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
     }
     if(save_page == ManualPumpOff_On)
     {
@@ -845,10 +845,8 @@ t_page LCD_ManualPage_PumpOff(t_page page, int *p_min, int *p_sec)
   {
     TCC0_DisplayManual_Wait();
     count++;
-    if(count == 125)
-      LCD_WriteStringFontNeg(17, 15,"PRESS OK!:");
-    if(count == 250)
-      LCD_WriteStringFont(17, 15,"PRESS OK!:");
+    if(count == 125) LCD_WriteAnyStringFont(f_6x8_n, 17, 15,"PRESS OK!:");
+    if(count == 250) LCD_WriteAnyStringFont(f_6x8_p, 17, 15,"PRESS OK!:");
   }
   return page;
 }
@@ -934,17 +932,17 @@ void LCD_ManualSet(t_page page, int *p_min, int *p_sec)
 
     case ManualPumpOff:
       LCD_ClrSpace(15, 2, 5, 120);
-      LCD_WriteStringFont(17, 15,"PRESS OK!:");
-      LCD_Write_Symbol_3(15, 85, p_ok);
+      LCD_WriteAnyStringFont(f_6x8_p, 17, 15,"PRESS OK!:");
+      LCD_WriteAnySymbol(s_19x19, 15, 85, p_ok);
       *p_min = 30;
       *p_sec = 0;
-      LCD_WriteValue2(17, 124, *p_min);
-      LCD_WriteValue2(17, 142, *p_sec); break;
+      LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, *p_min);
+      LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, *p_sec); break;
 
     case ManualPumpOff_On:
       OUT_Set_PumpOff();
       LCD_ClrSpace(15, 2, 5, 120);
-      LCD_WriteStringFont(17, 136,":");
+      LCD_WriteAnyStringFont(f_6x8_p, 17, 136,":");
       *p_min = 29;
       *p_sec = 59;
       LCD_ManualText(*p_min, *p_sec);
@@ -1138,7 +1136,7 @@ t_page LCD_SetupPage_Cal(int *p_min, int *p_sec)
     {
         Sonic_LevelCal(_new);
         Sonic_LevelCal(_write);
-        LCD_Write_Symbol_2(15, 1, p_level);
+        LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
         page = SetupCal;
     }
     //------------------------------------------------PressureSensor
@@ -1146,14 +1144,14 @@ t_page LCD_SetupPage_Cal(int *p_min, int *p_sec)
     {
       // 2 min calibration
       if(!iniTime){ iniTime = 1; *p_min = 4; *p_sec = 120; OUT_Set_Air(); }
-      LCD_WriteValue3(17, 100, *p_sec);
+      LCD_WriteAnyValue(f_6x8_p, 3, 17, 100, *p_sec);
       if(!*p_sec){
         iniTime = 0;                        //--ReadPressure
         MPX_LevelCal(_new);                 //Read WaterLevel
         MPX_LevelCal(_write);               //Write Niveau Pressure
         OUT_Clr_Air();                      //Close Air
         LCD_ClrSpace(17, 100, 2, 20);       //ClearCountdown
-        LCD_Write_Symbol_2(15, 1, p_level);  //Symbol
+        LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);  //Symbol
         page = SetupCal; }                   //Back to Normal
     }
   }
@@ -1445,8 +1443,8 @@ void LCD_WriteAutoEntryPage(unsigned char page)
   LCD_Entry_Clr();
 
   // page num
-  LCD_WriteMyFont(1, 140, (page + 1) / 10);
-  LCD_WriteMyFont(1, 144, (page + 1) % 10);
+  LCD_WriteAnyFont(f_4x6_p, 1, 140, (page + 1) / 10);
+  LCD_WriteAnyFont(f_4x6_p, 1, 144, (page + 1) % 10);
 
   // get right eep
   unsigned char wep = LCD_eep_minus(Auto, eep, (2 * page));
@@ -1486,7 +1484,7 @@ void LCD_WriteManualEntryPage(unsigned char page)
   LCD_Entry_Clr();
 
   // page number
-  LCD_WriteMyFont(1, 144, page + 1);
+  LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
 
   // get right eep
   unsigned char wep = LCD_eep_minus(Manual, eep, (2 * page));
@@ -1526,7 +1524,7 @@ void LCD_WriteSetupEntryPage(unsigned char page)
   LCD_Entry_Clr();
 
   // page number
-  LCD_WriteMyFont(1, 144, page + 1);
+  LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
 
   // get right eep
   unsigned char wep = LCD_eep_minus(Setup, eep, (2 * page));
@@ -1568,7 +1566,7 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
   unsigned char endPa = 0;
 
   //*** debug eep page
-  if (DEBUG) LCD_WriteValue2(0, 0, eep);
+  if (DEBUG) LCD_WriteAnyValue(f_6x8_p, 2, 0, 0, eep);
 
   // determine start and end page
   switch(data)
@@ -1641,7 +1639,7 @@ unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char
 
 void LCD_Data_EndText(void)
 {
-  LCD_WriteStringFont(15, 1, "End");
+  LCD_WriteAnyStringFont(f_6x8_p, 15, 1, "End");
 }
 
 
@@ -1661,17 +1659,17 @@ void LCD_Calibration(void)
   Touch_Cal();
   LCD_Clean();
 
-  LCD_WriteStringFont(2, 0, "X-Cal:");
-  LCD_WriteStringFont(5, 0, "Y-Cal:");
-  LCD_WriteStringFont(10, 0, "X-Value:");
-  LCD_WriteStringFont(13, 0, "Y-Value:");
-  LCD_WriteStringFont(18, 0, "X-Value-Cal:");
-  LCD_WriteStringFont(21, 0, "Y-Value-Cal:");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "X-Cal:");
+  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "Y-Cal:");
+  LCD_WriteAnyStringFont(f_6x8_p, 10, 0, "X-Value:");
+  LCD_WriteAnyStringFont(f_6x8_p, 13, 0, "Y-Value:");
+  LCD_WriteAnyStringFont(f_6x8_p, 18, 0, "X-Value-Cal:");
+  LCD_WriteAnyStringFont(f_6x8_p, 21, 0, "Y-Value-Cal:");
 
-  LCD_WriteValue3(2, 60,  MEM_EEPROM_ReadVar(TOUCH_X_min));
-  LCD_WriteValue3(5, 60,  MEM_EEPROM_ReadVar(TOUCH_Y_min));
-  LCD_WriteValue3(2, 100, MEM_EEPROM_ReadVar(TOUCH_X_max));
-  LCD_WriteValue3(5, 100, MEM_EEPROM_ReadVar(TOUCH_Y_max));
+  LCD_WriteAnyValue(f_6x8_p, 3, 2, 60,  MEM_EEPROM_ReadVar(TOUCH_X_min));
+  LCD_WriteAnyValue(f_6x8_p, 3, 5, 60,  MEM_EEPROM_ReadVar(TOUCH_Y_min));
+  LCD_WriteAnyValue(f_6x8_p, 3, 2, 100, MEM_EEPROM_ReadVar(TOUCH_X_max));
+  LCD_WriteAnyValue(f_6x8_p, 3, 5, 100, MEM_EEPROM_ReadVar(TOUCH_Y_max));
 
   while(1)
   {
@@ -1682,9 +1680,9 @@ void LCD_Calibration(void)
     y = Touch_Y_Cal(yRead);
     x = Touch_X_Cal(xRead);
 
-    LCD_WriteValue3(10, 100, xRead);
-    LCD_WriteValue3(13, 100, yRead);
-    LCD_WriteValue3(18, 100, x);
-    LCD_WriteValue3(21, 100, y);
+    LCD_WriteAnyValue(f_6x8_p, 3, 10, 100, xRead);
+    LCD_WriteAnyValue(f_6x8_p, 3, 13, 100, yRead);
+    LCD_WriteAnyValue(f_6x8_p, 3, 18, 100, x);
+    LCD_WriteAnyValue(f_6x8_p, 3, 21, 100, y);
   }
 }

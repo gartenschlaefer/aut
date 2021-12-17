@@ -1,7 +1,7 @@
 // --
 // timer
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "mcp7941_driver.h"

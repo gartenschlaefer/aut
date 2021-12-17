@@ -101,11 +101,10 @@ unsigned char Error_Read(t_page page)
 }
 
 
-/* ==================================================================*
- *            Error Detection
- * ==================================================================*/
+/* ---------------------------------------------------------------*
+ *           Error Detection
+ * ---------------------------------------------------------------*/
 //*-* recheck this
-//*** recheck this
 t_page Error_Detection(t_page page, int min, int sec)
 {
   static ErrTreat treat = {.page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00};
@@ -499,27 +498,27 @@ void Error_Symbol(unsigned char err)
   // temp
   if(err & E_T)
   {
-    LCD_Write_Symbol_3(16, 134, n_grad);
+    LCD_WriteAnySymbol(s_19x19, 16, 134, n_grad);
   }
 
   // over-pressure or under-pressure
   if((err & E_OP) || (err & E_UP))
   {
     LCD_ClrSpace(6, 44, 6, 35);
-    LCD_Write_Symbol_2(6, 45, n_alarm);
+    LCD_WriteAnySymbol(s_29x17, 6, 45, n_alarm);
   }
 
   // max in tank
   if(err & E_IT)
   {
-    LCD_Write_Symbol_2(17, 1, n_alarm);
+    LCD_WriteAnySymbol(s_29x17, 17, 1, n_alarm);
     LCD_TextButton(Auto, 0);
   }
 
   // max out tank
   if(err & E_OT)
   {
-    LCD_Write_Symbol_2(17, 90, n_alarm);
+    LCD_WriteAnySymbol(s_29x17, 17, 90, n_alarm);
     LCD_TextButton(Setup, 0);
   }
 }

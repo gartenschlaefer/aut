@@ -1,7 +1,7 @@
 // --
 //  internal memory functions
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "memory_app.h"

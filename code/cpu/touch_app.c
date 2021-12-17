@@ -1,7 +1,7 @@
 // --
 // touch applications
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -90,8 +90,8 @@ unsigned char Touch_Matrix(void)
     //*** debug touch matrix
     if (DEBUG)
     {
-      LCD_WriteValue2_MyFont(22, 152, hy);
-      LCD_WriteValue2_MyFont(24, 152, lx);
+      LCD_WriteAnyValue(f_4x6_p, 2, 22, 152, hy);
+      LCD_WriteAnyValue(f_4x6_p, 2, 24, 152, lx);
     }
   }
 
@@ -228,7 +228,7 @@ t_page Touch_ManualLinker(unsigned char matrix, t_page page)
     case 0x23: LCD_Backlight(_on); LCD_Mark_ManualSymbol(sn_phosphor); return ManualPhosphor;
     case 0x24: LCD_Backlight(_on); LCD_Mark_ManualSymbol(sn_inflowPump); return ManualInflowPump;
 
-    case 0x33: if(page == ManualPumpOff){ LCD_Write_Symbol_3(15, 85, n_ok); return ManualPumpOff_On; } break;
+    case 0x33: if(page == ManualPumpOff){ LCD_WriteAnySymbol(s_19x19, 15, 85, n_ok); return ManualPumpOff_On; } break;
 
     // main linker
     case 0x41: LCD_Backlight(_on); LCD_MarkTextButton(Auto); MEM_EEPROM_WriteManualEntry(0, 0, _write); return AutoPage;
@@ -384,7 +384,7 @@ t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
     {
       case 0: LCD_OnValueNeg(circ[0]); break;
       case 1: LCD_OffValueNeg(circ[1]); break;
-      case 2: LCD_WriteValueNeg3(16, 72, time1); break;
+      case 2: LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, time1); break;
       default: break;
     }
   }
@@ -416,7 +416,7 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
     time2 = ((air[3] << 8) | air[2]);
     Eval_SetupAirTextMark(on, p_air);
     LCD_ClrSpace(15, 39, 3, 31);
-    LCD_WriteStringFont(16, 40, "Time:");
+    LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
   }
 
   switch(matrix)
@@ -471,7 +471,7 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
     // time
     case 0x32: if(!touch){ touch = 5; on = 2; Eval_SetupAirTextMark(on, p_air); }
       LCD_FillSpace (15, 39, 4, 31);
-      LCD_WriteStringFontNeg(16, 40,"Time:"); 
+      LCD_WriteAnyStringFont(f_6x8_n, 16, 40,"Time:"); 
       break;
 
     // no touch
@@ -491,7 +491,7 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
     {
       case 0: LCD_OnValueNeg(air[0]); break;
       case 1: LCD_OffValueNeg(air[1]); break;
-      case 2: LCD_WriteValueNeg3(16, 72, time2); break;
+      case 2: LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, time2); break;
       default: break;
     }
   }
@@ -514,7 +514,7 @@ t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page)
   {
     init = 1;
     setDown = MEM_EEPROM_ReadVar(TIME_setDown);
-    LCD_WriteValueNeg3(10, 30, setDown);
+    LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, setDown);
   }
 
   switch(matrix)
@@ -550,7 +550,7 @@ t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page)
   }
 
   // time config
-  if(touch) LCD_WriteValueNeg3(10, 30, setDown);
+  if(touch) LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, setDown);
   return page;
 }
 
@@ -575,8 +575,8 @@ t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
 
     LCD_OnValueNeg(pumpOn);
 
-    if(!pump){ LCD_Write_Symbol_2(15, 0, n_compressor); LCD_Write_Symbol_3(14, 50, p_pump); }
-    else{ LCD_Write_Symbol_2(15, 0, p_compressor); LCD_Write_Symbol_3(14, 50, n_pump); }
+    if(!pump){ LCD_WriteAnySymbol(s_29x17, 15, 0, n_compressor); LCD_WriteAnySymbol(s_19x19, 14, 50, p_pump); }
+    else{ LCD_WriteAnySymbol(s_29x17, 15, 0, p_compressor); LCD_WriteAnySymbol(s_19x19, 14, 50, n_pump); }
   }
 
   switch(matrix)
@@ -603,10 +603,10 @@ t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
       if(touch){ pumpOn = Eval_SetupPlus(pumpOn, 60); } break;
 
     // mammoth pump
-    case 0x31: if(!touch){ touch = 5; pump = 0; LCD_Write_Symbol_2(15, 0, n_compressor); LCD_Write_Symbol_3(14, 50, p_pump); } break;
+    case 0x31: if(!touch){ touch = 5; pump = 0; LCD_WriteAnySymbol(s_29x17, 15, 0, n_compressor); LCD_WriteAnySymbol(s_19x19, 14, 50, p_pump); } break;
 
     // electrical pump
-    case 0x32: if(!touch){ touch = 5; pump = 1; LCD_Write_Symbol_2(15, 0, p_compressor); LCD_Write_Symbol_3(14, 50, n_pump); } break;
+    case 0x32: if(!touch){ touch = 5; pump = 1; LCD_WriteAnySymbol(s_29x17, 15, 0, p_compressor); LCD_WriteAnySymbol(s_19x19, 14, 50, n_pump); } break;
 
     // no touch
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
@@ -642,11 +642,11 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
     init = 1;
     mudMin = MEM_EEPROM_ReadVar(ON_MIN_mud);
     mudSec = MEM_EEPROM_ReadVar(ON_SEC_mud);
-    LCD_WriteStringFont(11, 7,"ON:");
-    if(!onM){ LCD_WriteValue2(11, 40, mudMin); LCD_WriteValueNeg2(16, 40, mudSec); }
-    else{ LCD_WriteValueNeg2(11, 40, mudMin); LCD_WriteValue2(16, 40, mudSec); }
-    LCD_WriteStringFont(11,55,"min");
-    LCD_WriteStringFont(16,55,"sec");
+    LCD_WriteAnyStringFont(f_6x8_p, 11, 7,"ON:");
+    if(!onM){ LCD_WriteAnyValue(f_6x8_p, 2, 11, 40, mudMin); LCD_WriteAnyValue(f_6x8_n, 2, 16, 40, mudSec); }
+    else{ LCD_WriteAnyValue(f_6x8_n, 2, 11, 40, mudMin); LCD_WriteAnyValue(f_6x8_p, 2, 16, 40, mudSec); }
+    LCD_WriteAnyStringFont(f_6x8_p, 11,55,"min");
+    LCD_WriteAnyStringFont(f_6x8_p, 16,55,"sec");
   }
 
   switch(matrix)
@@ -678,10 +678,10 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
       break;
 
     // min
-    case 0x22: if(!touch){onM = 1; LCD_WriteValue2(16, 40, mudSec); touch = 5; } break;
+    case 0x22: if(!touch){onM = 1; LCD_WriteAnyValue(f_6x8_p, 2, 16, 40, mudSec); touch = 5; } break;
     
     // sec
-    case 0x32: if(!touch){onM = 0; LCD_WriteValue2(11, 40, mudMin); touch = 5; } break;
+    case 0x32: if(!touch){onM = 0; LCD_WriteAnyValue(f_6x8_p, 2, 11, 40, mudMin); touch = 5; } break;
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
@@ -693,8 +693,8 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
   }
 
   // min max
-  if(onM && touch){ LCD_WriteValueNeg2(11, 40, mudMin); }
-  if(!onM && touch){ LCD_WriteValueNeg2(16, 40, mudSec); }
+  if(onM && touch){ LCD_WriteAnyValue(f_6x8_n, 2, 11, 40, mudMin); }
+  if(!onM && touch){ LCD_WriteAnyValue(f_6x8_n, 2, 16, 40, mudSec); }
   return page;
 }
 
@@ -730,8 +730,8 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
     druckMin = ((h << 8) | l);
 
     // min max
-    if(on){ LCD_WriteValue3(16, 7, druckMax); LCD_WriteValueNeg3(11, 7, druckMin); }
-    if(!on){ LCD_WriteValue3(11, 7, druckMin); LCD_WriteValueNeg3(16, 7, druckMax); }
+    if(on){ LCD_WriteAnyValue(f_6x8_p, 3, 16, 7, druckMax); LCD_WriteAnyValue(f_6x8_n, 3, 11, 7, druckMin); }
+    if(!on){ LCD_WriteAnyValue(f_6x8_p, 3, 11, 7, druckMin); LCD_WriteAnyValue(f_6x8_n, 3, 16, 7, druckMax); }
   }
 
   switch(matrix)
@@ -772,10 +772,10 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
       break;
 
     // min
-    case 0x21: if(!touch){on = 1; LCD_WriteValue3(16, 7, druckMax); touch = 5; } break;
+    case 0x21: if(!touch){on = 1; LCD_WriteAnyValue(f_6x8_p, 3, 16, 7, druckMax); touch = 5; } break;
 
     // max
-    case 0x31: if(!touch){on = 0; LCD_WriteValue3(11, 7, druckMin); touch = 5; } break;
+    case 0x31: if(!touch){on = 0; LCD_WriteAnyValue(f_6x8_p, 3, 11, 7, druckMin); touch = 5; } break;
 
     // nothing
     case 0x00: if(touch){LCD_ControlButtons(touch); touch = 0; } break;
@@ -789,8 +789,8 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
   }
 
   // min max
-  if(on && touch){ LCD_WriteValueNeg3(11, 7, druckMin); }
-  if(!on && touch){ LCD_WriteValueNeg3(16, 7, druckMax); }
+  if(on && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 11, 7, druckMin); }
+  if(!on && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 16, 7, druckMax); }
   return page;
 }
 
@@ -903,8 +903,8 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
     sensor = MEM_EEPROM_ReadVar(SENSOR_outTank);
 
     Eval_SetupPumpMark(iPump);
-    if(sensor) LCD_Write_Symbol_2(15, 5, n_sensor);
-    else LCD_Write_Symbol_2(15, 5, p_sensor);
+    if(sensor) LCD_WriteAnySymbol(s_29x17, 15, 5, n_sensor);
+    else LCD_WriteAnySymbol(s_29x17, 15, 5, p_sensor);
 
     // initialize text and symbols
     LCD_Setup_IPText(0b10110100);
@@ -982,12 +982,12 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
       if(sensor && !touch)
       { 
         touch = 5; sensor = 0;
-        LCD_Write_Symbol_2(15, 5, p_sensor);
+        LCD_WriteAnySymbol(s_29x17, 15, 5, p_sensor);
       }
       if(!sensor && !touch)
       { 
         touch = 5; sensor = 1;
-        LCD_Write_Symbol_2(15, 5, n_sensor);
+        LCD_WriteAnySymbol(s_29x17, 15, 5, n_sensor);
       }
       break;
 
@@ -1058,9 +1058,9 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       read = read - cal;
 
       // negative / positive pressure
-      if(read < 0){ read = -read; LCD_WriteStringFont(10, 34, "-"); }
+      if(read < 0){ read = -read; LCD_WriteAnyStringFont(f_6x8_p, 10, 34, "-"); }
       else LCD_ClrSpace(10, 34, 2, 5);
-      LCD_WriteValue3(10, 40, read);
+      LCD_WriteAnyValue(f_6x8_p, 3, 10, 40, read);
     }
   }
 
@@ -1101,7 +1101,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       if(!touch && page == SetupCal)
       { 
         touch = 4;
-        LCD_Write_Symbol_2(9, 125, n_cal);
+        LCD_WriteAnySymbol(s_29x17, 9, 125, n_cal);
         cal = MPX_ReadAverage_UnCal_Value();
         MEM_EEPROM_WriteVar(CAL_L_druck, (cal & 0x00FF));
         MEM_EEPROM_WriteVar(CAL_H_druck, ((cal >> 8) & 0x00FF));
@@ -1112,7 +1112,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       if(!touch)
       { 
         touch = 5;
-        LCD_Write_Symbol_2(15,1, n_level);
+        LCD_WriteAnySymbol(s_29x17, 15,1, n_level);
         if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); PORT_Ventil_AllClose(); } 
         page = SetupCalPressure; 
       } break;
@@ -1124,8 +1124,8 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
         touch = 3;
         if(!MEM_EEPROM_ReadVar(SONIC_on))
         {
-          if(calRedo){ calRedo = 0; LCD_Write_Symbol_3(15, 130, p_arrowRedo); }
-          else{ calRedo = 1; LCD_Write_Symbol_3(15, 130, n_arrowRedo); }
+          if(calRedo){ calRedo = 0; LCD_WriteAnySymbol(s_19x19, 15, 130, p_arrowRedo); }
+          else{ calRedo = 1; LCD_WriteAnySymbol(s_19x19, 15, 130, n_arrowRedo); }
         }
       }
       break;
@@ -1134,7 +1134,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
     case 0x00:
       if(touch)
       {
-        if(touch == 4) LCD_Write_Symbol_2(9,125, p_cal);
+        if(touch == 4) LCD_WriteAnySymbol(s_29x17, 9,125, p_cal);
         touch = 0;
       } break;
 
@@ -1174,12 +1174,12 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
     comp = MEM_EEPROM_ReadVar(ALARM_comp);
     temp = MEM_EEPROM_ReadVar(ALARM_temp);
 
-    LCD_WriteValueNeg3(10,15, temp);
+    LCD_WriteAnyValue(f_6x8_n, 3, 10,15, temp);
 
-    if(comp) LCD_Write_Symbol_2(15, 40, n_compressor);
-    else LCD_Write_Symbol_2(15, 40, p_compressor);
-    if(sensor) LCD_Write_Symbol_2(15, 0, n_sensor);
-    else LCD_Write_Symbol_2(15, 0, p_sensor);
+    if(comp) LCD_WriteAnySymbol(s_29x17, 15, 40, n_compressor);
+    else LCD_WriteAnySymbol(s_29x17, 15, 40, p_compressor);
+    if(sensor) LCD_WriteAnySymbol(s_29x17, 15, 0, n_sensor);
+    else LCD_WriteAnySymbol(s_29x17, 15, 0, p_sensor);
   }
 
   switch(matrix)
@@ -1217,8 +1217,8 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
       if(!touch)
       {
         touch = 5;
-        if(sensor){ sensor = 0; LCD_Write_Symbol_2(15, 0, p_sensor); }
-        else{ sensor = 1; LCD_Write_Symbol_2(15, 0, n_sensor); }
+        if(sensor){ sensor = 0; LCD_WriteAnySymbol(s_29x17, 15, 0, p_sensor); }
+        else{ sensor = 1; LCD_WriteAnySymbol(s_29x17, 15, 0, n_sensor); }
       }
       break;
 
@@ -1226,8 +1226,8 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
     case 0x32:
       if(!touch)
       { touch = 5;
-        if(comp){ comp = 0; LCD_Write_Symbol_2(15, 40, p_compressor); }
-        else{ comp = 1; LCD_Write_Symbol_2(15, 40, n_compressor); }
+        if(comp){ comp = 0; LCD_WriteAnySymbol(s_29x17, 15, 40, p_compressor); }
+        else{ comp = 1; LCD_WriteAnySymbol(s_29x17, 15, 40, n_compressor); }
       }
       break;
 
@@ -1242,7 +1242,7 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
     default: break;
   }
 
-  if(touch){ LCD_WriteValueNeg3(10,15, temp); }
+  if(touch){ LCD_WriteAnyValue(f_6x8_n, 3, 10,15, temp); }
   return page;
 }
 
@@ -1382,27 +1382,27 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
     lvCirc = (MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | MEM_EEPROM_ReadVar(TANK_L_Circ);
 
     sonic = MEM_EEPROM_ReadVar(SONIC_on);
-    if(sonic) LCD_Write_Symbol_3(3, 47, n_sonic);
-    else LCD_Write_Symbol_3(3, 47, p_sonic);
+    if(sonic) LCD_WriteAnySymbol(s_19x19, 3, 47, n_sonic);
+    else LCD_WriteAnySymbol(s_19x19, 3, 47, p_sonic);
 
     if(!onM)
     { 
-      LCD_WriteValue3(11, 40, lvCirc);
-      LCD_WriteValueNeg3(16, 40, lvO2);
-      LCD_Write_Symbol_2(9, 0, p_air);
-      LCD_Write_Symbol_2(14, 0, n_setDown);
+      LCD_WriteAnyValue(f_6x8_p, 3, 11, 40, lvCirc);
+      LCD_WriteAnyValue(f_6x8_n, 3, 16, 40, lvO2);
+      LCD_WriteAnySymbol(s_29x17, 9, 0, p_air);
+      LCD_WriteAnySymbol(s_29x17, 14, 0, n_setDown);
     }
     else
     { 
-      LCD_WriteValueNeg3(11, 40, lvCirc);
-      LCD_WriteValue3(16, 40, lvO2);
-      LCD_Write_Symbol_2(9, 0, n_air);
-      LCD_Write_Symbol_2(14, 0, p_setDown); 
+      LCD_WriteAnyValue(f_6x8_n, 3, 11, 40, lvCirc);
+      LCD_WriteAnyValue(f_6x8_p, 3, 16, 40, lvO2);
+      LCD_WriteAnySymbol(s_29x17, 9, 0, n_air);
+      LCD_WriteAnySymbol(s_29x17, 14, 0, p_setDown); 
     }
 
     // cm
-    LCD_WriteStringFont(11,60,"cm");
-    LCD_WriteStringFont(16,60,"cm");
+    LCD_WriteAnyStringFont(f_6x8_p, 11,60,"cm");
+    LCD_WriteAnyStringFont(f_6x8_p, 16,60,"cm");
   }
 
   switch(matrix)
@@ -1411,8 +1411,8 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
       if(!touch)
       { 
         touch = 8;
-        if(sonic){ sonic = 0; LCD_Write_Symbol_3(3, 47, p_sonic); }
-        else{ sonic = 1; LCD_Write_Symbol_3(3, 47, n_sonic); }
+        if(sonic){ sonic = 0; LCD_WriteAnySymbol(s_19x19, 3, 47, p_sonic); }
+        else{ sonic = 1; LCD_WriteAnySymbol(s_19x19, 3, 47, n_sonic); }
       } break;
 
     // esc
@@ -1454,9 +1454,9 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
       if(!touch)
       {
         onM = 1; touch = 5;
-        LCD_WriteValue3(16, 40, lvO2);
-        LCD_Write_Symbol_2(9, 0, n_air);
-        LCD_Write_Symbol_2(14, 0, p_setDown);
+        LCD_WriteAnyValue(f_6x8_p, 3, 16, 40, lvO2);
+        LCD_WriteAnySymbol(s_29x17, 9, 0, n_air);
+        LCD_WriteAnySymbol(s_29x17, 14, 0, p_setDown);
       }
       break;
 
@@ -1466,9 +1466,9 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
       if(!touch)
       {
         onM = 0; touch = 5;
-        LCD_WriteValue3(11, 40, lvCirc);
-        LCD_Write_Symbol_2(9, 0, p_air);
-        LCD_Write_Symbol_2(14, 0, n_setDown);
+        LCD_WriteAnyValue(f_6x8_p, 3, 11, 40, lvCirc);
+        LCD_WriteAnySymbol(s_29x17, 9, 0, p_air);
+        LCD_WriteAnySymbol(s_29x17, 14, 0, n_setDown);
       }
       break;
 
@@ -1484,8 +1484,8 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
   }
 
   // circulate and o2
-  if(onM && touch){ LCD_WriteValueNeg3(11, 40, lvCirc); }
-  if(!onM && touch){ LCD_WriteValueNeg3(16, 40, lvO2); }
+  if(onM && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 11, 40, lvCirc); }
+  if(!onM && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 16, 40, lvO2); }
   return page;
 }
 
@@ -1543,7 +1543,7 @@ t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
       { 
         mark = 1; 
         if(iData) iData--;
-        LCD_Write_Symbol_3(3, 140, n_arrowUp);
+        LCD_WriteAnySymbol(s_19x19, 3, 140, n_arrowUp);
       } 
       break;
 
@@ -1553,7 +1553,7 @@ t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
       { 
         mark = 2; 
         if(iData < DATA_PAGE_NUM_AUTO) iData++;
-        LCD_Write_Symbol_3(14, 140, n_arrowDown);
+        LCD_WriteAnySymbol(s_19x19, 14, 140, n_arrowDown);
       } 
       break;
 
@@ -1562,14 +1562,14 @@ t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
       if(mark == 1)
       { 
         mark = 0;
-        LCD_Write_Symbol_3(3, 140, p_arrowUp);
+        LCD_WriteAnySymbol(s_19x19, 3, 140, p_arrowUp);
         LCD_WriteAutoEntryPage(iData);
       }
 
       else if(mark == 2)
       {
         mark = 0;
-        LCD_Write_Symbol_3(14, 140, p_arrowDown);
+        LCD_WriteAnySymbol(s_19x19, 14, 140, p_arrowDown);
         LCD_WriteAutoEntryPage(iData);
       } 
       break;
@@ -1603,7 +1603,7 @@ t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
       { 
         mark = 1; 
         if(iData) iData--;
-        LCD_Write_Symbol_3(3, 140, n_arrowUp);
+        LCD_WriteAnySymbol(s_19x19, 3, 140, n_arrowUp);
       } 
       break;
 
@@ -1613,7 +1613,7 @@ t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
       { 
         mark = 2; 
         if(iData < DATA_PAGE_NUM_MANUAL) iData++;
-        LCD_Write_Symbol_3(14, 140, n_arrowDown);
+        LCD_WriteAnySymbol(s_19x19, 14, 140, n_arrowDown);
       } 
       break;
 
@@ -1622,14 +1622,14 @@ t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
       if(mark == 1)
       {
         mark = 0;
-        LCD_Write_Symbol_3(3, 140, p_arrowUp);
+        LCD_WriteAnySymbol(s_19x19, 3, 140, p_arrowUp);
         LCD_WriteManualEntryPage(iData);
       }
 
       else if(mark == 2)
       { 
         mark = 0;
-        LCD_Write_Symbol_3(14, 140, p_arrowDown);
+        LCD_WriteAnySymbol(s_19x19, 14, 140, p_arrowDown);
         LCD_WriteManualEntryPage(iData);
       }   
       break;
@@ -1662,7 +1662,7 @@ t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
       { 
         mark = 1; 
         if(iData) iData--;
-        LCD_Write_Symbol_3(3, 140, n_arrowUp);
+        LCD_WriteAnySymbol(s_19x19, 3, 140, n_arrowUp);
       } 
       break;
 
@@ -1672,7 +1672,7 @@ t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
       { 
         mark = 2; 
         if(iData < DATA_PAGE_NUM_SETUP) iData++;
-        LCD_Write_Symbol_3(14, 140, n_arrowDown);
+        LCD_WriteAnySymbol(s_19x19, 14, 140, n_arrowDown);
       } 
       break;
 
@@ -1681,14 +1681,14 @@ t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
       if(mark == 1)
       {
         mark = 0;
-        LCD_Write_Symbol_3(3, 140, p_arrowUp);
+        LCD_WriteAnySymbol(s_19x19, 3, 140, p_arrowUp);
         LCD_WriteSetupEntryPage(iData);
       }
 
       else if(mark == 2)
       {
         mark = 0;
-        LCD_Write_Symbol_3(14, 140, p_arrowDown);
+        LCD_WriteAnySymbol(s_19x19, 14, 140, p_arrowDown);
         LCD_WriteSetupEntryPage(iData);
       }
       break;

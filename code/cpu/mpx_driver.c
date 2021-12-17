@@ -1,7 +1,7 @@
 // --
 // mpx pressure sensor
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -104,11 +104,11 @@ int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)
       switch(page)
       {
         case Auto:    
-          LCD_WriteValue3_MyFont(13,43, add);
+          LCD_WriteAnyValue(f_4x6_p, 3, 13,43, add);
           return add;
 
         case Manual:  
-          LCD_WriteValue3(17,42, add);
+          LCD_WriteAnyValue(f_6x8_p, 3, 17,42, add);
           return add;
 
         case Data: return add;
@@ -205,7 +205,7 @@ int MPX_LevelCal(t_FuncCmd cmd)
     // init: read from EEPROM
     case _init:
       level = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
-      LCD_WriteValue3(17, 40, level);
+      LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, level);
       break;
 
     // save to EEPROM
@@ -220,7 +220,7 @@ int MPX_LevelCal(t_FuncCmd cmd)
       break;
 
     // write
-    case _write: LCD_WriteValue3(17, 40, level); break;
+    case _write: LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, level); break;
     default: break;
   }
   return level;

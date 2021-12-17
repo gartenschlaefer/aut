@@ -1,7 +1,7 @@
 // --
 // main
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 /* ==================================================================*
  *            HeaderFiles
@@ -48,7 +48,7 @@ int main(void)
     if(DEBUG)
     {
       if (DEB_PORT) PORT_Debug();
-      LCD_WriteValue2(0, 70, page);
+      LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, page);
     }
 
     //------------------------------------------------GreatLinker

@@ -1,7 +1,7 @@
 // --
 //  internal memory applications
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"

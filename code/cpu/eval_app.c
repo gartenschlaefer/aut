@@ -69,7 +69,7 @@ void Eval_Oxygen(t_FuncCmd cmd, int min)
 void Eval_PinWrite(unsigned char pin, unsigned char codePos)
 {
   LCD_nPinButtons(pin);
-  LCD_WriteFont(3, (125 + (6 * codePos)), pin + 15);
+  LCD_WriteAnyFont(f_6x8_p, 3, 125 + 6 * codePos, pin + 15);
 }
 
 
@@ -79,7 +79,7 @@ void Eval_PinWrite(unsigned char pin, unsigned char codePos)
 
 void Eval_PinDel(void)
 {
-  LCD_WriteStringFont(3,125,"xxxx");
+  LCD_WriteAnyStringFont(f_6x8_p, 3, 125, "xxxx");
 }
 
 
@@ -229,15 +229,15 @@ void Eval_SetupCircSensorMark(unsigned char sensor)
   switch (sensor)
   {
     case 0:   
-      LCD_Write_Symbol_2(15, 0, p_sensor);
+      LCD_WriteAnySymbol(s_29x17, 15, 0, p_sensor);
       LCD_FillSpace (15, 39, 4, 31);
-      LCD_WriteStringFontNeg(16, 40, "Time:"); 
+      LCD_WriteAnyStringFont(f_6x8_n, 16, 40, "Time:"); 
       break;
 
     case 1:   
-      LCD_Write_Symbol_2(15, 0, n_sensor);
+      LCD_WriteAnySymbol(s_29x17, 15, 0, n_sensor);
       LCD_ClrSpace  (15, 39, 4, 31);
-      LCD_WriteStringFont(16, 40, "Time:");
+      LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
       break;
 
     default: break;
@@ -266,7 +266,7 @@ void Eval_SetupCircTextMark(unsigned char on, unsigned char *p_var)
 
   LCD_OnValue(var[0]);
   LCD_OffValue(var[1]);
-  LCD_WriteValue3(16, 72, ((var[3] << 8) | var[2]));
+  LCD_WriteAnyValue(f_6x8_p, 3, 16, 72, ((var[3] << 8) | var[2]));
 
   switch (on)
   {
@@ -274,7 +274,7 @@ void Eval_SetupCircTextMark(unsigned char on, unsigned char *p_var)
     case 1: LCD_OffValueNeg(var[1]); break;
     case 2: 
       LCD_FillSpace (15, 70, 4, 20);
-      LCD_WriteValueNeg3(16, 72, ((var[3] << 8) | var[2])); 
+      LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, ((var[3] << 8) | var[2])); 
       break;
 
     default: break;
@@ -287,7 +287,7 @@ void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
   unsigned char i = 0;
 
   LCD_ClrSpace(15, 39, 4, 51);
-  LCD_WriteStringFont(16,40,"Time:");
+  LCD_WriteAnyStringFont(f_6x8_p, 16, 40,"Time:");
 
   for(i = 0; i < 4; i++)
   {
@@ -297,7 +297,7 @@ void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
 
   LCD_OnValue(var[0]);
   LCD_OffValue(var[1]);
-  LCD_WriteValue3(16,72, ((var[3] << 8) | var[2]));
+  LCD_WriteAnyValue(f_6x8_p, 3, 16,72, ((var[3] << 8) | var[2]));
 
   switch (on)
   {
@@ -305,7 +305,7 @@ void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
     case 1: LCD_OffValueNeg(var[1]); break;
     case 2:
       LCD_FillSpace (15, 70, 4, 20);
-      LCD_WriteValueNeg3(16,72, ((var[3] << 8) | var[2]));
+      LCD_WriteAnyValue(f_6x8_n, 3, 16,72, ((var[3] << 8) | var[2]));
       break;
 
     default: break;
@@ -321,15 +321,15 @@ void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
 
 void Eval_SetupPumpMark(unsigned char mark)
 {
-  LCD_Write_Symbol_2(15, 45, p_compressor);
-  LCD_Write_Symbol_3(15, 90, p_pump);
-  LCD_Write_Symbol_1(15, 120, p_pump2);
+  LCD_WriteAnySymbol(s_29x17, 15, 45, p_compressor);
+  LCD_WriteAnySymbol(s_19x19, 15, 90, p_pump);
+  LCD_WriteAnySymbol(s_35x23, 15, 120, p_pump2);
 
   switch (mark)
   {
-    case 0: LCD_Write_Symbol_2(15, 45, n_compressor); break;
-    case 1: LCD_Write_Symbol_3(15, 90, n_pump); break;
-    case 2: LCD_Write_Symbol_1(15, 120, n_pump2); break;
+    case 0: LCD_WriteAnySymbol(s_29x17, 15, 45, n_compressor); break;
+    case 1: LCD_WriteAnySymbol(s_19x19, 15, 90, n_pump); break;
+    case 2: LCD_WriteAnySymbol(s_35x23, 15, 120, n_pump2); break;
     default: break;
   }
 }

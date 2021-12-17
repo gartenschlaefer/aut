@@ -2,7 +2,7 @@
 // touch driver
 
 
-#include<avr/io.h>
+#include <avr/io.h>
 
 #include "defines.h"
 #include "lcd_driver.h"
@@ -32,8 +32,8 @@ void Touch_Cal(void)
 
   //-----------------------------------------------NoTouchValue-----
   LCD_Clean();
-  LCD_WriteStringFont(2, 0, "Do not Touch!");
-  LCD_WriteStringFont(5, 0, "If you Touched, restart!");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Do not Touch!");
+  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "If you Touched, restart!");
 
   // save no touch value to EEPROM
   MEM_EEPROM_WriteVar(TOUCH_X_min, (Touch_X_ReadData() >> 4));
@@ -47,7 +47,7 @@ void Touch_Cal(void)
 
   //-----------------------------------------------TouchValue-----
   LCD_Clean();
-  LCD_WriteStringFont(2, 0, "Touch me!");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touch me!");
   while(!(TCD0_Wait_Query()));
 
   // x, y calibration
@@ -61,8 +61,8 @@ void Touch_Cal(void)
   MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY >> 4));
 
   LCD_Clean();
-  LCD_WriteStringFont(2,0,"Touchpanel Calibrated");
-  LCD_WriteStringFont(5,0,"EEPROM written");
+  LCD_WriteAnyStringFont(f_6x8_p, 2,0,"Touchpanel Calibrated");
+  LCD_WriteAnyStringFont(f_6x8_p, 5,0,"EEPROM written");
   TCD0_Stop();
 }
 
@@ -78,7 +78,7 @@ int Touch_X_Cal_Init(void)
 
   Touch_Clean();
   LCD_Clean();
-  LCD_WriteStringFont(2, 0, "Touchpanel X-Calibrating");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touchpanel X-Calibrating");
   TCC0_Touch_Wait();
 
   for(int i = 0; i < CAL_READS; i++)
@@ -103,7 +103,7 @@ int Touch_Y_Cal_Init(void)
 
   Touch_Clean();
   LCD_Clean();
-  LCD_WriteStringFont(2, 0, "Touchpanel Y-Calibrating");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touchpanel Y-Calibrating");
   TCC0_Touch_Wait();
 
   for(int i = 0; i < CAL_READS; i++)

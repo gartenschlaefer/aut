@@ -472,7 +472,7 @@ unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
     {
       for(page = 0; page < 32; page++)  //32Pages = 4kB
       {
-        LCD_WriteValue3_MyFont(17, 50, page);
+        LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
         //--------------------------------------------FillBufferPage128
         for(byte8 = 0; byte8 < 128; byte8 += 8)
         {
@@ -560,7 +560,7 @@ unsigned char CAN_SonicWriteProgram(t_FuncCmd cmd)
       for(page = 0; page < 32; page++)  //32Pages = 4kB
       {
         WDT_RESET;
-        LCD_WriteValue3_MyFont(17, 50, page);
+        LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
         //--------------------------------------------Write1EEPage
         for(byte8 = 0; byte8 < 128; byte8 += 8)
         {

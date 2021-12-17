@@ -184,7 +184,7 @@ void Modem_ReadSLED(t_page page)
   {
     if(!(PORTF.IN & PIN3_bm))
     {
-      LCD_WriteMyFont(1, 152, 26);
+      LCD_WriteAnyFont(f_4x6_p, 1, 152, 26);
     }
     else
     {
@@ -196,7 +196,7 @@ void Modem_ReadSLED(t_page page)
   {
     if(!(PORTF.IN & PIN3_bm))
     {
-      LCD_WriteMyFont(18, 137, 26);
+      LCD_WriteAnyFont(f_4x6_p, 18, 137, 26);
     }
     else
     {
@@ -326,7 +326,7 @@ unsigned char Modem_Call(TelNr nr)
   USART_WriteByte(CHAR_CR);
 
   //--------------------------------------------------Wait+HangUp
-  LCD_WriteMyFont(16, 119, nr.id);
+  LCD_WriteAnyFont(f_4x6_p, 16, 119, nr.id);
   TCC0_wait_sec(1);
   unsigned char point_pos = 0;
   for(nr.pos = 0; nr.pos < MO_HANG_UP_TIME; nr.pos++)
@@ -339,7 +339,7 @@ unsigned char Modem_Call(TelNr nr)
     }
 
     // ...
-    LCD_WriteMyFont(16, 123 + point_pos * 4, 22);
+    LCD_WriteAnyFont(f_4x6_p, 16, 123 + point_pos * 4, 22);
     point_pos++;
     TCC0_wait_sec(1);
   }
@@ -487,9 +487,9 @@ void Modem_Test(void)
 {
 
   // some text
-  LCD_WriteStringFont(1, 10, "Modem");
-  LCD_WriteStringFont(4, 30,  "PWR");
-  LCD_WriteStringFont(12, 30, "CTS");
+  LCD_WriteAnyStringFont(f_6x8_p, 1, 10, "Modem");
+  LCD_WriteAnyStringFont(f_6x8_p, 4, 30,  "PWR");
+  LCD_WriteAnyStringFont(f_6x8_p, 12, 30, "CTS");
 
   // modem init
   struct Modem modem;
@@ -535,7 +535,7 @@ void Modem_Test(void)
         if (wait_var == 5)
         {
           // send something
-          LCD_WriteStringFont(15, 30, "sent");
+          LCD_WriteAnyStringFont(f_6x8_p, 15, 30, "sent");
           Modem_SendTest();
         }
 
@@ -549,12 +549,12 @@ void Modem_Test(void)
           p_rec++;
 
           // print length
-          LCD_WriteValue2(20, 5, len);
+          LCD_WriteAnyValue(f_6x8_p, 2, 20, 5, len);
 
           // print message
           while(len)
           {
-            LCD_WriteValue3(i*2, 70+30*j, *p_rec);
+            LCD_WriteAnyValue(f_6x8_p, 3, i*2, 70+30*j, *p_rec);
             p_rec++;
             len--;
             i++;
