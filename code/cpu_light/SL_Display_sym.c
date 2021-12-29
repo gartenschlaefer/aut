@@ -192,14 +192,14 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 	else if(cmd== _set)
 	{
 		LCD_Auto_InflowPump(0, _outSet);
-		if(airState== _on)	OUT_Set_Circulate();
+		if(airState== _on)	OUT_Set_Air();
 	}
 
 	//--------------------------------------------------------OutSet	
 	else if(cmd== _outSet)
 	{
-		if(airState== _on)	OUT_Set_Circulate();
-		if(airState== _off)	OUT_Clr_Circulate();
+		if(airState== _on)	OUT_Set_Air();
+		if(airState== _off)	OUT_Clr_Air();
 	}
 
 	//--------------------------------------------------------WriteSym
@@ -226,7 +226,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 					cPage= page;
 					page= MPX_ReadTank(page, _exe);				//MPX
 					MPX_ReadTank(page, _write);					//MPX
-					OUT_Clr_Circulate();						//ClearAir
+					OUT_Clr_Air();						//ClearAir
 					
 					if(cPage!= page){
 						LCD_Auto_InflowPump(0, _reset);			//IP-Reset
@@ -242,7 +242,7 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 					LCD_Write_Symbol_2(6, 45, n_compressor);
 					if(LCD_Auto_InflowPump(0, _state)==_on){
 						LCD_Auto_InflowPump(0, _reset);}		//IP-Reset
-					OUT_Set_Circulate();						//SetAir
+					OUT_Set_Air();						//SetAir
 					airMin= LCD_AutoRead_StartTime(page, 1);	//Read On
 					airSec= 0;					
 				}										break; 	//Auto
@@ -254,14 +254,14 @@ t_page LCD_Write_AirVar(t_page page, int sec, t_FuncCmd cmd)
 					airState= _off;								//NewState_off
 					MPX_ReadTank(ManualCirculate, _exe);		//MPX
 					MPX_ReadTank(ManualCirculate, _write);		//MPX
-					OUT_Clr_Circulate();						//ClearAir
+					OUT_Clr_Air();						//ClearAir
 					airMin= LCD_AutoRead_StartTime(page, 0);	//Read Off
 					airSec= 0;
 				}
 				else if(airState==_off && !airMin && !airSec)	//--Change2On
 				{
 					airState= _on;								//NewState_on
-					OUT_Set_Circulate();
+					OUT_Set_Air();
 					airMin= LCD_AutoRead_StartTime(page, 1);	//Read On
 					airSec= 0;
 				}										break; 	//Manual

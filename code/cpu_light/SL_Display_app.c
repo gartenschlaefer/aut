@@ -298,18 +298,18 @@ t_page LCD_AutoPage_Circulate(int *p_min, int *p_sec)
 
 	if(read == AutoSetDown){							//MPX-Sensor
 		LCD_Auto_InflowPump(0, _reset);					//ResetIP
-		OUT_Clr_Circulate();							//Clear Air	
+		OUT_Clr_Air();							//Clear Air	
 		return AutoSetDown;}							//Next Auto Page
 	
 	if(read == AutoAir){
 		LCD_Auto_InflowPump(0, _reset);					//ResetIP
-		OUT_Clr_Circulate();							//Clear Air	
+		OUT_Clr_Air();							//Clear Air	
 		LCD_Write_AirVar(AutoAir, 0, _init);			//reInit Air							
 		return AutoAir;}								//Next Auto Page
 	
 	if(evalCD && (!MEM_EEPROM_ReadVar(SENSOR_inTank))){	//Time		
 		LCD_Auto_InflowPump(0, _reset);					//ResetIP
-		OUT_Clr_Circulate();							//Clear Air	
+		OUT_Clr_Air();							//Clear Air	
 		LCD_Write_AirVar(AutoAir, 0, _init);			//reInit Air
 		return AutoAir;}								//Next Auto Page
 	
@@ -684,7 +684,7 @@ t_page LCD_ManualPage_Circulate(unsigned char *p_Min, unsigned char *p_Sec)
 	matrix= 	Touch_Matrix();
 	manPage=	Touch_ManualLinker(matrix, ManualCirculate);
 	
-	if(manPage!= ManualCirculate){	OUT_Clr_Circulate();						//Clr R+V
+	if(manPage!= ManualCirculate){	OUT_Clr_Air();						//Clr R+V
 									LCD_ManualSet(manPage, p_Min, p_Sec);		//nextPage
 									LCD_Write_AirVar(AutoCirculate, 0, _init);	//reInit Air
 									return manPage;}

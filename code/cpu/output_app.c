@@ -131,15 +131,10 @@ void OUT_Set_InflowPump(void)
   switch(pump)
   {
     // mammoth pump
-    case 0:
-      PORT_Ventil(OPEN_Reserve, 0);
-      OUT_Set_Compressor();
-      break;
+    case 0: PORT_Ventil(OPEN_Reserve, 0); OUT_Set_Compressor(); break;
 
     // ext. pump 1
-    case 1:
-      PORT_RelaisSet(R_INFLOW1);
-      break;
+    case 1: PORT_RelaisSet(R_INFLOW1); break;
 
     // ext. pump 2
     case 2:

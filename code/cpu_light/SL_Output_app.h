@@ -27,9 +27,6 @@ void OUT_Clr_PumpOff(void);
 void OUT_Set_Mud(void);
 void OUT_Clr_Mud(void);
 
-void OUT_Set_Circulate(void);
-void OUT_Clr_Circulate(void);
-
 void OUT_Set_Air(void);
 void OUT_Clr_Air(void);
 
@@ -41,19 +38,8 @@ void OUT_Clr_Phosphor(void);
 
 void OUT_Set_InflowPump(void);
 void OUT_Clr_InflowPump(void);
-
-void OUT_Set_Alarm(void);
-void OUT_Clr_Alarm(void);
-
 void OUT_Clr_IPAir(void);
 
 void OUT_CloseOff(void);
 void OUT_TestVentil(void);
 void OUT_TestVentil2(void);
- 
-
-
-
-/**********************************************************************\
- * End of SL_Output_app.c
-\**********************************************************************/

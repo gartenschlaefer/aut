@@ -79,9 +79,9 @@ typedef enum
 #define C_AIR		0x20
 #define O_CLRW		0x40
 #define C_CLRW		0x80
-//--------------------------*/	
+//--------------------------*/
 
-/*--------------------------Rverse
+/*--------------------------reverse
 #define ALL_OPEN	0xAA			
 #define ALL_CLOSE	0x55		
 #define O_RES		0x02
@@ -151,6 +151,7 @@ void PORT_Ventil			(t_ventil ventil);
 void PORT_Ventil_AllOpen	(void);
 void PORT_Ventil_AllOpen2	(void);
 void PORT_Ventil_AllClose	(void);
+void PORT_Ventil_AllClose2 (void);
 void PORT_Ventil_AllOff		(void);
 void PORT_Ventil_AutoClose	(t_page page);
 

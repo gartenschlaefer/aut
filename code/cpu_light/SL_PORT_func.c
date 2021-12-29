@@ -297,32 +297,6 @@ void PORT_Ventil_AllOpen(void)
 	TCE0_16MHz_Stop();
 }
 
-void PORT_Ventil_AllOpen2(void)
-{
-	Watchdog_Restart();
-	P_VENTIL.OUTSET= O_RES;
-	TC_Ventil_Wait_500ms();
-	P_VENTIL.OUTSET= O_MUD;
-	TC_Ventil_Wait_500ms();
-	P_VENTIL.OUTSET= O_AIR;
-	TC_Ventil_Wait_500ms();
-	P_VENTIL.OUTSET= O_CLRW;
-	TC_Ventil_Wait_500ms();
-
-	TC_Ventil_Wait_3s();
-
-	P_VENTIL.OUTCLR= O_RES;
-	TC_Ventil_Wait_500ms();
-	P_VENTIL.OUTCLR= O_MUD;
-	TC_Ventil_Wait_500ms();
-	P_VENTIL.OUTCLR= O_AIR;
-	TC_Ventil_Wait_500ms();
-	P_VENTIL.OUTCLR= O_CLRW;
-	TC_Ventil_Wait_500ms();
-	Watchdog_Restart(); 
-	TCE0_16MHz_Stop();
-}
-
 
 /* -------------------------------------------------------------------*
  * 						Ventil all close
@@ -354,6 +328,62 @@ void PORT_Ventil_AllClose(void)
 	TCE0_16MHz_Stop();
 }
 
+void PORT_Ventil_AllOpen2(void)
+{
+	Watchdog_Restart();
+	P_VENTIL.OUTSET= O_RES;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTSET= O_MUD;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTSET= O_AIR;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTSET= O_CLRW;
+	TC_Ventil_Wait_500ms();
+
+	TC_Ventil_Wait_2s();
+	TC_Ventil_Wait_500ms();
+	//TC_Ventil_Wait_500ms();
+
+	P_VENTIL.OUTCLR= O_RES;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTCLR= O_MUD;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTCLR= O_AIR;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTCLR= O_CLRW;
+	TC_Ventil_Wait_500ms();
+	Watchdog_Restart(); 
+	TCE0_16MHz_Stop();
+}
+
+void PORT_Ventil_AllClose2(void)
+{
+	Watchdog_Restart();
+	P_VENTIL.OUTSET= C_RES;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTSET= C_MUD;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTSET= C_AIR;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTSET= C_CLRW;
+	TC_Ventil_Wait_500ms();
+
+	TC_Ventil_Wait_2s();
+	//TC_Ventil_Wait_500ms();
+
+	P_VENTIL.OUTCLR= C_RES;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTCLR= C_MUD;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTCLR= C_AIR;
+	TC_Ventil_Wait_500ms();
+	P_VENTIL.OUTCLR= C_CLRW;
+	TC_Ventil_Wait_500ms();
+	Watchdog_Restart(); 
+	TCE0_16MHz_Stop();
+}
+
+
 void PORT_Ventil_AllOff(void)
 {
 	P_VENTIL.OUT= 0x00;
@@ -370,14 +400,14 @@ void PORT_Ventil_AutoClose(t_page page)
 {
 	switch(page)
 	{
-		case AutoZone:			OUT_Clr_Circulate();	break;
+		case AutoZone:			OUT_Clr_Air();	break;
 		case AutoSetDown:								break;
 		case AutoPumpOff:		OUT_Clr_PumpOff();		break;
 		case AutoMud:			OUT_Clr_Mud();			break;
 		case AutoCirculate:		OUT_Clr_IPAir();		break;
 		case AutoAir:			OUT_Clr_IPAir();		break;
 
-		case ManualCirculate:	OUT_Clr_Circulate();	break;
+		case ManualCirculate:	OUT_Clr_Air();	break;
 		case ManualAir:			OUT_Clr_Air();			break;
 		case ManualSetDown:								break;
 		case ManualPumpOff:		OUT_Clr_PumpOff();		break;
