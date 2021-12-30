@@ -1113,7 +1113,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       { 
         touch = 5;
         LCD_WriteAnySymbol(s_29x17, 15,1, n_level);
-        if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); PORT_Ventil_AllClose(); } 
+        if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); OUT_CloseOff(); } 
         page = SetupCalPressure; 
       } break;
 
@@ -1148,7 +1148,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
   if(page != SetupCal && page != SetupCalPressure)
   {
     iniCal = 0;
-    if(openV){ openV = 0; PORT_Ventil_AllClose(); }
+    if(openV){ openV = 0; OUT_CloseOff(); }
   }
   return page;
 }

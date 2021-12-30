@@ -28,7 +28,7 @@ void TCC0_WaitMicroSec_Init(int microSec)
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC0.CNT = 0;
-  TCC0.PER = 60000;
+  TCC0.PER = 65500;
   TCC0.CCA = time;
   TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -49,7 +49,7 @@ void TCC0_WaitMilliSec_Init(int milliSec)
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC0.CNT = 0;
-  TCC0.PER = 60000;
+  TCC0.PER = 65500;
   TCC0.CCA = time;
   TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -70,7 +70,7 @@ void TCC0_WaitSec_Init(int Sec)
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC0.CNT = 0;
-  TCC0.PER = 60000;
+  TCC0.PER = 65500;
   TCC0.CCA = time;
   TCC0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -165,14 +165,17 @@ void TCC0_Touch_Wait(void)
 
 void TCC0_wait_openVentil(void)
 {
-  TCC0_wait_sec(3);
+  // spring or usual valves
+  if(SPRING_VALVE_ON){ TCC0_wait_sec(4); TCC0_wait_ms(350); }
+  else{ TCC0_wait_sec(3); }
 }
 
 
 void TCC0_wait_closeVentil(void)
 {
-  TCC0_wait_sec(3);
-  TCC0_wait_ms(100);
+  // spring valves
+  if(SPRING_VALVE_ON){ TCC0_wait_sec(4); TCC0_wait_ms(300); }
+  else{ TCC0_wait_sec(3); TCC0_wait_ms(100); }
 }
 
 
@@ -198,7 +201,7 @@ void TCC1_WaitMilliSec_Init(int milliSec)
   TCC1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCC1.CNT = 0;
-  TCC1.PER = 60000;
+  TCC1.PER = 65500;
   TCC1.CCA = time;
   TCC1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
@@ -249,7 +252,7 @@ void TCD0_WaitMilliSec_Init(int milliSec)
   TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCD0.CNT = 0;
-  TCD0.PER = 60000;
+  TCD0.PER = 65500;
   TCD0.CCA = time;
   TCD0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -270,7 +273,7 @@ void TCD0_WaitSec_Init(int Sec)
   TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCD0.CNT = 0;
-  TCD0.PER = 60000;
+  TCD0.PER = 65500;
   TCD0.CCA = time;
   TCD0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -320,7 +323,7 @@ void TCD1_WaitMilliSec_Init(int milliSec)
   TCD1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCD1.CNT = 0;
-  TCD1.PER = 60000;
+  TCD1.PER = 65500;
   TCD1.CCA = time;
   TCD1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
@@ -412,7 +415,7 @@ void TCE0_WaitSec_Init(int Sec)
   TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCE0.CNT = 0;
-  TCE0.PER = 60000;
+  TCE0.PER = 65500;
   TCE0.CCA = time;
   TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -433,7 +436,7 @@ void TCE0_WaitMilliSec_Init(int milliSec)
   TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCE0.CNT = 0;
-  TCE0.PER = 60000;
+  TCE0.PER = 65500;
   TCE0.CCA = time;
   TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -555,7 +558,7 @@ void TCE1_WaitMilliSec_Init(int milliSec)
   TCE1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCE1.CNT = 0;
-  TCE1.PER = 60000;
+  TCE1.PER = 65500;
   TCE1.CCA = time;
   TCE1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
@@ -605,7 +608,7 @@ void TCF0_WaitSec_Init(int Sec)
   TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF0.CNT = 0;
-  TCF0.PER = 60000;
+  TCF0.PER = 65500;
   TCF0.CCA = time;
   TCF0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -625,7 +628,7 @@ void TCF0_WaitMilliSec_Init(int milliSec)
   TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF0.CNT = 0;
-  TCF0.PER = 60000;
+  TCF0.PER = 65500;
   TCF0.CCA = time;
   TCF0.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
@@ -676,7 +679,7 @@ void TCF1_WaitSec_Init(int Sec)
   TCF1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF1.CNT = 0;
-  TCF1.PER = 60000;
+  TCF1.PER = 65500;
   TCF1.CCA = time;
   TCF1.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
@@ -696,7 +699,7 @@ void TCF1_WaitMilliSec_Init(int milliSec)
   TCF1.CTRLB = TC_WGMODE_NORMAL_gc;
 
   TCF1.CNT = 0;
-  TCF1.PER = 60000;
+  TCF1.PER = 65500;
   TCF1.CCA = time;
   TCF1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 

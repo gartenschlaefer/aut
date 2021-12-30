@@ -5,9 +5,9 @@
 #ifndef OUTPUT_APP_H   
 #define OUTPUT_APP_H
 
-/* ==================================================================*
- *            FUNCTIONS API
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            function header
+ * ------------------------------------------------------------------*/
 
 void OUT_SetDown(void);
 void OUT_Set_PumpOff(void);
@@ -24,5 +24,6 @@ void OUT_Set_InflowPump(void);
 void OUT_Clr_InflowPump(void);
 void OUT_Clr_IPAir(void);
 void OUT_CloseOff(void);
+void OUT_Init_Valves(void);
 
 #endif

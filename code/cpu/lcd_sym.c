@@ -469,14 +469,14 @@ void LCD_ManualSet_Page(int min, int sec)
   LCD_Clean();
 
   // positive setup symbols
-  for(i = 12; i < 20; i++)
-  {
-    LCD_SetupSymbols(i);
-  }
+  for(i = 12; i < 20; i++){ LCD_SetupSymbols(i); }
   LCD_MarkTextButton(Manual);
   LCD_ManualText(min, sec);
 
-  OUT_CloseOff();
+  // init valves if it is the first page
+  OUT_Init_Valves();
+
+  // save manual entry
   MEM_EEPROM_WriteManualEntry(MCP7941_ReadByte(TIC_HOUR), MCP7941_ReadByte(TIC_MIN), _saveValue);
 }
 

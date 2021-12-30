@@ -21,7 +21,6 @@
 #include "error_func.h"
 #include "tc_func.h"
 #include "basic_func.h"
-#include "port_func.h"
 
 #include "lcd_sym.h"
 #include "sonic_app.h"
@@ -59,7 +58,7 @@ t_page LCD_AutoPage(t_page page)
         LCD_Write_AirVar(AutoCirc, 0, _init);
         LCD_Auto_InflowPump(page, 0, _init);
         LCD_Auto_Phosphor(0, _init);
-        OUT_CloseOff();
+        OUT_Init_Valves();
         LCD_AutoSet(page, p_min, p_sec);
       }
       else
@@ -611,7 +610,10 @@ void LCD_AutoSet(t_page page, int *p_min, int *p_sec)
 {
   switch(page)
   {
-    case AutoPage: LCD_AutoSet_Symbol(page, *p_min, *p_sec); OUT_CloseOff(); break;
+    // init auto page
+    case AutoPage: LCD_AutoSet_Symbol(page, *p_min, *p_sec); OUT_Init_Valves(); break;
+
+    // other auto pages
     case AutoZone: *p_sec = 0; *p_min = 2; LCD_AutoSet_Symbol(page, *p_min, *p_sec); OUT_Set_Air(); break;
     case AutoSetDown: *p_sec = 0; *p_min = MEM_EEPROM_ReadVar(TIME_setDown); LCD_AutoSet_Symbol(page, *p_min, *p_sec); OUT_SetDown(); break;
     case AutoPumpOff: *p_sec = 0; *p_min = MEM_EEPROM_ReadVar(ON_pumpOff); LCD_AutoSet_Symbol(page, *p_min, *p_sec); OUT_Set_PumpOff(); break;
@@ -995,7 +997,7 @@ t_page LCD_SetupPage(t_page page)
   }
 
   TCC0_DisplaySetup_Wait();
-  if(Eval_CountDown(p_min, p_sec)){ if(page == SetupCalPressure) PORT_Ventil_AllClose(); return AutoPage; }
+  if(Eval_CountDown(p_min, p_sec)){ if(page == SetupCalPressure) OUT_CloseOff(); return AutoPage; }
   return page;
 }
 

@@ -7,9 +7,6 @@
 
 #include <avr/io.h>
 
-/* ==================================================================*
- *            DEFINES
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            PORT
@@ -21,7 +18,7 @@
 
 
 /* ------------------------------------------------------------------*
- *            Optical coupler Inputs
+ *            optical coupler inputs
  * ------------------------------------------------------------------*/
 
 #define OC1 (PIN7_bm)
@@ -37,10 +34,10 @@ struct InputHandler {
 
 
 /* ------------------------------------------------------------------*
- *            Ventil Outpus
+ *            valve
  * ------------------------------------------------------------------*/
 
-//*--------------------------Normal Connection
+// valve outputs
 #define ALL_OPEN  0x55
 #define ALL_CLOSE 0xAA
 #define O_RES     0x01
@@ -51,20 +48,6 @@ struct InputHandler {
 #define C_AIR     0x20
 #define O_CLRW    0x40
 #define C_CLRW    0x80
-//--------------------------*/
-
-/*--------------------------Reverse
-#define ALL_OPEN  0xAA
-#define ALL_CLOSE 0x55
-#define O_RES     0x02
-#define C_RES     0x01
-#define O_MUD     0x08
-#define C_MUD     0x04
-#define O_AIR     0x20
-#define C_AIR     0x10
-#define O_CLRW    0x80
-#define C_CLRW    0x40
-//--------------------------*/
 
 typedef enum
 { OPEN_Reserve,   CLOSE_Reserve,
@@ -79,42 +62,58 @@ typedef enum
   READ_STATE
 }t_ventil;
 
-#define V_AIR (1<<0)
-#define V_MUD (1<<1)
-#define V_CLW (1<<2) 
-#define V_RES (1<<3)   
+#define V_AIR (1 << 0)
+#define V_MUD (1 << 1)
+#define V_CLW (1 << 2) 
+#define V_RES (1 << 3)   
 
 
 /* ------------------------------------------------------------------*
- *            Relais Outpus
+ *            relay output connections
  * ------------------------------------------------------------------*/
 
-/*---------------------------------------Old
-#define R_COMP      (1<<4)      //R1
-#define R_PHOSPHOR    (1<<5)      //R2
-#define R_ALARM     (1<<6)      //R3
-#define R_VENTILATOR  (1<<7)      //R4
-#define R_INFLOW1   (1<<0)      //R5
-#define R_INFLOW2   (1<<1)      //R6
-#define R_CLEARWATER  (1<<2)      //R7
-#define R_EXT_COMP    (1<<3)      //R8
-//----------------------------------------*/
+// new
+#if USE_NEW_RELAY_CONNECTIONS
 
-//*---------------------------------------New
-#define R_COMP        (1<<4)      //R1
-#define R_CLEARWATER  (1<<5)      //R2
-#define R_ALARM       (1<<6)      //R3
-#define R_VENTILATOR  (1<<7)      //R4
-#define R_INFLOW1     (1<<0)      //R5
-#define R_INFLOW2     (1<<1)      //R6
-#define R_PHOSPHOR    (1<<2)      //R7
-#define R_EXT_COMP    (1<<3)      //R8
-//----------------------------------------*/
+  // define new relay connections R1...R8
+  #define R_COMP        (1 << 4)
+  #define R_CLEARWATER  (1 << 5)
+  #define R_ALARM       (1 << 6)
+  #define R_VENTILATOR  (1 << 7)
+  #define R_INFLOW1     (1 << 0)
+  #define R_INFLOW2     (1 << 1)
+  #define R_PHOSPHOR    (1 << 2)
+  #define R_EXT_COMP    (1 << 3)
+
+// old
+#else
+  
+  // define very old relay connections R1...R8
+  #define R_COMP        (1 << 5)
+  #define R_PHOSPHOR    (1 << 4)
+  #define R_ALARM       (1 << 6)
+  #define R_VENTILATOR  (1 << 7)
+  #define R_INFLOW1     (1 << 0)
+  #define R_INFLOW2     (1 << 1)
+  #define R_CLEARWATER  (1 << 2)
+  #define R_EXT_COMP    (1 << 3)
+
+  // // define old relay connections R1...R8
+  // #define R_COMP        (1 << 4)
+  // #define R_PHOSPHOR    (1 << 5)
+  // #define R_ALARM       (1 << 6)
+  // #define R_VENTILATOR  (1 << 7)
+  // #define R_INFLOW1     (1 << 0)
+  // #define R_INFLOW2     (1 << 1)
+  // #define R_CLEARWATER  (1 << 2)
+  // #define R_EXT_COMP    (1 << 3)
+
+#endif
 
 
-/* ==================================================================*
- *            FUCNTION API
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            function header
+ * ------------------------------------------------------------------*/
 
 void PORT_Init(void);
 //void PORT_SoftwareRst(void);

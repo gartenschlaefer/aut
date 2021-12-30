@@ -178,3 +178,29 @@ void OUT_CloseOff(void)
   PORT_Relais_AllOff();
   PORT_Ventil_AllClose();
 }
+
+
+/* ------------------------------------------------------------------*
+ *            initialize valves to all closed
+ * ------------------------------------------------------------------*/
+
+void OUT_Init_Valves(void)
+{
+  static unsigned char init_valves = 0;
+
+  // init valves not done yet
+  if(!init_valves)
+  {
+    init_valves = 1;
+    if(SPRING_VALVE_ON)
+    {
+      // open all valves
+      PORT_Ventil_AllOpen();
+
+      // close all valves
+      OUT_CloseOff();
+    }
+    else OUT_CloseOff();   
+  }
+
+}

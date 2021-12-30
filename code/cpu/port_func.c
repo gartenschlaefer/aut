@@ -212,24 +212,12 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
       P_VENTIL.OUTCLR = C_AIR | C_RES;  
       break;
 
-    case SET_STATE_CLOSE:
-      state &= ~new_state;
-      break;
-
-    case SET_STATE_OPEN:
-      state |= new_state;
-      break;
-
-    case SET_STATE_ALL_CLOSED: 
-      state = 0x00; 
-      break;
-
-    case SET_STATE_ALL_OPEN: 
-      state = 0x0F; 
-      break;
-
-    default: 
-      break;
+    // states
+    case SET_STATE_CLOSE: state &= ~new_state; break;
+    case SET_STATE_OPEN: state |= new_state; break;
+    case SET_STATE_ALL_CLOSED: state = 0x00; break;
+    case SET_STATE_ALL_OPEN: state = 0x0F; break;
+    default: break;
   }
   return state;
 }
@@ -245,7 +233,7 @@ void PORT_Ventil_AllOpen(void)
   WDT_RESET;
 
   // ventil open
-  P_VENTIL.OUTSET= O_RES;
+  P_VENTIL.OUTSET = O_RES;
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = O_MUD;
   TCC0_wait_ms(500);
@@ -253,9 +241,9 @@ void PORT_Ventil_AllOpen(void)
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = O_CLRW;
 
-  // time
-  TCC0_wait_sec(1);
-  TCC0_wait_ms(500);
+  // spring or usual valves
+  if(SPRING_VALVE_ON){ TCC0_wait_sec(2); TCC0_wait_ms(850); }
+  else{ TCC0_wait_sec(1); TCC0_wait_ms(500); }
 
   // stop opening
   P_VENTIL.OUTCLR= O_RES;
@@ -265,8 +253,8 @@ void PORT_Ventil_AllOpen(void)
   P_VENTIL.OUTCLR = O_AIR;
   TCC0_wait_ms(500);
   P_VENTIL.OUTCLR = O_CLRW;
-  TCC0_wait_ms(500);
 
+  // set state
   PORT_Ventil(SET_STATE_ALL_OPEN, 0);
 }
 
@@ -280,16 +268,17 @@ void PORT_Ventil_AllClose(void)
   // watchdog reset
   WDT_RESET;
   
-  P_VENTIL.OUTSET= C_RES;
+  P_VENTIL.OUTSET = C_RES;
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = C_MUD;
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = C_AIR;
   TCC0_wait_ms(500);
   P_VENTIL.OUTSET = C_CLRW;
-  TCC0_wait_ms(500);
 
-  TCC0_wait_sec(2);
+  // spring valves: [2 - 4]
+  if(SPRING_VALVE_ON){ TCC0_wait_sec(2); TCC0_wait_ms(800); }
+  else{ TCC0_wait_sec(2); }
 
   P_VENTIL.OUTCLR = C_RES;
   TCC0_wait_ms(500);
@@ -298,8 +287,8 @@ void PORT_Ventil_AllClose(void)
   P_VENTIL.OUTCLR = C_AIR;
   TCC0_wait_ms(500);
   P_VENTIL.OUTCLR = C_CLRW;
-  TCC0_wait_ms(500);
 
+  // set state
   PORT_Ventil(SET_STATE_ALL_CLOSED, 0);
 }
 
