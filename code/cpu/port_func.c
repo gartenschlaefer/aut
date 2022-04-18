@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
+
 #include "memory_app.h"
 #include "output_app.h"
 #include "mcp9800_driver.h"
@@ -18,9 +19,9 @@
 #include "error_func.h"
 
 
-/* ==================================================================*
- *            FUNCTIONS Init
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            Init
+ * ------------------------------------------------------------------*/
 
 void PORT_Init(void)
 {
@@ -28,7 +29,7 @@ void PORT_Init(void)
   P_OPTO.DIRCLR = PIN3_bm | OC1 | OC2 | OC3 | OC4;
 
   // outputs
-  P_VENTIL.DIR =  0xFF;
+  P_VALVE.DIR =  0xFF;
   P_RELAIS.DIR =  0xFF;
 
   // Pins PULL UP
@@ -39,14 +40,6 @@ void PORT_Init(void)
   PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
 }
 
-/*
-void PORT_SoftwareRst(void)
-{
-  //Protection
-  CCP = 0xD8;
-  RST.CTRL= RST_SWRST_bm;
-}
-*/
 
 void PORT_Bootloader(void)
 {
@@ -59,10 +52,9 @@ void PORT_Bootloader(void)
 }
 
 
-
-/* ==================================================================*
- *            FUNCTIONS Buzzer
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            buzzer
+ * ------------------------------------------------------------------*/
 
 void PORT_Buzzer(t_FuncCmd cmd)
 {
@@ -107,11 +99,9 @@ void PORT_Buzzer(t_FuncCmd cmd)
 }
 
 
-
-
-/* ==================================================================*
- *            FUNCTIONS Ventilator
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            ventilator
+ * ------------------------------------------------------------------*/
 
 void PORT_Ventilator(void)
 {
@@ -135,81 +125,79 @@ void PORT_Ventilator(void)
 }
 
 
+/* ------------------------------------------------------------------*
+ *            valves
+ * ------------------------------------------------------------------*/
 
-
-/* ==================================================================*
- *            FUNCTIONS Ventil
- * ==================================================================*/
-
-unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
+unsigned char PORT_Valve(t_valve valve, unsigned char new_state)
 {
   static unsigned char state = 0;
 
   // watchdog reset
   WDT_RESET;
 
-  switch(ventil)
+  switch(valve)
   {
     case OPEN_Reserve:
-      P_VENTIL.OUTSET = O_RES;
-      TCC0_wait_openVentil();
-      P_VENTIL.OUTCLR = O_RES; 
+      P_VALVE.OUTSET = O_RES;
+      TCC0_wait_openValve();
+      P_VALVE.OUTCLR = O_RES; 
       state |= V_RES;
       break;
 
     case CLOSE_Reserve:
-      P_VENTIL.OUTSET = C_RES;
-      TCC0_wait_closeVentil();
-      P_VENTIL.OUTCLR = C_RES;
+      P_VALVE.OUTSET = C_RES;
+      TCC0_wait_closeValve();
+      P_VALVE.OUTCLR = C_RES;
       state &= ~V_RES;      
       break;
 
     case OPEN_MudPump:
-      P_VENTIL.OUTSET = O_MUD;
-      TCC0_wait_openVentil();
-      P_VENTIL.OUTCLR = O_MUD;
+      P_VALVE.OUTSET = O_MUD;
+      TCC0_wait_openValve();
+      P_VALVE.OUTCLR = O_MUD;
       state |= V_MUD;     
       break;
 
     case CLOSE_MudPump:
-      P_VENTIL.OUTSET = C_MUD;
-      TCC0_wait_closeVentil();
-      P_VENTIL.OUTCLR = C_MUD;
+      P_VALVE.OUTSET = C_MUD;
+      TCC0_wait_closeValve();
+      P_VALVE.OUTCLR = C_MUD;
       state &= ~V_MUD;
       break;
 
     case OPEN_Air:
-      P_VENTIL.OUTSET = O_AIR;
-      TCC0_wait_openVentil();
-      P_VENTIL.OUTCLR = O_AIR;
+      P_VALVE.OUTSET = O_AIR;
+      TCC0_wait_openValve();
+      P_VALVE.OUTCLR = O_AIR;
       state |= V_AIR;   
       break;
 
     case CLOSE_Air:
-      P_VENTIL.OUTSET = C_AIR;
-      TCC0_wait_closeVentil();
-      P_VENTIL.OUTCLR = C_AIR;
+      P_VALVE.OUTSET = C_AIR;
+      TCC0_wait_closeValve();
+      P_VALVE.OUTCLR = C_AIR;
       state &= ~V_AIR;
       break;
 
     case OPEN_ClearWater:
-      P_VENTIL.OUTSET = O_CLRW;
-      TCC0_wait_openVentil();
-      P_VENTIL.OUTCLR = O_CLRW;
+      P_VALVE.OUTSET = O_CLRW;
+      TCC0_wait_openValve();
+      P_VALVE.OUTCLR = O_CLRW;
       state |= V_CLW;   
       break;
 
     case CLOSE_ClearWater:
-      P_VENTIL.OUTSET = C_CLRW;
-      TCC0_wait_closeVentil();
-      P_VENTIL.OUTCLR = C_CLRW;
+      P_VALVE.OUTSET = C_CLRW;
+      TCC0_wait_closeValve();
+      P_VALVE.OUTCLR = C_CLRW;
       state &= ~V_CLW;
       break;
 
     case CLOSE_IPAir:
-      P_VENTIL.OUTSET = C_AIR | C_RES;
-      TCC0_wait_closeVentil();
-      P_VENTIL.OUTCLR = C_AIR | C_RES;  
+      P_VALVE.OUTSET = C_AIR | C_RES;
+      TCC0_wait_closeValve();
+      P_VALVE.OUTCLR = C_AIR | C_RES;  
       break;
 
     // states
@@ -224,107 +212,78 @@ unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state)
 
 
 /* ------------------------------------------------------------------*
- *            Ventil all open
+ *            valve open all
  * ------------------------------------------------------------------*/
 
-void PORT_Ventil_AllOpen(void)
+void PORT_Valve_OpenAll(void)
 {
   // watchdog reset
   WDT_RESET;
 
-  // ventil open
-  P_VENTIL.OUTSET = O_RES;
+  // valve open
+  P_VALVE.OUTSET = O_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET = O_MUD;
+  P_VALVE.OUTSET = O_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET = O_AIR;
+  P_VALVE.OUTSET = O_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET = O_CLRW;
+  P_VALVE.OUTSET = O_CLRW;
 
   // spring or usual valves
   if(SPRING_VALVE_ON){ TCC0_wait_sec(2); TCC0_wait_ms(850); }
   else{ TCC0_wait_sec(1); TCC0_wait_ms(500); }
 
   // stop opening
-  P_VENTIL.OUTCLR= O_RES;
+  P_VALVE.OUTCLR= O_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR = O_MUD;
+  P_VALVE.OUTCLR = O_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR = O_AIR;
+  P_VALVE.OUTCLR = O_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR = O_CLRW;
+  P_VALVE.OUTCLR = O_CLRW;
 
   // set state
-  PORT_Ventil(SET_STATE_ALL_OPEN, 0);
+  PORT_Valve(SET_STATE_ALL_OPEN, 0);
 }
 
 
 /* ------------------------------------------------------------------*
- *            Ventil all close
+ *            valve close all
  * ------------------------------------------------------------------*/
 
-void PORT_Ventil_AllClose(void)
+void PORT_Valve_CloseAll(void)
 {
   // watchdog reset
   WDT_RESET;
   
-  P_VENTIL.OUTSET = C_RES;
+  P_VALVE.OUTSET = C_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET = C_MUD;
+  P_VALVE.OUTSET = C_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET = C_AIR;
+  P_VALVE.OUTSET = C_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTSET = C_CLRW;
+  P_VALVE.OUTSET = C_CLRW;
 
   // spring valves: [2 - 4]
   if(SPRING_VALVE_ON){ TCC0_wait_sec(2); TCC0_wait_ms(800); }
   else{ TCC0_wait_sec(2); }
 
-  P_VENTIL.OUTCLR = C_RES;
+  P_VALVE.OUTCLR = C_RES;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR = C_MUD;
+  P_VALVE.OUTCLR = C_MUD;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR = C_AIR;
+  P_VALVE.OUTCLR = C_AIR;
   TCC0_wait_ms(500);
-  P_VENTIL.OUTCLR = C_CLRW;
+  P_VALVE.OUTCLR = C_CLRW;
 
   // set state
-  PORT_Ventil(SET_STATE_ALL_CLOSED, 0);
+  PORT_Valve(SET_STATE_ALL_CLOSED, 0);
 }
 
 
 /* ------------------------------------------------------------------*
- *            Ventil Auto Close
+ *            relais
  * ------------------------------------------------------------------*/
-
-void PORT_Ventil_AutoClose(t_page page)
-{
-  switch(page)
-  {
-    case AutoZone: OUT_Clr_Air(); break;
-    case AutoSetDown: break;
-    case AutoPumpOff: OUT_Clr_PumpOff(); break;
-    case AutoMud: OUT_Clr_Mud(); break;
-    case AutoCirc: OUT_Clr_IPAir(); break;
-    case AutoAir: OUT_Clr_IPAir(); break;
-
-    case ManualCirc: OUT_Clr_Air(); break;
-    case ManualAir: OUT_Clr_Air(); break;
-    case ManualSetDown: break;
-    case ManualPumpOff: OUT_Clr_PumpOff(); break;
-    case ManualMud: OUT_Clr_Mud(); break;
-    case ManualCompressor: OUT_Clr_Compressor(); break;
-    case ManualPhosphor: OUT_Clr_Phosphor(); break;
-    case ManualInflowPump: OUT_Clr_InflowPump(); break;
-    default: break;
-  }
-}
-
-
-
-/* ==================================================================*
- *            FUNCTIONS Relais
- * ==================================================================*/
 
 void PORT_RelaisSet(unsigned char relais)
 {
@@ -336,16 +295,10 @@ void PORT_RelaisClr(unsigned char relais)
   P_RELAIS.OUTCLR = relais;
 }
 
-void PORT_Relais_AllOff(void)
-{
-  P_RELAIS.OUT = 0x00;
-}
 
-
-
-/* ==================================================================*
- *            FUNCTIONS RunTime
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            run time functions
+ * ------------------------------------------------------------------*/
 
 void PORT_RunTime(struct InputHandler *in)
 {
@@ -386,7 +339,7 @@ void PORT_RunTime(struct InputHandler *in)
 
 
 /* ------------------------------------------------------------------*
- *            Input Handler Init
+ *            input handler init
  * ------------------------------------------------------------------*/
 
 void InputHandler_init(struct InputHandler *in)
@@ -396,7 +349,7 @@ void InputHandler_init(struct InputHandler *in)
 
 
 /* ------------------------------------------------------------------*
- *            Debug
+ *            debug
  * ------------------------------------------------------------------*/
 
 void PORT_Debug(void)
@@ -433,13 +386,12 @@ void PORT_Debug(void)
         else LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 ");
       }
 
-      // ventils
-      for(int ventil = 0; ventil < 4; ventil++)
+      // valves
+      for(int valve = 0; valve < 4; valve++)
       {
-        if(PORT_Ventil(READ_STATE, 0) & (1<<ventil)) LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * ventil, "1 ");
-        else LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * ventil, "0 ");
+        if(PORT_Valve(READ_STATE, 0) & (1<<valve)) LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "1 ");
+        else LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "0 ");
       }
     }
-
   }
 }

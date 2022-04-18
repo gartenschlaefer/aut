@@ -199,7 +199,7 @@ t_page LCD_AutoPage_Mud(int *p_min, int *p_sec)
   page = Error_Detection(page, *p_min, *p_sec);
   if((Eval_CountDown(p_min, p_sec)) && (page != ErrorTreat))
   {
-    // close mud ventil
+    // close mud valve
     OUT_Clr_Mud();
 
     // oxygen entry
@@ -997,7 +997,7 @@ t_page LCD_SetupPage(t_page page)
   }
 
   TCC0_DisplaySetup_Wait();
-  if(Eval_CountDown(p_min, p_sec)){ if(page == SetupCalPressure) OUT_CloseOff(); return AutoPage; }
+  if(Eval_CountDown(p_min, p_sec)){ if(page == SetupCalPressure){ OUT_CloseAllValves(); } return AutoPage;}
   return page;
 }
 

@@ -1,5 +1,5 @@
 // --
-// outpust for relais and ventils
+// outpust for relais and valves
 
 // include guard
 #ifndef OUTPUT_APP_H   
@@ -23,7 +23,8 @@ void OUT_Clr_Phosphor(void);
 void OUT_Set_InflowPump(void);
 void OUT_Clr_InflowPump(void);
 void OUT_Clr_IPAir(void);
-void OUT_CloseOff(void);
+void OUT_CloseAllValves(void);
 void OUT_Init_Valves(void);
+void OUT_Valve_AutoClose(t_page page);
 
 #endif

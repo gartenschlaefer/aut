@@ -172,24 +172,21 @@ t_page Touch_AutoLinker(unsigned char matrix, t_page page, int *p_min, int *p_se
     case 0x42: 
       LCD_Backlight(_on); Error_OFF(); bug = 0;
       LCD_MarkTextButton(Manual);
-      PORT_Ventil_AutoClose(page);
-      PORT_Relais_AllOff();
+      OUT_Valve_AutoClose(page);
       return PinManual;
 
     // setup
     case 0x43: 
       LCD_Backlight(_on); Error_OFF(); bug = 0;
       LCD_MarkTextButton(Setup);
-      PORT_Ventil_AutoClose(page);
-      PORT_Relais_AllOff();
+      OUT_Valve_AutoClose(page);
       return PinSetup;
 
     // data
     case 0x44: 
       LCD_Backlight(_on); Error_OFF(); bug = 0;
       LCD_MarkTextButton(Data);
-      PORT_Ventil_AutoClose(page);
-      PORT_Relais_AllOff();
+      OUT_Valve_AutoClose(page);
       return DataPage;
 
     case 0x00: if(touch) touch = 0; break;
@@ -1093,7 +1090,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       if(!touch && page == SetupCal)
       { 
         touch = 8;
-        if(!openV){ openV = 1; LCD_Write_TextButton(9, 80, OpenV, 0); PORT_Ventil_AllOpen(); }
+        if(!openV){ openV = 1; LCD_Write_TextButton(9, 80, OpenV, 0); PORT_Valve_OpenAll(); }
       } break;
 
     // calibration for setting pressure to zero level
@@ -1113,7 +1110,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       { 
         touch = 5;
         LCD_WriteAnySymbol(s_29x17, 15,1, n_level);
-        if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); OUT_CloseOff(); } 
+        if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); OUT_CloseAllValves(); } 
         page = SetupCalPressure; 
       } break;
 
@@ -1148,7 +1145,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
   if(page != SetupCal && page != SetupCalPressure)
   {
     iniCal = 0;
-    if(openV){ openV = 0; OUT_CloseOff(); }
+    if(openV){ openV = 0; OUT_CloseAllValves(); }
   }
   return page;
 }

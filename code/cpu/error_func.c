@@ -104,7 +104,7 @@ unsigned char Error_Read(t_page page)
 /* ---------------------------------------------------------------*
  *           Error Detection
  * ---------------------------------------------------------------*/
-//*-* recheck this
+
 t_page Error_Detection(t_page page, int min, int sec)
 {
   static ErrTreat treat = {.page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00};
@@ -221,7 +221,7 @@ unsigned char Error_Action_OP_Air(t_page page)
 {
   static unsigned char s_op = 0;
 
-  // close ventils start
+  // start closing valves
   if(!s_op)
   {
     // stop compressor and set errors
@@ -232,25 +232,25 @@ unsigned char Error_Action_OP_Air(t_page page)
     switch(page)
     {
       // pump off: mammoth pump
-      case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VENTIL.OUTSET = C_CLRW; PORT_Ventil(SET_STATE_CLOSE, V_CLW); } break;
+      case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VALVE.OUTSET = C_CLRW; PORT_Valve(SET_STATE_CLOSE, V_CLW); } break;
 
       // mud
-      case AutoMud: P_VENTIL.OUTSET = C_MUD; PORT_Ventil(SET_STATE_CLOSE, V_MUD); break;
+      case AutoMud: P_VALVE.OUTSET = C_MUD; PORT_Valve(SET_STATE_CLOSE, V_MUD); break;
 
       // air off
       case AutoAirOff:
       case AutoCircOff:
         if((LCD_Auto_InflowPump(page, 0, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
         {
-          P_VENTIL.OUTSET = C_RES;
-          PORT_Ventil(SET_STATE_CLOSE, V_RES);
+          P_VALVE.OUTSET = C_RES;
+          PORT_Valve(SET_STATE_CLOSE, V_RES);
         }
         break;
 
       // air on
       case AutoCirc:
       case AutoAir:
-      case AutoZone: P_VENTIL.OUTSET = C_AIR; PORT_Ventil(SET_STATE_CLOSE, V_AIR); break;
+      case AutoZone: P_VALVE.OUTSET = C_AIR; PORT_Valve(SET_STATE_CLOSE, V_AIR); break;
       default: break;
     }
     s_op = 1;
@@ -264,26 +264,26 @@ unsigned char Error_Action_OP_Air(t_page page)
       switch(page)
       {
         // pump off (mammoth pump)
-        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VENTIL.OUTCLR = C_CLRW; P_VENTIL.OUTSET = O_CLRW; PORT_Ventil(SET_STATE_OPEN, V_CLW); } break;
+        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VALVE.OUTCLR = C_CLRW; P_VALVE.OUTSET = O_CLRW; PORT_Valve(SET_STATE_OPEN, V_CLW); } break;
 
         // mud
-        case AutoMud: P_VENTIL.OUTCLR = C_MUD; P_VENTIL.OUTSET = O_MUD; PORT_Ventil(SET_STATE_OPEN, V_MUD); break;
+        case AutoMud: P_VALVE.OUTCLR = C_MUD; P_VALVE.OUTSET = O_MUD; PORT_Valve(SET_STATE_OPEN, V_MUD); break;
 
         // air off
         case AutoAirOff:
         case AutoCircOff:
           if((LCD_Auto_InflowPump(page, 0, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
           {
-            P_VENTIL.OUTCLR = C_RES;
-            P_VENTIL.OUTSET = O_RES;
-            PORT_Ventil(SET_STATE_OPEN, V_RES);
+            P_VALVE.OUTCLR = C_RES;
+            P_VALVE.OUTSET = O_RES;
+            PORT_Valve(SET_STATE_OPEN, V_RES);
           }
           break;
 
         // air on
         case AutoCirc:
         case AutoAir:
-        case AutoZone: P_VENTIL.OUTCLR = C_AIR; P_VENTIL.OUTSET = O_AIR; PORT_Ventil(SET_STATE_OPEN, V_AIR); break;
+        case AutoZone: P_VALVE.OUTCLR = C_AIR; P_VALVE.OUTSET = O_AIR; PORT_Valve(SET_STATE_OPEN, V_AIR); break;
         default: break;
       }
       s_op = 2;
@@ -298,17 +298,17 @@ unsigned char Error_Action_OP_Air(t_page page)
       switch(page)
       {
         // pump off: mammoth pump
-        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VENTIL.OUTCLR = O_CLRW; OUT_Set_Compressor(); } break;
+        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VALVE.OUTCLR = O_CLRW; OUT_Set_Compressor(); } break;
 
         // mud
-        case AutoMud: P_VENTIL.OUTCLR = O_MUD; OUT_Set_Compressor(); break;
+        case AutoMud: P_VALVE.OUTCLR = O_MUD; OUT_Set_Compressor(); break;
 
         // no air
         case AutoAirOff:
         case AutoCircOff:
           if((LCD_Auto_InflowPump(page, 0, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)) 
           {
-            P_VENTIL.OUTCLR = O_RES;
+            P_VALVE.OUTCLR = O_RES;
             OUT_Set_Compressor();
           }
           break;
@@ -316,7 +316,7 @@ unsigned char Error_Action_OP_Air(t_page page)
         // air
         case AutoCirc:
         case AutoAir:
-        case AutoZone: P_VENTIL.OUTCLR = O_AIR; OUT_Set_Compressor(); break;
+        case AutoZone: P_VALVE.OUTCLR = O_AIR; OUT_Set_Compressor(); break;
         default: break;
       }
 

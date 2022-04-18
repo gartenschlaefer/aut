@@ -13,7 +13,7 @@
  * ------------------------------------------------------------------*/
 
 #define P_OPTO    (PORTH)
-#define P_VENTIL  (PORTJ)
+#define P_VALVE  (PORTJ)
 #define P_RELAIS  (PORTK)
 
 
@@ -60,7 +60,7 @@ typedef enum
   SET_STATE_ALL_CLOSED, 
   SET_STATE_ALL_OPEN,
   READ_STATE
-}t_ventil;
+}t_valve;
 
 #define V_AIR (1 << 0)
 #define V_MUD (1 << 1)
@@ -123,14 +123,12 @@ void PORT_Buzzer(t_FuncCmd cmd);
 void PORT_Ventilator(void);
 void PORT_RunTime(struct InputHandler *in);
 
-unsigned char PORT_Ventil(t_ventil ventil, unsigned char new_state);
-void PORT_Ventil_AllOpen(void);
-void PORT_Ventil_AllClose(void);
-void PORT_Ventil_AutoClose(t_page page);
+unsigned char PORT_Valve(t_valve valve, unsigned char new_state);
+void PORT_Valve_OpenAll(void);
+void PORT_Valve_CloseAll(void);
 
 void PORT_RelaisSet(unsigned char relais);
 void PORT_RelaisClr(unsigned char relais);
-void PORT_Relais_AllOff(void);
 
 void InputHandler_init(struct InputHandler *in);
 void PORT_Debug(void);

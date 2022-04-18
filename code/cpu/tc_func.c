@@ -160,10 +160,10 @@ void TCC0_Touch_Wait(void)
 
 
 /* ------------------------------------------------------------------*
- *            TCC0 - open and close Ventil
+ *            TCC0 - open and close valve
  * ------------------------------------------------------------------*/
 
-void TCC0_wait_openVentil(void)
+void TCC0_wait_openValve(void)
 {
   // spring or usual valves
   if(SPRING_VALVE_ON){ TCC0_wait_sec(4); TCC0_wait_ms(350); }
@@ -171,7 +171,7 @@ void TCC0_wait_openVentil(void)
 }
 
 
-void TCC0_wait_closeVentil(void)
+void TCC0_wait_closeValve(void)
 {
   // spring valves
   if(SPRING_VALVE_ON){ TCC0_wait_sec(4); TCC0_wait_ms(300); }
@@ -489,7 +489,7 @@ unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
     }
   }
 
-  // open ventil
+  // open valve
   else if(cmd == _ovent)
   {
     if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)) TCE0_WaitSec_Init(3);
@@ -502,7 +502,7 @@ unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
     }
   }
 
-  // close ventil
+  // close valve
   else if(cmd == _cvent)
   {
     if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc))

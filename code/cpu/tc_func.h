@@ -29,8 +29,8 @@ unsigned char TCC0_Wait_Query(void);
 void TCC0_wait_us(int us);
 void TCC0_wait_ms(int ms);
 void TCC0_wait_sec(int sec);
-void TCC0_wait_openVentil(void);
-void TCC0_wait_closeVentil(void);
+void TCC0_wait_openValve(void);
+void TCC0_wait_closeValve(void);
 
 void TCC0_Main_Wait(void);
 void TCC0_DisplayManual_Wait(void);
