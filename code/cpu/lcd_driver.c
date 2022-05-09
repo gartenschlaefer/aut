@@ -36,9 +36,6 @@ void LCD_Init(void)
 
 void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b)
 {
-  //static t_FuncCmd    b->state = _off;
-  //static unsigned int count = 0;
-
   switch(cmd)
   {
     // turn on

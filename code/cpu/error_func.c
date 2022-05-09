@@ -103,7 +103,7 @@ t_page Error_Detection(t_page page, int min, int sec, struct PlantState *plant_s
   static struct ErrTreat treat = {.page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00};
 
   // variables
-  struct LcdBacklight *b = &plant_state->lcd_backlight;
+  struct LcdBacklight *b = plant_state->lcd_backlight;
 
   // check if errors occur
   unsigned char err = Error_Read(page);

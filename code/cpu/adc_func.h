@@ -9,7 +9,7 @@ void ADC_Init(void);
 void ADC_Touch_Ch(void);
 void ADC_MPX_Ch(void);
 void ADC_USV_Ch(void);
-void ADC_USV_Check(void);
+void ADC_USV_Check(unsigned int *p_c);
 
 unsigned char ReadCalibrationByte(unsigned char index);
 

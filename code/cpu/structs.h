@@ -46,14 +46,19 @@ struct LcdBacklight
   t_FuncCmd state;
   unsigned int count;
 };
-//lcd_backlight_default = { .state = _off, .count = 0 };
+
+
+struct FrameCounter
+{
+  unsigned int usv;
+};
 
 
 struct PlantState
 {
   t_page page;
-  struct LcdBacklight lcd_backlight;
+  struct LcdBacklight *lcd_backlight;
+  struct FrameCounter *frame_counter;
 }; 
-//plant_state_default = { .page = DataPage, .lcd_backlight = lcd_backlight_default };
 
 #endif

@@ -113,10 +113,9 @@ void ADC_USV_Ch(void)
  *  USV - voltage surveillance and error if USV active
  * ------------------------------------------------------------------*/
 
-void ADC_USV_Check(void)
+void ADC_USV_Check(unsigned int *p_c)
 {
-  int data = 0;
-  static int c = 0;
+  int c = *p_c;
 
   // start conversion
   ADCA.CTRLA |= ADC_CH2START_bm;
@@ -128,9 +127,9 @@ void ADC_USV_Check(void)
   ADCA.INTFLAGS |= (1 << ADC_CH2IF_bp);
 
   // data
-  data = ADCA.CH2RES;
+  int data = ADCA.CH2RES;
 
-  // check if it is in under 24V: ~3110 = 24V
+  // check if supply voltage is under 24V: ~3110 = 24V
   if(data < 2500)
   {
     c++;
@@ -138,4 +137,6 @@ void ADC_USV_Check(void)
     if(c > 720) c = 0;
   }
   else c = 0;
+
+  *p_c = c;
 }

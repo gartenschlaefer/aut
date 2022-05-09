@@ -21,13 +21,16 @@ int main(void)
   t_page page = DataPage;
 
   // datatypes
-  struct LcdBacklight lcd_backlight_default = { .state = _off, .count = 0 };
-  struct PlantState plant_state = { .page = DataPage, .lcd_backlight = lcd_backlight_default };
+  struct LcdBacklight lcd_backlight = { .state = _off, .count = 0 };
+  struct FrameCounter frame_counter = { .usv = 0 };
+
+  // plant state
+  struct PlantState plant_state = { .page = DataPage, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter };
 
 
   // init
   Basic_Init();
-  LCD_Backlight(_on, &plant_state.lcd_backlight);
+  LCD_Backlight(_on, plant_state.lcd_backlight);
 
   //*-* modem test loop
   //Modem_Test();

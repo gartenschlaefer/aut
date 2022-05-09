@@ -317,7 +317,7 @@ void PORT_RunTime(struct InputHandler *in, struct PlantState *ps)
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
         Modem_Alert("Error: floating switch");
-        Error_ON(&ps->lcd_backlight);
+        Error_ON(ps->lcd_backlight);
       }
       in->float_sw_alarm = 1;
     }
@@ -325,7 +325,7 @@ void PORT_RunTime(struct InputHandler *in, struct PlantState *ps)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
-        Error_OFF(&ps->lcd_backlight);
+        Error_OFF(ps->lcd_backlight);
       }
       in->float_sw_alarm = 0;
     }
@@ -333,7 +333,7 @@ void PORT_RunTime(struct InputHandler *in, struct PlantState *ps)
     //*** debug USVCheckVoltageSupply
     if(!DEBUG)
     {
-      ADC_USV_Check();
+      ADC_USV_Check(&ps->frame_counter->usv);
     }
   }
 }

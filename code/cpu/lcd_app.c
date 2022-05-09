@@ -94,7 +94,7 @@ t_page LCD_AutoPage(t_page page, struct PlantState *ps)
   if(page != sPage) LCD_AutoSet(page, p_min, p_sec, ps);
 
   // execute in all auto pages
-  LCD_Backlight(_exe, &ps->lcd_backlight);
+  LCD_Backlight(_exe, ps->lcd_backlight);
   LCD_Auto_InflowPump(page, sec, _exe);
   LCD_Auto_Phosphor(sec, _exe);
   MPX_ReadAverage(Auto, _exe);
@@ -704,7 +704,7 @@ t_page LCD_ManualPage(t_page page, struct PlantState *ps)
   }
 
   // backlight
-  LCD_Backlight(_exe, &ps->lcd_backlight);
+  LCD_Backlight(_exe, ps->lcd_backlight);
   if(page != ManualPumpOff)
   {
     LCD_WriteManualVar(*p_min, *p_sec);

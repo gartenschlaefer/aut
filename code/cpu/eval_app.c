@@ -110,14 +110,12 @@ int Eval_Comp_OpHours(t_FuncCmd cmd)
 
 unsigned char Eval_CountDown(int *cMin, int *cSec)
 {
-  int min = 0;
-  int sec = 0;
   unsigned char count = 0;
   static unsigned char ctOld = 0;
   unsigned char sTC = 0;
 
-  min = *cMin;
-  sec = *cSec;
+  int min = *cMin;
+  int sec = *cSec;
 
   // savety for seconds
   if(sec < 0 || sec > 61) sec = 0;  
