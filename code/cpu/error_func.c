@@ -3,48 +3,41 @@
 
 #include <string.h>
 
-#include "defines.h"
+#include "error_func.h"
+
 #include "lcd_driver.h"
+#include "lcd_sym.h"
 #include "lcd_app.h"
-
-#include "output_app.h"
 #include "memory_app.h"
-
 #include "mcp9800_driver.h"
 #include "mpx_driver.h"
-#include "lcd_sym.h"
-
 #include "tc_func.h"
-#include "error_func.h"
 #include "port_func.h"
+#include "output_app.h"
 #include "modem_driver.h"
 
 
-/* ==================================================================*
- *            Error ON/OFF
- * ==================================================================*/
-
 /*-------------------------------------------------------------------*
- *  PORT_ErrorOn: Set Error Signals
+ *  set error signals
  * ------------------------------------------------------------------*/
 
-void Error_ON(void)
+void Error_ON(struct LcdBacklight *b)
 {
   PORT_Buzzer(_error);
-  LCD_Backlight(_error);
+  LCD_Backlight(_error, b);
   PORT_RelaisSet(R_ALARM);
 }
 
-void Error_OFF(void)
+void Error_OFF(struct LcdBacklight *b)
 {
   PORT_Buzzer(_off);
-  LCD_Backlight(_on);
+  LCD_Backlight(_on, b);
   PORT_RelaisClr(R_ALARM);
 }
 
 
 /* ---------------------------------------------------------------*
- *          Read Error
+ *          read error
  * ---------------------------------------------------------------*/
 
 unsigned char Error_Read(t_page page)
@@ -105,9 +98,12 @@ unsigned char Error_Read(t_page page)
  *           Error Detection
  * ---------------------------------------------------------------*/
 
-t_page Error_Detection(t_page page, int min, int sec)
+t_page Error_Detection(t_page page, int min, int sec, struct PlantState *plant_state)
 {
-  static ErrTreat treat = {.page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00};
+  static struct ErrTreat treat = {.page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00};
+
+  // variables
+  struct LcdBacklight *b = &plant_state->lcd_backlight;
 
   // check if errors occur
   unsigned char err = Error_Read(page);
@@ -134,7 +130,7 @@ t_page Error_Detection(t_page page, int min, int sec)
   if(treat.err_code)
   {
     // error treatment
-    treat = Error_Treatment(treat);
+    treat = Error_Treatment(treat, b);
 
     // error solved
     if(!treat.err_code)
@@ -154,7 +150,7 @@ t_page Error_Detection(t_page page, int min, int sec)
   if(treat.err_reset_flag)
   {
     treat.err_reset_flag = 0;
-    Error_OFF();
+    Error_OFF(b);
     TCE0_ErrorTimer(_reset);
     LCD_AutoSet_Symbol(page, min, sec);
   }
@@ -167,12 +163,12 @@ t_page Error_Detection(t_page page, int min, int sec)
  *            Error Treatment
  * ==================================================================*/
 
-ErrTreat Error_Treatment(ErrTreat treat)
+struct ErrTreat Error_Treatment(struct ErrTreat treat, struct LcdBacklight *b)
 {
   // temp
   if(treat.err_code & E_T)
   {
-    Error_Action_Temp_SetError();
+    Error_Action_Temp_SetError(b);
     treat.page = AutoSetDown;
 
     // reset error
@@ -183,19 +179,19 @@ ErrTreat Error_Treatment(ErrTreat treat)
   if(treat.err_code & E_OP)
   {
     // treatment
-    if(Error_Action_OP_Air(treat.page)) treat.err_code &= ~E_OP;
+    if(Error_Action_OP_Air(treat.page, b)) treat.err_code &= ~E_OP;
   }
 
   // under-pressure
   if(treat.err_code & E_UP)
   {
-    if(Error_Action_UP_Air(treat.page)) treat.err_code &= ~E_UP;
+    if(Error_Action_UP_Air(treat.page, b)) treat.err_code &= ~E_UP;
   }
 
   // max in tank
   if(treat.err_code & E_IT)
   {
-    Error_Action_IT_SetError();
+    Error_Action_IT_SetError(b);
 
     // go to set down -> pump off
     if((treat.page == AutoAir) || (treat.page == AutoAirOff) || (treat.page == AutoCirc) || (treat.page == AutoCircOff)) treat.page = AutoSetDown;
@@ -205,7 +201,7 @@ ErrTreat Error_Treatment(ErrTreat treat)
   // max out of tank
   if(treat.err_code & E_OT)
   {
-    Error_Action_OT_SetError();
+    Error_Action_OT_SetError(b);
     treat.err_code &= ~E_OT;
   }
 
@@ -217,7 +213,7 @@ ErrTreat Error_Treatment(ErrTreat treat)
  *            Error Action OverPressure - Air
  * ------------------------------------------------------------------*/
 
-unsigned char Error_Action_OP_Air(t_page page)
+unsigned char Error_Action_OP_Air(t_page page, struct LcdBacklight *b)
 {
   static unsigned char s_op = 0;
 
@@ -226,7 +222,7 @@ unsigned char Error_Action_OP_Air(t_page page)
   {
     // stop compressor and set errors
     OUT_Clr_Compressor();
-    Error_Action_OP_SetError();
+    Error_Action_OP_SetError(b);
 
     // page cases
     switch(page)
@@ -333,7 +329,7 @@ unsigned char Error_Action_OP_Air(t_page page)
  *            Error Action - UnderPressure Air
  * ------------------------------------------------------------------*/
 
-unsigned char Error_Action_UP_Air(t_page page)
+unsigned char Error_Action_UP_Air(t_page page, struct LcdBacklight *b)
 {
   switch(page)
   {
@@ -341,7 +337,7 @@ unsigned char Error_Action_UP_Air(t_page page)
     case AutoCircOff:
       if((LCD_Auto_InflowPump(page, 0, _state) ==_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
       {
-        Error_Action_UP_SetError();
+        Error_Action_UP_SetError(b);
         OUT_Set_Compressor();
         return 1;
       }
@@ -351,7 +347,7 @@ unsigned char Error_Action_UP_Air(t_page page)
     case AutoPumpOff:
     case AutoCirc:
     case AutoAir:
-    case AutoMud: Error_Action_UP_SetError(); OUT_Set_Compressor(); return 1;
+    case AutoMud: Error_Action_UP_SetError(b); OUT_Set_Compressor(); return 1;
     default: return 1;
   }
   return 0;
@@ -367,7 +363,7 @@ unsigned char Error_Action_UP_Air(t_page page)
  *            Error Set Temperature Error
  * ------------------------------------------------------------------*/
 
-void Error_Action_Temp_SetError(void)
+void Error_Action_Temp_SetError(struct LcdBacklight *b)
 {
   static unsigned char c = 0;
 
@@ -375,7 +371,7 @@ void Error_Action_Temp_SetError(void)
   c++;
   if(c == 2)
   {
-    Error_ON();
+    Error_ON(b);
     MEM_EEPROM_WriteAutoEntry(0, 1, Write_Error);
     Error_ModemAction(E_T);
   }
@@ -387,7 +383,7 @@ void Error_Action_Temp_SetError(void)
  *            Error Set OverPressure
  * ------------------------------------------------------------------*/
 
-void Error_Action_OP_SetError(void)
+void Error_Action_OP_SetError(struct LcdBacklight *b)
 {
   static unsigned char c = 0;
 
@@ -395,7 +391,7 @@ void Error_Action_OP_SetError(void)
   c++;
   if(c == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_comp)) Error_ON();
+    if(MEM_EEPROM_ReadVar(ALARM_comp)) Error_ON(b);
     MEM_EEPROM_WriteAutoEntry(0, 2, Write_Error);
     Error_ModemAction(E_OP);
   }
@@ -407,7 +403,7 @@ void Error_Action_OP_SetError(void)
  *            Error Set UnderPressure
  * ------------------------------------------------------------------*/
 
-void Error_Action_UP_SetError(void)
+void Error_Action_UP_SetError(struct LcdBacklight *b)
 {
   static unsigned char c = 0;
 
@@ -415,7 +411,7 @@ void Error_Action_UP_SetError(void)
   c++;
   if(c == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_comp)) Error_ON();
+    if(MEM_EEPROM_ReadVar(ALARM_comp)) Error_ON(b);
     MEM_EEPROM_WriteAutoEntry(0, 4, Write_Error);
     Error_ModemAction(E_UP);
   }
@@ -427,7 +423,7 @@ void Error_Action_UP_SetError(void)
  *            Error Set IT - in tank error
  * ------------------------------------------------------------------*/
 
-void Error_Action_IT_SetError(void)
+void Error_Action_IT_SetError(struct LcdBacklight *b)
 {
   static unsigned char c = 0;
 
@@ -435,7 +431,7 @@ void Error_Action_IT_SetError(void)
   c++;
   if(c == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON();
+    if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON(b);
     MEM_EEPROM_WriteAutoEntry(0, 8, Write_Error);
     Error_ModemAction(E_IT);
   }
@@ -447,7 +443,7 @@ void Error_Action_IT_SetError(void)
  *            Error Set OT - max out tank error
  * ------------------------------------------------------------------*/
 
-void Error_Action_OT_SetError(void)
+void Error_Action_OT_SetError(struct LcdBacklight *b)
 {
   static unsigned char c = 0;
 
@@ -455,7 +451,7 @@ void Error_Action_OT_SetError(void)
   c++;
   if(c == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON();
+    if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON(b);
     MEM_EEPROM_WriteAutoEntry(0, 16, Write_Error);
     Error_ModemAction(E_OT);
   }

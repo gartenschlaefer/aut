@@ -5,10 +5,8 @@
 #ifndef LCD_DRIVER_H   
 #define LCD_DRIVER_H
 
-
-/* ==================================================================*
- *            Defines
- * ==================================================================*/
+#include "enums.h"
+#include "structs.h"
 
 /* ------------------------------------------------------------------*
  *            Backlight 30000 -> ca. 3 min
@@ -17,6 +15,7 @@
 #define BACKLIGHT_TON_FRAMES (3000)
 #define BACKLIGHT_ERROR_ON (400)
 #define BACKLIGHT_ERROR_OFF (2000)
+
 
 /* ------------------------------------------------------------------*
  *            PORT
@@ -53,8 +52,7 @@
 #define Column_LSB0                   0x00
 #define Column_MSB0                   0x10
 #define CD                            0x10
-
-#define Set_All_Pixels_On_Off          0xA4
+#define Set_All_Pixels_On_Off         0xA4
 
 #define INVERSE       0xA7
 #define NOT_INVERSE   0xA6
@@ -78,106 +76,6 @@
 
 
 /* ------------------------------------------------------------------*
- *            font types
- * ------------------------------------------------------------------*/
-
-typedef enum
-{
-  f_6x8_p, f_6x8_n, 
-  f_4x6_p, f_4x6_n,
-  f_8x16_p, f_8x16_n
-}t_font_type;
-
-
-/* ------------------------------------------------------------------*
- *            symbols
- * ------------------------------------------------------------------*/
-
-typedef enum
-{
-  s_35x23, s_29x17, s_19x19, s_34x21, s_39x16, s_logo_hecs, s_logo_purator
-}t_symbol_type;
-
-
-typedef enum
-{
-  // 35 x 23 [8]
-  n_pumpOff, n_mud, n_inflowPump, n_pump2, p_pumpOff, p_mud, p_inflowPump, p_pump2,
-
-  // 29 x 17 [20]
-  n_setDown, n_alarm, n_air, n_sensor, n_watch, n_compressor, n_circulate, n_cal, n_zone, n_level,
-  p_setDown, p_alarm, p_air, p_sensor, p_watch, p_compressor, p_circulate, p_cal, p_zone, p_level,
-
-  // 19 x 19 [23]
-  n_phosphor, n_pump, n_esc, n_plus, n_minus, n_arrowUp, n_arrowDown, n_ok, n_grad, n_sonic, n_arrowRedo,
-  p_phosphor, p_pump, p_esc, p_plus, p_minus, p_arrowUp, p_arrowDown, p_ok, p_line, p_grad, p_sonic, p_arrowRedo,
-
-  // 34 x 21 [6]
-  frame, p_escape, p_del, black, n_escape, n_del,
-
-  // 39 x 16 [2]
-  n_text_frame, p_text_frame,
-
-  // hecs [1]
-  logo_hecs,
-
-  // purator [1]
-  logo_purator
-
-}t_any_symbol;
-
-
-typedef enum
-{
-  Auto,   Manual, Setup,  Data,
-  Sonic,  Shot,   OpenV,  Boot,
-  Read,   Write
-}t_textButtons;
-
-
-/* ------------------------------------------------------------------*
- *            Setup Page Symbols
- * ------------------------------------------------------------------*/
-
-typedef enum
-{
-  sn_circulate, sn_air,     sn_setDown,   sn_pumpOff,
-  sn_mud,     sn_compressor,  sn_phosphor,  sn_inflowPump,
-  sn_cal,     sn_alarm,     sn_watch,   sn_zone,
-  sp_circulate, sp_air,     sp_setDown,   sp_pumpOff,
-  sp_mud,     sp_compressor,  sp_phosphor,  sp_inflowPump,
-  sp_cal,     sp_alarm,     sp_watch,   sp_zone,
-}t_SetupSym;
-
-
-/* ------------------------------------------------------------------*
- *            Control Buttons
- * ------------------------------------------------------------------*/
-
-typedef enum
-{
-  sn_plus,    sn_minus,   sn_esc,   sn_ok,
-  sp_plus,    sp_minus,   sp_esc,   sp_ok
-}t_CtrlButtons;
-
-
-/* ------------------------------------------------------------------*
- *            Date Time Page
- * ------------------------------------------------------------------*/
-
-typedef enum
-{
-  n_h,    n_min,    n_day,    n_month,    n_year,
-  p_h,    p_min,    p_day,    p_month,    p_year
-}t_DateTime;
-
-
-
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
-
-/* ------------------------------------------------------------------*
  *            Config and Transfer
  * ------------------------------------------------------------------*/
 
@@ -187,6 +85,7 @@ void LCD_SendData(unsigned char* SData, unsigned char i);
 void LCD_SetPageAddress(unsigned char PA);
 void LCD_SetColumnAdress(unsigned char CA);
 
+
 /* ------------------------------------------------------------------*
  *            Commands
  * ------------------------------------------------------------------*/
@@ -194,8 +93,7 @@ void LCD_SetColumnAdress(unsigned char CA);
 void LCD_Rst(void);
 void LCD_HardwareRst(void);
 void LCD_Clean(void);
-
-void LCD_Backlight(t_FuncCmd cmd);
+void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b);
 
 
 /* ------------------------------------------------------------------*
@@ -232,7 +130,6 @@ void LCD_DeathMan(unsigned char row, unsigned char col);
 
 unsigned char LCD_ConvertWP(unsigned char con);
 void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
-
 void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 

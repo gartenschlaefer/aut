@@ -5,10 +5,12 @@
 #ifndef MEMORY_APP_H   
 #define MEMORY_APP_H
 
+#include "enums.h"
 
-/* ==================================================================*
- *            Defines
- * ==================================================================*/
+
+/* ------------------------------------------------------------------*
+ *            defines
+ * ------------------------------------------------------------------*/
 
 // atxmega128a1
 // num of pages: 64
@@ -35,61 +37,13 @@
 #define DATA_PAGE_NUM_AUTO (16 - 1)
 
 
-/* ==================================================================*
- *            Enumeration
- * ==================================================================*/
-
-typedef enum
-{ ON_circ, OFF_circ,
-  TIME_H_circ, TIME_L_circ,
-  ON_air, OFF_air,
-  TIME_H_air, TIME_L_air,
-  TIME_setDown,
-  ON_pumpOff, PUMP_pumpOff,
-  ON_MIN_mud, ON_SEC_mud,
-  MIN_H_druck, MIN_L_druck,
-  MAX_H_druck, MAX_L_druck,
-  ON_phosphor, OFF_phosphor,
-  ON_inflowPump, OFF_inflowPump,
-  PUMP_inflowPump, T_IP_off_h,
-  SENSOR_inTank, SENSOR_outTank,
-  ALARM_temp, ALARM_comp,  ALARM_sensor,
-  CAL_H_druck, CAL_L_druck, CAL_Redo_on,
-  SONIC_H_LV, SONIC_L_LV, SONIC_on,
-  TANK_H_Circ, TANK_L_Circ,
-  TANK_H_O2, TANK_L_O2,
-  TANK_H_MinP, TANK_L_MinP,
-  TOUCH_X_max, TOUCH_Y_max,
-  TOUCH_X_min, TOUCH_Y_min
-}t_var;
-
-
-typedef enum
-{ DATA_day, DATA_month, DATA_year, DATA_hour, DATA_minute, DATA_H_O2, DATA_L_O2, DATA_ERROR
-}t_data;
-
-
-typedef enum
-{ Write_o2, Write_Error, Write_Entry
-}t_AutoEntry;
-
-
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
- *            Variables
+ *            function headers
  * ------------------------------------------------------------------*/
 
 void MEM_EEPROM_WriteVarDefault(void);
 unsigned char MEM_EEPROM_ReadVar(t_var var);
 void MEM_EEPROM_WriteVar(t_var var, unsigned char eeData);
-
-
-/* ------------------------------------------------------------------*
- *            Data
- * ------------------------------------------------------------------*/
 
 unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_data var);
 void MEM_EEPROM_LoadData(unsigned char entry, t_data byte, unsigned char eeData);

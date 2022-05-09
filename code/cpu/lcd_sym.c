@@ -3,31 +3,23 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
+#include "lcd_sym.h"
+
+#include "config.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
-
-#include "output_app.h"
 #include "eval_app.h"
 #include "memory_app.h"
-
 #include "mcp7941_driver.h"
 #include "mpx_driver.h"
 #include "mcp9800_driver.h"
 #include "modem_driver.h"
-
-#include "error_func.h"
-#include "tc_func.h"
-#include "lcd_sym.h"
 #include "sonic_app.h"
+#include "output_app.h"
 
-
-/* ==================================================================*
- *            Auto Page
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            Set Auto Pages
+ *            set auto page
  * ------------------------------------------------------------------*/
 
 void LCD_AutoSet_Page(void)
@@ -1431,7 +1423,7 @@ void LCD_PinSet_Page(void)
  *            Pin-Write
  * ------------------------------------------------------------------*/
 
-void LCD_Pin_Write(t_FuncCmd cmd, TelNr nr)
+void LCD_Pin_Write(t_FuncCmd cmd, struct TelNr nr)
 {
   unsigned char i = 0;
 

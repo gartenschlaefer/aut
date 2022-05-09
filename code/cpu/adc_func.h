@@ -5,10 +5,6 @@
 #ifndef ADC_FUNC_H   
 #define ADC_FUNC_H
 
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
-
 void ADC_Init(void);
 void ADC_Touch_Ch(void);
 void ADC_MPX_Ch(void);

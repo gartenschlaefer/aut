@@ -1,22 +1,16 @@
 // --
 // ultrasonic applications
 
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
-#include "lcd_sym.h"
-
-#include "tc_func.h"
-#include "basic_func.h"
-#include "at24c_driver.h"
-#include "can_app.h"
 #include "sonic_app.h"
+
+#include "config.h"
+#include "lcd_driver.h"
+#include "lcd_sym.h"
+#include "lcd_app.h"
+#include "tc_func.h"
+#include "can_app.h"
 #include "memory_app.h"
 
-
-/* ==================================================================*
- *            Functions
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            UltraSonic - LCD-Data - Shot

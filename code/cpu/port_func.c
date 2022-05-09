@@ -1,26 +1,23 @@
 // --
 // port functions
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+//#include <avr/interrupt.h>
 
-#include "defines.h"
+#include "port_func.h"
+
+#include "config.h"
 #include "lcd_driver.h"
-#include "lcd_app.h"
-
 #include "memory_app.h"
-#include "output_app.h"
 #include "mcp9800_driver.h"
 #include "adc_func.h"
 #include "tc_func.h"
-#include "port_func.h"
-#include "basic_func.h"
 #include "modem_driver.h"
 #include "error_func.h"
+#include "basic_func.h"
 
 
 /* ------------------------------------------------------------------*
- *            Init
+ *            init
  * ------------------------------------------------------------------*/
 
 void PORT_Init(void)
@@ -40,6 +37,10 @@ void PORT_Init(void)
   PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
 }
 
+
+/* ------------------------------------------------------------------*
+ *            bootloader
+ * ------------------------------------------------------------------*/
 
 void PORT_Bootloader(void)
 {
@@ -134,7 +135,7 @@ unsigned char PORT_Valve(t_valve valve, unsigned char new_state)
   static unsigned char state = 0;
 
   // watchdog reset
-  WDT_RESET;
+  BASIC_WDT_RESET;
 
   switch(valve)
   {
@@ -218,7 +219,7 @@ unsigned char PORT_Valve(t_valve valve, unsigned char new_state)
 void PORT_Valve_OpenAll(void)
 {
   // watchdog reset
-  WDT_RESET;
+  BASIC_WDT_RESET;
 
   // valve open
   P_VALVE.OUTSET = O_RES;
@@ -254,7 +255,7 @@ void PORT_Valve_OpenAll(void)
 void PORT_Valve_CloseAll(void)
 {
   // watchdog reset
-  WDT_RESET;
+  BASIC_WDT_RESET;
   
   P_VALVE.OUTSET = C_RES;
   TCC0_wait_ms(500);
@@ -300,7 +301,7 @@ void PORT_RelaisClr(unsigned char relais)
  *            run time functions
  * ------------------------------------------------------------------*/
 
-void PORT_RunTime(struct InputHandler *in)
+void PORT_RunTime(struct InputHandler *in, struct PlantState *ps)
 {
   static int runTime = 0;
 
@@ -316,7 +317,7 @@ void PORT_RunTime(struct InputHandler *in)
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
         Modem_Alert("Error: floating switch");
-        Error_ON();
+        Error_ON(&ps->lcd_backlight);
       }
       in->float_sw_alarm = 1;
     }
@@ -324,7 +325,7 @@ void PORT_RunTime(struct InputHandler *in)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
-        Error_OFF();
+        Error_OFF(&ps->lcd_backlight);
       }
       in->float_sw_alarm = 0;
     }

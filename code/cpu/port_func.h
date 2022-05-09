@@ -6,6 +6,8 @@
 #define PORT_FUNC_H
 
 #include <avr/io.h>
+#include "enums.h"
+#include "structs.h"
 
 
 /* ------------------------------------------------------------------*
@@ -28,10 +30,6 @@
 
 #define IN_FLOAT_S3 (!(P_OPTO.IN & OC1))
 
-struct InputHandler {
-  unsigned char float_sw_alarm;
-};
-
 
 /* ------------------------------------------------------------------*
  *            valve
@@ -48,19 +46,6 @@ struct InputHandler {
 #define C_AIR     0x20
 #define O_CLRW    0x40
 #define C_CLRW    0x80
-
-typedef enum
-{ OPEN_Reserve,   CLOSE_Reserve,
-  OPEN_MudPump,   CLOSE_MudPump,
-  OPEN_Air,     CLOSE_Air,
-  OPEN_ClearWater,  CLOSE_ClearWater,
-  CLOSE_IPAir,  
-  SET_STATE_CLOSE,
-  SET_STATE_OPEN,
-  SET_STATE_ALL_CLOSED, 
-  SET_STATE_ALL_OPEN,
-  READ_STATE
-}t_valve;
 
 #define V_AIR (1 << 0)
 #define V_MUD (1 << 1)
@@ -116,12 +101,11 @@ typedef enum
  * ------------------------------------------------------------------*/
 
 void PORT_Init(void);
-//void PORT_SoftwareRst(void);
 void PORT_Bootloader(void);
 
 void PORT_Buzzer(t_FuncCmd cmd);
 void PORT_Ventilator(void);
-void PORT_RunTime(struct InputHandler *in);
+void PORT_RunTime(struct InputHandler *in, struct PlantState *ps);
 
 unsigned char PORT_Valve(t_valve valve, unsigned char new_state);
 void PORT_Valve_OpenAll(void);

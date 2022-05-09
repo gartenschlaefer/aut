@@ -5,12 +5,12 @@
 #ifndef LCD_SYM_H   
 #define LCD_SYM_H
 
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
+#include "enums.h"
+#include "structs.h"
+
 
 /* ------------------------------------------------------------------*
- *            Auto
+ *            function header
  * ------------------------------------------------------------------*/
 
 void LCD_AutoSet_Page(void);
@@ -33,6 +33,7 @@ void LCD_WriteAutoVar_Comp(int min, int sec);
 int LCD_AutoRead_StartTime(t_page page);
 void LCD_AutoAirSym(t_page page);
 
+
 /* ------------------------------------------------------------------*
  *            Manual
  * ------------------------------------------------------------------*/
@@ -40,6 +41,7 @@ void LCD_AutoAirSym(t_page page);
 void LCD_ManualText(int min, int sec);
 void LCD_ManualSet_Page(int min, int sec);
 void LCD_WriteManualVar(int min, int sec);
+
 
 /* ------------------------------------------------------------------*
  *            Setup
@@ -64,6 +66,7 @@ void LCD_DateTime(t_DateTime time, unsigned char value);
 
 void LCD_Setup_IPValues(unsigned char cho, unsigned char *val);
 void LCD_Setup_IPText(unsigned char select);
+
 
 /* ------------------------------------------------------------------*
  *            Data
@@ -98,7 +101,7 @@ void LCD_Sym_MPX(t_FuncCmd cmd, int value);
  * ------------------------------------------------------------------*/
 
 void LCD_PinSet_Page(void);
-void LCD_Pin_Write(t_FuncCmd cmd, TelNr nr);
+void LCD_Pin_Write(t_FuncCmd cmd, struct TelNr nr);
 void LCD_pPinButtons(unsigned char pPin);
 void LCD_nPinButtons(unsigned char nPin);
 

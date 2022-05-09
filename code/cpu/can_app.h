@@ -5,9 +5,11 @@
 #ifndef CAN_APP_H   
 #define CAN_APP_H
 
-/* ==================================================================*
+#include "enums.h"
+
+/* ------------------------------------------------------------------*
  *            Defines
- * ==================================================================*/
+ * ------------------------------------------------------------------*/
 
 //--------------------------------USCREG1 - UltraSonic Control Register1
 #define   USADR0  (1 << 0)    //Addr0
@@ -32,63 +34,17 @@
 #define   ERR   (1 << 5)    //Error
 
 
-/* ==================================================================*
- *            Enumerations
- * ==================================================================*/
-
- // Ultrasonic commands
-typedef enum
-{
-  //--------------------------------------------------Parser
-  _setCanAddress,
-  _oneShot,       _5Shots,        _startTemp,
-  _readDistance,  _readTemp,
-  _readUSSREG,    _readUSCREG1,   _readUSCREG2,
-  _writeUSSREG,   _writeUSCREG1,  _writeUSCREG2,
-  _sVersion,
-  _working,       _ack,           _wait,
-  _boot,          _app,           _program,
-  _readProgram
-}t_UScmd;
-
-// Ultrasonic states
-typedef enum
-{
-  _usWait = 0,
-  _usDistReq = 1,
-  _usTempReq = 2,
-  _usDistAckOK = 3,
-  _usTempAckOK = 4,
-  _usDistAv = 5,
-  _usTempAv = 6,
-  _usDistSuccess = 7,
-  _usTempSuccess = 8,
-  _usErrTimeout1 = 10,
-  _usErrTimeout2 = 11,
-  _usErrTimeout3 = 12,
-  _usErrWrongReq = 13
-}t_USstates;
-
-
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            function headers
+ * ------------------------------------------------------------------*/
 
 void CAN_Init(void);
-
-// rx
 void CAN_RxB0_Init(void);
 unsigned char *CAN_RxB0_Read(void);
 t_UScmd CAN_RxACK(void);
-
-// tx
-unsigned char CAN_TxB0_Write    (unsigned char *txB0);
+unsigned char CAN_TxB0_Write(unsigned char *txB0);
 void CAN_TxCmd(t_UScmd cmd);
 void CAN_TxUSSREG(unsigned char reg);
-
-/* ------------------------------------------------------------------*
- *            Apps
- * ------------------------------------------------------------------*/
 
 unsigned char CAN_LiveCheck(unsigned char addr);
 unsigned char *CAN_SonicVersion(t_FuncCmd cmd);

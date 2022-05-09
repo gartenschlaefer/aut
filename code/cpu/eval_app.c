@@ -1,29 +1,20 @@
 // --
 // evaluation and build-in functions
 
-#include "defines.h"
+#include "eval_app.h"
+
+#include "config.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
-
-#include "memory_app.h"
-#include "touch_app.h"
-#include "eval_app.h"
-#include "output_app.h"
-
-#include "touch_driver.h"
-#include "mcp7941_driver.h"
-#include "mcp9800_driver.h"
-#include "mpx_driver.h"
-
-#include "tc_func.h"
-#include "port_func.h"
-
 #include "lcd_sym.h"
+#include "memory_app.h"
+#include "mcp7941_driver.h"
+#include "tc_func.h"
 
 
-/* ==================================================================*
- *            O2 Evaluation
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            O2 evaluation
+ * ------------------------------------------------------------------*/
 
 void Eval_Oxygen(t_FuncCmd cmd, int min)
 {
@@ -57,12 +48,7 @@ void Eval_Oxygen(t_FuncCmd cmd, int min)
 }
 
 
-
-/* ==================================================================*
- *            PIN
- * ==================================================================*/
-
-/*-------------------------------------------------------------------*
+/* ------------------------------------------------------------------*
  *  Eval_PinWrite: Writes Number on Display, corresponding to pressed NumButton
  * ------------------------------------------------------------------*/
 
@@ -73,7 +59,7 @@ void Eval_PinWrite(unsigned char pin, unsigned char codePos)
 }
 
 
-/*-------------------------------------------------------------------*
+/* ------------------------------------------------------------------*
  *  Eval_PinDel: Delete written Numbers
  * ------------------------------------------------------------------*/
 
@@ -83,7 +69,7 @@ void Eval_PinDel(void)
 }
 
 
-/*-------------------------------------------------------------------*
+/* ------------------------------------------------------------------*
  *  Eval_PinDel: unmark all Buttons
  * ------------------------------------------------------------------*/
 
@@ -98,12 +84,7 @@ void Eval_PinClr(unsigned char *pin)
 }
 
 
-
-/* ==================================================================*
- *            Auto
- * ==================================================================*/
-
-/*-------------------------------------------------------------------*
+/* ------------------------------------------------------------------*
  *  Eval Comp_OpHours: Returns operating hours of Compressor, if add hours++
  * ------------------------------------------------------------------*/
 
@@ -123,12 +104,7 @@ int Eval_Comp_OpHours(t_FuncCmd cmd)
 }
 
 
-
-/* ==================================================================*
- *            Countdown
- * ==================================================================*/
-
-/*-------------------------------------------------------------------*
+/* ------------------------------------------------------------------*
  *  Eval_Countdown: If *value==0, return 1  else return 0
  * ------------------------------------------------------------------*/
 
@@ -194,15 +170,8 @@ unsigned char Eval_CountDown(int *cMin, int *cSec)
 }
 
 
-
-/* ==================================================================*
- *            Setup
- * ==================================================================*/
-
-/*-------------------------------------------------------------------*
- *  Eval_SetupPlus/Minus
- * --------------------------------------------------------------
- *  Evaluation of Circulate Page, write variables
+/* ------------------------------------------------------------------*
+ *  Eval_SetupPlus/Minus: evaluation of Circulate Page, write variables
  * ------------------------------------------------------------------*/
 
 int Eval_SetupPlus(int value, int max)
@@ -220,7 +189,7 @@ int Eval_SetupMinus(int value, int min)
 }
 
 
-/*-------------------------------------------------------------------*
+/* ------------------------------------------------------------------*
  *  Eval_SetupCirculateMark
  * ------------------------------------------------------------------*/
 
@@ -245,10 +214,8 @@ void Eval_SetupCircSensorMark(unsigned char sensor)
 }
 
 
-/*-------------------------------------------------------------------*
- *  Eval_SetupCirculateTextMark
- * --------------------------------------------------------------
- *  First clear, then mark
+/* ------------------------------------------------------------------*
+ *  Eval_SetupCirculateTextMark: first clear, then mark
  * ------------------------------------------------------------------*/
 
 void Eval_SetupCircTextMark(unsigned char on, unsigned char *p_var)
@@ -280,6 +247,7 @@ void Eval_SetupCircTextMark(unsigned char on, unsigned char *p_var)
     default: break;
   }
 }
+
 
 void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
 {
@@ -313,10 +281,8 @@ void Eval_SetupAirTextMark(unsigned char on, unsigned char *p_var)
 }
 
 
-/*-------------------------------------------------------------------*
- *  Eval_SetupPumpMark
- * --------------------------------------------------------------
- *  First clear, then mark
+/* ------------------------------------------------------------------*
+ *  Eval_SetupPumpMark: first clear, then mark
  * ------------------------------------------------------------------*/
 
 void Eval_SetupPumpMark(unsigned char mark)
@@ -335,10 +301,8 @@ void Eval_SetupPumpMark(unsigned char mark)
 }
 
 
-/*-------------------------------------------------------------------*
- *  Eval_SetupWatchMark
- * --------------------------------------------------------------
- *  First clear, then mark
+/* ------------------------------------------------------------------*
+ *  Eval_SetupWatchMark: first clear, then mark
  * ------------------------------------------------------------------*/
 
 void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
@@ -367,15 +331,8 @@ void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
 }
 
 
-
-/* ==================================================================*
- *            Memory - Entries
- * ==================================================================*/
-
-/*-------------------------------------------------------------------*
- *  Eval_Memory_NoAutoEntry()
- * --------------------------------------------------------------
- *  Finds out the the placement of a no entry, return position
+/* ------------------------------------------------------------------*
+ *  Eval_Memory_NoAutoEntry(): finds out the the placement of a no entry, return position
  * ------------------------------------------------------------------*/
 
 unsigned char *Eval_Memory_NoEntry(t_textButtons data)
@@ -436,7 +393,7 @@ unsigned char *Eval_Memory_NoEntry(t_textButtons data)
 
 
 /* ---------------------------------------------------------------*
- *          Old Entry
+ *          old entry
  * ---------------------------------------------------------------*/
 
 unsigned char *Eval_Memory_OldestEntry(t_textButtons data)

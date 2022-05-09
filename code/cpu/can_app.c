@@ -3,23 +3,19 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
+#include "can_app.h"
 #include "lcd_driver.h"
-#include "lcd_app.h"
 #include "lcd_sym.h"
-
-#include "basic_func.h"
+#include "lcd_app.h"
 #include "tc_func.h"
 #include "mcp2515_driver.h"
 #include "at24c_driver.h"
-
-#include "can_app.h"
-#include "sonic_app.h"
+#include "basic_func.h"
 
 
-/* ==================================================================*
- *            FUNCTIONS Init
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            init
+ * ------------------------------------------------------------------*/
 
 void CAN_Init(void)
 {
@@ -30,7 +26,7 @@ void CAN_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            Receive Buffer Init
+ *            Receive Buffer init
  * ------------------------------------------------------------------*/
 
 void CAN_RxB0_Init(void)
@@ -47,9 +43,9 @@ void CAN_RxB0_Init(void)
 
 
 
-/* ==================================================================*
- *            FUNCTIONS Receive
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            functions receive
+ * ------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------*
  *  CAN_RxB0_Read
@@ -66,7 +62,7 @@ unsigned char *CAN_RxB0_Read(void)
   unsigned char i = 0;
   unsigned char dlc = 0;
 
-  for(i = 0; i < 10; i++) rec[i] = 0x00;      //Init
+  for(i = 0; i < 10; i++) rec[i] = 0x00;      //init
   if(MCP2515_ReadReg(CANINTF) & RX0IF_bm)     //Is RxB0 filled?
   {
     dlc = (MCP2515_ReadReg(RXB0DLC) & 0x0F);  //ReadDLC
@@ -228,7 +224,7 @@ unsigned char *CAN_SonicVersion(t_FuncCmd cmd)
   static unsigned char sonic[3] = { 0,    //state
                                     0,    //dataH
                                     0};   //dataL
-  //--------------------------------------------Init
+  //--------------------------------------------init
   if(cmd == _init)
   {
     err = 0;                          //ErrorReset
@@ -282,7 +278,7 @@ unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
                                     0,    //dataH
                                     0};   //dataL
 
-  //--------------------------------------------------Init
+  //--------------------------------------------------init
   if(cmd == _init)
   {
     err = 0;
@@ -499,7 +495,7 @@ unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
         }
 
         // watchdog restart
-        WDT_RESET;
+        BASIC_WDT_RESET;
 
         // set page address and write
         adr = ((AT24C_BOOT_PAGE_OS + page) << 8);
@@ -535,7 +531,7 @@ unsigned char CAN_SonicWriteProgram(t_FuncCmd cmd)
   unsigned char i = 0;
   int adr = 0;
 
-  //--------------------------------------------Init
+  //--------------------------------------------init
   if(cmd == _init)
   {
     state = 0;
@@ -559,7 +555,7 @@ unsigned char CAN_SonicWriteProgram(t_FuncCmd cmd)
     {
       for(page = 0; page < 32; page++)  //32Pages = 4kB
       {
-        WDT_RESET;
+        BASIC_WDT_RESET;
         LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
         //--------------------------------------------Write1EEPage
         for(byte8 = 0; byte8 < 128; byte8 += 8)

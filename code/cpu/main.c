@@ -1,13 +1,8 @@
 // --
 // main
 
-#include <avr/io.h>
+#include "config.h"
 
-/* ==================================================================*
- *            HeaderFiles
- * ==================================================================*/
-
-#include "defines.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
 
@@ -16,18 +11,23 @@
 #include "basic_func.h"
 
 
-/* ==================================================================*
- *            Main
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            main
+ * ------------------------------------------------------------------*/
 
 int main(void)
 {
   // start page
-  t_page  page = DataPage;
+  t_page page = DataPage;
 
-  // Init
+  // datatypes
+  struct LcdBacklight lcd_backlight_default = { .state = _off, .count = 0 };
+  struct PlantState plant_state = { .page = DataPage, .lcd_backlight = lcd_backlight_default };
+
+
+  // init
   Basic_Init();
-  LCD_Backlight(_on);
+  LCD_Backlight(_on, &plant_state.lcd_backlight);
 
   //*-* modem test loop
   //Modem_Test();
@@ -40,7 +40,7 @@ int main(void)
 
   while(1)
   {
-    WDT_RESET;
+    BASIC_WDT_RESET;
     PORT_Bootloader();
     Modem_Check(page, &modem);
 
@@ -51,17 +51,19 @@ int main(void)
       LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, page);
     }
 
-    //------------------------------------------------GreatLinker
+    // GreatLinker
     switch(page)
     {
-      case AutoPage:    page = LCD_AutoPage(page);    break;
-      case ManualPage:  page = LCD_ManualPage(page);  break;
-      case SetupPage:   page = LCD_SetupPage(page);   break;
-      case DataPage:    page = LCD_DataPage(page);    break;
-      //----------------------------------------------Pin-Pages
-      case PinManual:   page = LCD_PinPage(page);   break;
-      case PinSetup:    page = LCD_PinPage(page);   break;
-      //----------------------------------------------Auto-Pages
+      case AutoPage:    page = LCD_AutoPage(page, &plant_state);    break;
+      case ManualPage:  page = LCD_ManualPage(page, &plant_state);  break;
+      case SetupPage:   page = LCD_SetupPage(page, &plant_state);   break;
+      case DataPage:    page = LCD_DataPage(page, &plant_state);    break;
+
+      // pin-pages
+      case PinManual:   page = LCD_PinPage(page, &plant_state);   break;
+      case PinSetup:    page = LCD_PinPage(page, &plant_state);   break;
+
+      // auto pages
       case AutoZone:
       case AutoSetDown:
       case AutoPumpOff:
@@ -70,10 +72,11 @@ int main(void)
       case AutoCircOff:
       case AutoAir:
       case AutoAirOff:
-        page = LCD_AutoPage(page);
-        PORT_RunTime(&input_handler);
+        page = LCD_AutoPage(page, &plant_state);
+        PORT_RunTime(&input_handler, &plant_state);
         break;
-      //----------------------------------------------Manual-Pages
+
+      // manual pages
       case ManualMain:
       case ManualCirc:
       case ManualCircOff:
@@ -85,9 +88,10 @@ int main(void)
       case ManualCompressor:
       case ManualPhosphor:
       case ManualInflowPump:
-        page = LCD_ManualPage(page);
+        page = LCD_ManualPage(page, &plant_state);
         break;
-      //----------------------------------------------Manual-Pages
+
+      // setup pages
       case SetupMain:
       case SetupCirculate:
       case SetupAir:
@@ -102,9 +106,10 @@ int main(void)
       case SetupAlarm:
       case SetupWatch:
       case SetupZone:
-        page = LCD_SetupPage(page);
+        page = LCD_SetupPage(page, &plant_state);
         break;
-      //----------------------------------------------Data-Pages
+
+      // data pages
       case DataMain:
       case DataAuto:
       case DataManual:
@@ -114,7 +119,7 @@ int main(void)
       case DataSonicBoot:
       case DataSonicBootR:
       case DataSonicBootW:
-        page = LCD_DataPage(page);
+        page = LCD_DataPage(page, &plant_state);
         break;
 
       default: page = AutoPage; break;

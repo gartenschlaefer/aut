@@ -3,18 +3,11 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
-
 #include "mcp9800_driver.h"
+
+#include "lcd_driver.h"
 #include "twi_func.h"
 
-
-
-/* ==================================================================*
- *            FUNCTIONS
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  MCP9800_Init

@@ -4,16 +4,11 @@
 #include <avr/io.h>
 #include <string.h>
 
-#include "defines.h"
-
-#include "twi_func.h"
+#include "config.h"
 #include "lcd_driver.h"
+#include "twi_func.h"
 #include "symbols.h"
 
-
-/* ==================================================================*
- *            FUNCTIONS     Config and Transfer
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  LCD initialize
@@ -39,21 +34,21 @@ void LCD_Init(void)
  *  LCD backlight
  * ------------------------------------------------------------------*/
 
-void LCD_Backlight(t_FuncCmd cmd)
+void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b)
 {
-  static t_FuncCmd    state = _off;
-  static unsigned int count = 0;
+  //static t_FuncCmd    b->state = _off;
+  //static unsigned int count = 0;
 
   switch(cmd)
   {
     // turn on
-    case _on: LCD_LED_ON; state = _on; count = 0; break;
+    case _on: LCD_LED_ON; b->state = _on; b->count = 0; break;
 
     // turn off
-    case _off: LCD_LED_OFF; state = _off; break;
+    case _off: LCD_LED_OFF; b->state = _off; break;
 
     // go into error state
-    case _error: state = _error; break;
+    case _error: b->state = _error; break;
 
     // execute
     case _exe:
@@ -62,26 +57,26 @@ void LCD_Backlight(t_FuncCmd cmd)
       if(DEBUG) return;
 
       // light is on
-      if(state == _on)
+      if(b->state == _on)
       {
-        // counting up
-        count++;
+        // b->counting up
+        b->count++;
 
         // Ton = 3 min
-        if(count > BACKLIGHT_TON_FRAMES){count = 0; LCD_LED_OFF; state = _off;}
+        if(b->count > BACKLIGHT_TON_FRAMES){ b->count = 0; LCD_LED_OFF; b->state = _off; }
       }
 
       // error
-      else if(state == _error)
+      else if(b->state == _error)
       {
-        count++;
-        if(count > 400) LCD_LED_OFF;
-        if(count > 2000){count = 0; LCD_LED_ON;}
+        b->count++;
+        if(b->count > 400) LCD_LED_OFF;
+        if(b->count > 2000){ b->count = 0; LCD_LED_ON; }
       }             
       break;
 
     // reset
-    case _reset: count = 0; break;
+    case _reset: b->count = 0; break;
 
     // default
     default: break;

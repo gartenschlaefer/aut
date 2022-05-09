@@ -1,15 +1,11 @@
 // --
 // outputs for relays and valves
 
-
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
-
 #include "output_app.h"
-#include "memory_app.h"
-#include "tc_func.h"
+
+#include "config.h"
 #include "port_func.h"
+#include "memory_app.h"
 
 
 /* ------------------------------------------------------------------*

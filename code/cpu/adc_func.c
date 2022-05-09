@@ -5,20 +5,12 @@
 #include <stddef.h>
 #include <avr/pgmspace.h>
 
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
-#include "tc_func.h"
 #include "adc_func.h"
 #include "modem_driver.h"
 
 
-/* ==================================================================*
- *            FUNCTIONS
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
- *            ADC - Init
+ *            ADC - init
  * ------------------------------------------------------------------*/
 
 void ADC_Init(void)
@@ -89,14 +81,14 @@ void ADC_Touch_Ch(void)
 /*-------------------------------------------------------------------*
  *  ADC_MPX_Ch - ADCB Channel
  * --------------------------------------------------------------
- *  Set up ADC for Drucksensor MPX
- *  MPX -> AD8555 = MPX * Gain -> Singleended PORTB PIN6
+ *  Set up ADC for pressure sensor MPX
+ *  MPX -> AD8555 = MPX * Gain -> single-ended PORTB PIN6
  *  Sensitivity:  0.4mV/kPa
  * ------------------------------------------------------------------*/
 
 void ADC_MPX_Ch(void)
 {
-  // mpx channel
+  // MPX channel
   ADCB.CH0.CTRL = ADC_CH_INPUTMODE_SINGLEENDED_gc | ADC_CH_GAIN_1X_gc;
   ADCB.CH0.MUXCTRL= ADC_CH_MUXPOS_PIN6_gc;
 }
@@ -118,9 +110,7 @@ void ADC_USV_Ch(void)
 
 
 /*-------------------------------------------------------------------*
- *  ADC_USV_Check
- * --------------------------------------------------------------
- *  Voltage surveillance and error if USV active
+ *  USV - voltage surveillance and error if USV active
  * ------------------------------------------------------------------*/
 
 void ADC_USV_Check(void)

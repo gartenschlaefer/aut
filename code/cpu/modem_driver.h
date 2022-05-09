@@ -5,9 +5,13 @@
 #ifndef MODEM_DRIVER_H
 #define MODEM_DRIVER_H
 
-/* ==================================================================*
- *            Defines
- * ==================================================================*/
+#include "enums.h"
+#include "structs.h"
+
+
+/* ------------------------------------------------------------------*
+ *            defines
+ * ------------------------------------------------------------------*/
 
 #define MO_HANG_UP_TIME   25
 #define MO_STARTUP_DELAY  200
@@ -24,17 +28,9 @@
 #define CHAR_CTR_Z (0x1A)
 
 
-struct Modem {
-  unsigned char turned_on;
-  unsigned char turn_on_state;
-  unsigned char turn_on_error;
-  int startup_delay;
-};
-
-
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            function header
+ * ------------------------------------------------------------------*/
 
 void Modem_init(struct Modem *mo);
 void Modem_Port_Init(void);
@@ -48,10 +44,10 @@ void Modem_ReadSLED(t_page page);
 unsigned char Modem_CTS_ready(void);
 void Modem_ReadCTS(void);
 
-char Modem_TelNr(t_FuncCmd cmd, TelNr nr);
+char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr);
 
-unsigned char Modem_Call(TelNr nr);
-void Modem_SMS(TelNr nr, char msg[]);
+unsigned char Modem_Call(struct TelNr nr);
+void Modem_SMS(struct TelNr nr, char msg[]);
 
 void Modem_CallAllNumbers(void);
 void Modem_SMSAllNumbers(char msg[]);

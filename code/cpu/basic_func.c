@@ -4,30 +4,28 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
 #include "basic_func.h"
 
+#include "config.h"
+#include "lcd_driver.h"
+#include "lcd_app.h"
 #include "ad8555_driver.h"
 #include "at24c_driver.h"
 #include "mcp7941_driver.h"
 #include "modem_driver.h"
-
 #include "adc_func.h"
 #include "usart_func.h"
 #include "can_app.h"
 #include "tc_func.h"
 #include "port_func.h"
 #include "twi_func.h"
-
 #include "sonic_app.h"
 #include "memory_app.h"
 
 
-/* ==================================================================*
- *            Init
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            init
+ * ------------------------------------------------------------------*/
 
 void Basic_Init(void)
 {
@@ -51,10 +49,10 @@ void Basic_Init(void)
   // Memory init
   if(MEM_INIT) Basic_Init_Mem();
 
-  // Watchdog
+  // watchdog
   Watchdog_Init();
 
-  // Devices Init
+  // devices init
   MCP7941_Init();
   AD8555_Init();
   CAN_Init();
@@ -72,8 +70,8 @@ void Basic_Init(void)
 }
 
 
-/*-------------------------------------------------------------------*
- *  Basic - Memory Init
+/* ------------------------------------------------------------------*
+ *  memory init
  * ------------------------------------------------------------------*/
 
 void Basic_Init_Mem(void)
@@ -102,10 +100,9 @@ void Basic_Init_Mem(void)
 }
 
 
-
-/* ==================================================================*
+/* ------------------------------------------------------------------*
  *            Clock
- * ==================================================================*/
+ * ------------------------------------------------------------------*/
 
 void Clock_Init(void)
 {
@@ -123,11 +120,6 @@ void Clock_Init(void)
   CLK.CTRL = CLK_SCLKSEL_XOSC_gc;
 }
 
-
-
-/* ==================================================================*
- *            Watchdog
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  Watchdog_Init

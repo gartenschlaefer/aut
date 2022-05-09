@@ -1,21 +1,13 @@
 // --
 // EEPROM AT24C512 driver
 
-
-#include <avr/io.h>
-
-#include "defines.h"
-#include "twi_func.h"
 #include "at24c_driver.h"
+#include "twi_func.h"
 #include "tc_func.h"
 
 
-/* ==================================================================*
- *            FUNCTIONS Basics
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
- *            Init
+ *            init
  * ------------------------------------------------------------------*/
 
 void AT24C_Init(void)
@@ -36,7 +28,7 @@ void AT24C_Init(void)
 
 void AT24C_WriteByte(int addr, unsigned char sData)
 {
-  unsigned char send[] = {0,0,0};
+  unsigned char send[] = {0, 0, 0};
 
   send[0] = ((addr >> 8) & 0x00FF);
   send[1] = addr & 0x00FF;
@@ -68,7 +60,7 @@ void AT24C_WritePage(int addr, unsigned char *sData)
 
 unsigned char AT24C_ReadByte(int addr)
 {
-  unsigned char send[] = {0,0};
+  unsigned char send[] = {0, 0};
   unsigned char *rec;
   unsigned char rData;
 
@@ -90,7 +82,7 @@ unsigned char AT24C_ReadByte(int addr)
 
 unsigned char *AT24C_Read8Byte(int addr)
 {
-  unsigned char send[] = {0,0};
+  unsigned char send[] = {0, 0};
   unsigned char *rec;
 
   send[0] = ((addr >> 8) & 0x00FF);

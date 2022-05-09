@@ -3,20 +3,15 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
+#include "modem_driver.h"
 
-#include "basic_func.h"
+#include "config.h"
+#include "lcd_driver.h"
 #include "usart_func.h"
 #include "tc_func.h"
 #include "at24c_app.h"
-#include "modem_driver.h"
+#include "basic_func.h"
 
-
-/* ==================================================================*
- *            FUNCTIONS Basics
- * ==================================================================*/
 
  /* ------------------------------------------------------------------*
  *            Modem Object init
@@ -32,7 +27,7 @@ void Modem_init(struct Modem *mo)
 
 
 /* ------------------------------------------------------------------*
- *            Init
+ *            init
  * ------------------------------------------------------------------*/
 
 void Modem_Port_Init(void)
@@ -239,12 +234,12 @@ void Modem_ReadCTS(void)
  *            Modem Tel.Nr
  * ------------------------------------------------------------------*/
 
-char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
+char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr)
 {
   static char tmp[16] = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 };
   unsigned char i = 0;
 
-  //--------------------------------------------------Init
+  //--------------------------------------------------init
   if(cmd == _init)
   {
     for(i = 0; i < 16; i++)
@@ -304,7 +299,7 @@ char Modem_TelNr(t_FuncCmd cmd, TelNr nr)
  *            Modem Call
  * ------------------------------------------------------------------*/
 
-unsigned char Modem_Call(TelNr nr)
+unsigned char Modem_Call(struct TelNr nr)
 {
   nr.pos = 0;
   TCC0_wait_us(25);
@@ -331,7 +326,7 @@ unsigned char Modem_Call(TelNr nr)
   unsigned char point_pos = 0;
   for(nr.pos = 0; nr.pos < MO_HANG_UP_TIME; nr.pos++)
   {
-    WDT_RESET;
+    BASIC_WDT_RESET;
     if(point_pos > 5)
     {
       point_pos = 0;
@@ -354,7 +349,7 @@ unsigned char Modem_Call(TelNr nr)
 }
 
 
-void Modem_SMS(TelNr nr, char msg[])
+void Modem_SMS(struct TelNr nr, char msg[])
 {
 
   // text mode
@@ -397,7 +392,7 @@ void Modem_SMS(TelNr nr, char msg[])
 
 void Modem_CallAllNumbers(void)
 {
-  TelNr nr;
+  struct TelNr nr;
   nr.id = 1;
   Modem_Call(nr);
   nr.id = 2;
@@ -407,18 +402,18 @@ void Modem_CallAllNumbers(void)
 
 void Modem_SMSAllNumbers(char msg[])
 {
-  TelNr nr;
+  struct TelNr nr;
 
   // fist number
   nr.id = 1;
 
-  WDT_RESET;
+  BASIC_WDT_RESET;
   Modem_SMS(nr, msg);
   TCC0_wait_sec(5);
 
   // second number
   nr.id = 2;
-  WDT_RESET;
+  BASIC_WDT_RESET;
   Modem_SMS(nr, msg);
 }
 
@@ -462,19 +457,19 @@ void Modem_SendTest(void)
       //Modem_DialNumber();
 
       // sms
-      WDT_RESET;
+      BASIC_WDT_RESET;
       Modem_WriteSMS_Test("msg 30");
       TCC0_wait_sec(3);
 
-      WDT_RESET;
+      BASIC_WDT_RESET;
       Modem_WriteSMS_Test("msg 31");
       TCC0_wait_sec(3);
 
-      WDT_RESET;
+      BASIC_WDT_RESET;
       Modem_WriteSMS_Test("msg 32");
       TCC0_wait_sec(3);
 
-      WDT_RESET;
+      BASIC_WDT_RESET;
       Modem_WriteSMS_Test("msg 33");
       TCC0_wait_sec(3);
 
@@ -512,7 +507,7 @@ void Modem_Test(void)
   while(1)
   {
     // watchdog
-    WDT_RESET;
+    BASIC_WDT_RESET;
 
     // check modem status -> turn on
     Modem_Check(page, &modem);

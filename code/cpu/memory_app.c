@@ -1,15 +1,11 @@
 // --
 //  internal memory applications
 
-#include <avr/io.h>
-
-#include "defines.h"
-#include "lcd_driver.h"
-
-#include "eval_app.h"
 #include "memory_app.h"
-#include "mcp7941_driver.h"
+
 #include "memory_func.h"
+#include "eval_app.h"
+#include "mcp7941_driver.h"
 
 
 /* ==================================================================*
@@ -236,15 +232,8 @@ void MEM_EEPROM_WriteVar(t_var var, unsigned char eeData)
 }
 
 
-
-/* ==================================================================*
- *            Data Variables
- * ==================================================================*/
-
 /*-------------------------------------------------------------------*
- *  MEM_EEPROM_ReadVar
- * --------------------------------------------------------------
- *  Reads Variable from EEPROM  PageSize: 32Bytes
+ *  reads variable from EEPROM  PageSize: 32Bytes
  * ------------------------------------------------------------------*/
 
 unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_data var)
@@ -267,8 +256,6 @@ unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_dat
 
 
 /*-------------------------------------------------------------------*
- *  MEM_EEPROM_WriteAutoEntry
- * --------------------------------------------------------------
  *  Safes Variables or write Auto Entry to EEPROM
  * ------------------------------------------------------------------*/
 
@@ -425,9 +412,9 @@ void MEM_EEPROM_WriteSetupEntry(void)
   // update variables
   page = *p_null;
   p_null++;
-  entry= *p_null;
+  entry = *p_null;
   p_null++;
-  null= *p_null;
+  null = *p_null;
 
   if(!null)
   {

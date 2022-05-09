@@ -3,24 +3,16 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
-#include "lcd_sym.h"
-
-#include "memory_app.h"
-#include "output_app.h"
-#include "tc_func.h"
-#include "basic_func.h"
 #include "mpx_driver.h"
 
+#include "lcd_driver.h"
+#include "lcd_sym.h"
+#include "memory_app.h"
+#include "tc_func.h"
 
-/* ==================================================================*
- *            FUNCTIONS - Basics
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
- *  MPX_Read: Wait until the conversion is complete and return data
+ *  wait until the conversion is complete and return data
  * ------------------------------------------------------------------*/
 
 int MPX_Read(void)
@@ -61,16 +53,8 @@ int MPX_ReadCal(void)
 }
 
 
-
-
-/* ==================================================================*
- *            FUNCTIONS - Apps
- * ==================================================================*/
-
 /*-------------------------------------------------------------------*
- *  MPX Read Average Value
- * --------------------------------------------------------------
- *  Wait until Conversion Complete and return Data
+ *  MPX Read Average Value: Wait until Conversion Complete and return Data
  * ------------------------------------------------------------------*/
 
 int MPX_ReadAverage(t_textButtons page, t_FuncCmd cmd)

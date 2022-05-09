@@ -1,25 +1,14 @@
 // --
 // touch driver
 
-
-#include <avr/io.h>
-
-#include "defines.h"
-#include "lcd_driver.h"
-#include "lcd_app.h"
-
 #include "touch_driver.h"
-#include "mpx_driver.h"
 
+#include "lcd_driver.h"
 #include "adc_func.h"
-#include "basic_func.h"
 #include "tc_func.h"
 #include "memory_app.h"
+#include "basic_func.h"
 
-
-/* ==================================================================*
- *            FUNCTIONS   Cal
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  Touch_Cal: safes calibration data in EEPROM
@@ -43,7 +32,7 @@ void Touch_Cal(void)
   while(!(TCD0_Wait_Query()));
 
   // watchdog restart
-  WDT_RESET;
+  BASIC_WDT_RESET;
 
   //-----------------------------------------------TouchValue-----
   LCD_Clean();
@@ -51,11 +40,11 @@ void Touch_Cal(void)
   while(!(TCD0_Wait_Query()));
 
   // x, y calibration
-  WDT_RESET;
+  BASIC_WDT_RESET;
   calX = Touch_X_Cal_Init();
-  WDT_RESET;
+  BASIC_WDT_RESET;
   calY = Touch_Y_Cal_Init();
-  WDT_RESET;
+  BASIC_WDT_RESET;
 
   MEM_EEPROM_WriteVar(TOUCH_X_max, (calX >> 4));
   MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY >> 4));
@@ -159,11 +148,6 @@ int Touch_Y_Cal(int y_space)
 }
 
 
-
-/* ==================================================================*
- *            FUNCTIONS   Measure
- * ==================================================================*/
-
 /*-------------------------------------------------------------------*
  *  Touch_Clean
  * --------------------------------------------------------------
@@ -180,11 +164,6 @@ void Touch_Clean(void)
   PORTA.OUTCLR = LEFT | RIGHT | TOP | BOTTOM;
 }
 
-
-
-/* ==================================================================*
- *            FUNCTIONS   Measure-Y
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  Touch_Y_Measure
@@ -258,11 +237,6 @@ int Touch_Y_ReadData(void)
   return yData;
 }
 
-
-
-/* ==================================================================*
- *            FUNCTIONS   Measure-X
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  Touch_X_Measure

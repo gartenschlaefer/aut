@@ -1,9 +1,6 @@
 // --
 // Amplifier for Pressure Sensor MPX
 
-#include <avr/io.h>
-
-#include "defines.h"
 #include "tc_func.h"
 #include "ad8555_driver.h"
 

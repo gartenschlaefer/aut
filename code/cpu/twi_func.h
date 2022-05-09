@@ -5,9 +5,10 @@
 #ifndef TWI_FUNC_H   
 #define TWI_FUNC_H
 
-/* ==================================================================*
- *            Defines
- * ==================================================================*/
+
+/* ------------------------------------------------------------------*
+ *            defines
+ * ------------------------------------------------------------------*/
 
 #define E_TWI_NO_DATA 0x11
 #define E_TWI_WAIT    0x12
@@ -23,12 +24,8 @@
 #define C_TWI_READ        (0x01 << 0)
 
 
-/* ==================================================================*
- *            FUNCTIONS - API
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
- *            TWI Initialization
+ *            function header
  * ------------------------------------------------------------------*/
 
 void TWI_Master_Init(void);
@@ -37,21 +34,10 @@ unsigned char TWI_Master_Error(void);
 void TWI2_Master_Init(void);
 unsigned char TWI2_Master_Error(void);
 
-
-/* ------------------------------------------------------------------*
- *            TWI Read and Write String
- * ------------------------------------------------------------------*/
-
 unsigned char *TWI_Master_ReadString(unsigned char address, unsigned char   i );
 unsigned char TWI_Master_WriteString( unsigned char address, unsigned char *sendData, unsigned char   i );
-
 unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char   i );
 unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char   i );
-
-
-/* ------------------------------------------------------------------*
- *            TWI Built in Functions
- * ------------------------------------------------------------------*/
 
 unsigned char TWI_Master_Send(unsigned char send);
 unsigned char TWI_Master_AddressWriteMode(unsigned char f_address);

@@ -3,9 +3,10 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
-#include "mcp7941_driver.h"
 #include "tc_func.h"
+
+#include "config.h"
+#include "mcp7941_driver.h"
 
 
 /* ==================================================================*

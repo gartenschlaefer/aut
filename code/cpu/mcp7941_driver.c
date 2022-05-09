@@ -3,20 +3,16 @@
 
 #include <avr/io.h>
 
-#include "defines.h"
-#include "lcd_driver.h"
-
 #include "mcp7941_driver.h"
+
+#include "config.h"
+#include "lcd_driver.h"
 #include "twi_func.h"
 #include "tc_func.h"
 
 
-/* ==================================================================*
- *            FUNCTIONS Basics
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
- *            Init
+ *            init
  * ------------------------------------------------------------------*/
 
 void MCP7941_Init(void)
@@ -30,7 +26,7 @@ void MCP7941_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            Init Time Default
+ *            init Time Default
  * ------------------------------------------------------------------*/
 
 void MCP7941_InitDefault(void)
