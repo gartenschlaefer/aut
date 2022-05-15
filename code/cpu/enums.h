@@ -195,16 +195,12 @@ typedef enum
 
 typedef enum
 { 
-  AutoPage, ManualPage, SetupPage, DataPage,
-  PinManual, PinSetup, PinModem, AutoZone,
-  AutoSetDown,AutoMud, AutoCirc, AutoCircOff, AutoPumpOff, AutoAir, AutoAirOff,
-  SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff, SetupMud, SetupCompressor, SetupPhosphor,
-  SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone,
-  ManualMain, ManualPumpOff_On, ManualCirc, ManualCircOff, ManualAir,
-  ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump,
-  DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto,
-  DataSonicBoot,DataSonicBootR, DataSonicBootW,
-  ErrorMPX, ErrorTreat
+  AutoPage, ManualPage, SetupPage, DataPage, PinManual, PinSetup, PinModem, AutoZone, AutoSetDown, AutoMud,
+  AutoCirc, AutoCircOff, AutoPumpOff, AutoAir, AutoAirOff, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff,
+  SetupMud, SetupCompressor, SetupPhosphor, SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone, ManualMain,
+  ManualPumpOff_On, ManualCirc, ManualCircOff, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump,
+  DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto, DataSonicBoot, DataSonicBootR, DataSonicBootW, ErrorMPX,
+  ErrorTreat, NoPage
 }t_page;
 
 

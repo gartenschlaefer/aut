@@ -9,6 +9,7 @@
 #include "lcd_sym.h"
 #include "memory_app.h"
 #include "tc_func.h"
+#include "error_func.h"
 
 
 /*-------------------------------------------------------------------*
@@ -218,80 +219,74 @@ int MPX_LevelCal(t_FuncCmd cmd)
  *  gives back page to go next, or stay in same
  * ------------------------------------------------------------------*/
 
-t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
+void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
 {
   static int mpxAv = 0;
   static unsigned char error = 0;
 
-  int hO2 = 0;
-  int hCirc = 0;
-  int minP = 0;
-  int perP = 0;
 
   // return if Ultrasonic
-  if(MEM_EEPROM_ReadVar(SONIC_on)) return page;
+  if(MEM_EEPROM_ReadVar(SONIC_on)) return;
+
+  // variables
+  int perP = 0;
+  t_page p = ps->page_state->page;
 
   // disabled read tank
-  if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) || page == AutoPumpOff || page == AutoMud)
+  if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) || p == AutoPumpOff || p == AutoMud)
   {
     // manual
-    if(page == ManualCirc || page == ManualCircOff || page == ManualAir)
-    {
-      LCD_Sym_MPX(_mmbar, perP);
-      return page;
-    }
+    if(p == ManualCirc || p == ManualCircOff || p == ManualAir){ LCD_Sym_MPX(_mmbar, perP); }
 
     // auto zone
-    else if(page == AutoZone)
-    {
-      LCD_Sym_MPX(_notav, 0);
-      return AutoCirc;
-    }
+    else if(p == AutoZone){ LCD_Sym_MPX(_notav, 0); ps->page_state->page = AutoCirc; }
     LCD_Sym_MPX(_notav, 0);
-    return page;
+    return;
   }
 
   // read variables
-  hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
-  minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+  int hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  int hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
+  int minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
 
   // exe
   if(cmd == _exe)
   {
     // read pressure
     mpxAv = MPX_LevelCal(_new);
-    if(page == ManualCirc) return page;
+    if(p == ManualCirc) return;
     LCD_Sym_MPX(_mbar, mpxAv);
 
-    // circulate
-    if(page == AutoCirc)
+    // error
+    if(mpxAv >= (hO2 + minP))
     {
-      if(mpxAv >= (hO2 + minP))
-      {
-        error++;
-        return AutoSetDown;
-      }
-      error = 0;
-      if(mpxAv >= (hCirc + minP)) return AutoAir;
+      error++;
+      //ps->page_state->page = AutoSetDown;
+      if(error >= 2){ ps->error_state->pending_err_code |= E_IT; error = 0; }
+    }
+
+    // circulate
+    if(p == AutoCirc)
+    {
+      if(mpxAv >= (hCirc + minP)){ ps->page_state->page = AutoAir; }
     }
 
     // air
-    else if(page == AutoAir)
+    else if(p == AutoAir)
     {
-      if(mpxAv >= (hO2 + minP)) return AutoSetDown;
+      if(mpxAv >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
     }
 
     // zone
-    else if(page == AutoZone)
+    else if(p == AutoZone)
     {
-      // difference
-      if((mpxAv < (minP - 5)) || (mpxAv > (minP + 5))) return AutoCirc;
+      // difference, todo: check this
+      if((mpxAv < (minP - 5)) || (mpxAv > (minP + 5))) { ps->page_state->page = AutoCirc; }
 
       MPX_LevelCal(_save);
-      if(mpxAv >= (hO2 + minP))   return AutoSetDown;
-      if(mpxAv >= (hCirc + minP)) return AutoAir;
-      else                        return AutoCirc;
+      if(mpxAv >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
+      if(mpxAv >= (hCirc + minP)){ ps->page_state->page = AutoAir; }
+      else { ps->page_state->page = AutoCirc; }
     }
   }
 
@@ -300,19 +295,16 @@ t_page MPX_ReadTank(t_page page, t_FuncCmd cmd)
   {
     // calculate percentage
     perP = mpxAv - minP;
-    if(perP <= 0) perP = 0;
+    if(perP <= 0){ perP = 0; }
     perP = ((perP * 100) / hO2);
 
     //ManualWrite
-    if(page == ManualCirc)
-    {
-      LCD_Sym_MPX(_mmbar, perP);
-      return page;
-    }
+    if(p == ManualCirc){ LCD_Sym_MPX(_mmbar, perP); return; }
     LCD_Sym_MPX(_debug, perP);
   }
 
   // error
-  else if(cmd == _error)  if(error >= 2) return ErrorMPX;
-  return page;
+  //else if(cmd == _error) { if(error >= 2) return ErrorMPX; }
+  //else if(cmd == _error) { if(error >= 2) ps->error_state->; }
+  //return page;
 }

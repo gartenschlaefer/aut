@@ -18,10 +18,10 @@
 void MCP7941_Init(void)
 {
   // external battery
-  MCP7941_WriteByte(TIC_DAY,  (DEF_DAY | VBATEN));
+  MCP7941_WriteByte(TIC_DAY, (DEF_DAY | VBATEN));
 
   // start timer
-  MCP7941_WriteByte(TIC_SEC,  TIC_ST);
+  MCP7941_WriteByte(TIC_SEC, TIC_ST);
 }
 
 
@@ -68,18 +68,13 @@ unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i)
 }
 
 
-
-/* ==================================================================*
- *            FUNCTIONS Write and Read
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
  *            Write Byte
  * ------------------------------------------------------------------*/
 
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
 {
-  unsigned char send[] = {addr, sData};
+  unsigned char send[] = { addr, sData };
   MCP7941_Write(send, 2);
 }
 
@@ -90,22 +85,14 @@ void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
 
 unsigned char MCP7941_ReadByte(unsigned char addr)
 {
-  unsigned char send[] = {addr};
+  unsigned char send[] = { addr };
   unsigned char *rec;
-  unsigned char rData;
 
   rec = MCP7941_Read(send, 1);
   rec++;
-  rData = *rec;
-
-  return rData;
+  return *rec;
 }
 
-
-
-/* ==================================================================*
- *            Operation Hours
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            Write Compressor OpHours2RAM
@@ -113,11 +100,8 @@ unsigned char MCP7941_ReadByte(unsigned char addr)
 
 void MCP7941_Write_Comp_OpHours(int hours)
 {
-  unsigned char h = 0;
-  unsigned char l = 0;
-
-  l = (hours & 0x00FF);
-  h = ((hours >> 8) & 0x00FF);
+  unsigned char l = (hours & 0x00FF);
+  unsigned char h = ((hours >> 8) & 0x00FF);
 
   MCP7941_WriteByte(RAM_OP_ADDR_H, h);
   MCP7941_WriteByte(RAM_OP_ADDR_L, l);
@@ -130,22 +114,14 @@ void MCP7941_Write_Comp_OpHours(int hours)
 
 int MCP7941_Read_Comp_OpHours(void)
 {
-  unsigned char h = 0;
-  unsigned char l = 0;
-
-  h = MCP7941_ReadByte(RAM_OP_ADDR_H);
+  unsigned char h = MCP7941_ReadByte(RAM_OP_ADDR_H);
   TCC0_wait_us(25);
-  l = MCP7941_ReadByte(RAM_OP_ADDR_L);
+  unsigned char l = MCP7941_ReadByte(RAM_OP_ADDR_L);
   TCC0_wait_us(25);
 
   return ((h << 8) | l);
 }
 
-
-
-/* ==================================================================*
- *            Time and Date
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            Read Time
@@ -183,74 +159,4 @@ unsigned char MCP7941_ReadTime(unsigned char cmd)
   }
   TCC0_wait_us(25);
   return wTime;
-}
-
-
-/* ------------------------------------------------------------------*
- *            Write Time2LCD
- * ------------------------------------------------------------------*/
-
-void MCP7941_LCD_WriteTime(t_FuncCmd cmd)
-{
-  unsigned char time=0;
-
-  switch(cmd)
-  {
-    case _init:
-
-      // : symbol
-      LCD_WriteAnyFont(f_4x6_p, 2, 128, 10);
-      LCD_WriteAnyFont(f_4x6_p, 2, 140, 10);
-
-      // time
-      LCD_WriteAnyValue(f_4x6_p, 2, 2,120, MCP7941_ReadTime(TIC_HOUR));
-      LCD_WriteAnyValue(f_4x6_p, 2, 2,132, MCP7941_ReadTime(TIC_MIN));
-      LCD_WriteAnyValue(f_4x6_p, 2, 2,144, MCP7941_ReadTime(TIC_SEC));
-      break;
-
-    case _exe:
-
-      // sec
-      time = MCP7941_ReadTime(TIC_SEC);
-      LCD_WriteAnyValue(f_4x6_p, 2, 2,144, time);
-
-      // min
-      if(!time)
-      {
-        time= MCP7941_ReadTime(TIC_MIN);
-        LCD_WriteAnyValue(f_4x6_p, 2, 2,132, time);
-      }
-      else break;
-
-      // hour
-      if(!time)
-      {
-        time= MCP7941_ReadTime(TIC_HOUR);
-        LCD_WriteAnyValue(f_4x6_p, 2, 2,132, time);
-      }
-      else break;
-      break;
-
-    default: break;
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *            Write Date2LCD
- * ------------------------------------------------------------------*/
-
-void MCP7941_LCD_WriteDate(void)
-{
-  // - symbol
-  LCD_WriteAnyFont(f_4x6_p, 0, 128, 11);
-  LCD_WriteAnyFont(f_4x6_p, 0, 140, 11);
-
-  // year 20xx
-  LCD_WriteAnyStringFont(f_4x6_p, 0, 144, "20");
-
-  // date
-  LCD_WriteAnyValue(f_4x6_p, 2, 0,120, MCP7941_ReadTime(TIC_DATE));
-  LCD_WriteAnyValue(f_4x6_p, 2, 0,132, MCP7941_ReadTime(TIC_MONTH));
-  LCD_WriteAnyValue(f_4x6_p, 2, 0,152, MCP7941_ReadTime(TIC_YEAR));
 }

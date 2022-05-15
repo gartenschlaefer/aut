@@ -90,16 +90,13 @@ void Eval_PinClr(unsigned char *pin)
 
 int Eval_Comp_OpHours(t_FuncCmd cmd)
 {
-  int hours = 0;
-
-  hours = MCP7941_Read_Comp_OpHours();
+  int hours = MCP7941_Read_Comp_OpHours();
   if(cmd == _add)
   {
     hours++;
     MCP7941_Write_Comp_OpHours(hours);
     hours = MCP7941_Read_Comp_OpHours();
   }
-
   return hours;
 }
 
@@ -108,14 +105,14 @@ int Eval_Comp_OpHours(t_FuncCmd cmd)
  *  Eval_Countdown: If *value==0, return 1  else return 0
  * ------------------------------------------------------------------*/
 
-unsigned char Eval_CountDown(int *cMin, int *cSec)
+unsigned char Eval_CountDown(struct Tms *tms)
 {
   unsigned char count = 0;
   static unsigned char ctOld = 0;
   unsigned char sTC = 0;
 
-  int min = *cMin;
-  int sec = *cSec;
+  int min = tms->min;
+  int sec = tms->sec;
 
   // savety for seconds
   if(sec < 0 || sec > 61) sec = 0;  
@@ -156,14 +153,21 @@ unsigned char Eval_CountDown(int *cMin, int *cSec)
     TCD1_MainAuto_SafetyTC(_reset);
     min = 0;
     sec = 5;
-    *cMin = min;
-    *cSec = sec;
+
+    tms->min = min;
+    tms->sec = sec;
+
+    // *cMin = min;
+    // *cSec = sec;
     return 1;
   }
 
-  *cMin = min;
-  *cSec = sec;
+  // *cMin = min;
+  // *cSec = sec;
 
+  tms->min = min;
+  tms->sec = sec;
+  
   return 0;
 }
 
@@ -335,22 +339,22 @@ void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
 
 unsigned char *Eval_Memory_NoEntry(t_textButtons data)
 {
-  static unsigned char memCount[3] = {AUTO_START_PAGE, 0, 0};
+  static unsigned char memCount[3] = {MEM_AUTO_START_SECTION, 0, 0};
 
   unsigned char *p_count = memCount;
   unsigned char eep = 0;
   unsigned char i = 0;
   unsigned char stop = 0;
 
-  unsigned char startPa = AUTO_START_PAGE;
-  unsigned char endPa = AUTO_END_PAGE;
+  unsigned char startPa = MEM_AUTO_START_SECTION;
+  unsigned char endPa = MEM_AUTO_END_SECTION;
 
   // determine start and end page
   switch(data)
   {
-    case Auto:    startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
-    case Manual:  startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
-    case Setup:   startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+    case Auto:    startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case Manual:  startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case Setup:   startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
     default: break;
   }
 
@@ -396,14 +400,14 @@ unsigned char *Eval_Memory_NoEntry(t_textButtons data)
 
 unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
 {
-  static unsigned char old[2] = {AUTO_START_PAGE, 0};
+  static unsigned char old[2] = {MEM_AUTO_START_SECTION, 0};
 
   unsigned char *p_old = old;
   unsigned char eep = 0;
   unsigned char i = 0;
 
-  unsigned char startPa = AUTO_START_PAGE;
-  unsigned char endPa = AUTO_END_PAGE;
+  unsigned char startPa = MEM_AUTO_START_SECTION;
+  unsigned char endPa = MEM_AUTO_END_SECTION;
 
   unsigned char day = 31;
   unsigned char month = 12;
@@ -420,9 +424,9 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
   // determine start and end page
   switch(data)
   {
-    case Auto:    startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
-    case Manual:  startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
-    case Setup:   startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+    case Auto:    startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case Manual:  startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case Setup:   startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
     default: break;
   }
 
@@ -468,14 +472,14 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
 
 unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
 {
-  static unsigned char latest[2] = {AUTO_START_PAGE, 0};
+  static unsigned char latest[2] = {MEM_AUTO_START_SECTION, 0};
 
   unsigned char *p_latest = latest;
   unsigned char eep = 0;
   unsigned char i = 0;
 
-  unsigned char startPa = AUTO_START_PAGE;
-  unsigned char endPa = AUTO_END_PAGE;
+  unsigned char startPa = MEM_AUTO_START_SECTION;
+  unsigned char endPa = MEM_AUTO_END_SECTION;
 
   unsigned char day = 0;
   unsigned char month = 0;
@@ -492,9 +496,9 @@ unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
   // determine start and end page
   switch(data)
   {
-    case Auto:    startPa = AUTO_START_PAGE; endPa = AUTO_END_PAGE; break;
-    case Manual:  startPa = MANUAL_START_PAGE; endPa = MANUAL_END_PAGE; break;
-    case Setup:   startPa = SETUP_START_PAGE; endPa = SETUP_END_PAGE; break;
+    case Auto:    startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case Manual:  startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case Setup:   startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
     default: break;
   }
 

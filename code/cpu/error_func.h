@@ -26,21 +26,18 @@
 void Error_ON(struct LcdBacklight *b);
 void Error_OFF(struct LcdBacklight *b);
 
-unsigned char Error_Read(t_page page);
+void Error_Read(struct PlantState *ps);
+void Error_Detection(struct PlantState *ps);
+void Error_Treatment(struct PlantState *ps);
 
-t_page Error_Detection(t_page page, int min, int sec, struct PlantState *plant_state);
-struct ErrTreat Error_Treatment(struct ErrTreat treat, struct LcdBacklight *b);
+unsigned char Error_Action_OP_Air(struct PlantState *ps);
+unsigned char Error_Action_UP_Air(struct PlantState *ps);
 
-unsigned char Error_Action_OP_Air(t_page page, struct LcdBacklight *b);
-unsigned char Error_Action_UP_Air(t_page page, struct LcdBacklight *b);
-
-void Error_Action_Temp_SetError(struct LcdBacklight *b);
-void Error_Action_OP_SetError(struct LcdBacklight *b);
-void Error_Action_UP_SetError(struct LcdBacklight *b);
-void Error_Action_IT_SetError(struct LcdBacklight *b);
-void Error_Action_OT_SetError(struct LcdBacklight *b);
-
+void Error_Action_Temp_SetError(struct PlantState *ps);
+void Error_Action_OP_SetError(struct PlantState *ps);
+void Error_Action_UP_SetError(struct PlantState *ps);
+void Error_Action_IT_SetError(struct PlantState *ps);
+void Error_Action_OT_SetError(struct PlantState *ps);
 void Error_ModemAction(unsigned char error);
-void Error_Symbol(unsigned char err);
 
 #endif

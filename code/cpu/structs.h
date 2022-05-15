@@ -5,6 +5,8 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
+#include <stdbool.h>
+
 
 /* ------------------------------------------------------------------*
  *            structs
@@ -33,10 +35,11 @@ struct TelNr
 };
 
 
-struct ErrTreat
+struct ErrorState
 {
   t_page page;
   unsigned char err_code;
+  unsigned char pending_err_code;
   unsigned char err_reset_flag;
 };
 
@@ -51,14 +54,32 @@ struct LcdBacklight
 struct FrameCounter
 {
   unsigned int usv;
+  unsigned int lcd_reset;
+};
+
+
+struct Tms
+{
+  int min;
+  int sec;
+};
+
+
+struct PageState
+{
+  t_page page;
+  struct Tms *page_time;
 };
 
 
 struct PlantState
 {
-  t_page page;
+  unsigned char init;
+  struct PageState *page_state;
+  struct PageState *prev_page_state;
   struct LcdBacklight *lcd_backlight;
   struct FrameCounter *frame_counter;
+  struct ErrorState *error_state;
 }; 
 
 #endif

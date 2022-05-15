@@ -6,6 +6,7 @@
 #define MPX_DRIVER_H
 
 #include "enums.h"
+#include "structs.h"
 
 
 /* ------------------------------------------------------------------*
@@ -21,6 +22,6 @@ int MPX_ReadAverage_UnCal(void);
 int MPX_ReadAverage_UnCal_Value(void);
 
 int MPX_LevelCal(t_FuncCmd cmd);
-t_page MPX_ReadTank(t_page page, t_FuncCmd cmd);
+void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd);
 
 #endif

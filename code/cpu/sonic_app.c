@@ -114,14 +114,14 @@ void Sonic_Data_Auto(void)
  *            UltraSonic - ReadTank
  * ------------------------------------------------------------------*/
 
-t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
+void Sonic_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
 {
   static unsigned char state = 1;
   static int sonic = 0;
   unsigned char *rec;
 
   // deactivated sonic
-  if(!MEM_EEPROM_ReadVar(SONIC_on)) return page;
+  if(!MEM_EEPROM_ReadVar(SONIC_on)) return;
 
   // init
   if(cmd == _init)
@@ -141,16 +141,16 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
       if(rec[0] >= _usErrTimeout1)
       {
         CAN_SonicQuery(_init, _5Shots);
-        LCD_Sym_NoUS(page, _write);
+        LCD_Sym_NoUS(ps->page_state->page, _write);
       }
 
       // distance
       else if(rec[0] == _usDistSuccess)
       {
         sonic = (rec[1] << 8) | rec[2];
-        LCD_Auto_SonicVal(page, sonic);
-        page = Sonic_ChangePage(page, sonic);
-        LCD_Sym_NoUS(page, _clear);
+        LCD_Sym_Auto_SonicVal(ps->page_state->page, sonic);
+        Sonic_ChangePage(ps, sonic);
+        LCD_Sym_NoUS(ps->page_state->page, _clear);
         state = 1;
       }
 
@@ -172,7 +172,7 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
     else if(state >= 2)
     {
       if(TCF0_Wait_Query()) state++;    //2s
-      if(state > Sonic_getRepeatTime(page))
+      if(state > Sonic_getRepeatTime(ps->page_state->page))
       {
         CAN_SonicQuery(_init, _5Shots);
         state = 0;
@@ -183,10 +183,8 @@ t_page Sonic_ReadTank(t_page page, t_FuncCmd cmd)
   // write
   else if(cmd == _write)
   {
-    if(!LCD_Sym_NoUS(page, _check)) LCD_Auto_SonicVal(page, sonic);
+    if(!LCD_Sym_NoUS(ps->page_state->page, _check)) LCD_Sym_Auto_SonicVal(ps->page_state->page, sonic);
   }
-
-  return page;
 }
 
 
@@ -222,7 +220,7 @@ unsigned char Sonic_getRepeatTime(t_page page)
  *            UltraSonic - ReadTank - ChangePages
  * ------------------------------------------------------------------*/
 
-t_page Sonic_ChangePage(t_page page, int sonic)
+void Sonic_ChangePage(struct PlantState *ps, int sonic)
 {
   static int oldSonic = 0;
   static unsigned char error = 0;
@@ -251,7 +249,7 @@ t_page Sonic_ChangePage(t_page page, int sonic)
     error = 0;
     oldSonic = sonic;
   }
-  if(error) return page;
+  if(error) return;
 
   // percentage
   zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
@@ -259,40 +257,43 @@ t_page Sonic_ChangePage(t_page page, int sonic)
   lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
 
   // change page
-  switch(page)
+  switch(ps->page_state->page)
   {
     case AutoZone:
-      if(sonic < (zero - (lvO2 * 10)))
-        page = AutoSetDown;
-      else{
-        LCD_Auto_InflowPump(page, 0, _reset);
-        LCD_Write_AirVar(page, 0, _reset);
-        page = AutoCirc;
-        LCD_Write_AirVar(page, 0, _init);}
+      if(sonic < (zero - (lvO2 * 10))){ ps->page_state->page = AutoSetDown; }
+      else
+      {
+        LCD_Auto_InflowPump(ps, _reset);
+        LCD_AirState(ps, _reset);
+        ps->page_state->page = AutoCirc;
+        LCD_AirState(ps, _init);
+      }
       break;
 
     case AutoCirc:
     case AutoCircOff:
-      if(sonic < (zero - (lvCi * 10))){
-        LCD_Auto_InflowPump(page, 0, _reset);
-        LCD_Write_AirVar(page, 0, _reset);
-        page = AutoAir;
-        LCD_Write_AirVar(page, 0, _init);}
+      if(sonic < (zero - (lvCi * 10)))
+      {
+        LCD_Auto_InflowPump(ps, _reset);
+        LCD_AirState(ps, _reset);
+        ps->page_state->page = AutoAir;
+        LCD_AirState(ps, _init);
+      }
       break;
 
     case AutoAir:
     case AutoAirOff:
-      if(sonic < (zero - (lvO2 * 10))){
-        LCD_Auto_InflowPump(page, 0, _reset);
-        LCD_Write_AirVar(page, 0, _reset);
-        page = AutoSetDown;
-        LCD_Write_AirVar(AutoCirc, 0, _init);}
+      if(sonic < (zero - (lvO2 * 10)))
+      {
+        LCD_Auto_InflowPump(ps, _reset);
+        LCD_AirState(ps, _reset);
+        ps->page_state->page = AutoSetDown;
+        LCD_AirState(ps, _init);
+      }
       break;
 
     default: break;
   }
-
-  return page;
 }
 
 
@@ -444,8 +445,7 @@ void Sonic_Data_BootRead(void)
   unsigned char state = 0;
 
   CAN_SonicReadProgram(_init);
-  while((state != 4) && !(state >= 10))
-    state = CAN_SonicReadProgram(_exe);
+  while((state != 4) && !(state >= 10)){ state = CAN_SonicReadProgram(_exe); }
 
   switch(state)
   {
@@ -468,14 +468,13 @@ void Sonic_Data_BootWrite(void)
   unsigned char state = 0;
 
   CAN_SonicWriteProgram(_init);
-  while((state != 4) && !(state >= 10))
-    state = CAN_SonicWriteProgram(_exe);
+  while((state != 4) && !(state >= 10)){ state = CAN_SonicWriteProgram(_exe); }
 
   switch(state)
   {
-    case 4:  LCD_Data_SonicWrite(_ok, 0);     break;
+    case 4:  LCD_Data_SonicWrite(_ok, 0); break;
     case 11: LCD_Data_SonicWrite(_noBoot, 0); break;
-    case 12: LCD_Data_SonicWrite(_error, 0);  break;
+    case 12: LCD_Data_SonicWrite(_error, 0); break;
     default: break;
   }
   TCE1_Stop();

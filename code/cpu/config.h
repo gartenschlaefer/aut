@@ -13,8 +13,8 @@
 
 //*-* configuration
 
-// start page
-#define START_PAGE AutoSetDown
+// start page for automatic mode
+#define AUTO_START_PAGE AutoSetDown
 
 // company id: 0 = Purator; 1 = HECS
 #define COMPANY 1
@@ -32,7 +32,7 @@
 #define SPRING_VALVE_ON 1
 
 // debug: set to zero for no debugging with buzzer off, modem off, port valve, data entry
-#define DEBUG     0
+#define DEBUG     1
 #define DEB_BUZ   0
 #define DEB_MODEM 0
 #define DEB_PORT  0

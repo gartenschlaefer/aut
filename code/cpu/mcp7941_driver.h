@@ -57,15 +57,11 @@ void MCP7941_InitDefault(void);
 
 void MCP7941_Write(unsigned char *send, unsigned char i);
 unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i);
-
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData);
 unsigned char MCP7941_ReadByte(unsigned char addr);
 
 void MCP7941_Write_Comp_OpHours(int hours);
 int MCP7941_Read_Comp_OpHours(void);
-
 unsigned char MCP7941_ReadTime(unsigned char cmd);
-void MCP7941_LCD_WriteTime(t_FuncCmd cmd);
-void MCP7941_LCD_WriteDate(void);
 
 #endif

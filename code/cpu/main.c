@@ -17,20 +17,21 @@
 
 int main(void)
 {
-  // start page
-  t_page page = DataPage;
-
   // datatypes
   struct LcdBacklight lcd_backlight = { .state = _off, .count = 0 };
-  struct FrameCounter frame_counter = { .usv = 0 };
+  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0 };
+  struct Tms page_time = { .min = 5, .sec = 0 };
+  struct PageState page_state = { .page = DataPage, .page_time = &page_time };
+  struct PageState prev_page_state = { .page = NoPage, .page_time = &page_time };
+  struct ErrorState error_state = { .page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00 };
 
   // plant state
-  struct PlantState plant_state = { .page = DataPage, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter };
+  struct PlantState ps = { .init = 0, .page_state = &page_state, .prev_page_state = &prev_page_state, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter, .error_state = &error_state };
 
 
   // init
   Basic_Init();
-  LCD_Backlight(_on, plant_state.lcd_backlight);
+  LCD_Backlight(_on, ps.lcd_backlight);
 
   //*-* modem test loop
   //Modem_Test();
@@ -45,26 +46,26 @@ int main(void)
   {
     BASIC_WDT_RESET;
     PORT_Bootloader();
-    Modem_Check(page, &modem);
+    Modem_Check(ps.page_state->page, &modem);
 
     //*** debug port and lcd page
     if(DEBUG)
     {
       if (DEB_PORT) PORT_Debug();
-      LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, page);
+      LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, ps.page_state->page);
     }
 
     // GreatLinker
-    switch(page)
+    switch(ps.page_state->page)
     {
-      case AutoPage:    page = LCD_AutoPage(page, &plant_state);    break;
-      case ManualPage:  page = LCD_ManualPage(page, &plant_state);  break;
-      case SetupPage:   page = LCD_SetupPage(page, &plant_state);   break;
-      case DataPage:    page = LCD_DataPage(page, &plant_state);    break;
+      case AutoPage: LCD_AutoPage(&ps); break;
+      case ManualPage: LCD_ManualPage(&ps); break;
+      case SetupPage: LCD_SetupPage(&ps); break;
+      case DataPage: LCD_DataPage(&ps); break;
 
       // pin-pages
-      case PinManual:   page = LCD_PinPage(page, &plant_state);   break;
-      case PinSetup:    page = LCD_PinPage(page, &plant_state);   break;
+      case PinManual: LCD_PinPage(&ps); break;
+      case PinSetup: LCD_PinPage(&ps); break;
 
       // auto pages
       case AutoZone:
@@ -75,8 +76,8 @@ int main(void)
       case AutoCircOff:
       case AutoAir:
       case AutoAirOff:
-        page = LCD_AutoPage(page, &plant_state);
-        PORT_RunTime(&input_handler, &plant_state);
+        LCD_AutoPage(&ps);
+        PORT_RunTime(&input_handler, &ps);
         break;
 
       // manual pages
@@ -91,7 +92,7 @@ int main(void)
       case ManualCompressor:
       case ManualPhosphor:
       case ManualInflowPump:
-        page = LCD_ManualPage(page, &plant_state);
+        LCD_ManualPage(&ps);
         break;
 
       // setup pages
@@ -109,7 +110,7 @@ int main(void)
       case SetupAlarm:
       case SetupWatch:
       case SetupZone:
-        page = LCD_SetupPage(page, &plant_state);
+        LCD_SetupPage(&ps);
         break;
 
       // data pages
@@ -122,10 +123,10 @@ int main(void)
       case DataSonicBoot:
       case DataSonicBootR:
       case DataSonicBootW:
-        page = LCD_DataPage(page, &plant_state);
+        LCD_DataPage(&ps);
         break;
 
-      default: page = AutoPage; break;
+      default: ps.page_state->page = AutoPage; break;
     }
   }
 }

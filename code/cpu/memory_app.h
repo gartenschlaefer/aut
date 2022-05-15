@@ -16,20 +16,20 @@
 // num of pages: 64
 
 // start and end page of data section
-#define DATA_START_PAGE 2
-#define DATA_END_PAGE 50
+#define MEM_DATA_START_SECTION 2
+#define MEM_DATA_END_SECTION 50
 
 // 3 Manual pages
-#define MANUAL_START_PAGE 2
-#define MANUAL_END_PAGE 6
+#define MEM_MANUAL_START_SECTION 2
+#define MEM_MANUAL_END_SECTION 6
 
 // 3 Setup pages
-#define SETUP_START_PAGE 7
-#define SETUP_END_PAGE 11
+#define MEM_SETUP_START_SECTION 7
+#define MEM_SETUP_END_SECTION 11
 
 // 16 Auto pages
-#define AUTO_START_PAGE 12
-#define AUTO_END_PAGE 42
+#define MEM_AUTO_START_SECTION 12
+#define MEM_AUTO_END_SECTION 42
 
 // amount of data pages
 #define DATA_PAGE_NUM_MANUAL (3 - 1)

@@ -9,28 +9,24 @@
 #include "lcd_driver.h"
 #include "lcd_app.h"
 #include "eval_app.h"
+#include "error_func.h"
 #include "memory_app.h"
-#include "mcp7941_driver.h"
 #include "mpx_driver.h"
 #include "mcp9800_driver.h"
+#include "mcp7941_driver.h"
 #include "modem_driver.h"
 #include "sonic_app.h"
 #include "output_app.h"
 
 
 /* ------------------------------------------------------------------*
- *            set auto page
+ *            logo symbol
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_Page(void)
+void LCD_Sym_Logo(void)
 {
-  LCD_MarkTextButton(Auto);
-  LCD_Clean();
-  LCD_MarkTextButton(Auto);
-
   if(!COMPANY) LCD_WriteAnySymbol(s_logo_purator, 0, 0, logo_purator);
   else LCD_WriteAnySymbol(s_logo_hecs, 0, 0, logo_hecs);
-  MCP7941_LCD_WriteTime(_init);
 }
 
 
@@ -38,10 +34,10 @@ void LCD_AutoSet_Page(void)
  *            Auto Countdown
  * ------------------------------------------------------------------*/
 
-void LCD_AutoCountDown(int min, int sec)
+void LCD_Sym_Auto_CountDown(struct Tms *tms)
 {
-  LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
-  LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, tms->min);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, tms->sec);
 }
 
 
@@ -49,8 +45,11 @@ void LCD_AutoCountDown(int min, int sec)
  *            Auto Text
  * ------------------------------------------------------------------*/
 
-void LCD_AutoText(void)
+void LCD_Sym_Auto_Text(struct PlantState *ps)
 {
+  // clear text space
+  LCD_ClrSpace(13, 0, 6, 160);
+  
   // mbar
   LCD_WriteAnyFont(f_4x6_p, 13, 57, 13);
   LCD_WriteAnyFont(f_4x6_p, 13, 61, 14);
@@ -68,82 +67,33 @@ void LCD_AutoText(void)
   // ph
   LCD_WriteAnyFont(f_4x6_p, 13, 143, 10);
 
-  MCP7941_LCD_WriteTime(_init);
-  MCP7941_LCD_WriteDate();
+  LCD_Sym_Auto_Time(_init);
+  LCD_Sym_Auto_Date();
 
   // Read water level
-  MPX_ReadTank(AutoPage, _write);
-  LCD_Auto_SonicVal(AutoPage, _write);
+  MPX_ReadTank(ps, _write);
+  LCD_Sym_Auto_SonicVal(AutoPage, _write);
 
   LCD_WriteAnyValue(f_4x6_p, 5, 15,43, Eval_Comp_OpHours(_init));
 
-  LCD_WriteAuto_IP_Sensor();
+  // ip sensor
+  if(MEM_EEPROM_ReadVar(SENSOR_outTank)) LCD_WriteAnySymbol(s_29x17, 16, 90, p_sensor);
   Sonic_ReadTank(AutoPage, _write);
 }
 
 
 /* ------------------------------------------------------------------*
- *            Auto UltraSonic Value
+ *            set auto page
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_SonicVal(t_page page, int sonic)
+void LCD_Sym_Auto_Main(void)
 {
-  int zero = 0;
-  int dif = 0;
-  int per = 0;
-  int cal = 0;
-  int lvO2 = 0;
+  LCD_Sym_MarkTextButton(Auto);
+  LCD_Clean();
+  LCD_Sym_MarkTextButton(Auto);
 
-  // deactivated sonic
-  if(!MEM_EEPROM_ReadVar(SONIC_on)) return;
-  //--------------------------------------------------mm
-  switch(page)
-  {
-    case AutoZone:  case AutoSetDown: case AutoPumpOff:
-    case AutoMud:   case AutoCirc:    case AutoCircOff:
-    case AutoAir:   case AutoAirOff:  case AutoPage:
-      LCD_WriteAnyValue(f_4x6_p, 4, 17, 5, sonic);
-
-      // mm
-      LCD_WriteAnyFont(f_4x6_p, 17, 22, 13);
-      LCD_WriteAnyFont(f_4x6_p, 17, 26, 13);
-      break;
-
-    default: break;
-  }
-
-  // percentage
-  zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  
-  //water-level-difference
-  dif = lvO2 * 10;
-  cal = sonic - (zero - (lvO2 * 10));
-  if(sonic > zero) per = 0;
-  else per = 100 - ((cal * 10) / dif) * 10;
-  if(!sonic) per = 0;
-  switch(page)
-  {
-    case AutoZone:  case AutoSetDown: case AutoPumpOff:
-    case AutoMud:   case AutoCirc:    case AutoCircOff:
-    case AutoAir:   case AutoAirOff:  case AutoPage:
-      LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, per);
-
-      // %
-      LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
-      break;
-
-    case ManualMain:  case ManualCirc:  case ManualCircOff:
-    case ManualAir:   case ManualSetDown: case ManualPumpOff:
-    case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
-    case ManualPhosphor:  case ManualInflowPump:
-      LCD_WriteAnyValue(f_6x8_p, 3, 17, 2, per);
-      LCD_WriteAnyStringFont(f_6x8_p, 17, 22, "%");
-      break;
-
-    default: break;
-  }
-
+  LCD_Sym_Logo();
+  LCD_Sym_Auto_Time(_init);
 }
 
 
@@ -151,12 +101,12 @@ void LCD_Auto_SonicVal(t_page page, int sonic)
  *            Set Auto Zone
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_Zone(int min, int sec)
+void LCD_Sym_Auto_Zone(struct Tms *tms)
 {
   LCD_WriteAnySymbol(s_29x17, 6, 0, n_circulate);
   LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
   LCD_WriteAnyStringFont(f_6x8_n, 8, 1, "z");
-  LCD_AutoCountDown(min, sec);
+  LCD_Sym_Auto_CountDown(tms);
 }
 
 
@@ -164,11 +114,11 @@ void LCD_AutoSet_Zone(int min, int sec)
  *            Set Auto SetDown
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_SetDown(int min, int sec)
+void LCD_Sym_Auto_SetDown(struct Tms *tms)
 {
   LCD_WriteAnySymbol(s_29x17, 6, 0, n_setDown);
   LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
-  LCD_AutoCountDown(min, sec);
+  LCD_Sym_Auto_CountDown(tms);
 }
 
 
@@ -176,12 +126,12 @@ void LCD_AutoSet_SetDown(int min, int sec)
  *            Set Auto PumpOff
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_PumpOff(int min, int sec)
+void LCD_Sym_Auto_PumpOff(struct Tms *tms)
 {
   LCD_WriteAnySymbol(s_35x23, 5, 0, n_pumpOff);
   if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)) LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
   else LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
-  LCD_AutoCountDown(min, sec);
+  LCD_Sym_Auto_CountDown(tms);
 }
 
 
@@ -189,27 +139,22 @@ void LCD_AutoSet_PumpOff(int min, int sec)
  *            Set Auto Mud
  * ------------------------------------------------------------------*/
 
-void LCD_AutoSet_Mud(int min, int sec)
+void LCD_Sym_Auto_Mud(struct Tms *tms)
 {
   LCD_WriteAnySymbol(s_35x23, 5, 0, n_mud);
   LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
-  LCD_AutoCountDown(min, sec);
+  LCD_Sym_Auto_CountDown(tms);
 }
 
-
-
-/* ==================================================================*
- *            Auto Symbols
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            Inflow Pump Sym
  * ------------------------------------------------------------------*/
 
-void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
+void LCD_Sym_Auto_IP(struct PlantState *ps, t_FuncCmd cmd)
 {
-  unsigned char pump = 0;
-  pump =  MEM_EEPROM_ReadVar(PUMP_inflowPump);
+  unsigned char pump =  MEM_EEPROM_ReadVar(PUMP_inflowPump);
+  t_page p = ps->page_state->page;
 
   if(cmd == _off || cmd == _disabled)
   {
@@ -217,7 +162,7 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
     {
       case 0:
         LCD_WriteAnySymbol(s_35x23, 5, 89, p_inflowPump);
-        if(page == AutoAirOff || page == AutoCircOff) LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
+        if(p == AutoAirOff || p == AutoCircOff){ LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor); }
         break;
 
       case 1: LCD_WriteAnySymbol(s_19x19, 5, 90, p_pump); break;
@@ -231,7 +176,7 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
     {
       case 0:
         LCD_WriteAnySymbol(s_35x23, 5, 89, n_inflowPump);
-        if(page == AutoAirOff || page == AutoCircOff) LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
+        if(p == AutoAirOff || p == AutoCircOff){ LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor); }
         break;
 
       case 1: LCD_WriteAnySymbol(s_19x19, 5, 90, n_pump); break;
@@ -246,7 +191,7 @@ void LCD_SymbolAuto_IP(t_page page, t_FuncCmd cmd)
  *            Inflow Pump Var
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAutoVar_IP(unsigned char cho, unsigned char *t_ip)
+void LCD_Sym_Auto_IP_Time(unsigned char cho, unsigned char *t_ip)
 {
   // sec, min, h
   if(cho & 0x01) LCD_WriteAnyValue(f_4x6_p, 2, 13, 109, t_ip[0]);
@@ -256,22 +201,10 @@ void LCD_WriteAutoVar_IP(unsigned char cho, unsigned char *t_ip)
 
 
 /* ------------------------------------------------------------------*
- *            Inflow Pump Sensor
- * ------------------------------------------------------------------*/
-
-void LCD_WriteAuto_IP_Sensor(void)
-{
-  unsigned char sensor = 0;
-  sensor = MEM_EEPROM_ReadVar(SENSOR_outTank);
-  if(sensor) LCD_WriteAnySymbol(s_29x17, 16, 90, p_sensor);
-}
-
-
-/* ------------------------------------------------------------------*
  *            Phosphor Symbols
  * ------------------------------------------------------------------*/
 
-void LCD_SymbolAuto_Ph(t_FuncCmd state)
+void LCD_Sym_Auto_Ph(t_FuncCmd state)
 {
   switch(state)
   {
@@ -287,10 +220,10 @@ void LCD_SymbolAuto_Ph(t_FuncCmd state)
  *            Phosphor Var
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAutoVar_Ph(int min, int sec)
+void LCD_Sym_Auto_Ph_Time(struct Tms *tms)
 {
-  LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, min);
-  LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, sec);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, tms->min);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, tms->sec);
 }
 
 
@@ -298,82 +231,104 @@ void LCD_WriteAutoVar_Ph(int min, int sec)
  *            AutoVar
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAutoVar(int min, int sec)
-{
-  static int oldSec = 0;
+// void LCD_Sym_WriteAutoVar(struct PageState *ps)
+// {
+//   static int oldSec = 0;
 
-  if(oldSec != sec)
-  {
-    oldSec = sec;
+//   int sec = ps->page_state->sec;
+//   int min = ps->page_state->min;
 
-    // time
-    MCP7941_LCD_WriteTime(_exe);
-    LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
-  }
-  if(sec == 59) LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
-}
+//   if(oldSec != sec)
+//   {
+//     oldSec = sec;
+
+//     // time
+//     LCD_Sym_Auto_Time(_exe);
+//     LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
+//   }
+//   if(sec == 59) LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
+// }
 
 
 /* ------------------------------------------------------------------*
  *            AutoVar - Comp
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAutoVar_Comp(int min, int sec)
+// void LCD_Sym_WriteAutoVar_Comp(struct Tms *tms)
+// {
+//   static int oldSecc = 0;
+//   static int opMin = 0;
+//   static unsigned char opCounter = 0;
+
+//   int opHour = 0;
+
+//   int min = tms->min;
+//   int sec = tms->sec;
+
+//   if(oldSecc != sec)
+//   {
+//     oldSecc = sec;
+
+//     // time
+//     LCD_Sym_Auto_Time(_exe);
+//     LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
+//   }
+//   if(sec == 59) LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
+
+//   if(opMin != min)
+//   {
+//     opMin = min;
+//     opCounter++;
+//   }
+//   if(opCounter >= 60)
+//   {
+//     opCounter = 0;
+//     opHour = Eval_Comp_OpHours(_add);
+//     LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, opHour);
+//   }
+// }
+
+
+/* ------------------------------------------------------------------*
+ *            AutoVar - Comp
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms)
 {
   static int oldSecc = 0;
   static int opMin = 0;
   static unsigned char opCounter = 0;
 
-  int opHour = 0;
-
-  if(oldSecc != sec)
+  // sec change
+  if(oldSecc != tms->sec)
   {
-    oldSecc = sec;
+    oldSecc = tms->sec;
 
     // time
-    MCP7941_LCD_WriteTime(_exe);
-    LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, sec);
+    LCD_Sym_Auto_Time(_exe);
+    LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, tms->sec);
   }
-  if(sec == 59) LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, min);
 
-  if(opMin != min)
+  // minute update
+  if(tms->sec == 59){ LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, tms->min); }
+
+  // update compressor hours
+  switch(ps->page_state->page)
   {
-    opMin = min;
-    opCounter++;
-  }
-  if(opCounter >= 60)
-  {
-    opCounter = 0;
-    opHour = Eval_Comp_OpHours(_add);
-    LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, opHour);
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *            StartTime
- * ------------------------------------------------------------------*/
-
-int LCD_AutoRead_StartTime(t_page page)
-{
-  int sMin = 5;
-
-  switch(page)
-  {
-    case AutoCirc:
-    case ManualCirc: sMin = MEM_EEPROM_ReadVar(ON_circ); break;
-
-    case AutoCircOff:
-    case ManualCircOff: sMin = MEM_EEPROM_ReadVar(OFF_circ); break;
-
-    case AutoAir:
-    case ManualAir: sMin = MEM_EEPROM_ReadVar(ON_air); break;
-
-    case AutoAirOff: sMin = MEM_EEPROM_ReadVar(OFF_air); break;
-
+    case AutoPumpOff: case AutoMud: case AutoCirc: case AutoAir: case AutoZone:
+      if(opMin != tms->min)
+      {
+        opMin = tms->min;
+        opCounter++;
+      }
+      if(opCounter >= 60)
+      {
+        opCounter = 0;
+        int opHour = Eval_Comp_OpHours(_add);
+        LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, opHour);
+      }
     default: break;
   }
-  return sMin;
 }
 
 
@@ -381,7 +336,7 @@ int LCD_AutoRead_StartTime(t_page page)
  *            LCD_AutoSym - Auto Air Symbols
  * ------------------------------------------------------------------*/
 
-void LCD_AutoAirSym(t_page page)
+void LCD_Sym_AutoAir(t_page page)
 {
   switch(page)
   {
@@ -411,83 +366,53 @@ void LCD_AutoAirSym(t_page page)
 
 
 
-/* ==================================================================*
- *            Manual Page
- * --------------------------------------------------------------
- *  Manual Pages layout
- * --------------------------------------------------------------
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            manual text
+ * ------------------------------------------------------------------*/
 
-void LCD_ManualText(int min, int sec)
+void LCD_Sym_Manual_Text(struct PlantState *ps)
 {
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, min);
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, sec);
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, ps->page_state->page_time->min);
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, ps->page_state->page_time->sec);
   LCD_WriteAnyStringFont(f_6x8_p, 17, 136, ":");
   LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
-  MPX_ReadTank(ManualCirc, _write);
+  MPX_ReadTank(ps, _write);
 }
 
 
 /* ------------------------------------------------------------------*
- *            Set Manual Pages
+ *            manual variables
  * ------------------------------------------------------------------*/
 
-void LCD_WriteManualVar(int min, int sec)
+void LCD_Sym_Manual_PageTime(struct Tms *tms)
 {
   static unsigned char oldSec = 0;
 
-  if(oldSec != sec)
+  // change?
+  if(oldSec != tms->sec)
   {
-    oldSec = sec;
-    LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, sec);
+    oldSec = tms->sec;
+    LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, tms->sec);
   }
-  if(sec == 59)
+  // minute write
+  if(tms->sec == 59)
   {
-    if(min >= 100) LCD_WriteAnyValue(f_6x8_p, 3, 17, 118, min);
-    else LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, min);
+    if(tms->min >= 100) LCD_WriteAnyValue(f_6x8_p, 3, 17, 118, tms->min);
+    else LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, tms->min);
   }
 }
 
-
-/* ------------------------------------------------------------------*
- *            Set Manual Pages
- * ------------------------------------------------------------------*/
-
-void LCD_ManualSet_Page(int min, int sec)
-{
-  unsigned char i = 0;
-
-  LCD_MarkTextButton(Manual);
-  LCD_Clean();
-
-  // positive setup symbols
-  for(i = 12; i < 20; i++){ LCD_SetupSymbols(i); }
-  LCD_MarkTextButton(Manual);
-  LCD_ManualText(min, sec);
-
-  // init valves if it is the first page
-  OUT_Init_Valves();
-
-  // save manual entry
-  MEM_EEPROM_WriteManualEntry(MCP7941_ReadByte(TIC_HOUR), MCP7941_ReadByte(TIC_MIN), _saveValue);
-}
-
-
-
-/* ==================================================================*
- *            Setup Page
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            Set Setup Pages
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Page(void)
+void LCD_Sym_Setup_Page(void)
 {
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
   LCD_Clean();
-  for(unsigned char i = 12; i < 24; i++){ LCD_SetupSymbols(i); }
-  LCD_MarkTextButton(Setup);
+  for(unsigned char i = 12; i < 24; i++){ LCD_Sym_SetupSymbols(i); }
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -495,15 +420,15 @@ void LCD_SetupSet_Page(void)
  *            Set Setup Circulate
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Circulate(void)
+void LCD_Sym_Setup_Circulate(void)
 {
-  LCD_SetupSymbols(sn_circulate);
+  LCD_Sym_SetupSymbols(sn_circulate);
   LCD_Clean();
 
   LCD_WriteAnyStringFont(f_6x8_p, 16,40,"Time:");
   LCD_WriteAnySymbol(s_29x17, 3, 0, n_circulate);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -511,14 +436,14 @@ void LCD_SetupSet_Circulate(void)
  *            Set Setup Air
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Air(void)
+void LCD_Sym_Setup_Air(void)
 {
-  LCD_SetupSymbols(sn_air);
+  LCD_Sym_SetupSymbols(sn_air);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_29x17, 3, 0, n_air);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -526,14 +451,14 @@ void LCD_SetupSet_Air(void)
  *            Set Setup SetDown
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_SetDown(void)
+void LCD_Sym_Setup_SetDown(void)
 {
-  LCD_SetupSymbols(sn_setDown);
+  LCD_Sym_SetupSymbols(sn_setDown);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_29x17, 3, 0, n_setDown);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
   LCD_WriteAnyStringFont(f_6x8_p, 10, 0,"Time:");
 }
 
@@ -542,14 +467,14 @@ void LCD_SetupSet_SetDown(void)
  *            Set Setup PumpOff
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_PumpOff(void)
+void LCD_Sym_Setup_PumpOff(void)
 {
-  LCD_SetupSymbols(sn_pumpOff);
+  LCD_Sym_SetupSymbols(sn_pumpOff);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_35x23, 3, 0, n_pumpOff);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -557,14 +482,14 @@ void LCD_SetupSet_PumpOff(void)
  *            Set Setup Mud
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Mud(void)
+void LCD_Sym_Setup_Mud(void)
 {
-  LCD_SetupSymbols(sn_mud);
+  LCD_Sym_SetupSymbols(sn_mud);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_35x23, 2, 0, n_mud);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -572,16 +497,16 @@ void LCD_SetupSet_Mud(void)
  *            Set Setup Compressor
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Compressor(void)
+void LCD_Sym_Setup_Compressor(void)
 {
-  LCD_SetupSymbols(sn_compressor);
+  LCD_Sym_SetupSymbols(sn_compressor);
   LCD_Clean();
 
   LCD_WriteAnyStringFont(f_6x8_p, 11,28, "mbar MIN.");
   LCD_WriteAnyStringFont(f_6x8_p, 16,28, "mbar MAX.");
   LCD_WriteAnySymbol(s_29x17, 3, 0, n_compressor);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -589,14 +514,14 @@ void LCD_SetupSet_Compressor(void)
  *            Set Setup Phosphor
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Phosphor(void)
+void LCD_Sym_Setup_Phosphor(void)
 {
-  LCD_SetupSymbols(sn_phosphor);
+  LCD_Sym_SetupSymbols(sn_phosphor);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_19x19, 3, 0, n_phosphor);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -604,14 +529,14 @@ void LCD_SetupSet_Phosphor(void)
  *            Set Setup InflowPump
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_InflowPump(void)
+void LCD_Sym_Setup_InflowPump(void)
 {
-  LCD_SetupSymbols(sn_inflowPump);
+  LCD_Sym_SetupSymbols(sn_inflowPump);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_35x23, 1, 0, n_inflowPump);
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 /* ------------------------------------------------------------------*
@@ -665,11 +590,11 @@ void LCD_Setup_IPText(unsigned char select)
  *            Set Setup Cal
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Cal(void)
+void LCD_Sym_Setup_Cal(void)
 {
   unsigned char sonic = 0;
   unsigned char calRedo = 0;
-  LCD_SetupSymbols(sn_cal);
+  LCD_Sym_SetupSymbols(sn_cal);
   LCD_Clean();
   LCD_WriteAnySymbol(s_29x17, 2, 0, n_cal);
   LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
@@ -703,7 +628,7 @@ void LCD_SetupSet_Cal(void)
   }
 
 
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -711,9 +636,9 @@ void LCD_SetupSet_Cal(void)
  *            Set Setup Alarm
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Alarm(void)
+void LCD_Sym_Setup_Alarm(void)
 {
-  LCD_SetupSymbols(sn_alarm);
+  LCD_Sym_SetupSymbols(sn_alarm);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_29x17, 3, 0, n_alarm);
@@ -730,7 +655,7 @@ void LCD_SetupSet_Alarm(void)
   LCD_WriteAnyStringFont(f_6x8_p, 17, 110, "C");
 
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -738,13 +663,13 @@ void LCD_SetupSet_Alarm(void)
  *            Set Setup Watch
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Watch(void)
+void LCD_Sym_Setup_Watch(void)
 {
-  LCD_SetupSymbols(sn_watch);
+  LCD_Sym_SetupSymbols(sn_watch);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_29x17, 3, 0, n_watch);
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
   LCD_WriteCtrlButton2();
 
   LCD_WriteAnyStringFont(f_6x8_p, 11, 10, "hh");
@@ -764,15 +689,15 @@ void LCD_SetupSet_Watch(void)
  *            Set Setup Zone
  * ------------------------------------------------------------------*/
 
-void LCD_SetupSet_Zone(void)
+void LCD_Sym_Setup_Zone(void)
 {
-  LCD_SetupSymbols(sn_zone);
+  LCD_Sym_SetupSymbols(sn_zone);
   LCD_Clean();
 
   LCD_WriteAnySymbol(s_29x17, 2, 0, n_zone);
 
   LCD_WriteCtrlButton();
-  LCD_MarkTextButton(Setup);
+  LCD_Sym_MarkTextButton(Setup);
 }
 
 
@@ -781,7 +706,7 @@ void LCD_SetupSet_Zone(void)
  *            Set Setup Symbols
  * ==================================================================*/
 
-void LCD_SetupSymbols(t_SetupSym sym)
+void LCD_Sym_SetupSymbols(t_SetupSym sym)
 {
   switch(sym)
   {
@@ -849,11 +774,11 @@ void LCD_DateTime(t_DateTime time, unsigned char value)
  *            Set Data Pages
  * ------------------------------------------------------------------*/
 
-void LCD_DataSet_Page(void)
+void LCD_Sym_Data_Page(void)
 {
-  LCD_MarkTextButton(Data);
+  LCD_Sym_MarkTextButton(Data);
   LCD_Clean();
-  LCD_MarkTextButton(Data);
+  LCD_Sym_MarkTextButton(Data);
 
   // Sx.x.x
   LCD_WriteAnyFont(f_4x6_p, 1, 0, 21);
@@ -877,12 +802,22 @@ void LCD_DataSet_Page(void)
  *            Set Data Auto
  * ------------------------------------------------------------------*/
 
-void LCD_DataSet_Auto(void)
+void LCD_Sym_Data_Auto(void)
 {
   LCD_ClrSpace(4, 0, 9, 160);
-  LCD_WriteDataHeader_Auto();
+
+  // header
+  LCD_FillSpace(0, 0, 4, 137);
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 73, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 85, "O2");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 103, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 113, "Err");
+
   LCD_Write_TextButton(22, 0, Auto, 0);
-  LCD_WriteDataArrows();
+  LCD_Sym_DataArrows();
 
   LCD_WriteAnyStringFont(f_4x6_p, 1, 140, "01;16");
   LCD_WriteAutoEntryPage(0);
@@ -893,12 +828,20 @@ void LCD_DataSet_Auto(void)
  *            Set Data Manual
  * ------------------------------------------------------------------*/
 
-void LCD_DataSet_Manual(void)
+void LCD_Sym_Data_Manual(void)
 {
   LCD_ClrSpace(4, 0, 9, 160);
-  LCD_WriteDataHeader_Manual();
+  
+  // header
+  LCD_FillSpace(0, 0, 4, 137);
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Begin");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 77, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 88, "End");
+
   LCD_Write_TextButton(22, 40, Manual, 0);
-  LCD_WriteDataArrows();
+  LCD_Sym_DataArrows();
 
   LCD_WriteAnyStringFont(f_4x6_p, 1, 144, "1;3");
   LCD_WriteManualEntryPage(0);
@@ -909,12 +852,17 @@ void LCD_DataSet_Manual(void)
  *            Set Data Setup
  * ------------------------------------------------------------------*/
 
-void LCD_DataSet_Setup(void)
+void LCD_Sym_Data_Setup(void)
 {
   LCD_ClrSpace(4, 0, 9, 160);
-  LCD_WriteDataHeader_Setup();
+
+  LCD_FillSpace(0, 0, 4, 137);
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
+  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
+
   LCD_Write_TextButton(22, 80, Setup, 0);
-  LCD_WriteDataArrows();
+  LCD_Sym_DataArrows();
 
   LCD_WriteAnyStringFont(f_4x6_p, 1, 144, "1;3");
   LCD_WriteSetupEntryPage(0);
@@ -926,7 +874,7 @@ void LCD_DataSet_Setup(void)
  *            Set Data Sonic
  * ------------------------------------------------------------------*/
 
-void LCD_DataSet_Sonic(void)
+void LCD_Sym_Data_Sonic(void)
 {
   LCD_ClrSpace(1, 0, 12, 160);
   Sonic_Data_Boot(_off);
@@ -945,41 +893,11 @@ void LCD_DataSet_Sonic(void)
 
 
 
-/* ==================================================================*
- *            Data Symbols
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            arrows
+ * ------------------------------------------------------------------*/
 
-void LCD_WriteDataHeader_Auto(void)
-{
-  LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 73, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 85, "O2");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 103, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 113, "Err");
-}
-
-void LCD_WriteDataHeader_Manual(void)
-{
-  LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Begin");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 77, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 88, "End");
-}
-
-void LCD_WriteDataHeader_Setup(void)
-{
-  LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
-}
-
-void LCD_WriteDataArrows(void)
+void LCD_Sym_DataArrows(void)
 {
   LCD_WriteAnySymbol(s_19x19, 3, 140, p_arrowUp);
   LCD_WriteAnySymbol(s_19x19, 14, 140, p_arrowDown);
@@ -1647,7 +1565,7 @@ void LCD_OffValueNeg(unsigned char value)
  *            Mark Text Button
  * ------------------------------------------------------------------*/
 
-void LCD_MarkTextButton(t_textButtons text)
+void LCD_Sym_MarkTextButton(t_textButtons text)
 {
   for(unsigned char i = 0; i < 4; i++)
   {
@@ -1661,13 +1579,13 @@ void LCD_MarkTextButton(t_textButtons text)
  *            Mark Manual Symbol
  * ------------------------------------------------------------------*/
 
-void LCD_Mark_ManualSymbol(t_SetupSym sym)
+void LCD_Sym_Mark_ManualSymbol(t_SetupSym sym)
 {
   for(unsigned char i = 12; i < 20; i++)
   {
     // write negative / positive Manual Symbol
-    if((12 + sym == i)) LCD_SetupSymbols(sym);
-    else LCD_SetupSymbols(i);
+    if((12 + sym == i)) LCD_Sym_SetupSymbols(sym);
+    else LCD_Sym_SetupSymbols(i);
   }
 }
 
@@ -1714,4 +1632,183 @@ unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd)
     if(errC > 20) return 1;
   }
   return 0;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            Auto UltraSonic Value
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_SonicVal(t_page page, int sonic)
+{
+  int zero = 0;
+  int dif = 0;
+  int per = 0;
+  int cal = 0;
+  int lvO2 = 0;
+
+  // deactivated sonic
+  if(!MEM_EEPROM_ReadVar(SONIC_on)) return;
+  //--------------------------------------------------mm
+  switch(page)
+  {
+    case AutoZone:  case AutoSetDown: case AutoPumpOff:
+    case AutoMud:   case AutoCirc:    case AutoCircOff:
+    case AutoAir:   case AutoAirOff:  case AutoPage:
+      LCD_WriteAnyValue(f_4x6_p, 4, 17, 5, sonic);
+
+      // mm
+      LCD_WriteAnyFont(f_4x6_p, 17, 22, 13);
+      LCD_WriteAnyFont(f_4x6_p, 17, 26, 13);
+      break;
+
+    default: break;
+  }
+
+  // percentage
+  zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
+  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  
+  //water-level-difference
+  dif = lvO2 * 10;
+  cal = sonic - (zero - (lvO2 * 10));
+  if(sonic > zero) per = 0;
+  else per = 100 - ((cal * 10) / dif) * 10;
+  if(!sonic) per = 0;
+  switch(page)
+  {
+    case AutoZone:  case AutoSetDown: case AutoPumpOff:
+    case AutoMud:   case AutoCirc:    case AutoCircOff:
+    case AutoAir:   case AutoAirOff:  case AutoPage:
+      LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, per);
+
+      // %
+      LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
+      break;
+
+    case ManualMain:  case ManualCirc:  case ManualCircOff:
+    case ManualAir:   case ManualSetDown: case ManualPumpOff:
+    case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
+    case ManualPhosphor:  case ManualInflowPump:
+      LCD_WriteAnyValue(f_6x8_p, 3, 17, 2, per);
+      LCD_WriteAnyStringFont(f_6x8_p, 17, 22, "%");
+      break;
+
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            Error Symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Error(unsigned char err)
+{
+  // temp
+  if(err & E_T)
+  {
+    LCD_WriteAnySymbol(s_19x19, 16, 134, n_grad);
+  }
+
+  // over-pressure or under-pressure
+  if((err & E_OP) || (err & E_UP))
+  {
+    LCD_ClrSpace(6, 44, 6, 35);
+    LCD_WriteAnySymbol(s_29x17, 6, 45, n_alarm);
+  }
+
+  // max in tank
+  if(err & E_IT)
+  {
+    LCD_WriteAnySymbol(s_29x17, 17, 1, n_alarm);
+    LCD_TextButton(Auto, 0);
+  }
+
+  // max out tank
+  if(err & E_OT)
+  {
+    LCD_WriteAnySymbol(s_29x17, 17, 90, n_alarm);
+    LCD_TextButton(Setup, 0);
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            auto time symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_Time(t_FuncCmd cmd)
+{
+  unsigned char time = 0;
+
+  switch(cmd)
+  {
+    case _init:
+
+      // : symbol
+      LCD_WriteAnyFont(f_4x6_p, 2, 128, 10);
+      LCD_WriteAnyFont(f_4x6_p, 2, 140, 10);
+
+      // time
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,120, MCP7941_ReadTime(TIC_HOUR));
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,132, MCP7941_ReadTime(TIC_MIN));
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,144, MCP7941_ReadTime(TIC_SEC));
+      break;
+
+    case _exe:
+
+      // sec
+      time = MCP7941_ReadTime(TIC_SEC);
+      LCD_WriteAnyValue(f_4x6_p, 2, 2,144, time);
+
+      // min
+      if(!time)
+      {
+        time= MCP7941_ReadTime(TIC_MIN);
+        LCD_WriteAnyValue(f_4x6_p, 2, 2,132, time);
+      }
+      else break;
+
+      // hour
+      if(!time)
+      {
+        time= MCP7941_ReadTime(TIC_HOUR);
+        LCD_WriteAnyValue(f_4x6_p, 2, 2,132, time);
+      }
+      else break;
+      break;
+
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            auto date symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_Date(void)
+{
+  // - symbol
+  LCD_WriteAnyFont(f_4x6_p, 0, 128, 11);
+  LCD_WriteAnyFont(f_4x6_p, 0, 140, 11);
+
+  // year 20xx
+  LCD_WriteAnyStringFont(f_4x6_p, 0, 144, "20");
+
+  // date
+  LCD_WriteAnyValue(f_4x6_p, 2, 0,120, MCP7941_ReadTime(TIC_DATE));
+  LCD_WriteAnyValue(f_4x6_p, 2, 0,132, MCP7941_ReadTime(TIC_MONTH));
+  LCD_WriteAnyValue(f_4x6_p, 2, 0,152, MCP7941_ReadTime(TIC_YEAR));
+}
+
+
+/* ------------------------------------------------------------------*
+ *            end text sym
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Data_EndText(void)
+{
+  LCD_WriteAnyStringFont(f_6x8_p, 15, 1, "End");
 }

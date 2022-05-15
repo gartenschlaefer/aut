@@ -25,9 +25,9 @@
  *  Touch_Matrix
  * --------------------------------------------------------------
  *  return 0xYX
- *  return Touch Matrix:
- *  1.Row: 11, 12, 13 ,14
- *  2.Row: 21, 22, 23 ,24, usw.
+ *  Touch Matrix:
+ *    1.Row: 11, 12, 13 ,14
+ *    2.Row: 21, 22, 23 ,24, usw.
  * ------------------------------------------------------------------*/
 
 unsigned char Touch_Matrix(void)
@@ -101,15 +101,59 @@ unsigned char Touch_Matrix(void)
 
 
 /* ------------------------------------------------------------------*
+ *            touch linker selection
+ * ------------------------------------------------------------------*/
+
+void Touch_SelectLinker(struct PlantState *ps)
+{
+  switch(ps->page_state->page)
+  {
+    // manual pages
+    case ManualMain: case ManualPumpOff_On:
+    case ManualCirc: case ManualCircOff:
+    case ManualAir: case ManualSetDown:
+    case ManualPumpOff: case ManualMud:
+    case ManualCompressor: case ManualPhosphor:
+    case ManualInflowPump: Touch_ManualLinker(ps); break;
+
+    // setup pages
+    case SetupMain: Touch_SetupLinker(ps); break;
+    case SetupCirculate: Touch_SetupCirculateLinker(ps); break;
+    case SetupAir: Touch_SetupAirLinker(ps); break;
+    case SetupSetDown: Touch_SetupSetDownLinker(ps); break;
+    case SetupPumpOff: Touch_SetupPumpOffLinker(ps); break;
+    case SetupMud: Touch_SetupMudLinker(ps); break;
+    case SetupCompressor: Touch_SetupCompressorLinker(ps); break;
+    case SetupPhosphor: Touch_SetupPhosphorLinker(ps); break;
+    case SetupInflowPump: Touch_SetupInflowPumpLinker(ps); break;
+    case SetupCal:
+    case SetupCalPressure: Touch_SetupCalLinker(ps); break;
+    case SetupAlarm: Touch_SetupAlarmLinker(ps); break;
+    case SetupWatch: Touch_SetupWatchLinker(ps); break;
+    case SetupZone: Touch_SetupZoneLinker(ps); break;
+
+    // data pages
+    case DataMain: Touch_DataLinker(ps); break;
+    case DataAuto: Touch_DataAutoLinker(ps); break;
+    case DataManual: Touch_DataManualLinker(ps); break;
+    case DataSetup: Touch_DataSetupLinker(ps); break;
+    case DataSonic: case DataSonicAuto: case DataSonicBoot: case DataSonicBootR: case DataSonicBootW: Touch_DataSonicLinker(ps); break;
+
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
  *  Touch_AutoLinker
  * ------------------------------------------------------------------*/
 
-t_page Touch_AutoLinker(unsigned char matrix, t_page page, int *p_min, int *p_sec, struct PlantState *ps)
+void Touch_AutoLinker(struct PlantState *ps)
 {
   static unsigned char bug = 0;
   static unsigned char touch = 0;
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     //------------------------------------------------BacklightON
     case 0x11: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
@@ -157,38 +201,40 @@ t_page Touch_AutoLinker(unsigned char matrix, t_page page, int *p_min, int *p_se
     // manual
     case 0x42: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
-      LCD_MarkTextButton(Manual);
-      OUT_Valve_AutoClose(page);
-      return PinManual;
+      LCD_Sym_MarkTextButton(Manual);
+      OUT_Valve_AutoClose(ps->page_state->page);
+      ps->page_state->page = PinManual; break;
 
     // setup
     case 0x43: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
-      LCD_MarkTextButton(Setup);
-      OUT_Valve_AutoClose(page);
-      return PinSetup;
+      LCD_Sym_MarkTextButton(Setup);
+      OUT_Valve_AutoClose(ps->page_state->page);
+      ps->page_state->page = PinSetup; break;
 
     // data
     case 0x44: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
-      LCD_MarkTextButton(Data);
-      OUT_Valve_AutoClose(page);
-      return DataPage;
+      LCD_Sym_MarkTextButton(Data);
+      OUT_Valve_AutoClose(ps->page_state->page);
+      ps->page_state->page = DataPage; break;
 
-    case 0x00: if(touch) touch = 0; break;
+    case 0x00: if(touch) { touch = 0; } break;
     default: break;
   }
 
   // bug
   if(bug == 5)
   {
-    *p_min = 0;
-    *p_sec = 5;
-    LCD_AutoCountDown(*p_min, *p_min);
+    ps->page_state->page_time->min = 0;
+    ps->page_state->page_time->sec = 5;
+    // *p_min = 0;
+    // *p_sec = 5;
+    //LCD_Sym_Auto_CountDown(*p_min, *p_min);
+    LCD_Sym_Auto_CountDown(ps->page_state->page_time);
     bug = 0;
   }
 
-  return page;
 }
 
 
@@ -197,31 +243,61 @@ t_page Touch_AutoLinker(unsigned char matrix, t_page page, int *p_min, int *p_se
  *            Manual Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_ManualLinker(unsigned char matrix, t_page page, struct PlantState *ps)
+void Touch_ManualLinker(struct PlantState *ps)
 {
-  switch(matrix)
+  //t_page sel_page = NoPage;
+
+  switch(Touch_Matrix())
   {
-    case 0x11: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_circulate); return ManualCirc;
-    case 0x12: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_air); return ManualAir;
-    case 0x13: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_setDown); return ManualSetDown;
-    case 0x14: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_pumpOff); return ManualPumpOff;
+    case 0x11: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_circulate); ps->page_state->page = ManualCirc; break;
+    case 0x12: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_air); ps->page_state->page = ManualAir; break;
+    case 0x13: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_setDown); ps->page_state->page = ManualSetDown; break;
+    case 0x14: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_pumpOff); ps->page_state->page = ManualPumpOff; break;
 
-    case 0x21: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_mud); return ManualMud;
-    case 0x22: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_compressor); return ManualCompressor;
-    case 0x23: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_phosphor); return ManualPhosphor;
-    case 0x24: LCD_Backlight(_on, ps->lcd_backlight); LCD_Mark_ManualSymbol(sn_inflowPump); return ManualInflowPump;
+    case 0x21: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_mud); ps->page_state->page = ManualMud; break;
+    case 0x22: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_compressor); ps->page_state->page = ManualCompressor; break;
+    case 0x23: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_phosphor); ps->page_state->page = ManualPhosphor; break;
+    case 0x24: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_inflowPump); ps->page_state->page = ManualInflowPump; break;
 
-    case 0x33: if(page == ManualPumpOff){ LCD_WriteAnySymbol(s_19x19, 15, 85, n_ok); return ManualPumpOff_On; } break;
+    case 0x33: if(ps->page_state->page == ManualPumpOff){ LCD_WriteAnySymbol(s_19x19, 15, 85, n_ok); ps->page_state->page = ManualPumpOff_On; } break;
 
     // main linker
-    case 0x41: LCD_Backlight(_on, ps->lcd_backlight); LCD_MarkTextButton(Auto); MEM_EEPROM_WriteManualEntry(0, 0, _write); return AutoPage;
-    case 0x42: LCD_Backlight(_on, ps->lcd_backlight); LCD_MarkTextButton(Manual); MEM_EEPROM_WriteManualEntry(0, 0, _write); return ManualPage;
-    case 0x43: LCD_Backlight(_on, ps->lcd_backlight); LCD_MarkTextButton(Setup); MEM_EEPROM_WriteManualEntry(0, 0, _write); return SetupPage;
-    case 0x44: LCD_Backlight(_on, ps->lcd_backlight); LCD_MarkTextButton(Data); MEM_EEPROM_WriteManualEntry(0, 0, _write); return DataPage;
+    case 0x41: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_MarkTextButton(Auto); MEM_EEPROM_WriteManualEntry(0, 0, _write); ps->page_state->page = AutoPage; break;
+    case 0x42: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_MarkTextButton(Manual); MEM_EEPROM_WriteManualEntry(0, 0, _write); ps->page_state->page = ManualPage; break;
+    case 0x43: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_MarkTextButton(Setup); MEM_EEPROM_WriteManualEntry(0, 0, _write); ps->page_state->page = SetupPage; break;
+    case 0x44: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_MarkTextButton(Data); MEM_EEPROM_WriteManualEntry(0, 0, _write); ps->page_state->page = DataPage; break;
 
     default: break;
   }
-  return page;
+
+  // switch(Touch_Matrix())
+  // {
+  //   case 0x11: sel_page = ManualCirc; break;
+  //   case 0x12: sel_page = ManualAir; break;
+  //   case 0x13: sel_page = ManualSetDown; break;
+  //   case 0x14: sel_page = ManualPumpOff; break;
+
+  //   case 0x21: sel_page = ManualMud; break;
+  //   case 0x22: sel_page = ManualCompressor; break;
+  //   case 0x23: sel_page = ManualPhosphor; break;
+  //   case 0x24: sel_page = ManualInflowPump; break;
+
+  //   case 0x33: if(page == ManualPumpOff){ sel_page = ManualPumpOff_On} break;
+
+  //   // main linker
+  //   case 0x41: sel_page = AutoPage
+  //   case 0x42: sel_page = ManualPage
+  //   case 0x43: sel_page = SetupPage
+  //   case 0x44: sel_page = DataPage
+
+  //   default: break;
+  // }
+
+  // if(sel_page != NoPage)
+  // {
+  //   LCD_Backlight(_on, ps->lcd_backlight);
+  //   LCD_Sym_Mark_ManualSymbol(sn_circulate);
+  // }
 }
 
 
@@ -229,33 +305,32 @@ t_page Touch_ManualLinker(unsigned char matrix, t_page page, struct PlantState *
  *  setup linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupLinker(unsigned char matrix, t_page page)
+void Touch_SetupLinker(struct PlantState *ps)
 {
-  switch(matrix)
+  switch(Touch_Matrix())
   {
-    case 0x11: return SetupCirculate;
-    case 0x12: return SetupAir;
-    case 0x13: return SetupSetDown;
-    case 0x14: return SetupPumpOff;
+    case 0x11: ps->page_state->page = SetupCirculate; break;
+    case 0x12: ps->page_state->page = SetupAir; break;
+    case 0x13: ps->page_state->page = SetupSetDown; break;
+    case 0x14: ps->page_state->page = SetupPumpOff; break;
 
-    case 0x21: return SetupMud;
-    case 0x22: return SetupCompressor;
-    case 0x23: return SetupPhosphor;
-    case 0x24: return SetupInflowPump;
+    case 0x21: ps->page_state->page = SetupMud; break;
+    case 0x22: ps->page_state->page = SetupCompressor; break;
+    case 0x23: ps->page_state->page = SetupPhosphor; break;
+    case 0x24: ps->page_state->page = SetupInflowPump; break;
 
-    case 0x31: return SetupCal;
-    case 0x32: return SetupAlarm;
-    case 0x33: return SetupWatch;
-    case 0x34: return SetupZone;
+    case 0x31: ps->page_state->page = SetupCal; break;
+    case 0x32: ps->page_state->page = SetupAlarm; break;
+    case 0x33: ps->page_state->page = SetupWatch; break;
+    case 0x34: ps->page_state->page = SetupZone; break;
 
     // main linker
-    case 0x41: return AutoPage;
-    case 0x42: return ManualPage;
-    case 0x43: return SetupPage;
-    case 0x44: return DataPage;
+    case 0x41: ps->page_state->page = AutoPage; break;
+    case 0x42: ps->page_state->page = ManualPage; break;
+    case 0x43: ps->page_state->page = SetupPage; break;
+    case 0x44: ps->page_state->page = DataPage; break;
     default: break;
   }
-  return page;
 }
 
 
@@ -263,7 +338,7 @@ t_page Touch_SetupLinker(unsigned char matrix, t_page page)
  *            Setup Circulate Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
+void Touch_SetupCirculateLinker(struct PlantState *ps)
 {
   static unsigned char circ[4] = {0};
   static unsigned char sensor = 0;
@@ -290,13 +365,14 @@ t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
     Eval_SetupCircTextMark(on, p_circ);
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0; 
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14:
@@ -308,7 +384,8 @@ t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(TIME_H_circ, circ[3]);
       MEM_EEPROM_WriteVar(SENSOR_inTank, sensor);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23:
@@ -349,10 +426,10 @@ t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ circ[2] = (time1 & 0x00FF); circ[3] = ((time1>>8) & 0x00FF); LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage; break;
-    case 0x42: init = 0; return ManualPage; break;
-    case 0x43: init = 0; return SetupPage; break;
-    case 0x44: init = 0; return DataPage; break;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
@@ -366,7 +443,6 @@ t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
       default: break;
     }
   }
-  return page;
 }
 
 
@@ -374,7 +450,7 @@ t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page)
  *            Setup Air Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
+void Touch_SetupAirLinker(struct PlantState *ps)
 {
   static unsigned char air[4] = {0};
   static int time2 = 0;
@@ -397,13 +473,14 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
     LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   { 
     // esc
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0; 
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14:
@@ -414,7 +491,8 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(TIME_L_air, air[2]);
       MEM_EEPROM_WriteVar(TIME_H_air, air[3]);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23:
@@ -456,10 +534,10 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ air[2] = (time2 & 0x00FF); air[3] = ((time2>>8) & 0x00FF); LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage; break;
-    case 0x42: init = 0; return ManualPage; break;
-    case 0x43: init = 0; return SetupPage; break;
-    case 0x44: init = 0; return DataPage; break;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
@@ -473,7 +551,6 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
       default: break;
     }
   }
-  return page;
 }
 
 
@@ -481,7 +558,7 @@ t_page Touch_SetupAirLinker(unsigned char matrix, t_page page)
  *            Setup Set-Down Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page)
+void Touch_SetupSetDownLinker(struct PlantState *ps)
 {
   static unsigned char setDown = 0;
 
@@ -495,19 +572,21 @@ t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page)
     LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, setDown);
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0; 
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14: if(!touch){ touch = 7; LCD_ControlButtons(sn_ok); }
       init = 0;
       MEM_EEPROM_WriteVar(TIME_setDown, setDown);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23: if(!touch){ touch = 5; LCD_ControlButtons(sn_minus); }
@@ -520,16 +599,15 @@ t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage; break;
-    case 0x42: init = 0; return ManualPage; break;
-    case 0x43: init = 0; return SetupPage; break;
-    case 0x44: init = 0; return DataPage; break;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   // time config
-  if(touch) LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, setDown);
-  return page;
+  if(touch){ LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, setDown); }
 }
 
 
@@ -537,7 +615,7 @@ t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page)
  *            Setup Pump-Off Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
+void Touch_SetupPumpOffLinker(struct PlantState *ps)
 {
   static unsigned char pumpOn = 0;
   static unsigned char pump = 0;
@@ -557,12 +635,13 @@ t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
     else{ LCD_WriteAnySymbol(s_29x17, 15, 0, p_compressor); LCD_WriteAnySymbol(s_19x19, 14, 50, n_pump); }
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0; 
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14: if(!touch){ touch = 7; LCD_ControlButtons(sn_ok); }
@@ -570,7 +649,8 @@ t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(ON_pumpOff, pumpOn);
       MEM_EEPROM_WriteVar(PUMP_pumpOff, pump);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23: if(!touch){ touch = 5; LCD_ControlButtons(sn_minus); }
@@ -590,16 +670,15 @@ t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage; break;
-    case 0x42: init = 0; return ManualPage; break;
-    case 0x43: init = 0; return SetupPage; break;
-    case 0x44: init = 0; return DataPage; break;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   // output
   if(touch){ LCD_OnValueNeg(pumpOn); }
-  return page;
 }
 
 
@@ -607,7 +686,7 @@ t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page)
  *            Setup Mud Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
+void Touch_SetupMudLinker(struct PlantState *ps)
 {
   static unsigned char mudMin = 0;
   static unsigned char mudSec = 0;
@@ -627,12 +706,13 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
     LCD_WriteAnyStringFont(f_6x8_p, 16,55,"sec");
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0;
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     case 0x14:
       if(!touch){ touch = 7; LCD_ControlButtons(sn_ok); }
@@ -640,7 +720,8 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(ON_MIN_mud, mudMin);
       MEM_EEPROM_WriteVar(ON_SEC_mud, mudSec);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23:
@@ -663,17 +744,16 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage;
-    case 0x42: init = 0; return ManualPage;
-    case 0x43: init = 0; return SetupPage;
-    case 0x44: init = 0; return DataPage;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   // min max
   if(onM && touch){ LCD_WriteAnyValue(f_6x8_n, 2, 11, 40, mudMin); }
   if(!onM && touch){ LCD_WriteAnyValue(f_6x8_n, 2, 16, 40, mudSec); }
-  return page;
 }
 
 
@@ -684,20 +764,20 @@ t_page Touch_SetupMudLinker(unsigned char matrix, t_page page)
  *            Setup Compressor Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
+void Touch_SetupCompressorLinker(struct PlantState *ps)
 {
   static int druckMin = 0;
   static int druckMax = 0;
   static unsigned char on = 0;
-  static unsigned char init0 = 0;
+  static unsigned char init = 0;
   static unsigned char touch = 0;
 
   unsigned char h = 0;
   unsigned char l = 0;
 
-  if(!init0)
+  if(!init)
   {
-    init0 = 1;
+    init = 1;
     on = 0;
     h = MEM_EEPROM_ReadVar(MAX_H_druck);
     l = MEM_EEPROM_ReadVar(MAX_L_druck);
@@ -712,17 +792,18 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
     if(!on){ LCD_WriteAnyValue(f_6x8_p, 3, 11, 7, druckMin); LCD_WriteAnyValue(f_6x8_n, 3, 16, 7, druckMax); }
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13: 
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
-      init0 = 0; 
-      return SetupPage;
+      init = 0; 
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14: if(!touch){ touch = 7; LCD_ControlButtons(sn_ok); }
-      init0 = 0;
+      init = 0;
       l = (druckMax & 0x00FF);
       h = ((druckMax >> 8) & 0x00FF);
       MEM_EEPROM_WriteVar(MAX_H_druck, h);
@@ -733,7 +814,8 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(MIN_H_druck, h);
       MEM_EEPROM_WriteVar(MIN_L_druck, l);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23:
@@ -759,17 +841,16 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init0 = 0; return AutoPage;
-    case 0x42: init0 = 0; return ManualPage;
-    case 0x43: init0 = 0; return SetupPage;
-    case 0x44: init0 = 0; return DataPage;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   // min max
   if(on && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 11, 7, druckMin); }
   if(!on && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 16, 7, druckMax); }
-  return page;
 }
 
 
@@ -777,7 +858,7 @@ t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page)
  *            Setup Phosphor Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupPhosphorLinker(unsigned char matrix, t_page page)
+void Touch_SetupPhosphorLinker(struct PlantState *ps)
 {
   static unsigned char pOn = 10;
   static unsigned char pOff = 10;
@@ -803,25 +884,27 @@ t_page Touch_SetupPhosphorLinker(unsigned char matrix, t_page page)
     }
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0;
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     case 0x14:
       if(!touch){ touch = 7; LCD_ControlButtons(sn_ok); }
       init = 0;MEM_EEPROM_WriteVar(ON_phosphor, pOn);
       MEM_EEPROM_WriteVar(OFF_phosphor, pOff);
       MEM_EEPROM_WriteSetupEntry();
-      LCD_Auto_Phosphor(0, _init);
-      return SetupPage;
+      LCD_Auto_Phosphor(ps, _init);
+      ps->page_state->page = SetupPage;
+      break;
 
     case 0x23:
       if(!touch){ touch = 5; LCD_ControlButtons(sn_minus); }
-      if(on)  pOn = Eval_SetupMinus(pOn, 0);
-      else    pOff= Eval_SetupMinus(pOff, 0);
+      if(on) pOn = Eval_SetupMinus(pOn, 0);
+      else pOff= Eval_SetupMinus(pOff, 0);
       break;
 
     case 0x24:
@@ -844,16 +927,15 @@ t_page Touch_SetupPhosphorLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage;
-    case 0x42: init = 0; return ManualPage;
-    case 0x43: init = 0; return SetupPage;
-    case 0x44: init = 0; return DataPage;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   if(on && touch){ LCD_OnValueNeg(pOn); }
   if(!on && touch){ LCD_OffValueNeg(pOff); }
-  return page;
 }
 
 
@@ -861,7 +943,7 @@ t_page Touch_SetupPhosphorLinker(unsigned char matrix, t_page page)
  *            Setup Inflow-Pump Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
+void Touch_SetupInflowPumpLinker(struct PlantState *ps)
 {
   static unsigned char t_ipVal[3] = {0, 0, 0};
   static unsigned char iPump = 0;
@@ -889,7 +971,7 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
     LCD_Setup_IPValues(0b00110100, &t_ipVal[0]);
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // off h
     case 0x12:
@@ -905,7 +987,8 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
     case 0x13: 
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0; 
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14:
@@ -917,8 +1000,9 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(PUMP_inflowPump, iPump);
       MEM_EEPROM_WriteVar(SENSOR_outTank, sensor);
       MEM_EEPROM_WriteSetupEntry();
-      LCD_Auto_InflowPump(page, 0, _init);
-      return SetupPage;
+      LCD_Auto_InflowPump(ps, _init);
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23: 
@@ -982,10 +1066,10 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage;
-    case 0x42: init = 0; return ManualPage;
-    case 0x43: init = 0; return SetupPage;
-    case 0x44: init = 0; return DataPage;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
@@ -998,7 +1082,6 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
     default: break;
   }
 
-  return page;
 }
 
 
@@ -1006,7 +1089,7 @@ t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page)
  *            Setup Cal Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
+void Touch_SetupCalLinker(struct PlantState *ps)
 {
   static unsigned char touch = 0;
   int read = 0;
@@ -1042,7 +1125,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
     }
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13: 
@@ -1050,13 +1133,13 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       { 
         touch = 6;
         LCD_ControlButtons(sn_esc);
-        if(page == SetupCalPressure) OUT_Clr_Air();
-        page = SetupPage;
+        if(ps->page_state->page == SetupCalPressure) OUT_Clr_Air();
+        ps->page_state->page = SetupPage;
       } break;
 
     // okay
     case 0x14: 
-      if(!touch && page == SetupCal)
+      if(!touch && ps->page_state->page == SetupCal)
       { 
         touch = 7;
         LCD_ControlButtons(sn_ok);
@@ -1064,11 +1147,11 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
         MEM_EEPROM_WriteVar(CAL_Redo_on, calRedo);
         if(MEM_EEPROM_ReadVar(SONIC_on)) Sonic_LevelCal(_save);
         else MPX_LevelCal(_save);
-        page = SetupPage;
+        ps->page_state->page = SetupPage;
       } break;
 
     case 0x23: 
-      if(!touch && page == SetupCal)
+      if(!touch && ps->page_state->page == SetupCal)
       { 
         touch = 8;
         if(!openV){ openV = 1; LCD_Write_TextButton(9, 80, OpenV, 0); PORT_Valve_OpenAll(); }
@@ -1076,7 +1159,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
 
     // calibration for setting pressure to zero level
     case 0x24: 
-      if(!touch && page == SetupCal)
+      if(!touch && ps->page_state->page == SetupCal)
       { 
         touch = 4;
         LCD_WriteAnySymbol(s_29x17, 9, 125, n_cal);
@@ -1092,7 +1175,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
         touch = 5;
         LCD_WriteAnySymbol(s_29x17, 15,1, n_level);
         if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); OUT_CloseAllValves(); } 
-        page = SetupCalPressure; 
+        ps->page_state->page = SetupCalPressure; 
       } break;
 
     // calibration redo with pressure -> Auto Zone page
@@ -1117,18 +1200,17 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
       } break;
 
     // main linker
-    case 0x41: page = AutoPage; break;
-    case 0x42: page = ManualPage; break;
-    case 0x43: page = SetupPage; break;
-    case 0x44: page = DataPage; break;
+    case 0x41: ps->page_state->page = AutoPage; break;
+    case 0x42: ps->page_state->page = ManualPage; break;
+    case 0x43: ps->page_state->page = SetupPage; break;
+    case 0x44: ps->page_state->page = DataPage; break;
     default: break;
   }
-  if(page != SetupCal && page != SetupCalPressure)
+  if(ps->page_state->page != SetupCal && ps->page_state->page != SetupCalPressure)
   {
     iniCal = 0;
     if(openV){ openV = 0; OUT_CloseAllValves(); }
   }
-  return page;
 }
 
 
@@ -1136,7 +1218,7 @@ t_page Touch_SetupCalLinker(unsigned char matrix, t_page page)
  *            Setup Alarm Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
+void Touch_SetupAlarmLinker(struct PlantState *ps)
 {
   static unsigned char sensor = 0;
   static unsigned char comp = 0;
@@ -1160,13 +1242,14 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
     else LCD_WriteAnySymbol(s_29x17, 15, 0, p_sensor);
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0;
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14:
@@ -1176,7 +1259,8 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(ALARM_sensor, sensor);
       MEM_EEPROM_WriteVar(ALARM_temp, temp);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23:
@@ -1213,15 +1297,14 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage;
-    case 0x42: init = 0; return ManualPage;
-    case 0x43: init = 0; return SetupPage;
-    case 0x44: init = 0; return DataPage;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   if(touch){ LCD_WriteAnyValue(f_6x8_n, 3, 10,15, temp); }
-  return page;
 }
 
 
@@ -1229,7 +1312,7 @@ t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page)
  *            Setup Watch Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page)
+void Touch_SetupWatchLinker(struct PlantState *ps)
 {
   static unsigned char dT[5] = {0};
   static unsigned char on = 0;
@@ -1249,11 +1332,12 @@ t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page)
     on = 0;
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons2(sn_esc); } 
-      init = 0; return SetupPage;
+      init = 0; ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14: if(!touch){ touch = 7; LCD_ControlButtons2(sn_ok); }
@@ -1269,7 +1353,8 @@ t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page)
       time = (((dT[4]/10) << 4) | (dT[4]%10));
       MCP7941_WriteByte(TIC_YEAR, time);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // plus
     case 0x24: if(!touch){ touch = 4; LCD_ControlButtons2(sn_plus); }
@@ -1314,10 +1399,10 @@ t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons2(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage; break;
-    case 0x42: init = 0; return ManualPage; break;
-    case 0x43: init = 0; return SetupPage; break;
-    case 0x44: init = 0; return DataPage; break;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
@@ -1334,7 +1419,6 @@ t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page)
       default: break;
     }
   }
-  return page;
 }
 
 
@@ -1343,7 +1427,7 @@ t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page)
  *            Setup Zone Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
+void Touch_SetupZoneLinker(struct PlantState *ps)
 {
   static int lvO2 = 0;
   static int lvCirc = 0;
@@ -1383,7 +1467,7 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
     LCD_WriteAnyStringFont(f_6x8_p, 16,60,"cm");
   }
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     case 0x12: 
       if(!touch)
@@ -1396,7 +1480,8 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons(sn_esc); }
       init = 0;
-      return SetupPage;
+      ps->page_state->page = SetupPage;
+      break;
 
     // okay
     case 0x14: if(!touch){ touch = 7; LCD_ControlButtons(sn_ok); }
@@ -1410,7 +1495,8 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
       MEM_EEPROM_WriteVar(TANK_H_Circ, h);
       MEM_EEPROM_WriteVar(SONIC_on, sonic);
       MEM_EEPROM_WriteSetupEntry();
-      return SetupPage; break;
+      ps->page_state->page = SetupPage;
+      break;
 
     // minus
     case 0x23:
@@ -1454,53 +1540,40 @@ t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page)
     case 0x00: if(touch){ LCD_ControlButtons(touch); touch = 0; } break;
 
     // main linker
-    case 0x41: init = 0; return AutoPage;
-    case 0x42: init = 0; return ManualPage;
-    case 0x43: init = 0; return SetupPage;
-    case 0x44: init = 0; return DataPage;
+    case 0x41: init = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: init = 0; ps->page_state->page = ManualPage; break;
+    case 0x43: init = 0; ps->page_state->page = SetupPage; break;
+    case 0x44: init = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
 
   // circulate and o2
   if(onM && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 11, 40, lvCirc); }
   if(!onM && touch){ LCD_WriteAnyValue(f_6x8_n, 3, 16, 40, lvO2); }
-  return page;
 }
 
-
-
-/* ==================================================================*
- *            Data Linker
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  Touch_DataLinker
  * ------------------------------------------------------------------*/
 
-t_page Touch_DataLinker(unsigned char matrix, t_page page)
+void Touch_DataLinker(struct PlantState *ps)
 {
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // auto
-    case 0x21: LCD_Write_TextButton(9, 0, Auto, 0); return DataAuto;
-
-    // manual
-    case 0x22: LCD_Write_TextButton(9, 40, Manual, 0); return DataManual;
-
-    // setup
-    case 0x23: LCD_Write_TextButton(9, 80, Setup, 0); return DataSetup;
-
-    // sonic
-    case 0x24: LCD_Write_TextButton(9, 120, Sonic, 0); return DataSonic;
+    case 0x21: LCD_Write_TextButton(9, 0, Auto, 0); ps->page_state->page = DataAuto; break;
+    case 0x22: LCD_Write_TextButton(9, 40, Manual, 0); ps->page_state->page = DataManual; break;
+    case 0x23: LCD_Write_TextButton(9, 80, Setup, 0); ps->page_state->page = DataSetup; break;
+    case 0x24: LCD_Write_TextButton(9, 120, Sonic, 0); ps->page_state->page = DataSonic; break;
 
     // main linker
-    case 0x41: return AutoPage;
-    case 0x42: return PinManual;
-    case 0x43: return PinSetup;
-    case 0x44: return DataPage;
+    case 0x41: ps->page_state->page = AutoPage; break;
+    case 0x42: ps->page_state->page = PinManual; break;
+    case 0x43: ps->page_state->page = PinSetup; break;
+    case 0x44: ps->page_state->page = DataPage; break;
     default: break;
   }
-  return page;
 }
 
 
@@ -1508,12 +1581,12 @@ t_page Touch_DataLinker(unsigned char matrix, t_page page)
  *            Data Auto Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
+void Touch_DataAutoLinker(struct PlantState *ps)
 {
   static unsigned char mark = 0;
   static unsigned char iData = 0;
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // arrow up
     case 0x14:
@@ -1553,13 +1626,12 @@ t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
       break;
 
     // main linker
-    case 0x41: iData = 0; return AutoPage;
-    case 0x42: iData = 0; return PinManual;
-    case 0x43: iData = 0; return PinSetup;
-    case 0x44: iData = 0; return DataPage;
+    case 0x41: iData = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: iData = 0; ps->page_state->page = PinManual; break;
+    case 0x43: iData = 0; ps->page_state->page = PinSetup; break;
+    case 0x44: iData = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
-  return pa;
 }
 
 
@@ -1567,12 +1639,12 @@ t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa)
  *            Data Manual Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
+void Touch_DataManualLinker(struct PlantState *ps)
 {
   static unsigned char mark = 0;
   static unsigned char iData = 0;
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
 
     // arrow up
@@ -1613,13 +1685,12 @@ t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
       break;
 
     // main linker
-    case 0x41: iData = 0; return AutoPage;
-    case 0x42: iData = 0; return PinManual;
-    case 0x43: iData = 0; return PinSetup;
-    case 0x44: iData = 0; return DataPage;
+    case 0x41: iData = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: iData = 0; ps->page_state->page = PinManual; break;
+    case 0x43: iData = 0; ps->page_state->page = PinSetup; break;
+    case 0x44: iData = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
-  return page;
 }
 
 
@@ -1627,12 +1698,12 @@ t_page Touch_DataManualLinker(unsigned char matrix, t_page page)
  *            Data Setup Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
+void Touch_DataSetupLinker(struct PlantState *ps)
 {
   static unsigned char mark = 0;
   static unsigned char iData = 0;
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // arrow up
     case 0x14:
@@ -1672,13 +1743,12 @@ t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
       break;
 
     // main linker
-    case 0x41: iData = 0; return AutoPage;
-    case 0x42: iData = 0; return PinManual;
-    case 0x43: iData = 0; return PinSetup;
-    case 0x44: iData = 0; return DataPage;
+    case 0x41: iData = 0; ps->page_state->page = AutoPage; break;
+    case 0x42: iData = 0; ps->page_state->page = PinManual; break;
+    case 0x43: iData = 0; ps->page_state->page = PinSetup; break;
+    case 0x44: iData = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
-  return page;
 }
 
 
@@ -1686,33 +1756,33 @@ t_page Touch_DataSetupLinker(unsigned char matrix, t_page page)
  *            Data UltraSonic Linker
  * ------------------------------------------------------------------*/
 
-t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
+void Touch_DataSonicLinker(struct PlantState *ps)
 {
   static unsigned char touch = 0;
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // shot
     case 0x11:
-      if(!touch && page != DataSonicBoot)
+      if(!touch && ps->page_state->page != DataSonicBoot)
       { 
         touch = 1;
-        if(page != DataSonic) LCD_Data_SonicWrite(_clear, 0);
+        if(ps->page_state->page != DataSonic) LCD_Data_SonicWrite(_clear, 0);
         LCD_Write_TextButton(4, 0, Shot, 0);
         Sonic_Data_Shot();
-        page = DataSonic;
+        ps->page_state->page = DataSonic;
       }
       break;
 
     // auto shot
     case 0x21:
-      if(!touch && page != DataSonicBoot)
+      if(!touch && ps->page_state->page != DataSonicBoot)
       { 
         touch = 2;
         LCD_Data_SonicWrite(_clear, 0);
         LCD_Data_SonicWrite(_autotext, 0);
         CAN_SonicQuery(_init, _startTemp);
-        page = DataSonicAuto;
+        ps->page_state->page = DataSonicAuto;
       }
       break;
 
@@ -1726,26 +1796,26 @@ t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
         LCD_Write_TextButton(4, 120, Read, 1);
         LCD_Write_TextButton(10, 120, Write, 1);
 
-        if(page == DataSonicBoot)
+        if(ps->page_state->page == DataSonicBoot)
         {
           LCD_Write_TextButton(16, 0, Boot, 1);
           LCD_Data_SonicWrite(_clear, 0);
           Sonic_Data_Boot(_off);
-          page = DataSonic; 
+          ps->page_state->page = DataSonic; 
           break;
         }
 
         Sonic_Data_Boot(_on);
-        page = DataSonicBoot;
+        ps->page_state->page = DataSonicBoot;
       }
       break;
 
     case 0x14:
-      if(!touch && page == DataSonicBoot){ touch = 4; LCD_Write_TextButton(4, 120, Read, 0); page = DataSonicBootR; }
+      if(!touch && ps->page_state->page == DataSonicBoot){ touch = 4; LCD_Write_TextButton(4, 120, Read, 0); ps->page_state->page = DataSonicBootR; }
       break;
 
     case 0x24:
-      if(!touch && page == DataSonicBoot){ touch = 5; LCD_Write_TextButton(10, 120, Write, 0); page = DataSonicBootW; }
+      if(!touch && ps->page_state->page == DataSonicBoot){ touch = 5; LCD_Write_TextButton(10, 120, Write, 0); ps->page_state->page = DataSonicBootW; }
       break;
 
     // reset buttons
@@ -1756,13 +1826,12 @@ t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
       break;
 
     // main linker
-    case 0x41: touch = 0; LCD_Data_SonicWrite(_clear, 0); return AutoPage;
-    case 0x42: touch = 0; LCD_Data_SonicWrite(_clear, 0); return PinManual;
-    case 0x43: touch = 0; LCD_Data_SonicWrite(_clear, 0); return PinSetup;
-    case 0x44: touch = 0; LCD_Data_SonicWrite(_clear, 0); return DataPage;
+    case 0x41: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = AutoPage; break;
+    case 0x42: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinManual; break;
+    case 0x43: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinSetup; break;
+    case 0x44: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = DataPage; break;
     default: break;
   }
-  return page;
 }
 
 
@@ -1775,7 +1844,7 @@ t_page Touch_DataSonicLinker(unsigned char matrix, t_page page)
  *  Touch_PinLinker
  * ------------------------------------------------------------------*/
 
-t_page Touch_PinLinker(unsigned char matrix, t_page page)
+void Touch_PinLinker(struct PlantState *ps)
 {
   static unsigned char touch[12] = {0x00};
   static unsigned char in[4] = {0x00};
@@ -1790,7 +1859,7 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
   static unsigned char cp = 0;
   static struct TelNr nr;
 
-  switch(matrix)
+  switch(Touch_Matrix())
   {
     // 1
     case 0x11: 
@@ -1898,10 +1967,11 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
 
     // esc
     case 0x41: 
-    LCD_nPinButtons(11); 
-    cp = 0;
-    nr.id = 0; nr.pos = 0;
-    return DataPage;
+      LCD_nPinButtons(11); 
+      cp = 0;
+      nr.id = 0; nr.pos = 0;
+      ps->page_state->page = DataPage;
+      break;
 
     // okay tel
     case 0x44:
@@ -1939,10 +2009,10 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
     if((in[0] == secret[0]) && (in[1] == secret[1]) && (in[2] == secret[2]) && (in[3] == secret[3]))
     {
       LCD_Pin_Write(_right, nr);
-      switch(page)
+      switch(ps->page_state->page)
       {
-        case PinManual: return ManualPage;
-        case PinSetup: return SetupPage;
+        case PinManual: ps->page_state->page = ManualPage; break;
+        case PinSetup: ps->page_state->page = SetupPage; break;
         default: break;
       }
     }
@@ -1973,10 +2043,8 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
     }
 
     // wrong 
-    else LCD_Pin_Write(_wrong, nr);
-
+    else{ LCD_Pin_Write(_wrong, nr); }
     Eval_PinDel();
-    return page;
   }
 
   // stop
@@ -1989,6 +2057,4 @@ t_page Touch_PinLinker(unsigned char matrix, t_page page)
     LCD_Pin_Write(_clear, nr);
   }
   if(nr.id) Modem_ReadSLED(PinModem);
-
-  return page;
 }

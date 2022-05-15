@@ -13,31 +13,30 @@
  * ------------------------------------------------------------------*/
 
 unsigned char Touch_Matrix(void);
+void Touch_SelectLinker(struct PlantState *ps);
 
-t_page Touch_AutoLinker(unsigned char matrix, t_page page, int *p_min, int *p_sec, struct PlantState *ps);
-t_page Touch_ManualLinker(unsigned char matrix, t_page page, struct PlantState *ps);
-t_page Touch_SetupLinker(unsigned char matrix, t_page page);
-t_page Touch_DataLinker(unsigned char matrix, t_page page);
-t_page Touch_PinLinker(unsigned char matrix, t_page page);
+void Touch_AutoLinker(struct PlantState *ps);
+void Touch_ManualLinker(struct PlantState *ps);
+void Touch_SetupLinker(struct PlantState *ps);
+void Touch_DataLinker(struct PlantState *ps);
+void Touch_PinLinker(struct PlantState *ps);
 
-void Touch_ManualPumpOffLinker(unsigned char matrix);
+void Touch_SetupCirculateLinker(struct PlantState *ps);
+void Touch_SetupAirLinker(struct PlantState *ps);
+void Touch_SetupWatchLinker(struct PlantState *ps);
+void Touch_SetupSetDownLinker(struct PlantState *ps);
+void Touch_SetupPumpOffLinker(struct PlantState *ps);
+void Touch_SetupMudLinker(struct PlantState *ps);
+void Touch_SetupCompressorLinker(struct PlantState *ps);
+void Touch_SetupPhosphorLinker(struct PlantState *ps);
+void Touch_SetupInflowPumpLinker(struct PlantState *ps);
+void Touch_SetupCalLinker(struct PlantState *ps);
+void Touch_SetupAlarmLinker(struct PlantState *ps);
+void Touch_SetupZoneLinker(struct PlantState *ps);
 
-t_page Touch_SetupCirculateLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupAirLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupWatchLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupSetDownLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupPumpOffLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupMudLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupCompressorLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupPhosphorLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupInflowPumpLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupCalLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupAlarmLinker(unsigned char matrix, t_page page);
-t_page Touch_SetupZoneLinker(unsigned char matrix, t_page page);
-
-t_page Touch_DataAutoLinker(unsigned char matrix, t_page pa);
-t_page Touch_DataManualLinker(unsigned char matrix, t_page pa);
-t_page Touch_DataSetupLinker(unsigned char matrix, t_page pa);
-t_page Touch_DataSonicLinker(unsigned char matrix, t_page page);
+void Touch_DataAutoLinker(struct PlantState *ps);
+void Touch_DataManualLinker(struct PlantState *ps);
+void Touch_DataSetupLinker(struct PlantState *ps);
+void Touch_DataSonicLinker(struct PlantState *ps);
 
 #endif

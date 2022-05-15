@@ -311,7 +311,7 @@ void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_AutoEntry write)
       }
 
       // write protection
-      if(page < AUTO_START_PAGE) page = AUTO_START_PAGE;
+      if(page < MEM_AUTO_START_SECTION) page = MEM_AUTO_START_SECTION;
 
       // write entry
       for(i = 0; i < 8; i++)
@@ -375,7 +375,7 @@ void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd c
     }
 
     // write protection
-    if(page < MANUAL_START_PAGE) page = MANUAL_START_PAGE;
+    if(page < MEM_MANUAL_START_SECTION) page = MEM_MANUAL_START_SECTION;
 
     // write entry
     for(i = 0; i < 7; i++)
@@ -424,7 +424,7 @@ void MEM_EEPROM_WriteSetupEntry(void)
   }
 
   // write Protection
-  if(page < SETUP_START_PAGE) page = SETUP_START_PAGE;
+  if(page < MEM_SETUP_START_SECTION) page = MEM_SETUP_START_SECTION;
 
   // write entry
   for(i = 0; i < 6; i++)
@@ -447,7 +447,7 @@ void MEM_EEPROM_SetZero(void)
   unsigned char data[8] = {0x00};
 
   // pages
-  for(eep = DATA_START_PAGE; eep <= DATA_END_PAGE; eep++)
+  for(eep = MEM_DATA_START_SECTION; eep <= MEM_DATA_END_SECTION; eep++)
   {
     // entries
     for(e = 0; e < 4; e++)

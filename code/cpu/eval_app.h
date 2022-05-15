@@ -6,15 +6,16 @@
 #define EVAL_APP_H
 
 #include "enums.h"
+#include "structs.h"
 
 
 /* ------------------------------------------------------------------*
  *            function headers
  * ------------------------------------------------------------------*/
 
-unsigned char Eval_CountDown(int *cMin, int *cSec);
+unsigned char Eval_CountDown(struct Tms *tms);
 void Eval_Oxygen(t_FuncCmd cmd, int min);
-int Eval_Comp_OpHours (t_FuncCmd cmd);
+int Eval_Comp_OpHours(t_FuncCmd cmd);
 
 unsigned char *Eval_Memory_NoEntry(t_textButtons data);
 unsigned char *Eval_Memory_OldestEntry(t_textButtons data);
