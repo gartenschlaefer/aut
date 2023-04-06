@@ -57,7 +57,7 @@ void LCD_Sym_Setup_Mud(void);
 void LCD_Sym_Setup_Compressor(void);
 void LCD_Sym_Setup_Phosphor(void);
 void LCD_Sym_Setup_InflowPump(void);
-void LCD_Sym_Setup_Cal(void);
+void LCD_Sym_Setup_Cal(struct PlantState *ps);
 void LCD_Sym_Setup_Alarm(void);
 void LCD_Sym_Setup_Watch(void);
 void LCD_Sym_Setup_Zone(void);

@@ -23,6 +23,31 @@
 
 
 /*-------------------------------------------------------------------*
+ *  display refresh
+ * ------------------------------------------------------------------*/
+
+void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
+{
+  switch(main_page)
+  {
+    case AutoPage:
+
+      // lcd_reset 30s default: 32000
+      if(ps->frame_counter->lcd_reset == 10){ LCD_Init(); TCC0_wait_ms(2); }
+      else if(ps->frame_counter->lcd_reset == 10000){ LCD_Sym_MarkTextButton(Auto); }
+      else if(ps->frame_counter->lcd_reset == 20000){ LCD_Sym_Logo(); }
+      else if(ps->frame_counter->lcd_reset > 30000){ LCD_Auto_Symbols(ps); ps->frame_counter->lcd_reset = 0; }
+      break;
+
+    default: break;
+  }
+
+  // update frame counter
+  ps->frame_counter->lcd_reset++;
+}
+
+
+/*-------------------------------------------------------------------*
  *  main automatic page
  * ------------------------------------------------------------------*/
 
@@ -139,16 +164,10 @@ void LCD_AutoPage(struct PlantState *ps)
   LCD_Backlight(_exe, ps->lcd_backlight);
   LCD_Auto_InflowPump(ps, _exe);
   LCD_Auto_Phosphor(ps, _exe);
-  MPX_ReadAverage(Auto, _exe);
+  MPX_ReadAverage(ps, _exe);
 
-  // lcd_reset 30s default: 32000
-  if(ps->frame_counter->lcd_reset == 10){ LCD_Init(); TCC0_wait_ms(2); }
-  else if(ps->frame_counter->lcd_reset == 10000){ LCD_Sym_MarkTextButton(Auto); }
-  else if(ps->frame_counter->lcd_reset == 20000){ LCD_Sym_Logo(); }
-  else if(ps->frame_counter->lcd_reset > 30000){ LCD_Auto_Symbols(ps); ps->frame_counter->lcd_reset = 0; }
-
-  // update frame counter
-  ps->frame_counter->lcd_reset++;
+  // display update
+  LCD_DisplayRefresh(AutoPage, ps);
 }
 
 
@@ -793,7 +812,7 @@ void LCD_ManualPage(struct PlantState *ps)
   if(ps->page_state->page != ManualPumpOff)
   {
     LCD_Sym_Manual_PageTime(ps->page_state->page_time);
-    MPX_ReadAverage(Manual, _exe);
+    MPX_ReadAverage(ps, _exe);
     Sonic_ReadTank(ps, _exe);
   }
 
@@ -1151,8 +1170,8 @@ void LCD_SetupPage(struct PlantState *ps)
         // stop air and read the preassure sensor
         if(!*p_sec)
         {
-          MPX_LevelCal(_new);
-          MPX_LevelCal(_write);
+          MPX_LevelCal(ps, _new);
+          MPX_LevelCal(ps, _write);
           OUT_Clr_Air();
 
           // clear countdown
@@ -1203,7 +1222,7 @@ void LCD_Setup_Symbols(struct PlantState *ps)
     case SetupCompressor: LCD_Sym_Setup_Compressor(); break;
     case SetupPhosphor: LCD_Sym_Setup_Phosphor(); break;
     case SetupInflowPump: LCD_Sym_Setup_InflowPump(); break;
-    case SetupCal: LCD_Sym_Setup_Cal(); break;
+    case SetupCal: LCD_Sym_Setup_Cal(ps); break;
     case SetupAlarm: LCD_Sym_Setup_Alarm(); break;
     case SetupWatch: LCD_Sym_Setup_Watch(); break;
     case SetupZone: LCD_Sym_Setup_Zone(); break;

@@ -72,6 +72,15 @@ struct PageState
 };
 
 
+struct MPXState
+{
+  unsigned char mpx_count;
+  int mpx_values[10];
+  unsigned char error_counter;
+  int level_cal;
+};
+
+
 struct PlantState
 {
   unsigned char init;
@@ -80,6 +89,7 @@ struct PlantState
   struct LcdBacklight *lcd_backlight;
   struct FrameCounter *frame_counter;
   struct ErrorState *error_state;
+  struct MPXState *mpx_state;
 }; 
 
 #endif

@@ -590,7 +590,7 @@ void LCD_Setup_IPText(unsigned char select)
  *            Set Setup Cal
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Cal(void)
+void LCD_Sym_Setup_Cal(struct PlantState *ps)
 {
   unsigned char sonic = 0;
   unsigned char calRedo = 0;
@@ -616,7 +616,7 @@ void LCD_Sym_Setup_Cal(void)
   { 
     LCD_WriteAnySymbol(s_19x19, 2, 40, p_sonic);
     LCD_WriteAnyStringFont(f_6x8_p, 17,60, "mbar");
-    MPX_LevelCal(_init);
+    MPX_LevelCal(ps, _init);
   }
 
   // Cal redo with pressure -> Auto Zone page

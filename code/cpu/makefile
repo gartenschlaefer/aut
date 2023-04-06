@@ -52,6 +52,7 @@ CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -Wall -Wstrict-prototypes
 CFLAGS += -Wa,-adhlns=$(<:%.c=$(OBJDIR)/%.lst)
 CFLAGS += $(patsubst %,-I %,$(EXTRAINCDIRS))
+CFLAGS += --param=min-pagesize=0
 
 # load flags
 LDFLAGS = -Wl,--gc-sections

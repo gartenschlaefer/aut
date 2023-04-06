@@ -1146,7 +1146,7 @@ void Touch_SetupCalLinker(struct PlantState *ps)
         MEM_EEPROM_WriteSetupEntry();
         MEM_EEPROM_WriteVar(CAL_Redo_on, calRedo);
         if(MEM_EEPROM_ReadVar(SONIC_on)) Sonic_LevelCal(_save);
-        else MPX_LevelCal(_save);
+        else MPX_LevelCal(ps, _save);
         ps->page_state->page = SetupPage;
       } break;
 
@@ -1163,7 +1163,19 @@ void Touch_SetupCalLinker(struct PlantState *ps)
       { 
         touch = 4;
         LCD_WriteAnySymbol(s_29x17, 9, 125, n_cal);
-        cal = MPX_ReadAverage_UnCal_Value();
+
+        // calibration try couple of time until it hopefully worked
+        cal = 0;
+        for(unsigned char i = 0; i < 6; i++)
+        {
+          // new calibration
+          cal = MPX_ReadAverage_UnCal(ps->mpx_state);
+          if(!(cal == 0xFF00)) break;
+          // wait for next cal
+          TCC0_wait_ms(100);
+        }
+
+        // write to memory
         MEM_EEPROM_WriteVar(CAL_L_druck, (cal & 0x00FF));
         MEM_EEPROM_WriteVar(CAL_H_druck, ((cal >> 8) & 0x00FF));
       } break;
