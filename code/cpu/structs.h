@@ -58,6 +58,14 @@ struct FrameCounter
 };
 
 
+struct Thms
+{
+  int hou;
+  int min;
+  int sec;
+};
+
+
 struct Tms
 {
   int min;
@@ -81,6 +89,22 @@ struct MPXState
 };
 
 
+struct PhosphorState
+{
+  int ph_count;
+  struct Tms *ph_tms;
+  t_phosphor_states ph_state;
+};
+
+
+struct InflowPumpState
+{
+  int ip_count;
+  struct Thms *ip_thms;
+  t_inflow_pump_states ip_state;
+};
+
+
 struct PlantState
 {
   unsigned char init;
@@ -90,6 +114,8 @@ struct PlantState
   struct FrameCounter *frame_counter;
   struct ErrorState *error_state;
   struct MPXState *mpx_state;
+  struct PhosphorState *phosphor_state;
+  struct InflowPumpState *inflow_pump_state;
 }; 
 
 #endif

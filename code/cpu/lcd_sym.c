@@ -151,12 +151,15 @@ void LCD_Sym_Auto_Mud(struct Tms *tms)
  *            Inflow Pump Sym
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_IP(struct PlantState *ps, t_FuncCmd cmd)
+void LCD_Sym_Auto_IP(struct PlantState *ps)
 {
+  // handlers
   unsigned char pump =  MEM_EEPROM_ReadVar(PUMP_inflowPump);
   t_page p = ps->page_state->page;
+  t_inflow_pump_states ip_state = ps->inflow_pump_state->ip_state;
 
-  if(cmd == _off || cmd == _disabled)
+  // off or disabled ip
+  if(ip_state == ip_off || ip_state == ip_disabled)
   {
     switch (pump)
     {
@@ -170,7 +173,9 @@ void LCD_Sym_Auto_IP(struct PlantState *ps, t_FuncCmd cmd)
       default: break;
     }
   }
-  else if(cmd == _on)
+
+  // ip on state
+  else if(ip_state == ip_on)
   {
     switch (pump)
     {
@@ -191,12 +196,12 @@ void LCD_Sym_Auto_IP(struct PlantState *ps, t_FuncCmd cmd)
  *            Inflow Pump Var
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_IP_Time(unsigned char cho, unsigned char *t_ip)
+void LCD_Sym_Auto_IP_Time(unsigned char cho, struct Thms *t_hms)
 {
   // sec, min, h
-  if(cho & 0x01) LCD_WriteAnyValue(f_4x6_p, 2, 13, 109, t_ip[0]);
-  if(cho & 0x02) LCD_WriteAnyValue(f_4x6_p, 2, 13, 97, t_ip[1]);
-  if(cho & 0x04) LCD_WriteAnyValue(f_4x6_p, 2, 13,85, t_ip[2]);
+  if(cho & 0x01) LCD_WriteAnyValue(f_4x6_p, 2, 13, 109, t_hms->sec);
+  if(cho & 0x02) LCD_WriteAnyValue(f_4x6_p, 2, 13, 97, t_hms->min);
+  if(cho & 0x04) LCD_WriteAnyValue(f_4x6_p, 2, 13,85, t_hms->hou);
 }
 
 
@@ -204,26 +209,20 @@ void LCD_Sym_Auto_IP_Time(unsigned char cho, unsigned char *t_ip)
  *            Phosphor Symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Ph(t_FuncCmd state)
+void LCD_Sym_Auto_Ph(struct PlantState *ps)
 {
-  switch(state)
+  // ph symbol
+  switch(ps->phosphor_state->ph_state)
   {
-    case _on: LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor); break;
-    case _disabled:
-    case _off: LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor); break;
+    case ph_on: LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor); break;
+    case ph_disabled:
+    case ph_off: LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor); break;
     default: break;
   }
-}
 
-
-/* ------------------------------------------------------------------*
- *            Phosphor Var
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_Auto_Ph_Time(struct Tms *tms)
-{
-  LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, tms->min);
-  LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, tms->sec);
+  // time
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, ps->phosphor_state->ph_tms->min);
+  LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, ps->phosphor_state->ph_tms->sec);
 }
 
 

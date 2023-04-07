@@ -131,7 +131,7 @@ void LCD_AutoPage(struct PlantState *ps)
       if(!ps->init || (!ps->page_state->page_time->min && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
       {
         ps->init = 1;
-        LCD_AirState(ps, _init); LCD_Auto_InflowPump(ps, _init); LCD_Auto_Phosphor(0, _init);
+        LCD_AirState(ps, _init); LCD_Auto_InflowPump(ps, _init); LCD_Auto_Phosphor_Init(ps);
         OUT_Init_Valves();
       }
 
@@ -163,7 +163,7 @@ void LCD_AutoPage(struct PlantState *ps)
   // execute in all auto pages
   LCD_Backlight(_exe, ps->lcd_backlight);
   LCD_Auto_InflowPump(ps, _exe);
-  LCD_Auto_Phosphor(ps, _exe);
+  LCD_Auto_Phosphor(ps);
   MPX_ReadAverage(ps, _exe);
 
   // display update
@@ -241,8 +241,11 @@ void LCD_Auto_Symbols(struct PlantState *ps)
     case AutoAir: case AutoAirOff: case AutoCirc: case AutoCircOff: LCD_AirState(ps, _write); break;
     default: break;
   }
-  //AddOns
-  LCD_Auto_Phosphor(ps, _sym);
+
+  // phosphor symbols
+  LCD_Sym_Auto_Ph(ps);
+
+  // inflow pump symbols
   LCD_Auto_InflowPump(ps, _sym);
 }
 
@@ -549,11 +552,10 @@ void LCD_AirState(struct PlantState *ps, t_FuncCmd cmd)
 
 t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
 {
-  static int ip_count = 0;
-
-  // time[ h = 2 | min = 1 | sec = 0]
-  static unsigned char t_ip[3] = {0, 0, 0};
-  static t_FuncCmd ip_state = _off;
+  // handlers
+  int *ip_count = &ps->inflow_pump_state->ip_count;
+  struct Thms *ip_thms = ps->inflow_pump_state->ip_thms;
+  t_inflow_pump_states *ip_state = &ps->inflow_pump_state->ip_state;
 
   t_page p = ps->page_state->page;
 
@@ -561,40 +563,40 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
   if(cmd == _init)
   {
     // on time for inflow pump
-    t_ip[1] = MEM_EEPROM_ReadVar(ON_inflowPump);
-    if(!t_ip[1])
+    ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump);
+    if(!ip_thms->min)
     {
-      t_ip[0] = 0;
-      ip_state = _disabled;
-      return ip_state;
+      ip_thms->sec = 0;
+      *ip_state = _disabled;
+      return *ip_state;
     }
-    t_ip[2] = 0;
-    t_ip[1] = 1;
-    t_ip[0] = 2;
-    ip_state = _off;
+    ip_thms->hou = 0;
+    ip_thms->min = 1;
+    ip_thms->sec = 2;
+    *ip_state = _off;
   }
 
   //--------------------------------------------------State
   else if(cmd == _state)
   {
-    return ip_state;
+    return *ip_state;
   }
 
   //--------------------------------------------------OutSet
   else if(cmd == _sym)
   {
-    LCD_Sym_Auto_IP(ps, ip_state);
-    LCD_Sym_Auto_IP_Time(0x07, t_ip);
+    LCD_Sym_Auto_IP(ps);
+    LCD_Sym_Auto_IP_Time(0x07, ip_thms);
   }
 
-  else if(ip_state == _disabled) return ip_state;
+  else if(*ip_state == ip_disabled) return *ip_state;
 
   //--------------------------------------------------Set
   else if(cmd == _set)
   {
-    if(ip_state == _on && (p == AutoAirOff || p == AutoCircOff))
+    if(*ip_state == ip_on && (p == AutoAirOff || p == AutoCircOff))
     {
-      LCD_Sym_Auto_IP(ps, ip_state);
+      LCD_Sym_Auto_IP(ps);
       OUT_Set_InflowPump();
     }
   }
@@ -602,9 +604,9 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
   //--------------------------------------------------Reset
   else if(cmd == _reset)
   {
-    if(ip_state == _on)
+    if(*ip_state == ip_on)
     {
-      LCD_Sym_Auto_IP(ps, ip_state);
+      LCD_Sym_Auto_IP(ps);
       OUT_Clr_InflowPump();
     }
   }
@@ -613,60 +615,70 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
   else if(cmd == _exe)
   {
     // AutoChange2Off
-    if(ip_state == _on && p != ErrorTreat && !t_ip[1] && !t_ip[0])
+    if(*ip_state == ip_on && p != ErrorTreat && !ip_thms->min && !ip_thms->sec)
     {
-      ip_state = _off;
-      t_ip[2] = MEM_EEPROM_ReadVar(T_IP_off_h);
-      t_ip[1] = MEM_EEPROM_ReadVar(OFF_inflowPump);
-      t_ip[0] = 2;
-      LCD_Sym_Auto_IP(ps, _off);
-      LCD_Sym_Auto_IP_Time(0x07, t_ip);
+      *ip_state = _off;
+      ip_thms->hou = MEM_EEPROM_ReadVar(T_IP_off_h); ip_thms->min = MEM_EEPROM_ReadVar(OFF_inflowPump); ip_thms->sec = 2;
+      LCD_Sym_Auto_IP(ps);
+      LCD_Sym_Auto_IP_Time(0x07, ip_thms);
       OUT_Clr_InflowPump();
     }
 
     // auto change to on state
-    else if( (ip_state == _off) && (p != ErrorTreat) && !t_ip[2] && !t_ip[1] && !t_ip[0] && (p == AutoAirOff || p == AutoCircOff))
+    else if( (*ip_state == ip_off) && (p != ErrorTreat) && !ip_thms->hou && !ip_thms->min && !ip_thms->sec && (p == AutoAirOff || p == AutoCircOff))
     {
-      ip_state = _on;
-      t_ip[2] = 0;
-      t_ip[1] = MEM_EEPROM_ReadVar(ON_inflowPump);
-      t_ip[0] = 2;
-      LCD_Sym_Auto_IP(ps, ip_state);
-      LCD_Sym_Auto_IP_Time(0x07, t_ip);
+      *ip_state = _on;
+      ip_thms->hou = 0; ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump); ip_thms->sec = 2;
+      LCD_Sym_Auto_IP(ps);
+      LCD_Sym_Auto_IP_Time(0x07, ip_thms);
       OUT_Set_InflowPump();
     }
 
     // countdown
-    if(ip_state == _off || ((p == AutoAirOff || p == AutoCircOff) && ip_state == _on))
+    if(*ip_state == ip_off || ((p == AutoAirOff || p == AutoCircOff) && *ip_state == ip_on))
     {
-      if(ip_count != ps->page_state->page_time->sec)
+      if(*ip_count != ps->page_state->page_time->sec)
       {
-        ip_count = ps->page_state->page_time->sec;
-        if(!t_ip[0])
+        *ip_count = ps->page_state->page_time->sec;
+        if(!ip_thms->sec)
         {
-          if(t_ip[1] || t_ip[2])
+          if(ip_thms->min || ip_thms->hou)
           {
-            t_ip[0] = 60;
+            ip_thms->sec = 60;
           }
-          if((!t_ip[1]) && t_ip[2])
+          if((!ip_thms->min) && ip_thms->hou)
           {
-            t_ip[1] = 60;
+            ip_thms->min = 60;
             // decrease h
-            t_ip[2]--;
-            LCD_Sym_Auto_IP_Time(0x06, t_ip);
+            ip_thms->hou--;
+            LCD_Sym_Auto_IP_Time(0x06, ip_thms);
           }
           // decrease min
-          if(t_ip[1]) t_ip[1]--;
-          LCD_Sym_Auto_IP_Time(0x02, t_ip);
+          if(ip_thms->min) ip_thms->min--;
+          LCD_Sym_Auto_IP_Time(0x02, ip_thms);
         }
         // decrease sec
-        if(t_ip[0]) t_ip[0]--;
-        LCD_Sym_Auto_IP_Time(0x01, t_ip);
+        if(ip_thms->sec) ip_thms->sec--;
+        LCD_Sym_Auto_IP_Time(0x01, ip_thms);
       }
     }
   }
 
-  return ip_state;
+  return *ip_state;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            Auto Phosphor Init
+ * ------------------------------------------------------------------*/
+
+void LCD_Auto_Phosphor_Init(struct PlantState *ps)
+{
+  ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor);
+  if(!ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->sec = 0; ps->phosphor_state->ph_state = ph_disabled; return; }
+  ps->phosphor_state->ph_tms->min = 1;
+  ps->phosphor_state->ph_tms->sec = 5;
+  ps->phosphor_state->ph_state = ph_off;
 }
 
 
@@ -674,70 +686,41 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
  *            Auto Phosphor
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_Phosphor(struct PlantState *ps, t_FuncCmd cmd)
+void LCD_Auto_Phosphor(struct PlantState *ps)
 {
-  static int count = 0;
-  // static int min = 0;
-  // static int sec = 5;
-  static struct Tms ph_tms = { .min = 0, .sec = 5};
-  static t_FuncCmd   state = _off;
+  // disabled
+  if(ps->phosphor_state->ph_state == ph_disabled){ return; }
 
-  //--------------------------------------------------Initialization
-  if(cmd == _init)
+  // phosphor count
+  if(ps->phosphor_state->ph_count != ps->page_state->page_time->sec)
   {
-    ph_tms.min = MEM_EEPROM_ReadVar(ON_phosphor);
-    if(!ph_tms.min){ ph_tms.sec = 0; state = _disabled; return; }
-    ph_tms.min = 1;
-    ph_tms.sec = 5;
-    state = _off;
+    ps->phosphor_state->ph_count = ps->page_state->page_time->sec;
+    if(!ps->phosphor_state->ph_tms->sec)
+    {
+      ps->phosphor_state->ph_tms->sec = 60;
+      if(ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->min--; }
+      LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, ps->phosphor_state->ph_tms->min);
+    }
+    if(ps->phosphor_state->ph_tms->sec){ ps->phosphor_state->ph_tms->sec--; }
+    LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, ps->phosphor_state->ph_tms->sec);
   }
 
-  //--------------------------------------------------Symbols
-  else if(cmd == _sym)
+  // change to off state
+  if(ps->phosphor_state->ph_state == ph_on && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
   {
-    LCD_Sym_Auto_Ph(state);
-    LCD_Sym_Auto_Ph_Time(&ph_tms);
+    ps->phosphor_state->ph_state = ph_off;
+    ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(OFF_phosphor); ps->phosphor_state->ph_tms->sec = 0;
+    LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor);
+    OUT_Clr_Phosphor();
   }
 
-  //--------------------------------------------------Disabled
-  else if(state == _disabled)   return;
-
-  //--------------------------------------------------Execution
-  else if(cmd == _exe)
+  // change to on state
+  else if(ps->phosphor_state->ph_state == ph_off && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
   {
-    //Counter
-    if(count != ps->page_state->page_time->sec)
-    {
-      count = ps->page_state->page_time->sec;
-      if(!ph_tms.sec)
-      {
-        ph_tms.sec = 60;
-        if(ph_tms.min) ph_tms.min--;
-        LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, ph_tms.min);
-      }
-      if(ph_tms.sec) ph_tms.sec--;
-      LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, ph_tms.sec);
-    }
-
-    // change to off state
-    if(state == _on && !ph_tms.min && !ph_tms.sec)
-    {
-      state =_off;
-      ph_tms.min = MEM_EEPROM_ReadVar(OFF_phosphor);
-      ph_tms.sec = 0;
-      LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor);
-      OUT_Clr_Phosphor();
-    }
-
-    // change to on state
-    else if(state == _off && !ph_tms.min && !ph_tms.sec)
-    {
-      state = _on;
-      ph_tms.min = MEM_EEPROM_ReadVar(ON_phosphor);
-      ph_tms.sec = 0;
-      LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor);
-      OUT_Set_Phosphor();
-    }
+    ps->phosphor_state->ph_state = ph_on;
+    ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor); ps->phosphor_state->ph_tms->sec = 0;
+    LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor);
+    OUT_Set_Phosphor();
   }
 }
 

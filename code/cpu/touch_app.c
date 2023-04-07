@@ -897,7 +897,7 @@ void Touch_SetupPhosphorLinker(struct PlantState *ps)
       init = 0;MEM_EEPROM_WriteVar(ON_phosphor, pOn);
       MEM_EEPROM_WriteVar(OFF_phosphor, pOff);
       MEM_EEPROM_WriteSetupEntry();
-      LCD_Auto_Phosphor(ps, _init);
+      LCD_Auto_Phosphor_Init(ps);
       ps->page_state->page = SetupPage;
       break;
 

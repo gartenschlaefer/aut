@@ -18,10 +18,9 @@ void LCD_Sym_Auto_Zone(struct Tms *tms);
 void LCD_Sym_Auto_SetDown(struct Tms *tms);
 void LCD_Sym_Auto_PumpOff(struct Tms *tms);
 void LCD_Sym_Auto_Mud(struct Tms *tms);
-void LCD_Sym_Auto_IP(struct PlantState *ps, t_FuncCmd cmd);
-void LCD_Sym_Auto_IP_Time(unsigned char cho, unsigned char *t_ip);
-void LCD_Sym_Auto_Ph(t_FuncCmd state);
-void LCD_Sym_Auto_Ph_Time(struct Tms *tms);
+void LCD_Sym_Auto_IP(struct PlantState *ps);
+void LCD_Sym_Auto_IP_Time(unsigned char cho, struct Thms *t_hms);
+void LCD_Sym_Auto_Ph(struct PlantState *ps);
 
 void LCD_Sym_Auto_Text(struct PlantState *ps);
 void LCD_Sym_Auto_SonicVal(t_page page, int sonic);

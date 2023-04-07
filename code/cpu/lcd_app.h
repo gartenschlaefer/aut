@@ -88,8 +88,13 @@ void LCD_Auto_SetState(struct PlantState *ps);
 void LCD_Auto_Symbols(struct PlantState *ps);
 void LCD_Auto_CountDownEndAction(struct PlantState *ps);
 void LCD_AirState(struct PlantState *ps, t_FuncCmd cmd);
+
+// inflow pump
 t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd);
-void LCD_Auto_Phosphor(struct PlantState *ps, t_FuncCmd cmd);
+
+// phosphor
+void LCD_Auto_Phosphor_Init(struct PlantState *ps);
+void LCD_Auto_Phosphor(struct PlantState *ps);
 
 void LCD_Manual_SetState(struct PlantState *ps);
 void LCD_Manual_ResetState(t_page save_page);

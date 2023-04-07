@@ -17,17 +17,23 @@
 
 int main(void)
 {
+  // times
+  struct Tms page_time = { .min = 5, .sec = 0 };
+  struct Tms phosphor_time = { .min = 0, .sec = 5 };
+  struct Thms ip_thms = { .hou = 0, .min = 0, .sec = 6 };
+
   // datatypes and states
   struct LcdBacklight lcd_backlight = { .state = _off, .count = 0 };
   struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0 };
-  struct Tms page_time = { .min = 5, .sec = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
   struct PageState prev_page_state = { .page = NoPage, .page_time = &page_time };
   struct ErrorState error_state = { .page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00 };
   struct MPXState mpx_state = { .mpx_count = 0, .mpx_values = { 0x00 }, .error_counter = 0, .level_cal = 0 };
+  struct PhosphorState phosphor_state = { .ph_count = 0, .ph_tms = &phosphor_time, .ph_state = ph_off };
+  struct InflowPumpState inflow_pump_state = { .ip_count = 0, .ip_thms = &ip_thms, .ip_state = ip_off };
 
   // plant state
-  struct PlantState ps = { .init = 0, .page_state = &page_state, .prev_page_state = &prev_page_state, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state };
+  struct PlantState ps = { .init = 0, .page_state = &page_state, .prev_page_state = &prev_page_state, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state};
 
 
   // init
