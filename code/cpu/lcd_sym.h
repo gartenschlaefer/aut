@@ -13,18 +13,32 @@
  *            function header
  * ------------------------------------------------------------------*/
 
+// logo
+void LCD_Sym_Logo(void);
+
+// auto
+void LCD_Sym_Auto_SetManager(struct PlantState *ps);
+
+// symbols
+void LCD_Sym_Auto_CountDown(struct Tms *tms);
+void LCD_Sym_Auto_Text(struct PlantState *ps);
+
+// cycle state
 void LCD_Sym_Auto_Main(void);
-void LCD_Sym_Auto_Zone(struct Tms *tms);
-void LCD_Sym_Auto_SetDown(struct Tms *tms);
-void LCD_Sym_Auto_PumpOff(struct Tms *tms);
-void LCD_Sym_Auto_Mud(struct Tms *tms);
-void LCD_Sym_Auto_IP(struct PlantState *ps);
-void LCD_Sym_Auto_IP_Time(unsigned char cho, struct Thms *t_hms);
+void LCD_Sym_Auto_Zone(void);
+void LCD_Sym_Auto_SetDown(void);
+void LCD_Sym_Auto_PumpOff(void);
+void LCD_Sym_Auto_Mud(void);
+
+// inflow pump
+void LCD_Sym_Auto_Ip_Base(struct PlantState *ps);
+void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms);
+
+// phosphor
 void LCD_Sym_Auto_Ph(struct PlantState *ps);
 
-void LCD_Sym_Auto_Text(struct PlantState *ps);
+// ultra sonic
 void LCD_Sym_Auto_SonicVal(t_page page, int sonic);
-void LCD_Sym_Auto_CountDown(struct Tms *tms);
 
 //void LCD_Sym_WriteAutoVar(struct PageState *ps);
 //void LCD_Sym_WriteAutoVar_Comp(struct Tms *tms);
@@ -32,7 +46,6 @@ void LCD_Sym_Auto_CountDown(struct Tms *tms);
 void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms);
 
 void LCD_Sym_AutoAir(t_page page);
-void LCD_Sym_Logo(void);
 
 
 /* ------------------------------------------------------------------*
@@ -147,7 +160,7 @@ void LCD_Sym_Error(unsigned char err);
  *            timer ic
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Time(t_FuncCmd cmd);
+void LCD_Sym_Auto_Time(void);
 void LCD_Sym_Auto_Date(void);
 
 

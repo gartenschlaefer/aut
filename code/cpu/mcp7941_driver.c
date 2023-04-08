@@ -129,8 +129,8 @@ int MCP7941_Read_Comp_OpHours(void)
 
 unsigned char MCP7941_ReadTime(unsigned char cmd)
 {
-  unsigned char time= 0;
-  unsigned char wTime= 0;
+  unsigned char time = 0;
+  unsigned char wTime = 0;
   switch(cmd)
   {
     case TIC_SEC:

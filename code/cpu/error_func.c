@@ -143,7 +143,7 @@ void Error_Detection(struct PlantState *ps)
     ps->error_state->err_reset_flag = 0;
     Error_OFF(ps->lcd_backlight);
     TCE0_ErrorTimer(_reset);
-    LCD_Auto_Symbols(ps);
+    LCD_Sym_Auto_SetManager(ps);
   }
 }
 

@@ -36,7 +36,7 @@ void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
       if(ps->frame_counter->lcd_reset == 10){ LCD_Init(); TCC0_wait_ms(2); }
       else if(ps->frame_counter->lcd_reset == 10000){ LCD_Sym_MarkTextButton(Auto); }
       else if(ps->frame_counter->lcd_reset == 20000){ LCD_Sym_Logo(); }
-      else if(ps->frame_counter->lcd_reset > 30000){ LCD_Auto_Symbols(ps); ps->frame_counter->lcd_reset = 0; }
+      else if(ps->frame_counter->lcd_reset > 30000){ LCD_Sym_Auto_SetManager(ps); ps->frame_counter->lcd_reset = 0; }
       break;
 
     default: break;
@@ -131,7 +131,8 @@ void LCD_AutoPage(struct PlantState *ps)
       if(!ps->init || (!ps->page_state->page_time->min && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
       {
         ps->init = 1;
-        LCD_AirState(ps, _init); LCD_Auto_InflowPump(ps, _init); LCD_Auto_Phosphor_Init(ps);
+        LCD_AirState(ps, _init);
+        LCD_Auto_InflowPump(ps, _init); LCD_Auto_Phosphor_Init(ps);
         OUT_Init_Valves();
       }
 
@@ -178,8 +179,9 @@ void LCD_AutoPage(struct PlantState *ps)
 void LCD_Auto_SetState(struct PlantState *ps)
 {
   // set symbol
-  LCD_Auto_Symbols(ps);
+  LCD_Sym_Auto_SetManager(ps);
 
+  // handlers
   int *p_min = &ps->page_state->page_time->min;
   int *p_sec = &ps->page_state->page_time->sec;
 
@@ -203,50 +205,22 @@ void LCD_Auto_SetState(struct PlantState *ps)
       OUT_Set_Mud();
       break;
 
-    case AutoCirc: case AutoCircOff: case AutoAir: case AutoAirOff:
-      // time
+    case AutoCirc: case AutoCircOff:
+      *p_min = (( MEM_EEPROM_ReadVar(TIME_H_circ) << 8) | MEM_EEPROM_ReadVar(TIME_L_circ));
       *p_sec = 0;
-      if(ps->page_state->page == AutoCirc || ps->page_state->page == AutoCircOff){ *p_min = (( MEM_EEPROM_ReadVar(TIME_H_circ) << 8) | MEM_EEPROM_ReadVar(TIME_L_circ)); }
-      else{ *p_min = (( MEM_EEPROM_ReadVar(TIME_H_air) << 8) | MEM_EEPROM_ReadVar(TIME_L_air)); }
+      LCD_AirState(ps, _set);
+      LCD_Auto_InflowPump(ps, _set);
+      break;
 
+    case AutoAir: case AutoAirOff:
+      *p_min = (( MEM_EEPROM_ReadVar(TIME_H_air) << 8) | MEM_EEPROM_ReadVar(TIME_L_air));
+      *p_sec = 0;
       LCD_AirState(ps, _set);
       LCD_Auto_InflowPump(ps, _set);
       break;
 
     default: ps->prev_page_state = ps->page_state; break;
   }
-}
-
-
-/* ------------------------------------------------------------------*
- *            Auto Set Symbols
- * ------------------------------------------------------------------*/
-
-void LCD_Auto_Symbols(struct PlantState *ps)
-{
-  // write text
-  LCD_Sym_Auto_Text(ps);
-
-  // clear actual symbol space
-  LCD_ClrSpace(5, 0, 2, 35);
-
-  // page dependend symbols
-  switch(ps->page_state->page)
-  {
-    case AutoPage: LCD_Sym_Auto_Main(); break;
-    case AutoZone: LCD_Sym_Auto_Zone(ps->page_state->page_time); break;
-    case AutoSetDown: LCD_Sym_Auto_SetDown(ps->page_state->page_time); break;
-    case AutoPumpOff: LCD_Sym_Auto_PumpOff(ps->page_state->page_time); break;
-    case AutoMud: LCD_Sym_Auto_Mud(ps->page_state->page_time); break;
-    case AutoAir: case AutoAirOff: case AutoCirc: case AutoCircOff: LCD_AirState(ps, _write); break;
-    default: break;
-  }
-
-  // phosphor symbols
-  LCD_Sym_Auto_Ph(ps);
-
-  // inflow pump symbols
-  LCD_Auto_InflowPump(ps, _sym);
 }
 
 
@@ -582,13 +556,6 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
     return *ip_state;
   }
 
-  //--------------------------------------------------OutSet
-  else if(cmd == _sym)
-  {
-    LCD_Sym_Auto_IP(ps);
-    LCD_Sym_Auto_IP_Time(0x07, ip_thms);
-  }
-
   else if(*ip_state == ip_disabled) return *ip_state;
 
   //--------------------------------------------------Set
@@ -596,7 +563,7 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
   {
     if(*ip_state == ip_on && (p == AutoAirOff || p == AutoCircOff))
     {
-      LCD_Sym_Auto_IP(ps);
+      LCD_Sym_Auto_Ip_Base(ps);
       OUT_Set_InflowPump();
     }
   }
@@ -606,7 +573,7 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
   {
     if(*ip_state == ip_on)
     {
-      LCD_Sym_Auto_IP(ps);
+      LCD_Sym_Auto_Ip_Base(ps);
       OUT_Clr_InflowPump();
     }
   }
@@ -619,8 +586,7 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
     {
       *ip_state = _off;
       ip_thms->hou = MEM_EEPROM_ReadVar(T_IP_off_h); ip_thms->min = MEM_EEPROM_ReadVar(OFF_inflowPump); ip_thms->sec = 2;
-      LCD_Sym_Auto_IP(ps);
-      LCD_Sym_Auto_IP_Time(0x07, ip_thms);
+      LCD_Sym_Auto_Ip_Base(ps);
       OUT_Clr_InflowPump();
     }
 
@@ -629,8 +595,7 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
     {
       *ip_state = _on;
       ip_thms->hou = 0; ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump); ip_thms->sec = 2;
-      LCD_Sym_Auto_IP(ps);
-      LCD_Sym_Auto_IP_Time(0x07, ip_thms);
+      LCD_Sym_Auto_Ip_Base(ps);
       OUT_Set_InflowPump();
     }
 
@@ -651,15 +616,15 @@ t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd)
             ip_thms->min = 60;
             // decrease h
             ip_thms->hou--;
-            LCD_Sym_Auto_IP_Time(0x06, ip_thms);
+            LCD_Sym_Auto_Ip_Time(0x06, ip_thms);
           }
           // decrease min
           if(ip_thms->min) ip_thms->min--;
-          LCD_Sym_Auto_IP_Time(0x02, ip_thms);
+          LCD_Sym_Auto_Ip_Time(0x02, ip_thms);
         }
         // decrease sec
         if(ip_thms->sec) ip_thms->sec--;
-        LCD_Sym_Auto_IP_Time(0x01, ip_thms);
+        LCD_Sym_Auto_Ip_Time(0x01, ip_thms);
       }
     }
   }

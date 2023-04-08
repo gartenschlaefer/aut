@@ -85,7 +85,6 @@ void LCD_PinPage(struct PlantState *ps);
  * ------------------------------------------------------------------*/
 
 void LCD_Auto_SetState(struct PlantState *ps);
-void LCD_Auto_Symbols(struct PlantState *ps);
 void LCD_Auto_CountDownEndAction(struct PlantState *ps);
 void LCD_AirState(struct PlantState *ps, t_FuncCmd cmd);
 
