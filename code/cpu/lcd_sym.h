@@ -29,6 +29,10 @@ void LCD_Sym_Auto_Zone(void);
 void LCD_Sym_Auto_SetDown(void);
 void LCD_Sym_Auto_PumpOff(void);
 void LCD_Sym_Auto_Mud(void);
+void LCD_Sym_Auto_CircOn(void);
+void LCD_Sym_Auto_CircOff(void);
+void LCD_Sym_Auto_AirOn(void);
+void LCD_Sym_Auto_AirOff(void);
 
 // inflow pump
 void LCD_Sym_Auto_Ip_Base(struct PlantState *ps);
@@ -45,7 +49,7 @@ void LCD_Sym_Auto_SonicVal(t_page page, int sonic);
 
 void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms);
 
-void LCD_Sym_AutoAir(t_page page);
+void LCD_Sym_AutoAirOn(t_page page);
 
 
 /* ------------------------------------------------------------------*
@@ -110,8 +114,13 @@ void LCD_Sym_MPX(t_FuncCmd cmd, int value);
  *            Pin
  * ------------------------------------------------------------------*/
 
-void LCD_PinSet_Page(void);
-void LCD_Pin_Write(t_FuncCmd cmd, struct TelNr nr);
+void LCD_Sym_PinPage(void);
+void LCD_Sym_Pin_RightMessage(void);
+void LCD_Sym_Pin_WrongMessage(void);
+void LCD_Sym_Pin_OpHoursMessage(void);
+void LCD_Sym_Pin_Clear(void);
+void LCD_Sym_Pin_PrintWholeTelNumber(struct TelNr nr);
+void LCD_Sym_Pin_PrintOneTelNumberDigit(struct TelNr nr);
 void LCD_pPinButtons(unsigned char pPin);
 void LCD_nPinButtons(unsigned char nPin);
 
@@ -123,7 +132,7 @@ void LCD_nPinButtons(unsigned char nPin);
 void LCD_TextButton(t_textButtons text, unsigned char pos);
 void LCD_ControlButtons(t_CtrlButtons ctrl);
 void LCD_ControlButtons2(t_CtrlButtons ctrl);
-void LCD_Pin_WriteOK(unsigned char on);
+void LCD_Sym_Pin_OkButton(unsigned char on);
 
 
 /* ------------------------------------------------------------------*

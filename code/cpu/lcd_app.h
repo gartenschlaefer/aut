@@ -18,7 +18,10 @@ void LCD_AutoPage(struct PlantState *ps);
 void LCD_ManualPage(struct PlantState *ps);
 void LCD_SetupPage(struct PlantState *ps);
 void LCD_DataPage(struct PlantState *ps);
-void LCD_PinPage(struct PlantState *ps);
+
+// pin page
+void LCD_PinPage_Main(struct PlantState *ps);
+void LCD_PinPage_Init(struct PlantState *ps);
 
 
 /* ------------------------------------------------------------------*
@@ -84,9 +87,12 @@ void LCD_PinPage(struct PlantState *ps);
  *            states and symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_SetState(struct PlantState *ps);
+void LCD_Auto_SetStateTime(struct PlantState *ps);
+void LCD_Auto_SetStateOutput(struct PlantState *ps);
 void LCD_Auto_CountDownEndAction(struct PlantState *ps);
-void LCD_AirState(struct PlantState *ps, t_FuncCmd cmd);
+
+// air state (for circulate and air cycle)
+void LCD_AirState_Manager(struct PlantState *ps);
 
 // inflow pump
 t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd);
@@ -116,7 +122,7 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
 unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char cnt);
 void LCD_Sym_Data_EndText(void);
 
-int LCD_AutoRead_StartTime(struct PlantState *ps);
+void LCD_AirState_SetAutoStartTime(struct PlantState *ps);
 
 /* ------------------------------------------------------------------*
  *            calibration init

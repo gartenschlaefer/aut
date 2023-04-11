@@ -194,7 +194,7 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
     if(p == ManualCirc || p == ManualCircOff || p == ManualAir){ LCD_Sym_MPX(_mmbar, perP); }
 
     // auto zone
-    else if(p == AutoZone){ LCD_Sym_MPX(_notav, 0); ps->page_state->page = AutoCirc; }
+    else if(p == AutoZone){ LCD_Sym_MPX(_notav, 0); ps->page_state->page = AutoCircOn; }
     LCD_Sym_MPX(_notav, 0);
     return;
   }
@@ -220,13 +220,13 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
     }
 
     // circulate
-    if(p == AutoCirc)
+    if(p == AutoCircOn)
     {
-      if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAir; }
+      if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
     }
 
     // air
-    else if(p == AutoAir)
+    else if(p == AutoAirOn)
     {
       if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
     }
@@ -235,12 +235,12 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
     else if(p == AutoZone)
     {
       // difference, todo: check this
-      if((ps->mpx_state->level_cal < (minP - 5)) || (ps->mpx_state->level_cal > (minP + 5))) { ps->page_state->page = AutoCirc; }
+      if((ps->mpx_state->level_cal < (minP - 5)) || (ps->mpx_state->level_cal > (minP + 5))) { ps->page_state->page = AutoCircOn; }
 
       MPX_LevelCal(ps, _save);
       if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
-      if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAir; }
-      else { ps->page_state->page = AutoCirc; }
+      if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
+      else { ps->page_state->page = AutoCircOn; }
     }
   }
 

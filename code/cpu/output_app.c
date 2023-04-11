@@ -212,8 +212,8 @@ void OUT_Valve_AutoClose(t_page page)
     case AutoSetDown: break;
     case AutoPumpOff: OUT_Clr_PumpOff(); break;
     case AutoMud: OUT_Clr_Mud(); break;
-    case AutoCirc: OUT_Clr_IPAir(); break;
-    case AutoAir: OUT_Clr_IPAir(); break;
+    case AutoCircOn: OUT_Clr_IPAir(); break;
+    case AutoAirOn: OUT_Clr_IPAir(); break;
 
     case ManualCirc: OUT_Clr_Air(); break;
     case ManualAir: OUT_Clr_Air(); break;

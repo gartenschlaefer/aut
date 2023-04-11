@@ -45,17 +45,19 @@ void LCD_Sym_Auto_SetManager(struct PlantState *ps)
   // page dependend symbols
   switch(ps->page_state->page)
   {
-    case AutoPage: LCD_Sym_Auto_Main(); break;
-    case AutoZone: LCD_Sym_Auto_Zone(); break;
-    case AutoSetDown: LCD_Sym_Auto_SetDown(); break;
-    case AutoPumpOff: LCD_Sym_Auto_PumpOff(); break;
-    case AutoMud: LCD_Sym_Auto_Mud(); break;
-    case AutoAir: case AutoAirOff: case AutoCirc: case AutoCircOff: LCD_AirState(ps, _write); break;
+    case AutoPage: LCD_Sym_Auto_Main(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
+    case AutoZone: LCD_Sym_Auto_Zone(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
+    case AutoSetDown: LCD_Sym_Auto_SetDown(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
+    case AutoPumpOff: LCD_Sym_Auto_PumpOff(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
+    case AutoMud: LCD_Sym_Auto_Mud(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
+
+    case AutoAirOn: LCD_Sym_Auto_AirOn(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
+    case AutoAirOff: LCD_Sym_Auto_AirOff(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
+    case AutoCircOn: LCD_Sym_Auto_CircOn(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
+    case AutoCircOff:LCD_Sym_Auto_CircOff(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
+
     default: break;
   }
-
-  // countdown
-  LCD_Sym_Auto_CountDown(ps->page_state->page_time);
 
   // phosphor symbols
   LCD_Sym_Auto_Ph(ps);
@@ -138,7 +140,7 @@ void LCD_Sym_Auto_Main(void)
  *            Set Auto Zone
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Zone()
+void LCD_Sym_Auto_Zone(void)
 {
   LCD_WriteAnySymbol(s_29x17, 6, 0, n_circulate);
   LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
@@ -150,7 +152,7 @@ void LCD_Sym_Auto_Zone()
  *            Set Auto SetDown
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_SetDown()
+void LCD_Sym_Auto_SetDown(void)
 {
   LCD_WriteAnySymbol(s_29x17, 6, 0, n_setDown);
   LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
@@ -161,7 +163,7 @@ void LCD_Sym_Auto_SetDown()
  *            Set Auto PumpOff
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_PumpOff()
+void LCD_Sym_Auto_PumpOff(void)
 {
   LCD_WriteAnySymbol(s_35x23, 5, 0, n_pumpOff);
   if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)) LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
@@ -173,10 +175,39 @@ void LCD_Sym_Auto_PumpOff()
  *            Set Auto Mud
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Mud()
+void LCD_Sym_Auto_Mud(void)
 {
   LCD_WriteAnySymbol(s_35x23, 5, 0, n_mud);
   LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
+}
+
+
+/* ------------------------------------------------------------------*
+ *            circulate and air symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_CircOn(void)
+{
+  LCD_WriteAnySymbol(s_29x17, 6, 0, n_circulate);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
+}
+
+void LCD_Sym_Auto_CircOff(void)
+{
+  LCD_WriteAnySymbol(s_29x17, 6, 0, p_circulate);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
+}
+
+void LCD_Sym_Auto_AirOn(void)
+{
+  LCD_WriteAnySymbol(s_29x17, 6, 0, n_air);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
+}
+
+void LCD_Sym_Auto_AirOff(void)
+{
+  LCD_WriteAnySymbol(s_29x17, 6, 0, p_air);
+  LCD_WriteAnySymbol(s_29x17, 6, 45, p_compressor);
 }
 
 
@@ -350,7 +381,7 @@ void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms)
   // update compressor hours
   switch(ps->page_state->page)
   {
-    case AutoPumpOff: case AutoMud: case AutoCirc: case AutoAir: case AutoZone:
+    case AutoPumpOff: case AutoMud: case AutoCircOn: case AutoAirOn: case AutoZone:
       if(opMin != tms->min)
       {
         opMin = tms->min;
@@ -371,16 +402,16 @@ void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms)
  *            LCD_AutoSym - Auto Air Symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_AutoAir(t_page page)
+void LCD_Sym_AutoAirOn(t_page page)
 {
   switch(page)
   {
-    case AutoCirc:
+    case AutoCircOn:
       LCD_WriteAnySymbol(s_29x17, 6, 0, n_circulate);
       LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
       break;
 
-    case AutoAir:
+    case AutoAirOn:
       LCD_WriteAnySymbol(s_29x17, 6, 0, n_air);
       LCD_WriteAnySymbol(s_29x17, 6, 45, n_compressor);
       break;
@@ -1362,95 +1393,97 @@ void LCD_nPinButtons(unsigned char nPin)
  *            Set Pin Page
  * ==================================================================*/
 
-void LCD_PinSet_Page(void)
+void LCD_Sym_PinPage(void)
 {
-  unsigned char i = 0;
-
   LCD_Clean();
-  for(i = 0; i < 12; i++) LCD_pPinButtons(i);
+  for(unsigned char i = 0; i < 12; i++){ LCD_pPinButtons(i); }
   Eval_PinDel();
 }
 
 
 /* ------------------------------------------------------------------*
- *            Pin-Write
+ *            pin page messages and texts
  * ------------------------------------------------------------------*/
 
-void LCD_Pin_Write(t_FuncCmd cmd, struct TelNr nr)
+void LCD_Sym_Pin_RightMessage(void)
+{
+  LCD_WriteAnyStringFont(f_6x8_p, 6, 125,"right!");
+}
+
+void LCD_Sym_Pin_WrongMessage(void)
+{
+  LCD_WriteAnyStringFont(f_6x8_p, 6, 119,"wrong!");
+  LCD_WriteAnyStringFont(f_6x8_p, 9, 119,"try");
+  LCD_WriteAnyStringFont(f_6x8_p, 11, 119,"again");
+}
+
+void LCD_Sym_Pin_OpHoursMessage(void)
+{
+  LCD_WriteAnyStringFont(f_6x8_p, 6, 119,"OP");
+}
+
+void LCD_Sym_Pin_Clear(void)
+{
+  LCD_ClrSpace(6, 119, 25, 41);
+}
+
+void LCD_Sym_Pin_PrintWholeTelNumber(struct TelNr nr)
 {
   unsigned char i = 0;
 
-  switch(cmd)
+  // telx:
+  LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "Tel");
+  LCD_WriteAnyFont(f_6x8_p, 6, 137, nr.id + 14);
+  LCD_WriteAnyStringFont(f_6x8_p, 6, 143,":");
+
+  // +
+  LCD_WriteAnyFont(f_4x6_p, 9, 119, 20); 
+
+  // 43
+  for(i = 0; i < 2; i++)
   {
-    case _right: LCD_WriteAnyStringFont(f_6x8_p, 6, 125,"right!"); break;
+    nr.pos = i;
+    LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * i, Modem_TelNr(_read2, nr));
+  }
 
-    case _op: LCD_WriteAnyStringFont(f_6x8_p, 6, 119,"OP"); break;
+  // 680
+  for(i = 2; i < 5; i++)
+  {               
+    nr.pos = i;
+    LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (i - 2), Modem_TelNr(_read2, nr));
+  }
 
-    //------------------------------------------------WriteWholeNumber
-    case _write:
-      LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "Tel");
-      LCD_WriteAnyFont(f_6x8_p, 6, 137, nr.id + 14);
-      LCD_WriteAnyStringFont(f_6x8_p, 6, 143,":");
+  // number
+  for(i = 5; i < 14; i++)
+  {                   
+    nr.pos = i;
+    LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (i - 5), Modem_TelNr(_read2, nr));
+  }
+}
 
-      // +
-      LCD_WriteAnyFont(f_4x6_p, 9, 119, 20); 
+void LCD_Sym_Pin_PrintOneTelNumberDigit(struct TelNr nr)
+{
+  LCD_nPinButtons(nr.tel);
+  if(nr.pos < 2)
+  {
+    LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * nr.pos, nr.tel);
+    nr.pos++;
+    if(nr.pos < 2) LCD_WriteAnyFont(f_4x6_n, 9, 127, 14);
+    else LCD_WriteAnyFont(f_4x6_n, 9, 135, 14);
+  }
 
-      // 43
-      for(i = 0; i < 2; i++)
-      {
-        nr.pos = i;
-        LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * i, Modem_TelNr(_read2, nr));
-      }
-
-      // 680
-      for(i = 2; i < 5; i++)
-      {               
-        nr.pos = i;
-        LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (i - 2), Modem_TelNr(_read2, nr));
-      }
-
-      // number
-      for(i = 5; i < 14; i++)
-      {                   
-        nr.pos = i;
-        LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (i - 5), Modem_TelNr(_read2, nr));
-      }
-      break;
-
-    //------------------------------------------------PrintOneNumber
-    case _telnr:
-      LCD_nPinButtons(nr.tel);
-      if(nr.pos < 2)
-      {
-        LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * nr.pos, nr.tel);
-        nr.pos++;
-        if(nr.pos < 2) LCD_WriteAnyFont(f_4x6_n, 9, 127, 14);
-        else LCD_WriteAnyFont(f_4x6_n, 9, 135, 14);
-      }
-
-      else if((nr.pos > 1) && (nr.pos < 5))
-      {
-        LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (nr.pos - 2), nr.tel);
-        nr.pos++;
-        if(nr.pos < 5) LCD_WriteAnyFont(f_4x6_n, 9, 135 + 4 * (nr.pos - 2), 14);
-        else LCD_WriteAnyFont(f_4x6_n, 11, 119, 14);
-      }
-      else
-      {
-        LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (nr.pos - 5), nr.tel);
-        nr.pos++;
-        if(nr.pos < 14) LCD_WriteAnyFont(f_4x6_n, 11, 119 + 4 * (nr.pos - 5), 14);
-      }
-      break;
-
-    case _wrong:
-      LCD_WriteAnyStringFont(f_6x8_p, 6, 119,"wrong!");
-      LCD_WriteAnyStringFont(f_6x8_p, 9, 119,"try");
-      LCD_WriteAnyStringFont(f_6x8_p, 11, 119,"again"); break;
-
-    case _clear: LCD_ClrSpace(6, 119,25,41); break;
-
-    default: break;
+  else if((nr.pos > 1) && (nr.pos < 5))
+  {
+    LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (nr.pos - 2), nr.tel);
+    nr.pos++;
+    if(nr.pos < 5) LCD_WriteAnyFont(f_4x6_n, 9, 135 + 4 * (nr.pos - 2), 14);
+    else LCD_WriteAnyFont(f_4x6_n, 11, 119, 14);
+  }
+  else
+  {
+    LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (nr.pos - 5), nr.tel);
+    nr.pos++;
+    if(nr.pos < 14) LCD_WriteAnyFont(f_4x6_n, 11, 119 + 4 * (nr.pos - 5), 14);
   }
 }
 
@@ -1536,7 +1569,7 @@ void LCD_ControlButtons2(t_CtrlButtons ctrl)
  *            Pin Okay
  * ------------------------------------------------------------------*/
 
-void LCD_Pin_WriteOK(unsigned char on)
+void LCD_Sym_Pin_OkButton(unsigned char on)
 {
   switch(on)
   {
@@ -1639,8 +1672,8 @@ unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd)
   switch(page)
   {
     case AutoSetDown: case AutoMud: case AutoPumpOff:
-    case AutoCirc: case AutoCircOff: case AutoPage:
-    case AutoAir: case AutoAirOff: row = 17; col = 5; break;
+    case AutoCircOn: case AutoCircOff: case AutoPage:
+    case AutoAirOn: case AutoAirOff: row = 17; col = 5; break;
 
     case ManualMain: case ManualCirc: case ManualCircOff:
     case ManualAir: case ManualSetDown: case ManualPumpOff:
@@ -1688,8 +1721,8 @@ void LCD_Sym_Auto_SonicVal(t_page page, int sonic)
   switch(page)
   {
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
-    case AutoMud:   case AutoCirc:    case AutoCircOff:
-    case AutoAir:   case AutoAirOff:  case AutoPage:
+    case AutoMud:   case AutoCircOn:    case AutoCircOff:
+    case AutoAirOn:   case AutoAirOff:  case AutoPage:
       LCD_WriteAnyValue(f_4x6_p, 4, 17, 5, sonic);
 
       // mm
@@ -1713,8 +1746,8 @@ void LCD_Sym_Auto_SonicVal(t_page page, int sonic)
   switch(page)
   {
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
-    case AutoMud:   case AutoCirc:    case AutoCircOff:
-    case AutoAir:   case AutoAirOff:  case AutoPage:
+    case AutoMud:   case AutoCircOn:    case AutoCircOff:
+    case AutoAirOn:   case AutoAirOff:  case AutoPage:
       LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, per);
 
       // %

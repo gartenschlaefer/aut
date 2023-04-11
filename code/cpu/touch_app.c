@@ -203,14 +203,16 @@ void Touch_AutoLinker(struct PlantState *ps)
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
       LCD_Sym_MarkTextButton(Manual);
       OUT_Valve_AutoClose(ps->page_state->page);
-      ps->page_state->page = PinManual; break;
+      ps->page_state->page = PinManual; LCD_PinPage_Init(ps);
+      break;
 
     // setup
     case 0x43: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
       LCD_Sym_MarkTextButton(Setup);
       OUT_Valve_AutoClose(ps->page_state->page);
-      ps->page_state->page = PinSetup; break;
+      ps->page_state->page = PinSetup; LCD_PinPage_Init(ps);
+      break;
 
     // data
     case 0x44: 
@@ -228,9 +230,6 @@ void Touch_AutoLinker(struct PlantState *ps)
   {
     ps->page_state->page_time->min = 0;
     ps->page_state->page_time->sec = 5;
-    // *p_min = 0;
-    // *p_sec = 5;
-    //LCD_Sym_Auto_CountDown(*p_min, *p_min);
     LCD_Sym_Auto_CountDown(ps->page_state->page_time);
     bug = 0;
   }
@@ -1581,8 +1580,8 @@ void Touch_DataLinker(struct PlantState *ps)
 
     // main linker
     case 0x41: ps->page_state->page = AutoPage; break;
-    case 0x42: ps->page_state->page = PinManual; break;
-    case 0x43: ps->page_state->page = PinSetup; break;
+    case 0x42: ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
+    case 0x43: ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
     case 0x44: ps->page_state->page = DataPage; break;
     default: break;
   }
@@ -1639,8 +1638,8 @@ void Touch_DataAutoLinker(struct PlantState *ps)
 
     // main linker
     case 0x41: iData = 0; ps->page_state->page = AutoPage; break;
-    case 0x42: iData = 0; ps->page_state->page = PinManual; break;
-    case 0x43: iData = 0; ps->page_state->page = PinSetup; break;
+    case 0x42: iData = 0; ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
+    case 0x43: iData = 0; ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
     case 0x44: iData = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
@@ -1698,8 +1697,8 @@ void Touch_DataManualLinker(struct PlantState *ps)
 
     // main linker
     case 0x41: iData = 0; ps->page_state->page = AutoPage; break;
-    case 0x42: iData = 0; ps->page_state->page = PinManual; break;
-    case 0x43: iData = 0; ps->page_state->page = PinSetup; break;
+    case 0x42: iData = 0; ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
+    case 0x43: iData = 0; ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
     case 0x44: iData = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
@@ -1756,8 +1755,8 @@ void Touch_DataSetupLinker(struct PlantState *ps)
 
     // main linker
     case 0x41: iData = 0; ps->page_state->page = AutoPage; break;
-    case 0x42: iData = 0; ps->page_state->page = PinManual; break;
-    case 0x43: iData = 0; ps->page_state->page = PinSetup; break;
+    case 0x42: iData = 0; ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
+    case 0x43: iData = 0; ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
     case 0x44: iData = 0; ps->page_state->page = DataPage; break;
     default: break;
   }
@@ -1839,8 +1838,8 @@ void Touch_DataSonicLinker(struct PlantState *ps)
 
     // main linker
     case 0x41: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = AutoPage; break;
-    case 0x42: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinManual; break;
-    case 0x43: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinSetup; break;
+    case 0x42: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
+    case 0x43: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
     case 0x44: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = DataPage; break;
     default: break;
   }
@@ -1878,7 +1877,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[1])
       { 
         touch[1] = 0x11;
-        if(nr.id){ nr.tel= 1; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 1; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(1, cp); in[cp] = 1; cp++; }
       } break;
 
@@ -1887,7 +1886,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[2])
       { 
         touch[2] = 0x12;
-        if(nr.id){ nr.tel= 2; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 2; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(2, cp); in[cp] = 2; cp++; }
       } break;
 
@@ -1896,7 +1895,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[3])
       { 
         touch[3] = 0x13;
-        if(nr.id){ nr.tel= 3; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 3; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(3, cp); in[cp] = 3; cp++; }
       } break;
 
@@ -1905,7 +1904,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[4])
       { 
         touch[4] = 0x14;
-        if(nr.id){ nr.tel= 4; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 4; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(4, cp); in[cp] = 4; cp++; }
       } break;
 
@@ -1914,7 +1913,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[5])
       { 
         touch[5] = 0x15;
-        if(nr.id){ nr.tel= 5; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 5; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(5, cp); in[cp] = 5; cp++; }
       } break;
 
@@ -1923,7 +1922,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[6])
       { 
         touch[6] = 0x16;
-        if(nr.id){ nr.tel= 6; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 6; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(6, cp); in[cp] = 6; cp++; }
       } break;
 
@@ -1932,7 +1931,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[7])
       { 
         touch[7] = 0x17;
-        if(nr.id){ nr.tel= 7; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 7; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(7, cp); in[cp] = 7; cp++; }
       } break;
 
@@ -1941,7 +1940,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[8])
       { 
         touch[8] = 0x18;
-        if(nr.id){ nr.tel= 8; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 8; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(8, cp); in[cp] = 8; cp++; }
       } break;
 
@@ -1950,7 +1949,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[9])
       { 
         touch[9] = 0x19;
-        if(nr.id){ nr.tel= 9; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 9; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(9, cp); in[cp] = 9; cp++; }
       } break;
 
@@ -1959,7 +1958,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[0])
       { 
         touch[0] = 0x10;
-        if(nr.id){ nr.tel= 0; Modem_TelNr(_write, nr); LCD_Pin_Write(_telnr, nr); nr.pos++; }
+        if(nr.id){ nr.tel = 0; Modem_TelNr(_write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
         else{ Eval_PinWrite(0, cp); in[cp] = 0; cp++; }
       } break;
 
@@ -1973,7 +1972,7 @@ void Touch_PinLinker(struct PlantState *ps)
       {
         nr.pos = 0;
         Modem_TelNr(_reset, nr);
-        LCD_Pin_Write(_write, nr);
+        LCD_Sym_Pin_PrintWholeTelNumber(nr);
       }
       break;
 
@@ -1990,7 +1989,7 @@ void Touch_PinLinker(struct PlantState *ps)
       if(!touch[11] && nr.id)
       {
         touch[11] = 1;
-        LCD_Pin_WriteOK(1);
+        LCD_Sym_Pin_OkButton(1);
         Modem_TelNr(_save, nr);
 
         // test new number
@@ -2005,7 +2004,7 @@ void Touch_PinLinker(struct PlantState *ps)
     case 0x00:
       Eval_PinClr(&touch[0]);
       for(i = 0; i < 10; i++) touch[i] = 0;
-      if(touch[11]){ touch[11] = 0; LCD_Pin_Write(_clear, nr); }
+      if(touch[11]){ touch[11] = 0; LCD_Sym_Pin_Clear(); }
       break;
 
     default: break;
@@ -2014,13 +2013,12 @@ void Touch_PinLinker(struct PlantState *ps)
   if(cp > 3 && !nr.id)
   {
     cp = 0;
-    LCD_Pin_Write(_clear, nr);
+    LCD_Sym_Pin_Clear();
 
-    // manual setup
-    // check secret
+    // manual / setup, check secret
     if((in[0] == secret[0]) && (in[1] == secret[1]) && (in[2] == secret[2]) && (in[3] == secret[3]))
     {
-      LCD_Pin_Write(_right, nr);
+      LCD_Sym_Pin_RightMessage();
       switch(ps->page_state->page)
       {
         case PinManual: ps->page_state->page = ManualPage; break;
@@ -2033,7 +2031,7 @@ void Touch_PinLinker(struct PlantState *ps)
     else if((in[0] == compH[0]) && (in[1] == compH[1]) && (in[2] == compH[2]) && (in[3] == compH[3]))
     {
       MCP7941_Write_Comp_OpHours(0);
-      LCD_Pin_Write(_op, nr);
+      LCD_Sym_Pin_OpHoursMessage();
     }
 
     // enter telephone 1
@@ -2041,8 +2039,8 @@ void Touch_PinLinker(struct PlantState *ps)
     {
       nr.id = 1; nr.pos = 0;
       Modem_TelNr(_init, nr);
-      LCD_Pin_Write(_write, nr);
-      LCD_Pin_WriteOK(0);
+      LCD_Sym_Pin_PrintWholeTelNumber(nr);
+      LCD_Sym_Pin_OkButton(0);
     }
 
     // enter telephone 2
@@ -2050,12 +2048,12 @@ void Touch_PinLinker(struct PlantState *ps)
     {
       nr.id = 2; nr.pos = 0;
       Modem_TelNr(_init, nr);
-      LCD_Pin_Write(_write, nr);
-      LCD_Pin_WriteOK(0);
+      LCD_Sym_Pin_PrintWholeTelNumber(nr);
+      LCD_Sym_Pin_OkButton(0);
     }
 
     // wrong 
-    else{ LCD_Pin_Write(_wrong, nr); }
+    else{ LCD_Sym_Pin_WrongMessage(); }
     Eval_PinDel();
   }
 
@@ -2066,7 +2064,7 @@ void Touch_PinLinker(struct PlantState *ps)
     nr.id = 0;
     nr.pos = 0;
     cp = 0;
-    LCD_Pin_Write(_clear, nr);
+    LCD_Sym_Pin_Clear();
   }
   if(nr.id) Modem_ReadSLED(PinModem);
 }

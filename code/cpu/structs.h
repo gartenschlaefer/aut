@@ -105,17 +105,25 @@ struct InflowPumpState
 };
 
 
+struct AirCircState
+{
+  int old_sec;
+  struct Tms *air_tms;
+};
+
+
 struct PlantState
 {
   unsigned char init;
   struct PageState *page_state;
-  struct PageState *prev_page_state;
+  struct PageState *auto_save_page_state;
   struct LcdBacklight *lcd_backlight;
   struct FrameCounter *frame_counter;
   struct ErrorState *error_state;
   struct MPXState *mpx_state;
   struct PhosphorState *phosphor_state;
   struct InflowPumpState *inflow_pump_state;
+  struct AirCircState *air_circ_state;
 }; 
 
 #endif

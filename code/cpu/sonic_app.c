@@ -10,6 +10,7 @@
 #include "tc_func.h"
 #include "can_app.h"
 #include "memory_app.h"
+#include "output_app.h"
 
 
 /* ------------------------------------------------------------------*
@@ -202,8 +203,8 @@ unsigned char Sonic_getRepeatTime(t_page page)
       case AutoPumpOff: repeat_time = 7; break;
       case AutoMud: repeat_time = 30; break;
 
-      case AutoAir:
-      case AutoCirc: repeat_time = 30; break;
+      case AutoAirOn:
+      case AutoCircOn: repeat_time = 30; break;
 
       case AutoAirOff:
       case AutoCircOff: break;
@@ -264,31 +265,54 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
       else
       {
         LCD_Auto_InflowPump(ps, _reset);
-        LCD_AirState(ps, _reset);
-        ps->page_state->page = AutoCirc;
-        LCD_AirState(ps, _init);
+        OUT_Clr_Air();
+        ps->page_state->page = AutoCircOn;
+
+        // circulate start time
+        ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
+        ps->air_circ_state->air_tms->sec = 0;
       }
       break;
 
-    case AutoCirc:
+    case AutoCircOn:
+      if(sonic < (zero - (lvCi * 10)))
+      {
+        LCD_Auto_InflowPump(ps, _reset);
+        OUT_Clr_Air();
+        ps->page_state->page = AutoAirOn;
+
+        // air start time
+        ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_air);
+        ps->air_circ_state->air_tms->sec = 0;
+      }
+      break;
+
     case AutoCircOff:
       if(sonic < (zero - (lvCi * 10)))
       {
         LCD_Auto_InflowPump(ps, _reset);
-        LCD_AirState(ps, _reset);
-        ps->page_state->page = AutoAir;
-        LCD_AirState(ps, _init);
+        ps->page_state->page = AutoAirOn;
+
+        // air start time
+        ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_air);
+        ps->air_circ_state->air_tms->sec = 0;
       }
       break;
 
-    case AutoAir:
+    case AutoAirOn:
+      if(sonic < (zero - (lvO2 * 10)))
+      {
+        LCD_Auto_InflowPump(ps, _reset);
+        OUT_Clr_Air();
+        ps->page_state->page = AutoSetDown;
+      }
+      break;
+
     case AutoAirOff:
       if(sonic < (zero - (lvO2 * 10)))
       {
         LCD_Auto_InflowPump(ps, _reset);
-        LCD_AirState(ps, _reset);
         ps->page_state->page = AutoSetDown;
-        LCD_AirState(ps, _init);
       }
       break;
 

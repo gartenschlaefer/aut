@@ -71,7 +71,7 @@ void Error_Read(struct PlantState *ps)
       if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))) check_up_err = 1;
       break;
 
-    case AutoZone: case AutoMud: case AutoCirc: case AutoAir:
+    case AutoZone: case AutoMud: case AutoCircOn: case AutoAirOn:
       check_up_err = 1;
       break;
 
@@ -82,7 +82,7 @@ void Error_Read(struct PlantState *ps)
   if(check_up_err && (MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck) << 8) | (MEM_EEPROM_ReadVar(MIN_L_druck))))) ps->error_state->pending_err_code |= E_UP;
 
   // max in tank
-  //if(MPX_ReadTank(AutoAir, _error) == ErrorMPX) ps->error_state->pending_err_code |= E_IT;
+  //if(MPX_ReadTank(AutoAirOn, _error) == ErrorMPX) ps->error_state->pending_err_code |= E_IT;
   //return err;
 }
 
@@ -183,7 +183,7 @@ void Error_Treatment(struct PlantState *ps)
     Error_Action_IT_SetError(ps);
 
     // go to set down -> pump off
-    if((ps->error_state->page == AutoAir) || (ps->error_state->page == AutoAirOff) || (ps->error_state->page == AutoCirc) || (ps->error_state->page == AutoCircOff)) ps->error_state->page = AutoSetDown;
+    if((ps->error_state->page == AutoAirOn) || (ps->error_state->page == AutoAirOff) || (ps->error_state->page == AutoCircOn) || (ps->error_state->page == AutoCircOff)) ps->error_state->page = AutoSetDown;
     ps->error_state->err_code &= ~E_IT;
   }
 
@@ -231,8 +231,8 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
         break;
 
       // air on
-      case AutoCirc:
-      case AutoAir:
+      case AutoCircOn:
+      case AutoAirOn:
       case AutoZone: P_VALVE.OUTSET = C_AIR; PORT_Valve(SET_STATE_CLOSE, V_AIR); break;
       default: break;
     }
@@ -264,8 +264,8 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
           break;
 
         // air on
-        case AutoCirc:
-        case AutoAir:
+        case AutoCircOn:
+        case AutoAirOn:
         case AutoZone: P_VALVE.OUTCLR = C_AIR; P_VALVE.OUTSET = O_AIR; PORT_Valve(SET_STATE_OPEN, V_AIR); break;
         default: break;
       }
@@ -297,8 +297,8 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
           break;
 
         // air
-        case AutoCirc:
-        case AutoAir:
+        case AutoCircOn:
+        case AutoAirOn:
         case AutoZone: P_VALVE.OUTCLR = O_AIR; OUT_Set_Compressor(); break;
         default: break;
       }
@@ -332,8 +332,8 @@ unsigned char Error_Action_UP_Air(struct PlantState *ps)
 
     case AutoZone:
     case AutoPumpOff:
-    case AutoCirc:
-    case AutoAir:
+    case AutoCircOn:
+    case AutoAirOn:
     case AutoMud: Error_Action_UP_SetError(ps); OUT_Set_Compressor(); return 1;
     default: return 1;
   }
