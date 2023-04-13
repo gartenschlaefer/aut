@@ -142,7 +142,7 @@ void Sonic_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
       if(rec[0] >= _usErrTimeout1)
       {
         CAN_SonicQuery(_init, _5Shots);
-        LCD_Sym_NoUS(ps->page_state->page, _write);
+        LCD_Sym_Sonic_NoUS(ps->page_state->page, _write);
       }
 
       // distance
@@ -151,7 +151,7 @@ void Sonic_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
         sonic = (rec[1] << 8) | rec[2];
         LCD_Sym_Auto_SonicVal(ps->page_state->page, sonic);
         Sonic_ChangePage(ps, sonic);
-        LCD_Sym_NoUS(ps->page_state->page, _clear);
+        LCD_Sym_Sonic_NoUS(ps->page_state->page, _clear);
         state = 1;
       }
 
@@ -172,7 +172,7 @@ void Sonic_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
     // next shot
     else if(state >= 2)
     {
-      if(TCF0_Wait_Query()) state++;    //2s
+      if(TCF0_Wait_Query()){ state++; TCF0_Stop(); }
       if(state > Sonic_getRepeatTime(ps->page_state->page))
       {
         CAN_SonicQuery(_init, _5Shots);
@@ -184,7 +184,7 @@ void Sonic_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
   // write
   else if(cmd == _write)
   {
-    if(!LCD_Sym_NoUS(ps->page_state->page, _check)) LCD_Sym_Auto_SonicVal(ps->page_state->page, sonic);
+    if(!LCD_Sym_Sonic_NoUS(ps->page_state->page, _check)) LCD_Sym_Auto_SonicVal(ps->page_state->page, sonic);
   }
 }
 
@@ -234,15 +234,8 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
   if(!oldSonic) oldSonic = sonic;
 
   // limits
-  if((sonic > (oldSonic + D_LIM)) || (sonic < (oldSonic - D_LIM)))
-  {
-    error++;
-  }
-  else
-  {
-    error = 0;
-    oldSonic = sonic;
-  }
+  if((sonic > (oldSonic + D_LIM)) || (sonic < (oldSonic - D_LIM))){ error++; }
+  else{ error = 0; oldSonic = sonic; }
 
   // tries to accept the new distance
   if(error > 4)
@@ -264,7 +257,8 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
       if(sonic < (zero - (lvO2 * 10))){ ps->page_state->page = AutoSetDown; }
       else
       {
-        LCD_Auto_InflowPump(ps, _reset);
+        // reset inflow pump
+        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
         OUT_Clr_Air();
         ps->page_state->page = AutoCircOn;
 
@@ -277,7 +271,8 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
     case AutoCircOn:
       if(sonic < (zero - (lvCi * 10)))
       {
-        LCD_Auto_InflowPump(ps, _reset);
+        // reset inflow pump
+        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
         OUT_Clr_Air();
         ps->page_state->page = AutoAirOn;
 
@@ -290,7 +285,8 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
     case AutoCircOff:
       if(sonic < (zero - (lvCi * 10)))
       {
-        LCD_Auto_InflowPump(ps, _reset);
+        // reset inflow pump
+        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
         ps->page_state->page = AutoAirOn;
 
         // air start time
@@ -302,7 +298,8 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
     case AutoAirOn:
       if(sonic < (zero - (lvO2 * 10)))
       {
-        LCD_Auto_InflowPump(ps, _reset);
+        // reset inflow pump
+        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
         OUT_Clr_Air();
         ps->page_state->page = AutoSetDown;
       }
@@ -311,7 +308,8 @@ void Sonic_ChangePage(struct PlantState *ps, int sonic)
     case AutoAirOff:
       if(sonic < (zero - (lvO2 * 10)))
       {
-        LCD_Auto_InflowPump(ps, _reset);
+        // reset inflow pump
+        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
         ps->page_state->page = AutoSetDown;
       }
       break;
@@ -356,7 +354,7 @@ int Sonic_LevelCal(t_FuncCmd cmd)
         // error
         if(rec[0] >= _usErrTimeout1)
         {
-          LCD_Sym_NoUS(SetupCal, _write);
+          LCD_Sym_Sonic_NoUS(SetupCal, _write);
           level = 0;
           run = 0;
         }
@@ -365,7 +363,7 @@ int Sonic_LevelCal(t_FuncCmd cmd)
         else if(rec[0] == _usDistSuccess)
         {
           level = (rec[1] << 8) | rec[2];
-          LCD_Sym_NoUS(SetupCal, _clear);
+          LCD_Sym_Sonic_NoUS(SetupCal, _clear);
           run = 0;
         }
 
@@ -439,10 +437,10 @@ void Sonic_Data_Boot(t_FuncCmd cmd)
     if(Sonic_sVersion() != 2)
     {
       CAN_TxCmd(_boot);
-      while(CAN_RxACK() != _boot){
-        if(TCE1_Wait_Query()){
-          LCD_Data_SonicWrite(_noUS, 0);
-          return;}}
+      while(CAN_RxACK() != _boot)
+      {
+        if(TCE1_Wait_Query()){ LCD_Data_SonicWrite(_noUS, 0); return; }
+      }
     }
   }
   else if(cmd == _off)
@@ -450,10 +448,10 @@ void Sonic_Data_Boot(t_FuncCmd cmd)
     if(Sonic_sVersion() == 2)
     {
       CAN_TxCmd(_app);
-      while(CAN_RxACK() != _ack){
-        if(TCE1_Wait_Query()){
-          LCD_Data_SonicWrite(_noUS, 0);
-          return;}}
+      while(CAN_RxACK() != _ack)
+      {
+        if(TCE1_Wait_Query()){ LCD_Data_SonicWrite(_noUS, 0); return;}
+      }
     }
   }
   Sonic_sVersion();

@@ -9,6 +9,7 @@
 #include "modem_driver.h"
 #include "port_func.h"
 #include "basic_func.h"
+#include "tc_func.h"
 
 
 /* ------------------------------------------------------------------*
@@ -26,13 +27,13 @@ int main(void)
 
   // datatypes and states
   struct LcdBacklight lcd_backlight = { .state = _off, .count = 0 };
-  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0 };
+  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
   struct PageState auto_save_page_state = { .page = NoPage, .page_time = &auto_save_page_time };
   struct ErrorState error_state = { .page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00 };
   struct MPXState mpx_state = { .mpx_count = 0, .mpx_values = { 0x00 }, .error_counter = 0, .level_cal = 0 };
   struct PhosphorState phosphor_state = { .ph_count = 0, .ph_tms = &phosphor_time, .ph_state = ph_off };
-  struct InflowPumpState inflow_pump_state = { .ip_count = 0, .ip_thms = &ip_thms, .ip_state = ip_off };
+  struct InflowPumpState inflow_pump_state = { .ip_count = 0, .ip_thms = &ip_thms, .ip_state = ip_off, .ip_active_pump_id = 0 };
   struct AirCircState air_circ_state = { .old_sec = 0, .air_tms = &air_tms };
 
   // plant state
@@ -52,6 +53,9 @@ int main(void)
   InputHandler_init(&input_handler);
   Modem_init(&modem);
 
+  // frame timer
+  TCF1_FrameTimer_Init();
+
   while(1)
   {
     BASIC_WDT_RESET;
@@ -63,11 +67,15 @@ int main(void)
     {
       if (DEB_PORT) PORT_Debug();
       LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, ps.page_state->page);
+
+      // fps
+      LCD_WriteAnyValue(f_4x6_p, 3, 18, 0, (int)frame_counter.fps);
     }
 
     // GreatLinker
     switch(ps.page_state->page)
     {
+      // main pages
       case AutoPage: LCD_AutoPage(&ps); break;
       case ManualPage: LCD_ManualPage(&ps); break;
       case SetupPage: LCD_SetupPage(&ps); break;
@@ -92,7 +100,7 @@ int main(void)
 
       // manual pages
       case ManualMain:
-      case ManualCirc:
+      case ManualCircOn:
       case ManualCircOff:
       case ManualAir:
       case ManualSetDown:
@@ -138,5 +146,8 @@ int main(void)
 
       default: ps.page_state->page = AutoPage; break;
     }
+
+    // frame timer wait
+    TCF1_FrameTimer_WaitUntilFrameEnded(&frame_counter);
   }
 }

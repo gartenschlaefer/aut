@@ -95,7 +95,8 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps);
 void LCD_AirState_Manager(struct PlantState *ps);
 
 // inflow pump
-t_FuncCmd LCD_Auto_InflowPump(struct PlantState *ps, t_FuncCmd cmd);
+void LCD_Auto_InflowPump_Init(struct PlantState *ps);
+void LCD_Auto_InflowPump_Main(struct PlantState *ps);
 
 // phosphor
 void LCD_Auto_Phosphor_Init(struct PlantState *ps);
@@ -103,7 +104,6 @@ void LCD_Auto_Phosphor(struct PlantState *ps);
 
 void LCD_Manual_SetState(struct PlantState *ps);
 void LCD_Manual_ResetState(t_page save_page);
-void LCD_Manual_Symbols(struct PlantState *ps);
 
 void LCD_Setup_Symbols(struct PlantState *ps);
 void LCD_Data_Symbols(struct PlantState *ps);

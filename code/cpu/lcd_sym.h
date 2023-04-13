@@ -56,8 +56,11 @@ void LCD_Sym_AutoAirOn(t_page page);
  *            Manual
  * ------------------------------------------------------------------*/
 
+void LCD_Sym_Manual_Main(struct PlantState *ps);
 void LCD_Sym_Manual_Text(struct PlantState *ps);
+void LCD_Sym_Manual_CountDown(struct Tms *tms);
 void LCD_Sym_Manual_PageTime(struct Tms *tms);
+void LCD_Sym_Manual_PumpOff_PressOk(t_font_type font_type);
 
 
 /* ------------------------------------------------------------------*
@@ -155,7 +158,7 @@ void LCD_OffValueNeg(unsigned char value);
  *            Sonic
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd);
+unsigned char LCD_Sym_Sonic_NoUS(t_page page, t_FuncCmd cmd);
 
 
 /* ------------------------------------------------------------------*

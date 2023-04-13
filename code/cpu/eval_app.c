@@ -107,23 +107,19 @@ int Eval_Comp_OpHours(t_FuncCmd cmd)
 
 unsigned char Eval_CountDown(struct Tms *tms)
 {
-  unsigned char count = 0;
   static unsigned char ctOld = 0;
-  unsigned char sTC = 0;
 
   int min = tms->min;
   int sec = tms->sec;
 
   // savety for seconds
-  if(sec < 0 || sec > 61) sec = 0;  
+  if(sec < 0 || sec > 61){ sec = 0; }  
   
-  count = MCP7941_ReadByte(TIC_SEC);
-
-  // safety timer
-  sTC = TCD1_MainAuto_SafetyTC(_exe);
+  // read seconds from timer ic
+  unsigned char count = MCP7941_ReadByte(TIC_SEC);
 
   // Countdown
-  if(count != ctOld || sTC)
+  if(count != ctOld)
   {
     ctOld = count;
 
@@ -134,7 +130,7 @@ unsigned char Eval_CountDown(struct Tms *tms)
       min--;
 
       //*** entry debug every minute
-      if (DEB_ENTRY)
+      if(DEB_ENTRY)
       {
         MEM_EEPROM_WriteAutoEntry(10, 2, Write_Error);
         MEM_EEPROM_WriteAutoEntry(10, 2, Write_o2);
@@ -143,27 +139,18 @@ unsigned char Eval_CountDown(struct Tms *tms)
         MEM_EEPROM_WriteSetupEntry();
       }
     }
-    if(sec) sec--;
-    TCD1_MainAuto_SafetyTC(_reset);
+    if(sec){ sec--; }
   }
 
   // End of Timer
   if(!sec && !min)
   {
-    TCD1_MainAuto_SafetyTC(_reset);
     min = 0;
     sec = 5;
-
     tms->min = min;
     tms->sec = sec;
-
-    // *cMin = min;
-    // *cSec = sec;
     return 1;
   }
-
-  // *cMin = min;
-  // *cSec = sec;
 
   tms->min = min;
   tms->sec = sec;
@@ -178,14 +165,14 @@ unsigned char Eval_CountDown(struct Tms *tms)
 
 int Eval_SetupPlus(int value, int max)
 {
-  if(value < max) value++;
+  if(value < max){ value++; }
   else value = value;
   return value;
 }
 
 int Eval_SetupMinus(int value, int min)
 {
-  if(value > min) value--;
+  if(value > min){ value--; }
   else value = value;
   return value;
 }
@@ -197,7 +184,7 @@ int Eval_SetupMinus(int value, int min)
 
 void Eval_SetupCircSensorMark(unsigned char sensor)
 {
-  switch (sensor)
+  switch(sensor)
   {
     case 0:   
       LCD_WriteAnySymbol(s_29x17, 15, 0, p_sensor);

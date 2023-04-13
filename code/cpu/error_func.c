@@ -58,7 +58,7 @@ void Error_Read(struct PlantState *ps)
     case AutoCircOff: case AutoAirOff:
 
       // inflow pump
-      if(LCD_Auto_InflowPump(ps, _state) == _on)
+      if(ps->inflow_pump_state->ip_state == ip_on)
       {
         // mammoth pump
         if(!(MEM_EEPROM_ReadVar(PUMP_inflowPump))) check_up_err = 1;
@@ -223,7 +223,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
       // air off
       case AutoAirOff:
       case AutoCircOff:
-        if((LCD_Auto_InflowPump(ps, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
+        if((ps->inflow_pump_state->ip_state == ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
         {
           P_VALVE.OUTSET = C_RES;
           PORT_Valve(SET_STATE_CLOSE, V_RES);
@@ -255,7 +255,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
         // air off
         case AutoAirOff:
         case AutoCircOff:
-          if((LCD_Auto_InflowPump(ps, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
+          if((ps->inflow_pump_state->ip_state == ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
           {
             P_VALVE.OUTCLR = C_RES;
             P_VALVE.OUTSET = O_RES;
@@ -289,7 +289,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
         // no air
         case AutoAirOff:
         case AutoCircOff:
-          if((LCD_Auto_InflowPump(ps, _state) == _on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)) 
+          if((ps->inflow_pump_state->ip_state == ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)) 
           {
             P_VALVE.OUTCLR = O_RES;
             OUT_Set_Compressor();
@@ -322,7 +322,7 @@ unsigned char Error_Action_UP_Air(struct PlantState *ps)
   {
     case AutoAirOff:
     case AutoCircOff:
-      if((LCD_Auto_InflowPump(ps, _state) ==_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
+      if((ps->inflow_pump_state->ip_state == ip_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
       {
         Error_Action_UP_SetError(ps);
         OUT_Set_Compressor();

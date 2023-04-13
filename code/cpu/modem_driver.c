@@ -98,26 +98,26 @@ unsigned char Modem_TurnOn(struct Modem *mo)
   if(mo->turn_on_state == 0)
   {
     MO_PORT_ON;
-    TCF1_WaitSec_Init(1);
+    TCC0_WaitSec_Init(1);
     mo->turn_on_state = 1;
   }
 
-  else if(mo->turn_on_state == 1 && TCF1_Wait_Query())
+  else if(mo->turn_on_state == 1 && TCC0_Wait_Query())
   {
     MO_PORT_OFF;
     if(MO_PW_OFF)
     {
-      TCF1_WaitSec_Init(2);
+      TCC0_WaitSec_Init(2);
       mo->turn_on_state = 2;
     }
     else
     {
-      TCF1_Stop();
+      TCC0_Stop();
       mo->turn_on_state = 0;
     }
   }
 
-  else if(mo->turn_on_state == 2 && TCF1_Wait_Query())
+  else if(mo->turn_on_state == 2 && TCC0_Wait_Query())
   {
     // timeout
     if(MO_PW_OFF)
@@ -126,9 +126,9 @@ unsigned char Modem_TurnOn(struct Modem *mo)
     }
     else
     {
-      TCF1_Stop();
+      TCC0_Stop();
     }
-    TCF1_Stop();
+    TCC0_Stop();
     mo->turn_on_state = 0;
   }
 
@@ -492,7 +492,7 @@ void Modem_Test(void)
 
   // timers
   TCC0_wait_sec(1);
-  TCF1_WaitSec_Init(3);
+  TCC0_WaitSec_Init(3);
 
   // test page
   t_page page = PinModem;
@@ -517,7 +517,7 @@ void Modem_Test(void)
     Modem_ReadCTS();
 
     // time instance
-    if(TCF1_Wait_Query())
+    if(TCC0_Wait_Query())
     {
       // add counter
       wait_var++;

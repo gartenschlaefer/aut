@@ -55,6 +55,9 @@ struct FrameCounter
 {
   unsigned int usv;
   unsigned int lcd_reset;
+  unsigned int frame;
+  float fps;
+  int delta_t;
 };
 
 
@@ -102,6 +105,7 @@ struct InflowPumpState
   int ip_count;
   struct Thms *ip_thms;
   t_inflow_pump_states ip_state;
+  unsigned char ip_active_pump_id;
 };
 
 

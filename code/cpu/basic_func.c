@@ -62,11 +62,10 @@ void Basic_Init(void)
   TCE1_WaitMilliSec_Init(25);
   CAN_TxCmd(_app);
   while(CAN_RxACK() != _ack)
-    if(TCE1_Wait_Query()) break;
-  TCE0_Stop();
-
-  // Safety Timer
-  TCD1_MainAuto_SafetyTC(_init);
+  {
+    if(TCE1_Wait_Query()){ break; }
+  }
+  TCE1_Stop();
 }
 
 

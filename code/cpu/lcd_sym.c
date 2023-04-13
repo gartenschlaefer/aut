@@ -431,6 +431,27 @@ void LCD_Sym_AutoAirOn(t_page page)
 }
 
 
+/* ------------------------------------------------------------------*
+ *            manual symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Manual_Main(struct PlantState *ps)
+{
+  unsigned char i = 0;
+
+  LCD_Sym_MarkTextButton(Manual);
+  LCD_Clean();
+
+  // positive setup symbols
+  for(i = 12; i < 20; i++){ LCD_Sym_SetupSymbols(i); }
+  LCD_Sym_MarkTextButton(Manual);
+  LCD_Sym_Manual_Text(ps);
+
+  // save manual entry
+  MEM_EEPROM_WriteManualEntry(MCP7941_ReadByte(TIC_HOUR), MCP7941_ReadByte(TIC_MIN), _saveValue);
+}
+
+
 
 /* ------------------------------------------------------------------*
  *            manual text
@@ -438,11 +459,21 @@ void LCD_Sym_AutoAirOn(t_page page)
 
 void LCD_Sym_Manual_Text(struct PlantState *ps)
 {
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, ps->page_state->page_time->min);
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, ps->page_state->page_time->sec);
+  LCD_Sym_Manual_CountDown(ps->page_state->page_time);
   LCD_WriteAnyStringFont(f_6x8_p, 17, 136, ":");
   LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
   MPX_ReadTank(ps, _write);
+}
+
+
+/* ------------------------------------------------------------------*
+ *            countdown
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Manual_CountDown(struct Tms *tms)
+{
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, tms->min);
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, tms->sec);
 }
 
 
@@ -467,6 +498,17 @@ void LCD_Sym_Manual_PageTime(struct Tms *tms)
     else LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, tms->min);
   }
 }
+
+
+/* ------------------------------------------------------------------*
+ *            manual variables
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Manual_PumpOff_PressOk(t_font_type font_type)
+{
+  LCD_WriteAnyStringFont(font_type, 17, 15, "PRESS OK!:");
+}
+
 
 
 /* ------------------------------------------------------------------*
@@ -1663,7 +1705,7 @@ void LCD_Sym_Mark_ManualSymbol(t_SetupSym sym)
  *            Sonic - General
  * ==================================================================*/
 
-unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd)
+unsigned char LCD_Sym_Sonic_NoUS(t_page page, t_FuncCmd cmd)
 {
   static unsigned char errC = 0;
   unsigned char row = 0;
@@ -1675,7 +1717,7 @@ unsigned char LCD_Sym_NoUS(t_page page, t_FuncCmd cmd)
     case AutoCircOn: case AutoCircOff: case AutoPage:
     case AutoAirOn: case AutoAirOff: row = 17; col = 5; break;
 
-    case ManualMain: case ManualCirc: case ManualCircOff:
+    case ManualMain: case ManualCircOn: case ManualCircOff:
     case ManualAir: case ManualSetDown: case ManualPumpOff:
     case ManualPumpOff_On: case ManualMud: case ManualCompressor:
     case ManualPhosphor: case ManualInflowPump: row = 17; col = 2; break;
@@ -1754,7 +1796,7 @@ void LCD_Sym_Auto_SonicVal(t_page page, int sonic)
       LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
       break;
 
-    case ManualMain:  case ManualCirc:  case ManualCircOff:
+    case ManualMain:  case ManualCircOn:  case ManualCircOff:
     case ManualAir:   case ManualSetDown: case ManualPumpOff:
     case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
     case ManualPhosphor:  case ManualInflowPump:

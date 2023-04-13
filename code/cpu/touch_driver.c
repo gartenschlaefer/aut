@@ -11,22 +11,22 @@
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Cal: safes calibration data in EEPROM
+ *  safes calibration data in EEPROM
  * ------------------------------------------------------------------*/
 
-void Touch_Cal(void)
+void Touch_Cal_Main(void)
 {
   int calX = 0;
   int calY = 0;
 
   //-----------------------------------------------NoTouchValue-----
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Do not Touch!");
-  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "If you Touched, restart!");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Do not touch!");
+  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "If touched, restart!");
 
   // save no touch value to EEPROM
-  MEM_EEPROM_WriteVar(TOUCH_X_min, (Touch_X_ReadData() >> 4));
-  MEM_EEPROM_WriteVar(TOUCH_Y_min, (Touch_Y_ReadData() >> 4));
+  MEM_EEPROM_WriteVar(TOUCH_X_min, (Touch_Cal_X_ReadData() >> 4));
+  MEM_EEPROM_WriteVar(TOUCH_Y_min, (Touch_Cal_Y_ReadData() >> 4));
 
   TCD0_WaitSec_Init(2);
   while(!(TCD0_Wait_Query()));
@@ -41,9 +41,9 @@ void Touch_Cal(void)
 
   // x, y calibration
   BASIC_WDT_RESET;
-  calX = Touch_X_Cal_Init();
+  calX = Touch_Cal_X_Init();
   BASIC_WDT_RESET;
-  calY = Touch_Y_Cal_Init();
+  calY = Touch_Cal_Y_Init();
   BASIC_WDT_RESET;
 
   MEM_EEPROM_WriteVar(TOUCH_X_max, (calX >> 4));
@@ -57,10 +57,10 @@ void Touch_Cal(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_X_Cal_Init
+ *  calibrate x-axis
  * ------------------------------------------------------------------*/
 
-int Touch_X_Cal_Init(void)
+int Touch_Cal_X_Init(void)
 {
   int calData = 0;
   int xCal = 0;
@@ -72,7 +72,7 @@ int Touch_X_Cal_Init(void)
 
   for(int i = 0; i < CAL_READS; i++)
   {
-    calData = Touch_X_ReadData();
+    calData = Touch_Cal_X_ReadData();
     if(calData > xCal) xCal = calData;
   }
 
@@ -82,10 +82,10 @@ int Touch_X_Cal_Init(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Y_Cal_Init
+ *  calibrate y-axis
  * ------------------------------------------------------------------*/
 
-int Touch_Y_Cal_Init(void)
+int Touch_Cal_Y_Init(void)
 {
   int calData = 0;
   int yCal = 0;
@@ -97,7 +97,7 @@ int Touch_Y_Cal_Init(void)
 
   for(int i = 0; i < CAL_READS; i++)
   {
-    calData = Touch_Y_ReadData();
+    calData = Touch_Cal_Y_ReadData();
     if(calData > yCal) yCal = calData;
   }
 
@@ -107,10 +107,10 @@ int Touch_Y_Cal_Init(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_X_Cal: x-space will be calibrated
+ *  x-space will be calibrated
  * ------------------------------------------------------------------*/
 
-int Touch_X_Cal(int x_space)
+int Touch_Cal_X_Value(int x_space)
 {
   int xCal = 0;
   int maxCal = 0;
@@ -128,19 +128,19 @@ int Touch_X_Cal(int x_space)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Y_Cal: y-space will be calibrated
+ *  y-space will be calibrated
  * ------------------------------------------------------------------*/
 
-int Touch_Y_Cal(int y_space)
+int Touch_Cal_Y_Value(int y_space)
 {
   int yCal = 0;
   int maxCal = 0;
   int minCal = 0;
 
-  maxCal= MEM_EEPROM_ReadVar(TOUCH_Y_max);
-  minCal= MEM_EEPROM_ReadVar(TOUCH_Y_min);
+  maxCal = MEM_EEPROM_ReadVar(TOUCH_Y_max);
+  minCal = MEM_EEPROM_ReadVar(TOUCH_Y_min);
 
-  yCal= y_space - minCal;
+  yCal = y_space - minCal;
   if(yCal < 0)  yCal = 0;
   yCal = (((yCal) * 105) / maxCal);
 
@@ -213,16 +213,16 @@ void Touch_Y_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Y_ReadData
+ *  Touch_Cal_Y_ReadData
  * --------------------------------------------------------------
  *  Set UP Measure through Touch_Y_Measure
  *  Read Data on LEFT ADC0 through  Touch_Y_Read
  *  Clean Up Measure through Touch_Clean
  * ------------------------------------------------------------------*/
 
-int Touch_Y_ReadData(void)
+int Touch_Cal_Y_ReadData(void)
 {
-  int yData= 0;
+  int yData = 0;
 
   // Setup Pins
   Touch_Clean();
@@ -282,16 +282,16 @@ void Touch_X_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_X_ReadData
+ *  Touch_Cal_X_ReadData
  * --------------------------------------------------------------
  *  Set UP Measure through      Touch_X_Measure
  *  Read Data at TOP ADC1 throuch   Touch_X_Read
  *  Clean Up Measure through    Touch_Clean
  * ------------------------------------------------------------------*/
 
- int Touch_X_ReadData(void)
+ int Touch_Cal_X_ReadData(void)
  {
-  int xData= 0;
+  int xData = 0;
 
   // Setup Port
   Touch_Clean();

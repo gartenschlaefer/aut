@@ -117,13 +117,9 @@ void OUT_Clr_Phosphor(void)
  *            InflowPump
  * ------------------------------------------------------------------*/
 
-void OUT_Set_InflowPump(void)
+void OUT_Set_InflowPump(struct PlantState *ps)
 {
-  static unsigned char pumpChange = 0;
-  unsigned char pump = 0;
-
-  pump = MEM_EEPROM_ReadVar(PUMP_inflowPump);
-  switch(pump)
+  switch(MEM_EEPROM_ReadVar(PUMP_inflowPump))
   {
     // mammoth pump
     case 0: PORT_Valve(OPEN_Reserve, 0); OUT_Set_Compressor(); break;
@@ -133,8 +129,8 @@ void OUT_Set_InflowPump(void)
 
     // ext. pump 2
     case 2:
-      if(!pumpChange){ pumpChange = 1; PORT_RelaisSet(R_INFLOW1); }
-      else{ pumpChange = 0; PORT_RelaisSet(R_INFLOW2); }   
+      if(ps->inflow_pump_state->ip_active_pump_id == 0){ ps->inflow_pump_state->ip_active_pump_id = 1; PORT_RelaisSet(R_INFLOW1); }
+      else{ ps->inflow_pump_state->ip_active_pump_id = 0; PORT_RelaisSet(R_INFLOW2); }   
       break;
 
     default: break;
@@ -168,7 +164,7 @@ void OUT_Clr_IPAir(void)
  *            All Off
  * ------------------------------------------------------------------*/
 
-void OUT_CloseAllValves(void)
+void OUT_Valve_CloseAll(void)
 {
   OUT_Clr_Compressor();
   PORT_Valve_CloseAll();
@@ -179,24 +175,20 @@ void OUT_CloseAllValves(void)
  *            initialize valves to all closed
  * ------------------------------------------------------------------*/
 
-void OUT_Init_Valves(void)
+void OUT_Valve_Init(void)
 {
-  static unsigned char init_valves = 0;
-
-  // init valves not done yet
-  if(!init_valves)
+  // valves with springs
+  if(SPRING_VALVE_ON)
   {
-    init_valves = 1;
-    if(SPRING_VALVE_ON)
-    {
-      // open all valves
-      PORT_Valve_OpenAll();
+    // open all valves
+    PORT_Valve_OpenAll();
 
-      // close all valves
-      OUT_CloseAllValves();
-    }
-    else OUT_CloseAllValves();   
+    // close all valves
+    OUT_Valve_CloseAll();
   }
+
+  // valves without springs
+  else{ OUT_Valve_CloseAll(); }
 }
 
 
@@ -208,21 +200,12 @@ void OUT_Valve_AutoClose(t_page page)
 {
   switch(page)
   {
-    case AutoZone: OUT_Clr_Air(); break;
     case AutoSetDown: break;
+    case AutoZone: OUT_Clr_Air(); break;
     case AutoPumpOff: OUT_Clr_PumpOff(); break;
     case AutoMud: OUT_Clr_Mud(); break;
     case AutoCircOn: OUT_Clr_IPAir(); break;
     case AutoAirOn: OUT_Clr_IPAir(); break;
-
-    case ManualCirc: OUT_Clr_Air(); break;
-    case ManualAir: OUT_Clr_Air(); break;
-    case ManualSetDown: break;
-    case ManualPumpOff: OUT_Clr_PumpOff(); break;
-    case ManualMud: OUT_Clr_Mud(); break;
-    case ManualCompressor: OUT_Clr_Compressor(); break;
-    case ManualPhosphor: OUT_Clr_Phosphor(); break;
-    case ManualInflowPump: OUT_Clr_InflowPump(); break;
     default: break;
   }
 }

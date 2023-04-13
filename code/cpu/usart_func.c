@@ -118,7 +118,7 @@ unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
   // add byte to buffer
   if(cmd == _add)
   {
-    if(pos >= 49) return &rx_buffer[0];
+    if(pos >= 49){ return &rx_buffer[0]; }
     rx_buffer[pos+1] = c;
     pos++;
   }
@@ -134,7 +134,7 @@ unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
   // clear buffer
   else if(cmd == _clear)
   {
-    for(pos = 0; pos < 50; pos++) rx_buffer[pos] = 0x00;
+    for(pos = 0; pos < 50; pos++){ rx_buffer[pos] = 0x00; }
     pos = 0;
   }
 

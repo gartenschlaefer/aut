@@ -191,7 +191,7 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
   if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) || p == AutoPumpOff || p == AutoMud)
   {
     // manual
-    if(p == ManualCirc || p == ManualCircOff || p == ManualAir){ LCD_Sym_MPX(_mmbar, perP); }
+    if(p == ManualCircOn || p == ManualCircOff || p == ManualAir){ LCD_Sym_MPX(_mmbar, perP); }
 
     // auto zone
     else if(p == AutoZone){ LCD_Sym_MPX(_notav, 0); ps->page_state->page = AutoCircOn; }
@@ -209,7 +209,7 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
   {
     // read pressure
     MPX_LevelCal(ps, _new);
-    if(p == ManualCirc) return;
+    if(p == ManualCircOn) return;
     LCD_Sym_MPX(_mbar, ps->mpx_state->level_cal);
 
     // error
@@ -253,7 +253,7 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
     perP = ((perP * 100) / hO2);
 
     //ManualWrite
-    if(p == ManualCirc){ LCD_Sym_MPX(_mmbar, perP); return; }
+    if(p == ManualCircOn){ LCD_Sym_MPX(_mmbar, perP); return; }
     LCD_Sym_MPX(_debug, perP);
   }
 }

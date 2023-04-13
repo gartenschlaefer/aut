@@ -59,8 +59,8 @@ unsigned char Touch_Matrix(void)
     if(y[0] < y[1] - 10 || y[0] > y[1] + 10) return 0;
 
     // calibrate
-    yAv = Touch_Y_Cal(((y[0] + y[1]) / 2));
-    xAv = Touch_X_Cal(((x[0] + x[1]) / 2));
+    yAv = Touch_Cal_Y_Value(((y[0] + y[1]) / 2));
+    xAv = Touch_Cal_X_Value(((x[0] + x[1]) / 2));
 
     // x-matrix
     if (xAv < 16) lx = 0;
@@ -110,7 +110,7 @@ void Touch_SelectLinker(struct PlantState *ps)
   {
     // manual pages
     case ManualMain: case ManualPumpOff_On:
-    case ManualCirc: case ManualCircOff:
+    case ManualCircOn: case ManualCircOff:
     case ManualAir: case ManualSetDown:
     case ManualPumpOff: case ManualMud:
     case ManualCompressor: case ManualPhosphor:
@@ -237,18 +237,15 @@ void Touch_AutoLinker(struct PlantState *ps)
 }
 
 
-
 /* ------------------------------------------------------------------*
  *            Manual Linker
  * ------------------------------------------------------------------*/
 
 void Touch_ManualLinker(struct PlantState *ps)
 {
-  //t_page sel_page = NoPage;
-
   switch(Touch_Matrix())
   {
-    case 0x11: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_circulate); ps->page_state->page = ManualCirc; break;
+    case 0x11: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_circulate); ps->page_state->page = ManualCircOn; break;
     case 0x12: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_air); ps->page_state->page = ManualAir; break;
     case 0x13: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_setDown); ps->page_state->page = ManualSetDown; break;
     case 0x14: LCD_Backlight(_on, ps->lcd_backlight); LCD_Sym_Mark_ManualSymbol(sn_pumpOff); ps->page_state->page = ManualPumpOff; break;
@@ -268,35 +265,6 @@ void Touch_ManualLinker(struct PlantState *ps)
 
     default: break;
   }
-
-  // switch(Touch_Matrix())
-  // {
-  //   case 0x11: sel_page = ManualCirc; break;
-  //   case 0x12: sel_page = ManualAir; break;
-  //   case 0x13: sel_page = ManualSetDown; break;
-  //   case 0x14: sel_page = ManualPumpOff; break;
-
-  //   case 0x21: sel_page = ManualMud; break;
-  //   case 0x22: sel_page = ManualCompressor; break;
-  //   case 0x23: sel_page = ManualPhosphor; break;
-  //   case 0x24: sel_page = ManualInflowPump; break;
-
-  //   case 0x33: if(page == ManualPumpOff){ sel_page = ManualPumpOff_On} break;
-
-  //   // main linker
-  //   case 0x41: sel_page = AutoPage
-  //   case 0x42: sel_page = ManualPage
-  //   case 0x43: sel_page = SetupPage
-  //   case 0x44: sel_page = DataPage
-
-  //   default: break;
-  // }
-
-  // if(sel_page != NoPage)
-  // {
-  //   LCD_Backlight(_on, ps->lcd_backlight);
-  //   LCD_Sym_Mark_ManualSymbol(sn_circulate);
-  // }
 }
 
 
@@ -999,7 +967,7 @@ void Touch_SetupInflowPumpLinker(struct PlantState *ps)
       MEM_EEPROM_WriteVar(PUMP_inflowPump, iPump);
       MEM_EEPROM_WriteVar(SENSOR_outTank, sensor);
       MEM_EEPROM_WriteSetupEntry();
-      LCD_Auto_InflowPump(ps, _init);
+      LCD_Auto_InflowPump_Init(ps);
       ps->page_state->page = SetupPage;
       break;
 
@@ -1185,7 +1153,7 @@ void Touch_SetupCalLinker(struct PlantState *ps)
       { 
         touch = 5;
         LCD_WriteAnySymbol(s_29x17, 15,1, n_level);
-        if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); OUT_CloseAllValves(); } 
+        if(openV){ openV = 0; LCD_Write_TextButton(9, 80, OpenV, 1); OUT_Valve_CloseAll(); } 
         ps->page_state->page = SetupCalPressure; 
       } break;
 
@@ -1220,7 +1188,7 @@ void Touch_SetupCalLinker(struct PlantState *ps)
   if(ps->page_state->page != SetupCal && ps->page_state->page != SetupCalPressure)
   {
     iniCal = 0;
-    if(openV){ openV = 0; OUT_CloseAllValves(); }
+    if(openV){ openV = 0; OUT_Valve_CloseAll(); }
   }
 }
 

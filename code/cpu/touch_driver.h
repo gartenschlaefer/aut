@@ -24,22 +24,20 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void Touch_Cal(void);
-int Touch_X_Cal_Init(void);
-int Touch_Y_Cal_Init(void);
+void Touch_Cal_Main(void);
+int Touch_Cal_X_Init(void);
+int Touch_Cal_Y_Init(void);
+int Touch_Cal_X_ReadData(void);
+int Touch_Cal_Y_ReadData(void);
 
-int Touch_X_Cal(int xBereich);
-int Touch_Y_Cal(int yBereich);
+int Touch_Cal_X_Value(int xBereich);
+int Touch_Cal_Y_Value(int yBereich);
 
 void Touch_Clean(void);
-
 void Touch_Y_Measure(void);
 int Touch_Y_Read(void);
-int Touch_Y_ReadData(void);
-
 void Touch_X_Measure(void);
 int Touch_X_Read(void);
-int Touch_X_ReadData(void);
 
 unsigned char *Touch_Read(void);
 

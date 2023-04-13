@@ -10,20 +10,17 @@
 
 
 /* ==================================================================*
- *            Main Timer TCC0
- * --------------------------------------------------------------
- *  TCC0 Allround while WaitingTimer
- * --------------------------------------------------------------
+ *            TCC0 - Main Timer
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            TCC0 - MicroSec
  * ------------------------------------------------------------------*/
 
-void TCC0_WaitMicroSec_Init(int microSec)
+void TCC0_WaitMicroSec_Init(int micro_sec)
 {
   int microHerz = 16;
-  int time = microSec * microHerz;
+  int time = micro_sec * microHerz;
 
   TCC0_CTRLA = TC_CLKSEL_OFF_gc;
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -41,10 +38,10 @@ void TCC0_WaitMicroSec_Init(int microSec)
  *            TCC0 - MilliSec
  * ------------------------------------------------------------------*/
 
-void TCC0_WaitMilliSec_Init(int milliSec)
+void TCC0_WaitMilliSec_Init(int milli_sec)
 {
   int milliHerz = 63;
-  int time = milliSec * milliHerz;
+  int time = milli_sec * milliHerz;
 
   TCC0_CTRLA = TC_CLKSEL_OFF_gc;
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -59,13 +56,12 @@ void TCC0_WaitMilliSec_Init(int milliSec)
 
 
 /* ------------------------------------------------------------------*
- *            TCC0 - Sec
+ *            TCC0 - sec
  * ------------------------------------------------------------------*/
 
-void TCC0_WaitSec_Init(int Sec)
+void TCC0_WaitSec_Init(int sec)
 {
-  int Herz = 15625;
-  int time = Sec * Herz;
+  int time = sec * TC_OSC_DIV1024;
 
   TCC0_CTRLA = TC_CLKSEL_OFF_gc;
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -139,21 +135,6 @@ void TCC0_Main_Wait(void)
   TCC0_wait_ms(200);
 }
 
-void TCC0_DisplayManual_Wait(void)
-{
-  TCC0_wait_ms(5);
-}
-
-void TCC0_DisplaySetup_Wait(void)
-{
-  TCC0_wait_ms(10);
-}
-
-void TCC0_DisplayData_Wait(void)
-{
-  TCC0_wait_ms(10);
-}
-
 void TCC0_Touch_Wait(void)
 {
   TCC0_wait_ms(15);
@@ -193,10 +174,10 @@ void TCC0_wait_closeValve(void)
  *            TCC1 - MilliSec
  * ------------------------------------------------------------------*/
 
-void TCC1_WaitMilliSec_Init(int milliSec)
+void TCC1_WaitMilliSec_Init(int milli_sec)
 {
   int milliHerz = 63;
-  int time = milliSec * milliHerz;
+  int time = milli_sec * milliHerz;
 
   TCC1_CTRLA = TC_CLKSEL_OFF_gc;
   TCC1.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -244,10 +225,10 @@ void TCC1_Stop(void)
  *            TCD0 - MilliSec
  * ------------------------------------------------------------------*/
 
-void TCD0_WaitMilliSec_Init(int milliSec)
+void TCD0_WaitMilliSec_Init(int milli_sec)
 {
   int milliHerz = 63;
-  int time = milliSec * milliHerz;
+  int time = milli_sec * milliHerz;
 
   TCD0_CTRLA = TC_CLKSEL_OFF_gc;
   TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -262,13 +243,12 @@ void TCD0_WaitMilliSec_Init(int milliSec)
 
 
 /* ------------------------------------------------------------------*
- *            TCD0 - Sec: max 3s
+ *            TCD0 - sec: max 3s
  * ------------------------------------------------------------------*/
 
-void TCD0_WaitSec_Init(int Sec)
+void TCD0_WaitSec_Init(int sec)
 {
-  int Herz = 15625;
-  int time = Sec * Herz;
+  int time = sec * TC_OSC_DIV1024;
 
   TCD0_CTRLA = TC_CLKSEL_OFF_gc;
   TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -305,112 +285,22 @@ void TCD0_Stop(void)
 
 
 /* ==================================================================*
- *            TimerIC Safety Timer TCD1
- * --------------------------------------------------------------
- *  If Timer IC do not work, safetyTimer TCD1 will be used
- * --------------------------------------------------------------
+ *            TCD1 - unused
  * ==================================================================*/
-
-/* ------------------------------------------------------------------*
- *            TCD1 - MilliSec
- * ------------------------------------------------------------------*/
-
-void TCD1_WaitMilliSec_Init(int milliSec)
-{
-  int milliHerz = 63;
-  int time = milliSec * milliHerz;
-
-  TCD1_CTRLA = TC_CLKSEL_OFF_gc;
-  TCD1.CTRLB = TC_WGMODE_NORMAL_gc;
-
-  TCD1.CNT = 0;
-  TCD1.PER = 65500;
-  TCD1.CCA = time;
-  TCD1.INTFLAGS |= (1 << TC1_CCAIF_bp);
-
-  TCD1_CTRLA = TC_CLKSEL_DIV256_gc;
-}
-
-
-/* ------------------------------------------------------------------*
- *            TCD1 - Query and Stop
- * ------------------------------------------------------------------*/
-
-unsigned char TCD1_Wait_Query(void)
-{
-  if(TCD1.INTFLAGS & (1 << TC1_CCAIF_bp))
-  {
-    TCD1.CNT = 0;
-    TCD1.INTFLAGS |= (1 << TC1_CCAIF_bp);
-    return 1;
-  }
-  return 0;
-}
-
-void TCD1_Stop(void)
-{
-  TCD1_CTRLA = TC_CLKSEL_OFF_gc;
-}
-
-
-/* ------------------------------------------------------------------*
- *            TCD1 - Apps***
- * ------------------------------------------------------------------*/
-
-unsigned char TCD1_MainAuto_SafetyTC(t_FuncCmd cmd)
-{
-  static unsigned char i = 0;
-
-  switch(cmd)
-  {
-    case _init:   
-      TCD1_WaitMilliSec_Init(100);
-      i = 0;
-      break;
-
-    case _reset:  
-      TCD1_WaitMilliSec_Init(100);
-      i = 0;  
-      break;
-
-    case _exe:    
-      if(TCD1_Wait_Query())
-      {  
-        i++;
-        TCD1_WaitMilliSec_Init(100);
-      }
-
-      // safety second is 1200ms
-      if(i > 12)
-      { 
-        i = 0;
-        MCP7941_WriteByte(TIC_SEC, 0x00);
-        return 1;
-      }
-      break;
-
-    default: break;
-  }
-  return 0;
-}
 
 
 
 /* ==================================================================*
- *            Error Timer - TCE0
- * --------------------------------------------------------------
- *  Timer for Error gets onAction
- * --------------------------------------------------------------
+ *            TCE0 - Error Timer
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            TCE0 - Sec
+ *            TCE0 - sec
  * ------------------------------------------------------------------*/
 
-void TCE0_WaitSec_Init(int Sec)
+void TCE0_WaitSec_Init(int sec)
 {
-  int Herz = 15625;
-  int time = Sec * Herz;
+  int time = sec * TC_OSC_DIV1024;
 
   TCE0_CTRLA = TC_CLKSEL_OFF_gc;
   TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -428,10 +318,10 @@ void TCE0_WaitSec_Init(int Sec)
  *            TCE0 - MilliSec
  * ------------------------------------------------------------------*/
 
-void TCE0_WaitMilliSec_Init(int milliSec)
+void TCE0_WaitMilliSec_Init(int milli_sec)
 {
   int milliHerz = 63;
-  int time = milliSec * milliHerz;
+  int time = milli_sec * milliHerz;
 
   TCE0_CTRLA = TC_CLKSEL_OFF_gc;
   TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -476,7 +366,7 @@ unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
 
   if(cmd == _ton)
   {
-    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)) TCE0_WaitSec_Init(3);
+    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)){ TCE0_WaitSec_Init(3); }
 
     // increase time counter
     if(TCE0_Wait_Query()) i++;
@@ -493,7 +383,7 @@ unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
   // open valve
   else if(cmd == _ovent)
   {
-    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)) TCE0_WaitSec_Init(3);
+    if(!(TCE0_CTRLA & TC_CLKSEL_DIV1024_gc)){ TCE0_WaitSec_Init(3); }
 
     if(TCE0_Wait_Query())
     {
@@ -540,20 +430,17 @@ unsigned char TCE0_ErrorTimer(t_FuncCmd cmd)
 
 
 /* ==================================================================*
- *            CAN Timer1 - TCE1
- * --------------------------------------------------------------
- *  Timer for CAN Communication
- * --------------------------------------------------------------
+ *            TCE1 - CAN Timer1
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            TCE1 - MilliSec
  * ------------------------------------------------------------------*/
 
-void TCE1_WaitMilliSec_Init(int milliSec)
+void TCE1_WaitMilliSec_Init(int milli_sec)
 {
   int milliHerz = 63;
-  int time = milliSec * milliHerz;
+  int time = milli_sec * milliHerz;
 
   TCE1_CTRLA = TC_CLKSEL_OFF_gc;
   TCE1.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -590,20 +477,16 @@ void TCE1_Stop(void)
 
 
 /* ==================================================================*
- *            RunTime - TCF0
- * --------------------------------------------------------------
- *  Timer for UltraSonic ReadCycle
- * --------------------------------------------------------------
+ *            TCF0 - Sonic Timer
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            TCF0 - Sec
+ *            TCF0 - sec
  * ------------------------------------------------------------------*/
 
-void TCF0_WaitSec_Init(int Sec)
+void TCF0_WaitSec_Init(int sec)
 {
-  int Herz = 15625;
-  int time = Sec * Herz;
+  int time = sec * TC_OSC_DIV1024;
 
   TCF0_CTRLA = TC_CLKSEL_OFF_gc;
   TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -614,26 +497,6 @@ void TCF0_WaitSec_Init(int Sec)
   TCF0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
   TCF0_CTRLA = TC_CLKSEL_DIV1024_gc;
-}
-
-/* ------------------------------------------------------------------*
- *            TCF0 - MilliSec
- * ------------------------------------------------------------------*/
-
-void TCF0_WaitMilliSec_Init(int milliSec)
-{
-  int milliHerz = 63;
-  int time = milliSec * milliHerz;
-
-  TCF0_CTRLA = TC_CLKSEL_OFF_gc;
-  TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
-
-  TCF0.CNT = 0;
-  TCF0.PER = 65500;
-  TCF0.CCA = time;
-  TCF0.INTFLAGS |= (1 << TC1_CCAIF_bp);
-
-  TCF0_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -660,51 +523,27 @@ void TCF0_Stop(void)
 
 
 /* ==================================================================*
- *            Modem Timer - TCF1
- * --------------------------------------------------------------
- *  Timer for Modem
- * --------------------------------------------------------------
+ *            Frame Timer - TCF1
  * ==================================================================*/
 
-
 /* ------------------------------------------------------------------*
- *            TCF1 - Sec
+ *            TCF1 - timer init
  * ------------------------------------------------------------------*/
 
-void TCF1_WaitSec_Init(int Sec)
+void TCF1_FrameTimer_Init(void)
 {
-  int Herz = 15625;
-  int time = Sec * Herz;
+  // calculate frame time: 0.016666666666666666
+  float frame_time_count_f = 250000.0 / TC_FPS;
+  int frame_time_count = (int)frame_time_count_f;
 
+  // settings
   TCF1_CTRLA = TC_CLKSEL_OFF_gc;
   TCF1.CTRLB = TC_WGMODE_NORMAL_gc;
-
   TCF1.CNT = 0;
   TCF1.PER = 65500;
-  TCF1.CCA = time;
+  TCF1.CCA = frame_time_count;
   TCF1.INTFLAGS |= (1 << TC0_CCAIF_bp);
-
-  TCF1_CTRLA = TC_CLKSEL_DIV1024_gc;
-}
-
-/* ------------------------------------------------------------------*
- *            TCF1 - MilliSec
- * ------------------------------------------------------------------*/
-
-void TCF1_WaitMilliSec_Init(int milliSec)
-{
-  int milliHerz = 63;
-  int time = milliSec * milliHerz;
-
-  TCF1_CTRLA = TC_CLKSEL_OFF_gc;
-  TCF1.CTRLB = TC_WGMODE_NORMAL_gc;
-
-  TCF1.CNT = 0;
-  TCF1.PER = 65500;
-  TCF1.CCA = time;
-  TCF1.INTFLAGS |= (1 << TC1_CCAIF_bp);
-
-  TCF1_CTRLA = TC_CLKSEL_DIV256_gc;
+  TCF1_CTRLA = TC_CLKSEL_DIV64_gc;
 }
 
 
@@ -712,19 +551,18 @@ void TCF1_WaitMilliSec_Init(int milliSec)
  *            TCF1 - Query and Stop
  * ------------------------------------------------------------------*/
 
-unsigned char TCF1_Wait_Query(void)
+void TCF1_FrameTimer_WaitUntilFrameEnded(struct FrameCounter *frame_counter)
 {
-  if(TCF1.INTFLAGS & (1 << TC1_CCAIF_bp))
-  {
-    TCF1.CNT = 0;
-    TCF1.INTFLAGS |= (1 << TC1_CCAIF_bp);
-    return 1;
-  }
-  return 0;
-}
+  // get delta t
+  frame_counter->delta_t = TCF1.CNT;
+  frame_counter->fps = 250000.0 / frame_counter->delta_t;
 
-void TCF1_Stop(void)
-{
-  TCF1_CTRLA = TC_CLKSEL_OFF_gc;
-}
+  // wait until fps time reached
+  while(!(TCF1.INTFLAGS & (1 << TC1_CCAIF_bp)));
+  TCF1.CNT = 0;
+  TCF1.INTFLAGS |= (1 << TC1_CCAIF_bp);
 
+  // keep track of frame
+  frame_counter->frame++;
+  if(frame_counter->frame >= TC_FPS){ frame_counter->frame = 0; }
+}
