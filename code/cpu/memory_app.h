@@ -48,7 +48,7 @@ void MEM_EEPROM_WriteVar(t_var var, unsigned char eeData);
 unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_data var);
 void MEM_EEPROM_LoadData(unsigned char entry, t_data byte, unsigned char eeData);
 
-void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_AutoEntry write);
+void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write);
 void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd cmd);
 void MEM_EEPROM_WriteSetupEntry(void);
 

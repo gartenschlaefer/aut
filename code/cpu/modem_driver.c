@@ -1,5 +1,5 @@
 // --
-//  Telit-GSM-Modem GC864Quad_v2
+//  Telit GSM modem GC864Quad_v2
 
 #include <avr/io.h>
 
@@ -11,19 +11,6 @@
 #include "tc_func.h"
 #include "at24c_app.h"
 #include "basic_func.h"
-
-
- /* ------------------------------------------------------------------*
- *            Modem Object init
- * ------------------------------------------------------------------*/
-
-void Modem_init(struct Modem *mo)
-{
-   mo->turned_on = 0;
-   mo->turn_on_state = 0;
-   mo->turn_on_error = 0;
-   mo->startup_delay = 0;
-}
 
 
 /* ------------------------------------------------------------------*
@@ -58,32 +45,32 @@ void Modem_Port_Init(void)
  *            Modem check
  * ------------------------------------------------------------------*/
 
-unsigned char Modem_Check(t_page page, struct Modem *mo)
+unsigned char Modem_Check(struct PlantState *ps)
 {
   // Startup wait
-  if(mo->startup_delay < MO_STARTUP_DELAY)
+  if(ps->modem->startup_delay < MO_STARTUP_DELAY)
   {
-    mo->startup_delay++;
+    ps->modem->startup_delay++;
     return 1;
   }
 
   // status LED
-  Modem_ReadSLED(page);
+  Modem_ReadSLED(ps->page_state->page);
 
   // Check if off
   if(MO_PW_OFF)
   {
-    mo->turned_on = 0;
-    Modem_TurnOn(mo);
-    mo->startup_delay = 0;
+    ps->modem->turned_on = 0;
+    Modem_TurnOn(ps->modem);
+    ps->modem->startup_delay = 0;
   }
 
   // PWR on
   else if(!MO_PW_OFF)
   {
-    mo->turned_on = 1;
-    mo->turn_on_state = 0;
-    mo->turn_on_error = 0;
+    ps->modem->turned_on = 1;
+    ps->modem->turn_on_state = 0;
+    ps->modem->turn_on_error = 0;
   }
   return 0;
 }
@@ -478,24 +465,19 @@ void Modem_SendTest(void)
 }
 
 
-void Modem_Test(void)
+void Modem_Test(struct PlantState *ps)
 {
-
   // some text
   LCD_WriteAnyStringFont(f_6x8_p, 1, 10, "Modem");
   LCD_WriteAnyStringFont(f_6x8_p, 4, 30,  "PWR");
   LCD_WriteAnyStringFont(f_6x8_p, 12, 30, "CTS");
-
-  // modem init
-  struct Modem modem;
-  Modem_init(&modem);
 
   // timers
   TCC0_wait_sec(1);
   TCC0_WaitSec_Init(3);
 
   // test page
-  t_page page = PinModem;
+  ps->page_state->page = PinModem;
 
   // RTS off
   PORTF.OUTCLR = PIN4_bm;
@@ -510,7 +492,7 @@ void Modem_Test(void)
     BASIC_WDT_RESET;
 
     // check modem status -> turn on
-    Modem_Check(page, &modem);
+    Modem_Check(ps);
 
     // Read status
     Modem_ReadPWR();

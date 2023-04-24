@@ -50,7 +50,7 @@ void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b)
     case _exe:
 
       //***LightAlwaysOn-Debug
-      if(DEBUG) return;
+      if(DEBUG){ return; }
 
       // light is on
       if(b->state == _on)
@@ -66,8 +66,8 @@ void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b)
       else if(b->state == _error)
       {
         b->count++;
-        if(b->count > 400) LCD_LED_OFF;
-        if(b->count > 2000){ b->count = 0; LCD_LED_ON; }
+        if(b->count > BACKLIGHT_ERROR_ON_FRAMES){ LCD_LED_OFF; }
+        if(b->count > BACKLIGHT_ERROR_OFF_FRAMES){ b->count = 0; LCD_LED_ON; }
       }             
       break;
 

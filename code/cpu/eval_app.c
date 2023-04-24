@@ -166,14 +166,14 @@ unsigned char Eval_CountDown(struct Tms *tms)
 int Eval_SetupPlus(int value, int max)
 {
   if(value < max){ value++; }
-  else value = value;
+  else{ value = value; }
   return value;
 }
 
 int Eval_SetupMinus(int value, int min)
 {
   if(value > min){ value--; }
-  else value = value;
+  else{ value = value; }
   return value;
 }
 

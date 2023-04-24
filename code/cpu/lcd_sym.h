@@ -96,10 +96,11 @@ void LCD_Sym_Data_Page(void);
 void LCD_Sym_Data_Auto(void);
 void LCD_Sym_Data_Manual(void);
 void LCD_Sym_Data_Setup(void);
-void LCD_Sym_Data_Sonic(void);
+void LCD_Sym_Data_Sonic(struct PlantState *ps);
+void LCD_Sym_Data_Sonic_ReadSversion(struct PlantState *ps);
 
 void LCD_Sym_DataArrows(void);
-void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot);
+void LCD_Sym_Data_SonicWrite(t_FuncCmd cmd, int shot);
 
 void LCD_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigned char entry);
 void LCD_WriteManualEntry(unsigned char pa, unsigned char eePage, unsigned char entry);

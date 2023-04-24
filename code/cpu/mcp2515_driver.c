@@ -22,7 +22,6 @@ void MCP2515_Init(void)
   PORTE.DIRSET = PIN2_bm;
   PORTE.OUTSET = PIN2_bm;
   TCC0_wait_ms(200);
-
   MCP2515_SWReset();
   TCC0_wait_ms(10);
 
@@ -48,13 +47,13 @@ void MCP2515_SWReset(void)
  *            Reset hardware
  * ------------------------------------------------------------------*/
 
-void MCP2515_HWReset(void)
-{
-  TCC0_wait_ms(200);
-  PORTE.OUTCLR = PIN2_bm;
-  TCC0_wait_ms(200);
-  PORTE.OUTSET = PIN2_bm;
-}
+// void MCP2515_HWReset(void)
+// {
+//   TCC0_wait_ms(200);
+//   PORTE.OUTCLR = PIN2_bm;
+//   TCC0_wait_ms(200);
+//   PORTE.OUTSET = PIN2_bm;
+// }
 
 
 /* ------------------------------------------------------------------*
@@ -77,14 +76,11 @@ void MCP2515_WriteReg(unsigned char addr, unsigned char data)
 
 unsigned char MCP2515_ReadReg(unsigned char addr)
 {
-  unsigned char rReg = 0;
-
   CS_CLR;
   SPI_WriteByte(0x03);
   SPI_WriteByte(addr);
-  rReg = SPI_ReadByte();
+  unsigned char rReg = SPI_ReadByte();
   CS_SET;
-
   return rReg;
 }
 
@@ -93,41 +89,38 @@ unsigned char MCP2515_ReadReg(unsigned char addr)
  *            Bit Modify
  * ------------------------------------------------------------------*/
 
-void MCP2515_BitModify( unsigned char addr, unsigned char mask, unsigned char data)
-{
-  CS_CLR;
-  SPI_WriteByte(addr);
-  SPI_WriteByte(mask);
-  SPI_WriteByte(data);
-  CS_SET;
-}
+// void MCP2515_BitModify(unsigned char addr, unsigned char mask, unsigned char data)
+// {
+//   CS_CLR;
+//   SPI_WriteByte(addr);
+//   SPI_WriteByte(mask);
+//   SPI_WriteByte(data);
+//   CS_SET;
+// }
 
 
 /* ------------------------------------------------------------------*
  *            Read RxB0 or RxB1 -> macros
  * ------------------------------------------------------------------*/
 
-unsigned char MCP2515_ReadRxB(unsigned char cmd)
-{
-  unsigned char rReg = 0;
-
-  CS_CLR;
-  SPI_WriteByte(cmd);
-  rReg = SPI_ReadByte();
-  CS_SET;
-
-  return rReg;
-}
+// unsigned char MCP2515_ReadRxB(unsigned char cmd)
+// {
+//   CS_CLR;
+//   SPI_WriteByte(cmd);
+//   unsigned char rReg = SPI_ReadByte();
+//   CS_SET;
+//   return rReg;
+// }
 
 
 /* ------------------------------------------------------------------*
  *            Load TxBuffer -> macros
  * ------------------------------------------------------------------*/
 
-void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer)
-{
-  CS_CLR;
-  SPI_WriteByte(cmd);
-  SPI_WriteByte(buffer);
-  CS_SET;
-}
+// void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer)
+// {
+//   CS_CLR;
+//   SPI_WriteByte(cmd);
+//   SPI_WriteByte(buffer);
+//   CS_SET;
+// }

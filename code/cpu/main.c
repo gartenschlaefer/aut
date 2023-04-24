@@ -10,6 +10,7 @@
 #include "port_func.h"
 #include "basic_func.h"
 #include "tc_func.h"
+#include "can_app.h"
 
 
 /* ------------------------------------------------------------------*
@@ -27,7 +28,7 @@ int main(void)
 
   // datatypes and states
   struct LcdBacklight lcd_backlight = { .state = _off, .count = 0 };
-  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .fps = 0.0, .delta_t = 0 };
+  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
   struct PageState auto_save_page_state = { .page = NoPage, .page_time = &auto_save_page_time };
   struct ErrorState error_state = { .page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00 };
@@ -35,37 +36,36 @@ int main(void)
   struct PhosphorState phosphor_state = { .ph_count = 0, .ph_tms = &phosphor_time, .ph_state = ph_off };
   struct InflowPumpState inflow_pump_state = { .ip_count = 0, .ip_thms = &ip_thms, .ip_state = ip_off, .ip_active_pump_id = 0 };
   struct AirCircState air_circ_state = { .old_sec = 0, .air_tms = &air_tms };
+  struct CANState can_state = { .rxb0_buffer = { 0x00 }, .rxb0_data_av = 0 };
+  struct SonicState sonic_state = { .app_type = SONIC_APP_none, .software_version = 0, .no_us_flag = false, .level_cal = 0, .d_mm = 0, .d_mm_prev = 0, .temp = 0, .d_error = 0, .read_tank_state = SONIC_TANK_timer_init, .query_state = _usWait, .query_error_count = 0 };
+  struct InputHandler input_handler = { .float_sw_alarm = 0 };
+  struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0};
 
   // plant state
-  struct PlantState ps = { .init = 0, .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state};
-
+  struct PlantState ps = { .init = 0, .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .lcd_backlight = &lcd_backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem};
 
   // init
-  Basic_Init();
-  LCD_Backlight(_on, ps.lcd_backlight);
+  Basic_Init(&ps);
 
   //*-* modem test loop
-  //Modem_Test();
+  //Modem_Test(&ps);
 
-  // Input
-  struct InputHandler input_handler;
-  struct Modem modem;
-  InputHandler_init(&input_handler);
-  Modem_init(&modem);
-
-  // frame timer
+  // frame timer (for fixed fps time)
   TCF1_FrameTimer_Init();
 
   while(1)
   {
     BASIC_WDT_RESET;
     PORT_Bootloader();
-    Modem_Check(ps.page_state->page, &modem);
+    Modem_Check(&ps);
+
+    // CAN update
+    CAN_Update(&can_state);
 
     //*** debug port and lcd page
     if(DEBUG)
     {
-      if (DEB_PORT) PORT_Debug();
+      if(DEB_PORT){ PORT_Debug(); }
       LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, ps.page_state->page);
 
       // fps
@@ -95,7 +95,7 @@ int main(void)
       case AutoAirOn:
       case AutoAirOff:
         LCD_AutoPage(&ps);
-        PORT_RunTime(&input_handler, &ps);
+        PORT_Auto_RunTime(&ps);
         break;
 
       // manual pages

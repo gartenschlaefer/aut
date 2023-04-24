@@ -34,7 +34,6 @@ void TCC0_wait_sec(int sec);
 void TCC0_wait_openValve(void);
 void TCC0_wait_closeValve(void);
 
-void TCC0_Main_Wait(void);
 void TCC0_Touch_Wait(void);
 
 

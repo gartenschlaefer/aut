@@ -5,6 +5,9 @@
 #ifndef BASIC_FUNC_H   
 #define BASIC_FUNC_H
 
+#include "enums.h"
+#include "structs.h"
+
 /* ------------------------------------------------------------------*
  *            defines
  * ------------------------------------------------------------------*/
@@ -16,7 +19,7 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void Basic_Init(void);
+void Basic_Init(struct PlantState *ps);
 void Basic_Init_Mem(void);
 void Clock_Init(void);
 void Watchdog_Init(void);

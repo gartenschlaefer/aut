@@ -105,7 +105,7 @@ void PORT_Bootloader(void);
 
 void PORT_Buzzer(t_FuncCmd cmd);
 void PORT_Ventilator(void);
-void PORT_RunTime(struct InputHandler *in, struct PlantState *ps);
+void PORT_Auto_RunTime(struct PlantState *ps);
 
 unsigned char PORT_Valve(t_valve valve, unsigned char new_state);
 void PORT_Valve_OpenAll(void);
@@ -114,7 +114,6 @@ void PORT_Valve_CloseAll(void);
 void PORT_RelaisSet(unsigned char relais);
 void PORT_RelaisClr(unsigned char relais);
 
-void InputHandler_init(struct InputHandler *in);
 void PORT_Debug(void);
 
 #endif

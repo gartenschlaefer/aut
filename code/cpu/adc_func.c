@@ -133,10 +133,10 @@ void ADC_USV_Check(unsigned int *p_c)
   if(data < 2500)
   {
     c++;
-    if(c == 3)  Modem_Alert("Error: USV is active");
-    if(c > 720) c = 0;
+    if(c == 2){ Modem_Alert("Error: USV is active"); }
+    if(c > 60){ c = 0; }
   }
-  else c = 0;
+  else{ c = 0; }
 
   *p_c = c;
 }

@@ -259,7 +259,7 @@ unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_dat
  *  Safes Variables or write Auto Entry to EEPROM
  * ------------------------------------------------------------------*/
 
-void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_AutoEntry write)
+void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write)
 {
   unsigned char i = 0;
   unsigned char data[8] = {0x00};

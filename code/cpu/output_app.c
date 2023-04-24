@@ -190,22 +190,3 @@ void OUT_Valve_Init(void)
   // valves without springs
   else{ OUT_Valve_CloseAll(); }
 }
-
-
-/* ------------------------------------------------------------------*
- *            valve auto close
- * ------------------------------------------------------------------*/
-
-void OUT_Valve_AutoClose(t_page page)
-{
-  switch(page)
-  {
-    case AutoSetDown: break;
-    case AutoZone: OUT_Clr_Air(); break;
-    case AutoPumpOff: OUT_Clr_PumpOff(); break;
-    case AutoMud: OUT_Clr_Mud(); break;
-    case AutoCircOn: OUT_Clr_IPAir(); break;
-    case AutoAirOn: OUT_Clr_IPAir(); break;
-    default: break;
-  }
-}

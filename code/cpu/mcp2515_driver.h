@@ -203,14 +203,12 @@
  * ------------------------------------------------------------------*/
 
 void MCP2515_Init(void);
-void MCP2515_HWReset(void);
+//void MCP2515_HWReset(void);
 void MCP2515_SWReset(void);
-
 void MCP2515_WriteReg(unsigned char addr, unsigned char data);
 unsigned char MCP2515_ReadReg(unsigned char addr);
-void MCP2515_BitModify(unsigned char addr, unsigned char mask, unsigned char data);
-
-unsigned char MCP2515_ReadRxB(unsigned char cmd);
-void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer);
+//void MCP2515_BitModify(unsigned char addr, unsigned char mask, unsigned char data);
+//unsigned char MCP2515_ReadRxB(unsigned char cmd);
+//void MCP2515_LoadTxBuffer(unsigned char cmd, unsigned char buffer);
 
 #endif

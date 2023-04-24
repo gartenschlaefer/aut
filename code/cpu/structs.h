@@ -56,6 +56,7 @@ struct FrameCounter
   unsigned int usv;
   unsigned int lcd_reset;
   unsigned int frame;
+  unsigned int sixty_sec_counter;
   float fps;
   int delta_t;
 };
@@ -116,6 +117,29 @@ struct AirCircState
 };
 
 
+struct CANState
+{
+  unsigned char rxb0_buffer[10];
+  bool rxb0_data_av;
+};
+
+
+struct SonicState
+{
+  t_sonic_app app_type;
+  unsigned char software_version;
+  bool no_us_flag;
+  int level_cal;
+  int d_mm;
+  int d_mm_prev;
+  int temp;
+  unsigned char d_error;
+  unsigned char read_tank_state;
+  t_sonic_query_states query_state;
+  unsigned char query_error_count;
+};
+
+
 struct PlantState
 {
   unsigned char init;
@@ -128,6 +152,10 @@ struct PlantState
   struct PhosphorState *phosphor_state;
   struct InflowPumpState *inflow_pump_state;
   struct AirCircState *air_circ_state;
+  struct CANState *can_state;
+  struct SonicState *sonic_state;
+  struct InputHandler *input_handler;
+  struct Modem *modem;
 }; 
 
 #endif

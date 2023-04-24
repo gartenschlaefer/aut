@@ -150,32 +150,37 @@ typedef enum
 
 
 /* ------------------------------------------------------------------*
- *            sonic app -> state, init, work, error, read
+ *            can commands
  * ------------------------------------------------------------------*/
 
 typedef enum
 {
-  US_wait,  US_exe,   US_reset,
-  T_ini,    D1_ini,   D5_ini,
-  T_wo,     D1_wo,    D5_wo,
-  T_err,    D_err,
-  R_sreg,   R_dreg,   R_treg
-}t_US;
+  CAN_CMD_sonic_set_can_address = 0, 
+  CAN_CMD_sonic_one_shot = 1, 
+  CAN_CMD_sonic_start_5shots = 2, 
+  CAN_CMD_sonic_start_temp = 3, 
+  CAN_CMD_sonic_read_dist = 4, 
+  CAN_CMD_sonic_read_temp = 5,
+  CAN_CMD_sonic_read_USSREG = 6, 
+  CAN_CMD_sonic_read_USCREG1 = 7, 
+  CAN_CMD_sonic_read_USCREG2 = 8, 
+  CAN_CMD_sonic_write_USSREG = 9, 
+  CAN_CMD_sonic_write_USCREG1 = 10,
+  CAN_CMD_sonic_write_USCREG2 = 11,
+  CAN_CMD_sonic_read_sversion = 12, 
+  CAN_CMD_sonic_working = 13, 
+  CAN_CMD_sonic_ack = 14, 
+  CAN_CMD_sonic_wait = 15, 
+  CAN_CMD_sonic_boot = 16, 
+  CAN_CMD_sonic_app = 17, 
+  CAN_CMD_sonic_program = 18, 
+  CAN_CMD_sonic_read_program = 19,
+  CAN_CMD_sonic_end_mark = 20
+}t_can_cmd;
+
 
 /* ------------------------------------------------------------------*
- *            sonic commands
- * ------------------------------------------------------------------*/
-
-typedef enum
-{
-  _setCanAddress, _oneShot, _5Shots, _startTemp, _readDistance, _readTemp,
-  _readUSSREG, _readUSCREG1, _readUSCREG2, _writeUSSREG, _writeUSCREG1,_writeUSCREG2,
-  _sVersion, _working, _ack, _wait, _boot, _app, _program, _readProgram
-}t_UScmd;
-
-
-/* ------------------------------------------------------------------*
- *            sonic states (fixed)
+ *            sonic query states
  * ------------------------------------------------------------------*/
 
 typedef enum
@@ -193,18 +198,31 @@ typedef enum
   _usErrTimeout2 = 11,
   _usErrTimeout3 = 12,
   _usErrWrongReq = 13
-}t_USstates;
+}t_sonic_query_states;
 
 
 /* ------------------------------------------------------------------*
- *            eval
+ *            sonic application program
  * ------------------------------------------------------------------*/
 
 typedef enum
-{ Oxygen_Count,
-  Oxygen_Write2Entry,
-  Oxygen_Clear
-}t_Oxygen;
+{
+  SONIC_APP_75kHz = 0,
+  SONIC_APP_125kHz = 1,
+  SONIC_APP_boot = 2,
+  SONIC_APP_none = 128
+}t_sonic_app;
+
+
+/* ------------------------------------------------------------------*
+ *            sonic states (fixed)
+ * ------------------------------------------------------------------*/
+
+typedef enum
+{
+  SONIC_TANK_listen = 0,
+  SONIC_TANK_timer_init = 1
+}t_sonic_tank_states;
 
 
 /* ------------------------------------------------------------------*
@@ -254,7 +272,7 @@ typedef enum
 typedef enum
 { 
   Write_o2, Write_Error, Write_Entry
-}t_AutoEntry;
+}t_auto_entry;
 
 
 /* ------------------------------------------------------------------*

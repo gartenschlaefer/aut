@@ -34,10 +34,10 @@ unsigned char TWI_Master_Error(void);
 void TWI2_Master_Init(void);
 unsigned char TWI2_Master_Error(void);
 
-unsigned char *TWI_Master_ReadString(unsigned char address, unsigned char   i );
-unsigned char TWI_Master_WriteString( unsigned char address, unsigned char *sendData, unsigned char   i );
-unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char   i );
-unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char   i );
+unsigned char *TWI_Master_ReadString(unsigned char address, unsigned char i);
+unsigned char TWI_Master_WriteString( unsigned char address, unsigned char *sendData, unsigned char i);
+unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i);
+unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i);
 
 unsigned char TWI_Master_Send(unsigned char send);
 unsigned char TWI_Master_AddressWriteMode(unsigned char f_address);

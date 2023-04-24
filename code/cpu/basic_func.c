@@ -20,6 +20,7 @@
 #include "port_func.h"
 #include "twi_func.h"
 #include "sonic_app.h"
+#include "can_app.h"
 #include "memory_app.h"
 
 
@@ -27,7 +28,7 @@
  *            init
  * ------------------------------------------------------------------*/
 
-void Basic_Init(void)
+void Basic_Init(struct PlantState *ps)
 {
   // ports init
   Clock_Init();
@@ -41,13 +42,13 @@ void Basic_Init(void)
 
   // display init
   LCD_HardwareRst();
-  TCC0_Main_Wait();
+  TCC0_wait_ms(200);
   LCD_Init();
-  TCC0_Main_Wait();
+  TCC0_wait_ms(200);
   LCD_Clean();
 
   // Memory init
-  if(MEM_INIT) Basic_Init_Mem();
+  if(MEM_INIT){ Basic_Init_Mem(); }
 
   // watchdog
   Watchdog_Init();
@@ -56,16 +57,24 @@ void Basic_Init(void)
   MCP7941_Init();
   AD8555_Init();
   CAN_Init();
-  TCC0_Main_Wait();
+  TCC0_wait_ms(200);
 
-  //--------------------------------------------------JumptoApp
+  // sonic jump to app version
   TCE1_WaitMilliSec_Init(25);
-  CAN_TxCmd(_app);
-  while(CAN_RxACK() != _ack)
+  CAN_TxCmd(CAN_CMD_sonic_app);
+  while(CAN_RxB0_Ack(ps->can_state) != CAN_CMD_sonic_ack)
   {
+    CAN_RxB0_Read(ps->can_state);
     if(TCE1_Wait_Query()){ break; }
   }
+  CAN_RxB0_Clear(ps->can_state);
   TCE1_Stop();
+
+  // init sonic
+  Sonic_Init(ps);
+
+  // backlight on
+  LCD_Backlight(_on, ps->lcd_backlight);
 }
 
 

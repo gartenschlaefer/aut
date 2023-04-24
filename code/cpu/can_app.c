@@ -4,13 +4,8 @@
 #include <avr/io.h>
 
 #include "can_app.h"
-#include "lcd_driver.h"
 #include "lcd_sym.h"
-#include "lcd_app.h"
-#include "tc_func.h"
 #include "mcp2515_driver.h"
-#include "at24c_driver.h"
-#include "basic_func.h"
 
 
 /* ------------------------------------------------------------------*
@@ -21,7 +16,9 @@ void CAN_Init(void)
 {
   MCP2515_Init();
   CAN_RxB0_Init();
-  MCP2515_WriteReg(CANCTRL, 0x05);  //OutOfConfigMode2Normal
+
+  // config to normal
+  MCP2515_WriteReg(CANCTRL, 0x05); 
 }
 
 
@@ -31,24 +28,35 @@ void CAN_Init(void)
 
 void CAN_RxB0_Init(void)
 {
-  MCP2515_WriteReg(RXB0CTRL, 0x00);   //UseFilters
+  // use filters
+  MCP2515_WriteReg(RXB0CTRL, 0x00);
 
-  MCP2515_WriteReg(RXF0SIDH, 0xFF);   //Write RXB0-FilterID-Reg
-  MCP2515_WriteReg(RXF0SIDL, 0xFF);   //Write RXB0-FilterID-Reg
-  MCP2515_WriteReg(RXM0SIDH, 0x00);   //Write RXB0-MaskID-Reg
-  MCP2515_WriteReg(RXM0SIDL, 0x00);   //Write RXB0-MaskID-Reg
+  // filter id register
+  MCP2515_WriteReg(RXF0SIDH, 0xFF);
+  MCP2515_WriteReg(RXF0SIDL, 0xFF);
 
-  MCP2515_WriteReg(RXB0D0, 0x00);     //Clear RXB0D0
+  // filter mask register
+  MCP2515_WriteReg(RXM0SIDH, 0x00);
+  MCP2515_WriteReg(RXM0SIDL, 0x00);
+
+  // clear RxB0D0
+  MCP2515_WriteReg(RXB0D0, 0x00);
 }
 
 
-
 /* ------------------------------------------------------------------*
- *            functions receive
+ *            CAN update
  * ------------------------------------------------------------------*/
 
+void CAN_Update(struct CANState *can_state)
+{
+  // read rxb0
+  CAN_RxB0_Read(can_state);
+}
+
+
 /*-------------------------------------------------------------------*
- *  CAN_RxB0_Read
+ *  can read buffer
  * --------------------------------------------------------------
  *  return[0]: dlc  - 0: noMessage  - 1: Message
  *  return[1]: addr - Address High
@@ -56,33 +64,42 @@ void CAN_RxB0_Init(void)
  *  return[3]: data - following DataBytes   - return[3..10]
  * ------------------------------------------------------------------*/
 
-unsigned char *CAN_RxB0_Read(void)
+void CAN_RxB0_Read(struct CANState *can_state)
 {
-  static unsigned char rec[10];
-  unsigned char i = 0;
-  unsigned char dlc = 0;
-
-  for(i = 0; i < 10; i++) rec[i] = 0x00;      //init
-  if(MCP2515_ReadReg(CANINTF) & RX0IF_bm)     //Is RxB0 filled?
+  // RxB0 filled?
+  if(MCP2515_ReadReg(CANINTF) & RX0IF_bm)
   {
-    dlc = (MCP2515_ReadReg(RXB0DLC) & 0x0F);  //ReadDLC
-    rec[0] = dlc;                             //DLC
-    rec[1] = MCP2515_ReadReg(RXB0SIDH);       //Address
-    rec[2] = MCP2515_ReadReg(RXB0D0);         //CommandByte
+    // read dlc (data length code)
+    unsigned char dlc = (MCP2515_ReadReg(RXB0DLC) & 0x0F);
 
-    for(i = 3; i < (dlc + 2); i++)
-      rec[i] = MCP2515_ReadReg(0x64 + i);   //DataBytes
-    MCP2515_WriteReg(CANINTF, 0x00);        //Reset Flag
+    // save dlc, adress, and command byte
+    can_state->rxb0_buffer[0] = dlc;
+    can_state->rxb0_buffer[1] = MCP2515_ReadReg(RXB0SIDH);
+    can_state->rxb0_buffer[2] = MCP2515_ReadReg(RXB0D0);
+
+    // read databytes
+    for(unsigned char i = 3; i < (dlc + 2); i++){ can_state->rxb0_buffer[i] = MCP2515_ReadReg(0x64 + i); }
+
+    // reset flag
+    MCP2515_WriteReg(CANINTF, 0x00);
+
+    // indicate data available
+    can_state->rxb0_data_av = true;
   }
-  else rec[0] = 0x00; //NoMessage
-  return &rec[0];     //Return Buffer Address
 }
 
 
+/* ------------------------------------------------------------------*
+ *            clear read buffer
+ * ------------------------------------------------------------------*/
 
-/* ==================================================================*
- *            FUNCTIONS Transmit
- * ==================================================================*/
+void CAN_RxB0_Clear(struct CANState *can_state)
+{
+  for(unsigned char i = 0; i < 10; i++){ can_state->rxb0_buffer[i] = 0x00; }
+  can_state->rxb0_data_av = false;
+}
+
+
 /*-------------------------------------------------------------------*
  *  CAN_TxB0_Write
  * --------------------------------------------------------------
@@ -95,26 +112,30 @@ unsigned char *CAN_RxB0_Read(void)
 
 unsigned char CAN_TxB0_Write(unsigned char *txB0)
 {
+  int err = 0;
   unsigned char i = 0;
-  unsigned char dlc = 0;
-  static int err = 0;
+  unsigned char dlc = txB0[0];
 
-  dlc = txB0[0];
-  MCP2515_WriteReg(TXB0DLC, dlc);       //DLC
-  MCP2515_WriteReg(TXB0SIDH, txB0[1]);  //Address-H
-  MCP2515_WriteReg(TXB0SIDL, 0x00);     //Address-L
+  // dlc and address h and l
+  MCP2515_WriteReg(TXB0DLC, dlc);
+  MCP2515_WriteReg(TXB0SIDH, txB0[1]);
+  MCP2515_WriteReg(TXB0SIDL, 0x00);
 
+  // write data to buffer register
   while(dlc)
   {
     dlc--;
-    MCP2515_WriteReg(0x36 + i, txB0[2 + i]);  //Data
+    MCP2515_WriteReg(0x36 + i, txB0[2 + i]);
     i++;
   }
 
-  MCP2515_WriteReg(TXB0CTRL, TXREQ);            //StartTransmission
-  while(!(MCP2515_ReadReg(CANINTF) & TX0IF_bm)) //waitUntilSent?
+  // start transmission
+  MCP2515_WriteReg(TXB0CTRL, TXREQ);
+
+  // wait until done
+  while(!(MCP2515_ReadReg(CANINTF) & TX0IF_bm))
   {
-    // CAN Error
+    // can error
     if((MCP2515_ReadReg(TXB0CTRL) & 0xF0))
     {
       err = 0;
@@ -125,20 +146,14 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
     if(err > 1000)
     {
       err = 0;
-      LCD_Data_SonicWrite(_mcp_fail, 0);
+      LCD_Sym_Data_SonicWrite(_mcp_fail, 0);
       return 2;
     }
     err++;
   }
-  err = 0;
   return 0;
 }
 
-
-
-/* ==================================================================*
- *            FUNCTIONS CAN Application
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            TX - Command2UltraSonic
@@ -148,7 +163,7 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
  *  txB0[2]: cmd  - Command
  * ------------------------------------------------------------------*/
 
-void CAN_TxCmd(t_UScmd cmd)
+void CAN_TxCmd(t_can_cmd cmd)
 {
   unsigned char tx[3] = {1, 0x01, cmd};
   CAN_TxB0_Write(&tx[0]);
@@ -159,427 +174,19 @@ void CAN_TxCmd(t_UScmd cmd)
  *            TX - UltraSonicStatusRegister command
  * ------------------------------------------------------------------*/
 
-void CAN_TxUSSREG(unsigned char reg)
-{
-  unsigned char tx[4] = {1, 0x01, _writeUSSREG, reg};
-  CAN_TxB0_Write(&tx[0]);
-}
+// void CAN_TxUSSREG(unsigned char reg)
+// {
+//   unsigned char tx[4] = {1, 0x01, CAN_CMD_sonic_write_USSREG, reg};
+//   CAN_TxB0_Write(&tx[0]);
+// }
 
 
 /* ------------------------------------------------------------------*
  *            RX - ACK
  * ------------------------------------------------------------------*/
 
-t_UScmd CAN_RxACK(void)
+unsigned char CAN_RxB0_Ack(struct CANState *can_state)
 {
-  unsigned char *rec;
-  static unsigned char ack = 0;
-
-  rec = CAN_RxB0_Read();
-
-  if(rec[0])
-  {
-    switch(rec[2])
-    {
-      case _ack:          ack++;  return _ack;
-      case _oneShot:      ack++;  return _oneShot;
-      case _5Shots:       ack++;  return _5Shots;
-      case _startTemp:    ack++;  return _startTemp;
-      case _working:      ack++;  return _working;
-      case _readProgram:  ack++;  return _readProgram;
-      case _program:      ack++;  return _program;
-      case _boot:         ack++;  return _boot;
-    }
-  }
-  return _wait;
+  if(can_state->rxb0_data_av){ return can_state->rxb0_buffer[2]; }
+  return CAN_CMD_sonic_wait;
 }
-
-
-/* ------------------------------------------------------------------*
- *            LiveCheck
- * -------------------------------------------------------------------*
- *  Parameter   - CAN-Adresse
- *  return: 0   - No Ack Received
- *  return: 1   - Ack Received
- * ------------------------------------------------------------------*/
-
-unsigned char CAN_LiveCheck(unsigned char addr)
-{
-  unsigned char tx[3] = {1, addr, _ack};
-  CAN_TxB0_Write(&tx[0]);
-  TCE1_WaitMilliSec_Init(10);
-  while(!CAN_RxACK()) if(TCE1_Wait_Query()) return 0;
-  return 1;
-}
-
-
-/* ------------------------------------------------------------------*
- *            Read Software Version
- * ------------------------------------------------------------------*/
-
-unsigned char *CAN_SonicVersion(t_FuncCmd cmd)
-{
-  unsigned char *rec;           //Pointer
-  static unsigned char err = 0;
-  static unsigned char sonic[3] = { 0,    //state
-                                    0,    //dataH
-                                    0};   //dataL
-  //--------------------------------------------init
-  if(cmd == _init)
-  {
-    err = 0;                          //ErrorReset
-    sonic[0] = 0;                     //Start-Condition
-    TCE1_WaitMilliSec_Init(25); //SafetyTimer
-    CAN_TxCmd(_sVersion);             //CANTxCmd
-  }
-  //--------------------------------------------Exe
-  else if(cmd == _exe)
-  {
-    if(TCE1_Wait_Query())   //ResendCmd
-    {
-      err++;
-      if(err >= 5) sonic[0] = 11; //Error2Much
-      CAN_TxCmd(_sVersion);       //CANTxCmd
-    }
-
-    rec = CAN_RxB0_Read();        //ReadCan
-    if(rec[0])                    //checkDLC
-    {
-      if(rec[2] == _sVersion)     //checkCMD
-      {
-        sonic[1] = rec[3];      //DataH
-        sonic[2] = rec[4];      //DataL
-        sonic[0] = 1;           //Received
-        TCE1_Stop();      //StopTimerIfErrorOrReady
-      }
-    }
-  }
-  return &sonic[0];
-}
-
-
-/* ------------------------------------------------------------------*
- *            Measure Temperature or Distance
- * -------------------------------------------------------------------*
- *  Parameter:      --------------------------------------------------
- *  cmd: _init      - Start Measurement
- *  cmd: _exe       - Request Temp
- *  return:         --------------------------------------------------
- *  sonic[0]: 3     - State Received Temperature -> OK
- *  sonic[0]: 10..  - TimeOut Error - Restart requird
- * ------------------------------------------------------------------*/
-
-unsigned char *CAN_SonicQuery(t_FuncCmd cmd, t_UScmd us)
-{
-  unsigned char *rec;                     //Pointer
-  unsigned char ack = 0;
-  static unsigned char err = 0;
-  static unsigned char sonic[3] = { 0,    //state
-                                    0,    //dataH
-                                    0};   //dataL
-
-  //--------------------------------------------------init
-  if(cmd == _init)
-  {
-    err = 0;
-    switch(us)
-    {
-      case _startTemp:  sonic[0] = _usTempReq; break;
-      case _oneShot:
-      case _5Shots:     sonic[0] = _usDistReq; break;
-      default:          sonic[0] = _usWait; break;
-    }
-    TCE1_WaitMilliSec_Init(25);
-    CAN_TxCmd(us);
-  }
-  //--------------------------------------------------Exe
-  else if(cmd == _exe)
-  {
-    //--------------------------------------------Start+ACK
-    if(sonic[0] == _usTempReq || sonic[0] == _usDistReq)
-    {
-      // Error check
-      if(TCE1_Wait_Query())
-      {
-        err++;
-        if(err >= 5)
-        {
-          sonic[0] = _usErrTimeout1;
-          return sonic;
-        }
-        else if(sonic[0] == _usTempReq) CAN_TxCmd(_startTemp);
-        else if(sonic[0] == _usDistReq) CAN_TxCmd(_5Shots);
-      }
-      // Check ACK
-      ack = CAN_RxACK();
-      switch(ack)
-      {
-        case _startTemp:
-          if(sonic[0] == _usTempReq)
-          {
-            sonic[0] = _usTempAckOK;
-            CAN_TxCmd(_readUSSREG);
-            TCE1_WaitMilliSec_Init(25);
-          }
-          else
-          {
-            sonic[0] = _usErrWrongReq;
-            return sonic;
-          } break;
-
-        case _5Shots:
-          if(sonic[0] == _usDistReq)
-          {
-            sonic[0] = _usDistAckOK;
-            CAN_TxCmd(_readUSSREG);
-            TCE1_WaitMilliSec_Init(25);
-          }
-          else
-          {
-            sonic[0] = _usErrWrongReq;
-            return sonic;
-          } break;
-
-        case _working:
-          err = 0;
-          TCE1_WaitMilliSec_Init(25);
-          break;
-
-        default: break;
-      }
-    }
-    //--------------------------------------------CheckData
-    else if(sonic[0] == _usDistAckOK || sonic[0] == _usTempAckOK)
-    {
-      // Error check
-      if(TCE1_Wait_Query())
-      {
-        err++;
-        if(err >= 5)
-        {
-          sonic[0] = _usErrTimeout2;
-          return sonic;
-        }
-        CAN_TxCmd(_readUSSREG);
-      }
-      // Check if Data available
-      rec = CAN_RxB0_Read();
-      if(rec[0])
-      {
-        if(rec[2] == _readUSSREG)
-        {
-          err = 0;
-          // Distance
-          if(rec[3] & DISA && sonic[0] == _usDistAckOK)
-          {
-            sonic[0] = _usDistAv;
-            CAN_TxCmd(_readDistance);
-            TCE1_WaitMilliSec_Init(25);
-          }
-          // Temperature
-          else if(rec[3] & TEMPA && sonic[0] == _usTempAckOK)
-          {
-            sonic[0] = _usTempAv;
-            CAN_TxCmd(_readTemp);
-            TCE1_WaitMilliSec_Init(25);
-          }
-        }
-      }
-    }
-    //--------------------------------------------ReadData
-    else if(sonic[0] == _usDistAv || sonic[0] == _usTempAv)
-    {
-      // Error Check
-      if(TCE1_Wait_Query())
-      {
-        err++;
-        if(err >= 5)
-        {
-          sonic[0] = _usErrTimeout3;
-          return sonic;
-        }
-        else if(sonic[0] == _usDistAv) CAN_TxCmd(_readDistance);
-        else if(sonic[0] == _usTempAv) CAN_TxCmd(_readTemp);
-      }
-      // Check data
-      rec = CAN_RxB0_Read();
-      if(rec[0])
-      {
-        if(rec[2] == _readDistance)
-        {
-          sonic[1] = rec[3];
-          sonic[2] = rec[4];
-          sonic[0] = _usDistSuccess;
-        }
-        else if(rec[2] == _readTemp)
-        {
-          sonic[1] = rec[3];
-          sonic[2] = rec[4];
-          sonic[0] = _usTempSuccess;
-        }
-      }
-    }
-    //--------------------------------------------Nothing
-    else
-    {
-      TCE1_Stop();    //StopTimer
-    }
-  }
-  return sonic;
-}
-
-/* ------------------------------------------------------------------*
- *            Sonic Read Application Program
- * ------------------------------------------------------------------*/
-
-unsigned char CAN_SonicReadProgram(t_FuncCmd cmd)
-{
-  static unsigned char state = 0;
-  unsigned char *rec;
-  unsigned char data[128];
-  unsigned char page = 0;
-  unsigned char byte8 = 0;
-  unsigned char byte = 0;
-  int adr = 0;
-
-  // start read application
-  if(cmd == _init)
-  {
-    state = 0;
-    TCE1_WaitMilliSec_Init(TC_CAN_MS);    //SafetyTimer
-    CAN_TxCmd(_readProgram);      //CANTxCmd
-    state = 1;
-  }
-
-  // read application from sonic
-  else if(cmd == _exe)
-  {
-    //------------------------------------------------CheckBootloaderOK
-    if(state == 1)
-    {
-      if(TCE1_Wait_Query()) state = 11;     //Error NoBoot
-      if(CAN_RxACK() == _readProgram){
-        TCE1_WaitMilliSec_Init(TC_CAN_MS);  //SafetyTimer
-        CAN_TxCmd(_readProgram);            //CANTxCmd
-        state = 2;}
-    }
-    //------------------------------------------------ReadApplication
-    else if(state == 2)
-    {
-      for(page = 0; page < 32; page++)  //32Pages = 4kB
-      {
-        LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
-        //--------------------------------------------FillBufferPage128
-        for(byte8 = 0; byte8 < 128; byte8 += 8)
-        {
-          rec = CAN_RxB0_Read();
-
-          // wait until data arrives
-          while(!rec[0])
-          {
-            if(TCE1_Wait_Query()) return state = 12;
-            rec = CAN_RxB0_Read();
-          }
-
-          // read data
-          for(byte = 0; byte < 8; byte++) data[byte8 + byte] = rec[byte + 2];
-
-          //------------------------------------------checkFile
-          if(!page && !byte8)
-          {
-            if((rec[2] != 0x0C) && (rec[3] != 0x94)) return state = 13;
-          }
-
-          TCE1_WaitMilliSec_Init(TC_CAN_MS);      //SafetyTimer
-          CAN_TxCmd(_readProgram);                //CANTxCmd
-        }
-
-        // watchdog restart
-        BASIC_WDT_RESET;
-
-        // set page address and write
-        adr = ((AT24C_BOOT_PAGE_OS + page) << 8);
-        AT24C_WritePage(adr, &data[0]);
-      }
-      state = 4;
-
-      // end
-      CAN_TxCmd(_ack);
-    }
-  }
-  return state;
-}
-
-
-/* ------------------------------------------------------------------*
- *            Sonic Write Application Program
- * -------------------------------------------------------------------*
- *  Parameter:      --------------------------------------------------
- *  cmd: _init      - Start Write App
- *  cmd: _exe       - Write App from from AT24C to Sonic
- *  return:         - state
- * ------------------------------------------------------------------*/
-
-unsigned char CAN_SonicWriteProgram(t_FuncCmd cmd)
-{
-  unsigned char tx[10] = {8, 0x01, 0, 1, 2, 3, 4, 5, 6, 7};
-  unsigned char *p_data;
-  static unsigned char state = 0;
-  unsigned char *rec;
-  unsigned char page = 0;
-  unsigned char byte8 = 0;
-  unsigned char i = 0;
-  int adr = 0;
-
-  //--------------------------------------------init
-  if(cmd == _init)
-  {
-    state = 0;
-    TCE1_WaitMilliSec_Init(TC_CAN_MS);    //SafetyTimer
-    CAN_TxCmd(_program);      //CANTxCmd
-    state = 1;
-  }
-  //--------------------------------------------Exe
-  else if(cmd == _exe)
-  {
-    //------------------------------------------------CheckBootloaderOK
-    if(state == 1)
-    {
-      if(TCE1_Wait_Query()) state = 11;     //Error NoBoot
-      if(CAN_RxACK() == _program){
-        TCE1_WaitMilliSec_Init(TC_CAN_MS);  //SafetyTimer
-        state = 2;}
-    }
-    //------------------------------------------------WriteApp
-    else if(state == 2)
-    {
-      for(page = 0; page < 32; page++)  //32Pages = 4kB
-      {
-        BASIC_WDT_RESET;
-        LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
-        //--------------------------------------------Write1EEPage
-        for(byte8 = 0; byte8 < 128; byte8 += 8)
-        {
-          // TODO (chris#1#): check File
-          adr = (((AT24C_BOOT_PAGE_OS + page) << 8) | byte8);
-          p_data = AT24C_Read8Byte(adr);
-          for(i = 0; i < 8; i++)
-            tx[i + 2] = p_data[i];
-
-          CAN_TxB0_Write(&tx[0]);
-          TCE1_WaitMilliSec_Init(TC_CAN_MS);
-
-          rec = CAN_RxB0_Read();
-          while(!rec[0]){
-            if(TCE1_Wait_Query()) return state = 12;
-            rec = CAN_RxB0_Read();}
-          if(rec[2] != _program)  return state = 12;
-        }
-      }
-      state = 4;
-      CAN_TxCmd(_ack);    //CANTxCmd - END
-    }
-  }
-  return state;
-}
-

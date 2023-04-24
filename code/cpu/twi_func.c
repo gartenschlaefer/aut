@@ -470,8 +470,8 @@ unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i)
       receiveData[a] = TWID.MASTER.DATA;
 
       // ack, stop
-      if(i == 1) TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-      else TWID.MASTER.CTRLC = (TWID.MASTER.CTRLC & ~(TWI_MASTER_ACKACT_bm)) | TWI_MASTER_CMD_RECVTRANS_gc;
+      if(i == 1){ TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc; }
+      else{ TWID.MASTER.CTRLC = (TWID.MASTER.CTRLC & ~(TWI_MASTER_ACKACT_bm)) | TWI_MASTER_CMD_RECVTRANS_gc; }
 
       // update indices
       a++;

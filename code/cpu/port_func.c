@@ -301,33 +301,30 @@ void PORT_RelaisClr(unsigned char relais)
  *            run time functions
  * ------------------------------------------------------------------*/
 
-void PORT_RunTime(struct InputHandler *in, struct PlantState *ps)
-{
-  static int runTime = 0;
-
-  runTime++;
-  if(runTime > 2500)
+void PORT_Auto_RunTime(struct PlantState *ps)
+{ 
+  // once per minute check
+  if(ps->frame_counter->sixty_sec_counter == 20)
   {
-    runTime = 0;
     PORT_Ventilator();
 
     // Floating switch alarm
-    if(IN_FLOAT_S3 && !in->float_sw_alarm)
+    if(IN_FLOAT_S3 && !ps->input_handler->float_sw_alarm)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
         Modem_Alert("Error: floating switch");
         Error_ON(ps->lcd_backlight);
       }
-      in->float_sw_alarm = 1;
+      ps->input_handler->float_sw_alarm = 1;
     }
-    else if(!IN_FLOAT_S3 && in->float_sw_alarm)
+    else if(!IN_FLOAT_S3 && ps->input_handler->float_sw_alarm)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
         Error_OFF(ps->lcd_backlight);
       }
-      in->float_sw_alarm = 0;
+      ps->input_handler->float_sw_alarm = 0;
     }
 
     //*** debug USVCheckVoltageSupply
@@ -336,16 +333,6 @@ void PORT_RunTime(struct InputHandler *in, struct PlantState *ps)
       ADC_USV_Check(&ps->frame_counter->usv);
     }
   }
-}
-
-
-/* ------------------------------------------------------------------*
- *            input handler init
- * ------------------------------------------------------------------*/
-
-void InputHandler_init(struct InputHandler *in)
-{
-   in->float_sw_alarm = 0;
 }
 
 

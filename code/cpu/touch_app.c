@@ -155,19 +155,20 @@ void Touch_AutoLinker(struct PlantState *ps)
 
   switch(Touch_Matrix())
   {
-    //------------------------------------------------BacklightON
+    // backlight
     case 0x11: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
     case 0x12: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
     case 0x13: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
     case 0x14: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
 
+    // secret code
     case 0x21:
       if(!touch)
       { 
         touch = 1;
-        if(bug == 0) bug = 1;
-        else if(bug == 1) bug = 2;
-        else bug = 0;
+        if(bug == 0){ bug = 1; }
+        else if(bug == 1){ bug = 2; }
+        else{ bug = 0; }
         LCD_Backlight(_on, ps->lcd_backlight);
       }
       break;
@@ -175,6 +176,7 @@ void Touch_AutoLinker(struct PlantState *ps)
     case 0x22: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
     case 0x23: LCD_Backlight(_on, ps->lcd_backlight); bug = 0; break;
 
+    // secret code
     case 0x24:
       if(!touch)
       { 
@@ -194,15 +196,14 @@ void Touch_AutoLinker(struct PlantState *ps)
     // main linker
     case 0x41: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight);
-      if(bug == 4) bug = 5;
-      else bug = 0;
+      if(bug == 4){ bug = 5; }
+      else{ bug = 0; }
       break;
 
     // manual
     case 0x42: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
       LCD_Sym_MarkTextButton(Manual);
-      OUT_Valve_AutoClose(ps->page_state->page);
       ps->page_state->page = PinManual; LCD_PinPage_Init(ps);
       break;
 
@@ -210,7 +211,6 @@ void Touch_AutoLinker(struct PlantState *ps)
     case 0x43: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
       LCD_Sym_MarkTextButton(Setup);
-      OUT_Valve_AutoClose(ps->page_state->page);
       ps->page_state->page = PinSetup; LCD_PinPage_Init(ps);
       break;
 
@@ -218,7 +218,6 @@ void Touch_AutoLinker(struct PlantState *ps)
     case 0x44: 
       LCD_Backlight(_on, ps->lcd_backlight); Error_OFF(ps->lcd_backlight); bug = 0;
       LCD_Sym_MarkTextButton(Data);
-      OUT_Valve_AutoClose(ps->page_state->page);
       ps->page_state->page = DataPage; break;
 
     case 0x00: if(touch) { touch = 0; } break;
@@ -1112,7 +1111,11 @@ void Touch_SetupCalLinker(struct PlantState *ps)
         LCD_ControlButtons(sn_ok);
         MEM_EEPROM_WriteSetupEntry();
         MEM_EEPROM_WriteVar(CAL_Redo_on, calRedo);
-        if(MEM_EEPROM_ReadVar(SONIC_on)) Sonic_LevelCal(_save);
+        if(MEM_EEPROM_ReadVar(SONIC_on) && ps->sonic_state->level_cal)
+        {
+          MEM_EEPROM_WriteVar(SONIC_L_LV, ps->sonic_state->level_cal & 0x00FF);
+          MEM_EEPROM_WriteVar(SONIC_H_LV, ((ps->sonic_state->level_cal >> 8) & 0x00FF));
+        }
         else MPX_LevelCal(ps, _save);
         ps->page_state->page = SetupPage;
       } break;
@@ -1732,7 +1735,7 @@ void Touch_DataSetupLinker(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Data UltraSonic Linker
+ *            Data sonic Linker
  * ------------------------------------------------------------------*/
 
 void Touch_DataSonicLinker(struct PlantState *ps)
@@ -1746,9 +1749,9 @@ void Touch_DataSonicLinker(struct PlantState *ps)
       if(!touch && ps->page_state->page != DataSonicBoot)
       { 
         touch = 1;
-        if(ps->page_state->page != DataSonic) LCD_Data_SonicWrite(_clear, 0);
+        if(ps->page_state->page != DataSonic){ LCD_Sym_Data_SonicWrite(_clear, 0); }
         LCD_Write_TextButton(4, 0, Shot, 0);
-        Sonic_Data_Shot();
+        Sonic_Data_Shot(ps);
         ps->page_state->page = DataSonic;
       }
       break;
@@ -1758,9 +1761,9 @@ void Touch_DataSonicLinker(struct PlantState *ps)
       if(!touch && ps->page_state->page != DataSonicBoot)
       { 
         touch = 2;
-        LCD_Data_SonicWrite(_clear, 0);
-        LCD_Data_SonicWrite(_autotext, 0);
-        CAN_SonicQuery(_init, _startTemp);
+        LCD_Sym_Data_SonicWrite(_clear, 0);
+        LCD_Sym_Data_SonicWrite(_autotext, 0);
+        Sonic_Query_Temp_Init(ps);
         ps->page_state->page = DataSonicAuto;
       }
       break;
@@ -1770,7 +1773,7 @@ void Touch_DataSonicLinker(struct PlantState *ps)
       if(!touch)
       { 
         touch = 3;
-        LCD_Data_SonicWrite(_clear, 0);
+        LCD_Sym_Data_SonicWrite(_clear, 0);
         LCD_Write_TextButton(16, 0, Boot, 0);
         LCD_Write_TextButton(4, 120, Read, 1);
         LCD_Write_TextButton(10, 120, Write, 1);
@@ -1778,13 +1781,13 @@ void Touch_DataSonicLinker(struct PlantState *ps)
         if(ps->page_state->page == DataSonicBoot)
         {
           LCD_Write_TextButton(16, 0, Boot, 1);
-          LCD_Data_SonicWrite(_clear, 0);
-          Sonic_Data_Boot(_off);
+          LCD_Sym_Data_SonicWrite(_clear, 0);
+          Sonic_Data_Boot_Off(ps);
           ps->page_state->page = DataSonic; 
           break;
         }
 
-        Sonic_Data_Boot(_on);
+        Sonic_Data_Boot_On(ps);
         ps->page_state->page = DataSonicBoot;
       }
       break;
@@ -1805,10 +1808,10 @@ void Touch_DataSonicLinker(struct PlantState *ps)
       break;
 
     // main linker
-    case 0x41: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = AutoPage; break;
-    case 0x42: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
-    case 0x43: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
-    case 0x44: touch = 0; LCD_Data_SonicWrite(_clear, 0); ps->page_state->page = DataPage; break;
+    case 0x41: touch = 0; LCD_Sym_Data_SonicWrite(_clear, 0); ps->page_state->page = AutoPage; break;
+    case 0x42: touch = 0; LCD_Sym_Data_SonicWrite(_clear, 0); ps->page_state->page = PinManual; LCD_PinPage_Init(ps); break;
+    case 0x43: touch = 0; LCD_Sym_Data_SonicWrite(_clear, 0); ps->page_state->page = PinSetup; LCD_PinPage_Init(ps); break;
+    case 0x44: touch = 0; LCD_Sym_Data_SonicWrite(_clear, 0); ps->page_state->page = DataPage; break;
     default: break;
   }
 }

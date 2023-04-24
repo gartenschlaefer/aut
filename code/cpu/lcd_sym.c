@@ -110,14 +110,16 @@ void LCD_Sym_Auto_Text(struct PlantState *ps)
 
   // Read water level
   MPX_ReadTank(ps, _write);
-  LCD_Sym_Auto_SonicVal(AutoPage, _write);
+  LCD_Sym_Auto_SonicVal(ps->page_state->page, _write);
 
   // compressor hours
   LCD_WriteAnyValue(f_4x6_p, 5, 15,43, Eval_Comp_OpHours(_init));
 
   // ip sensor
   if(MEM_EEPROM_ReadVar(SENSOR_outTank)) LCD_WriteAnySymbol(s_29x17, 16, 90, p_sensor);
-  Sonic_ReadTank(AutoPage, _write);
+
+  // sonic
+  if(!LCD_Sym_Sonic_NoUS(ps->page_state->page, _check)){ LCD_Sym_Auto_SonicVal(ps->page_state->page, ps->sonic_state->d_mm); }
 }
 
 
@@ -266,9 +268,9 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
 void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms)
 {
   // sec, min, h
-  if(cho & 0x01) LCD_WriteAnyValue(f_4x6_p, 2, 13, 109, t_hms->sec);
-  if(cho & 0x02) LCD_WriteAnyValue(f_4x6_p, 2, 13, 97, t_hms->min);
-  if(cho & 0x04) LCD_WriteAnyValue(f_4x6_p, 2, 13,85, t_hms->hou);
+  if(cho & 0x01){ LCD_WriteAnyValue(f_4x6_p, 2, 13, 109, t_hms->sec); }
+  if(cho & 0x02){ LCD_WriteAnyValue(f_4x6_p, 2, 13, 97, t_hms->min); }
+  if(cho & 0x04){ LCD_WriteAnyValue(f_4x6_p, 2, 13,85, t_hms->hou); }
 }
 
 
@@ -718,7 +720,7 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
   { 
     LCD_WriteAnySymbol(s_19x19, 2, 40, n_sonic);
     LCD_WriteAnyStringFont(f_6x8_p, 17,66, "mm");
-    Sonic_LevelCal(_init);
+    LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
   }
   else
   { 
@@ -977,15 +979,14 @@ void LCD_Sym_Data_Setup(void)
 }
 
 
-
 /* ------------------------------------------------------------------*
  *            Set Data Sonic
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Data_Sonic(void)
+void LCD_Sym_Data_Sonic(struct PlantState *ps)
 {
   LCD_ClrSpace(1, 0, 12, 160);
-  Sonic_Data_Boot(_off);
+  Sonic_Data_Boot_Off(ps);
   LCD_WriteAnyStringFont(f_6x8_p, 1, 91, "[ C]");
 
   // degree symbol
@@ -999,6 +1000,30 @@ void LCD_Sym_Data_Sonic(void)
 }
 
 
+/* ------------------------------------------------------------------*
+ *            sonic - SoftwareVersion
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Data_Sonic_ReadSversion(struct PlantState *ps)
+{
+  // get sonic version
+  Sonic_ReadVersion(ps);
+
+  // application version
+  switch(ps->sonic_state->app_type)
+  {
+    case SONIC_APP_75kHz: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "75kHz"); break;
+    case SONIC_APP_125kHz: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "125kHz"); break;
+    case SONIC_APP_boot: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "Boot  "); break;
+    default: break;
+  }
+
+  // write software version Sx.x
+  LCD_WriteAnyFont(f_4x6_p, 1, 52, 21);
+  LCD_WriteAnyFont(f_4x6_p, 1, 57, ((ps->sonic_state->software_version & 0xF0) >> 4));
+  LCD_WriteAnyFont(f_4x6_p, 1,61, 22);
+  LCD_WriteAnyFont(f_4x6_p, 1, 65, (ps->sonic_state->software_version & 0x0F));
+}
 
 
 /* ------------------------------------------------------------------*
@@ -1017,7 +1042,7 @@ void LCD_Sym_DataArrows(void)
  *            Data SonicShot
  * ------------------------------------------------------------------*/
 
-void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
+void LCD_Sym_Data_SonicWrite(t_FuncCmd cmd, int shot)
 {
   static unsigned char i = 5;
   static int max = 0;
@@ -1042,7 +1067,7 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
   //--------------------------------------------------OneShot
   else if(cmd == _shot)
   {
-    LCD_WriteAnyValue(f_4x6_p, 5, i, 126, shot); //WriteOneShot
+    LCD_WriteAnyValue(f_4x6_p, 5, i, 126, shot);
     i = i + 3;
   }
   //--------------------------------------------------AutoShot
@@ -1141,13 +1166,13 @@ void LCD_Data_SonicWrite(t_FuncCmd cmd, int shot)
     LCD_WriteAnyFont(f_4x6_p, 5, 102, 22);  //.
   }
   //--------------------------------------------------Messages
-  else if(cmd == _noUS) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoUS");
-  else if(cmd == _noBoot) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoBoot");
-  else if(cmd == _error) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Error");
-  else if(cmd == _ok) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "OK...Cycle Power!");
-  else if(cmd == _noData) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoData");
-  else if(cmd == _success) LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Success");
-  else if(cmd == _mcp_fail) LCD_WriteAnyStringFont(f_6x8_p, 17, 100, "MCP-fail");
+  else if(cmd == _noUS){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoUS"); }
+  else if(cmd == _noBoot){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoBoot"); }
+  else if(cmd == _error){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Error"); }
+  else if(cmd == _ok){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "OK...Cycle Power!"); }
+  else if(cmd == _noData){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoData"); }
+  else if(cmd == _success){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Success"); }
+  else if(cmd == _mcp_fail){ LCD_WriteAnyStringFont(f_6x8_p, 17, 100, "MCP-fail"); }
 }
 
 
@@ -1746,28 +1771,22 @@ unsigned char LCD_Sym_Sonic_NoUS(t_page page, t_FuncCmd cmd)
 
 
 /* ------------------------------------------------------------------*
- *            Auto UltraSonic Value
+ *            Auto sonic Value
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Auto_SonicVal(t_page page, int sonic)
 {
-  int zero = 0;
-  int dif = 0;
-  int per = 0;
-  int cal = 0;
-  int lvO2 = 0;
-
   // deactivated sonic
-  if(!MEM_EEPROM_ReadVar(SONIC_on)) return;
-  //--------------------------------------------------mm
+  if(!MEM_EEPROM_ReadVar(SONIC_on)){ return; }
+
+  // value
   switch(page)
   {
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCircOn:    case AutoCircOff:
     case AutoAirOn:   case AutoAirOff:  case AutoPage:
+      // value and mm
       LCD_WriteAnyValue(f_4x6_p, 4, 17, 5, sonic);
-
-      // mm
       LCD_WriteAnyFont(f_4x6_p, 17, 22, 13);
       LCD_WriteAnyFont(f_4x6_p, 17, 26, 13);
       break;
@@ -1776,23 +1795,25 @@ void LCD_Sym_Auto_SonicVal(t_page page, int sonic)
   }
 
   // percentage
-  zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  int zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
+  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
   
   //water-level-difference
-  dif = lvO2 * 10;
-  cal = sonic - (zero - (lvO2 * 10));
-  if(sonic > zero) per = 0;
-  else per = 100 - ((cal * 10) / dif) * 10;
-  if(!sonic) per = 0;
+  int per = 0;
+  int dif = lvO2 * 10;
+  int cal = sonic - (zero - (lvO2 * 10));
+  if(sonic > zero){ per = 0; }
+  else{ per = 100 - ((cal * 10) / dif) * 10; }
+  if(!sonic){ per = 0; }
+
+  // page dependend action
   switch(page)
   {
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCircOn:    case AutoCircOff:
     case AutoAirOn:   case AutoAirOff:  case AutoPage:
+      // xxx%
       LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, per);
-
-      // %
       LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
       break;
 

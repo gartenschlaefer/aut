@@ -32,11 +32,11 @@ void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
   {
     case AutoPage:
 
-      // lcd_reset 30s default: 32000
-      if(ps->frame_counter->lcd_reset == 10){ LCD_Init(); TCC0_wait_ms(2); }
-      else if(ps->frame_counter->lcd_reset == 10000){ LCD_Sym_MarkTextButton(Auto); }
-      else if(ps->frame_counter->lcd_reset == 20000){ LCD_Sym_Logo(); }
-      else if(ps->frame_counter->lcd_reset > 30000){ LCD_Sym_Auto_SetManager(ps); ps->frame_counter->lcd_reset = 0; }
+      // lcd_reset
+      if(ps->frame_counter->lcd_reset == 600){ LCD_Init(); }
+      else if(ps->frame_counter->lcd_reset == 1200){ LCD_Sym_MarkTextButton(Auto); }
+      else if(ps->frame_counter->lcd_reset == 1800){ LCD_Sym_Logo(); }
+      else if(ps->frame_counter->lcd_reset > 2400){ LCD_Sym_Auto_SetManager(ps); ps->frame_counter->lcd_reset = 0; }
       break;
 
     default: break;
@@ -89,6 +89,9 @@ void LCD_AutoPage(struct PlantState *ps)
         LCD_Auto_Phosphor_Init(ps);
         OUT_Valve_Init();
         ps->init = 1;
+
+        // read tank init timer
+        ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
       }
 
       // set state output
@@ -117,11 +120,15 @@ void LCD_AutoPage(struct PlantState *ps)
   Touch_AutoLinker(ps);
 
   // sonic
-  Sonic_ReadTank(ps, _exe);
+  Sonic_ReadTank(ps);
 
   // change page through countdown, touch, or sonic
   if(ps->auto_save_page_state->page != ps->page_state->page)
   { 
+    // close old page
+    LCD_Auto_ResetAutoSavePageState(ps);
+
+    // set new page
     LCD_Sym_Auto_SetManager(ps);
     LCD_Auto_SetStateTime(ps);
     LCD_Auto_SetStateOutput(ps);
@@ -173,28 +180,27 @@ void LCD_Auto_SetStateTime(struct PlantState *ps)
       break;
 
     case AutoCircOn: 
-      *p_min = (( MEM_EEPROM_ReadVar(TIME_H_circ) << 8) | MEM_EEPROM_ReadVar(TIME_L_circ));
-      *p_sec = 0;
-      break;
-
     case AutoCircOff:
       *p_min = (( MEM_EEPROM_ReadVar(TIME_H_circ) << 8) | MEM_EEPROM_ReadVar(TIME_L_circ));
       *p_sec = 0;
+      // circulate start time
+      ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
+      ps->air_circ_state->air_tms->sec = 0;
       break;
 
     case AutoAirOn: 
-      *p_min = (( MEM_EEPROM_ReadVar(TIME_H_air) << 8) | MEM_EEPROM_ReadVar(TIME_L_air));
-      *p_sec = 0;
-      break;
-
     case AutoAirOff:
       *p_min = (( MEM_EEPROM_ReadVar(TIME_H_air) << 8) | MEM_EEPROM_ReadVar(TIME_L_air));
       *p_sec = 0;
+      // air start time
+      ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_air);
+      ps->air_circ_state->air_tms->sec = 0;
       break;
 
     default: break;
   }
 }
+
 
 
 /* ------------------------------------------------------------------*
@@ -234,6 +240,31 @@ void LCD_Auto_SetStateOutput(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
+ *            reset state output
+ * ------------------------------------------------------------------*/
+
+void LCD_Auto_ResetAutoSavePageState(struct PlantState *ps)
+{
+  switch(ps->auto_save_page_state->page)
+  {
+    case AutoZone: OUT_Clr_Air(); break;
+    case AutoSetDown: break;
+    case AutoPumpOff: OUT_Clr_PumpOff(); break;
+    case AutoMud: OUT_Clr_Mud(); break;
+    case AutoCircOn: OUT_Clr_Air(); break;
+    case AutoAirOn: OUT_Clr_Air(); break;
+
+    case AutoCircOff: 
+    case AutoAirOff:
+      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); } 
+      break;
+
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
  *            end state action
  * ------------------------------------------------------------------*/
 
@@ -241,13 +272,15 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
 {
   switch(ps->page_state->page)
   {
-    case AutoZone: MPX_ReadTank(ps, _exe); OUT_Clr_Air(); break;
+    case AutoZone: 
+      MPX_ReadTank(ps, _exe); 
+      ps->page_state->page = AutoCircOn; 
+      break;
+
     case AutoSetDown: ps->page_state->page = AutoPumpOff; break;
-    case AutoPumpOff: OUT_Clr_PumpOff(); ps->page_state->page = AutoMud; break;
+    case AutoPumpOff: ps->page_state->page = AutoMud; break;
     
     case AutoMud:
-      // close mud valve
-      OUT_Clr_Mud();
 
       // oxygen entry, todo: check this
       Eval_Oxygen(_entry, 0);
@@ -255,31 +288,14 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
       Eval_Oxygen(_clear, 0);
 
       // calibration for pressure sensing
-      if(MEM_EEPROM_ReadVar(CAL_Redo_on) && !(MEM_EEPROM_ReadVar(SONIC_on))) ps->page_state->page = AutoZone;
-      else ps->page_state->page = AutoCircOn;
+      if(MEM_EEPROM_ReadVar(CAL_Redo_on) && !(MEM_EEPROM_ReadVar(SONIC_on))){ ps->page_state->page = AutoZone; }
+      else{ ps->page_state->page = AutoCircOn; }
       break;
 
     case AutoCircOn:
-      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
-      OUT_Clr_Air();
-      ps->page_state->page = AutoAirOn;
-      break;
-
-    case AutoCircOff:
-      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
-      ps->page_state->page = AutoAirOn;
-      break;
-
+    case AutoCircOff: ps->page_state->page = AutoAirOn; break;
     case AutoAirOn:
-      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
-      OUT_Clr_Air();
-      ps->page_state->page = AutoSetDown;
-      break;
-
-    case AutoAirOff:
-      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
-      ps->page_state->page = AutoSetDown;
-      break;
+    case AutoAirOff: ps->page_state->page = AutoSetDown; break;
 
     default: break;
   }
@@ -542,8 +558,6 @@ void LCD_Auto_Phosphor(struct PlantState *ps)
 
 void LCD_ManualPage(struct PlantState *ps)
 {
-  static unsigned char count = 0;
-
   // save page to detect changes by touch
   t_page save_page = ps->page_state->page;
 
@@ -558,9 +572,8 @@ void LCD_ManualPage(struct PlantState *ps)
 
     // blinking pump off text
     case ManualPumpOff:
-      count++;
-      if(count == 125){ LCD_Sym_Manual_PumpOff_PressOk(f_6x8_n); }
-      if(count == 250){ LCD_Sym_Manual_PumpOff_PressOk(f_6x8_p); }
+      if(ps->frame_counter->frame == 29){ LCD_Sym_Manual_PumpOff_PressOk(f_6x8_n); }
+      if(ps->frame_counter->frame == 59){ LCD_Sym_Manual_PumpOff_PressOk(f_6x8_p); }
       break;
 
     default: break;
@@ -585,18 +598,13 @@ void LCD_ManualPage(struct PlantState *ps)
   {
     LCD_Sym_Manual_PageTime(ps->page_state->page_time);
     MPX_ReadAverage(ps, _exe);
-    Sonic_ReadTank(ps, _exe);
+    Sonic_ReadTank(ps);
   }
 
-  //--------------------------------------------------lcd_reset 30s
-  if(ps->frame_counter->lcd_reset > 32000)
-  {
-    ps->frame_counter->lcd_reset = 0;
-    LCD_Init();
-    TCC0_wait_ms(2);
-    LCD_Sym_MarkTextButton(Manual);
-  }
-  ps->frame_counter->lcd_reset++;
+  // lcd refresh
+  if(ps->frame_counter->sixty_sec_counter == 30){ LCD_Init(); }
+  if(ps->frame_counter->lcd_reset > 120){ LCD_Sym_MarkTextButton(Manual); ps->frame_counter->lcd_reset = 0; }
+  //ps->frame_counter->lcd_reset++;
 }
 
 
@@ -703,27 +711,6 @@ void LCD_SetupPage(struct PlantState *ps)
     default: break;
   }
 
-  // switch(page)
-  // {
-  //   // main page
-  //   case SetupPage: page = SetupMain; sMin = 5; sSec = 0; LCD_Sym_Setup_Page(); break;
-  //   case SetupMain: page = LCD_SetupPage_Main(ps); break;
-  //   case SetupCirculate: page = LCD_SetupPage_Circulate(ps); break;
-  //   case SetupAir: page = LCD_SetupPage_Air(ps); break;
-  //   case SetupSetDown: page = LCD_SetupPage_SetDown(ps); break;
-  //   case SetupPumpOff: page = LCD_SetupPage_PumpOff(ps); break;
-  //   case SetupMud: page = LCD_SetupPage_Mud(ps); break;
-  //   case SetupCompressor: page = LCD_SetupPage_Compressor(ps); break;
-  //   case SetupPhosphor: page = LCD_SetupPage_Phosphor(ps); break;
-  //   case SetupInflowPump: page = LCD_SetupPage_InflowPump(ps); break;
-  //   case SetupCal: page = LCD_SetupPage_Cal(ps); break;
-  //   case SetupCalPressure: page = LCD_SetupPage_Cal(ps); break;
-  //   case SetupAlarm: page = LCD_SetupPage_Alarm(ps); break;
-  //   case SetupWatch: page = LCD_SetupPage_Watch(ps); break;
-  //   case SetupZone: page = LCD_SetupPage_Zone(ps); break;
-  //   default: break;
-  // }
-
   // check if page changed
   if(save_page != ps->page_state->page) 
   {
@@ -742,8 +729,8 @@ void LCD_SetupPage(struct PlantState *ps)
       // sonic
       if(MEM_EEPROM_ReadVar(SONIC_on))
       {
-        Sonic_LevelCal(_new);
-        Sonic_LevelCal(_write);
+        Sonic_LevelCal(ps);
+        LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
         LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
         ps->page_state->page = SetupCal;
       }
@@ -816,239 +803,11 @@ void LCD_Setup_Symbols(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Setup Circulate
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Main(struct PlantState *ps)
-// {
-//   t_page page = SetupMain;
-//   page = Touch_SetupLinker(Touch_Matrix(), page);
-//   if(page != SetupMain) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Circulate
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Circulate(struct PlantState *ps)
-// {
-//   t_page page = SetupCirculate;
-//   page = Touch_SetupCirculateLinker(Touch_Matrix(), page);
-//   if(page != SetupCirculate) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Air
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Air(struct PlantState *ps)
-// {
-//   t_page page = SetupAir;
-//   page = Touch_SetupAirLinker(Touch_Matrix(), page);
-//   if(page != SetupAir) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup SetDown
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_SetDown(struct PlantState *ps)
-// {
-//   t_page page = SetupSetDown;
-//   page = Touch_SetupSetDownLinker(Touch_Matrix(), page);
-//   if(page != SetupSetDown) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup PumpOff
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_PumpOff(struct PlantState *ps)
-// {
-//   t_page page = SetupPumpOff;
-//   page = Touch_SetupPumpOffLinker(Touch_Matrix(), page);
-//   if(page != SetupPumpOff) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Mud
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Mud(struct PlantState *ps)
-// {
-//   t_page page = SetupMud;
-//   page = Touch_SetupMudLinker(Touch_Matrix(), page);
-//   if(page != SetupMud) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Compressor
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Compressor(struct PlantState *ps)
-// {
-//   t_page page = SetupCompressor;
-//   page = Touch_SetupCompressorLinker(Touch_Matrix(), page);
-//   if(page != SetupCompressor) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Phosphor
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Phosphor(struct PlantState *ps)
-// {
-//   t_page page = SetupPhosphor;
-//   page = Touch_SetupPhosphorLinker(Touch_Matrix(), page);
-//   if(page != SetupPhosphor) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup InflowPump
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_InflowPump(struct PlantState *ps)
-// {
-//   t_page page = SetupInflowPump;
-//   page = Touch_SetupInflowPumpLinker(Touch_Matrix(), page);
-//   if(page != SetupInflowPump) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Cal
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Cal(struct PlantState *ps)
-// {
-//   t_page page = SetupCal;
-//   static unsigned char iniTime = 0;
-
-//   if(iniTime) page = SetupCalPressure;
-//   page = Touch_SetupCalLinker(Touch_Matrix(), page);
-
-//   if(page == SetupCalPressure)
-//   {
-//     //------------------------------------------------Sonic
-//     if(MEM_EEPROM_ReadVar(SONIC_on))
-//     {
-//         Sonic_LevelCal(_new);
-//         Sonic_LevelCal(_write);
-//         LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
-//         page = SetupCal;
-//     }
-//     //------------------------------------------------PressureSensor
-//     else
-//     {
-//       // 2 min calibration
-//       if(!iniTime){ iniTime = 1; *p_min = 4; *p_sec = 120; OUT_Set_Air(); }
-//       LCD_WriteAnyValue(f_6x8_p, 3, 17, 100, *p_sec);
-//       if(!*p_sec){
-//         iniTime = 0;                        //--ReadPressure
-//         MPX_LevelCal(_new);                 //Read WaterLevel
-//         MPX_LevelCal(_write);               //Write Niveau Pressure
-//         OUT_Clr_Air();                      //Close Air
-//         LCD_ClrSpace(17, 100, 2, 20);       //ClearCountdown
-//         LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);  //Symbol
-//         page = SetupCal; }                   //Back to Normal
-//     }
-//   }
-//   else if(page != SetupCal){ iniTime = 0; LCD_Setup_Symbols(page, p_min, p_sec, ps); } 
-
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Alarm
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Alarm(struct PlantState *ps)
-// {
-//   t_page page = SetupAlarm;
-//   page = Touch_SetupAlarmLinker(Touch_Matrix(), page);
-//   MCP9800_WriteTemp();
-//   if(page != SetupAlarm) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Watch
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Watch(struct PlantState *ps)
-// {
-//   t_page page = SetupWatch;
-//   page = Touch_SetupWatchLinker(Touch_Matrix(), page);
-//   if(page != SetupWatch) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Setup Zone
- * ------------------------------------------------------------------*/
-
-// void LCD_SetupPage_Zone(struct PlantState *ps)
-// {
-//   t_page page = SetupZone;
-//   page = Touch_SetupZoneLinker(Touch_Matrix(), page);
-//   if(page != SetupZone) LCD_Setup_Symbols(page, p_min, p_sec, ps);
-//
-// }
-
-
-/* ------------------------------------------------------------------*
  *            Data Page
  * ------------------------------------------------------------------*/
 
 void LCD_DataPage(struct PlantState *ps)
 {
-  // static int dMin = 5;
-  // static int dSec = 0;
-
-  // int *p_min;
-  // int *p_sec;
-
-  // p_min = &dMin;
-  // p_sec = &dSec;
-
-  // switch(ps->page_state->page)
-  // {
-  //   case DataPage: page = DataMain; ps->page_state->page_time = { .min = 5, .sec = 0}; LCD_Sym_Data_Page(); break;
-  //   case DataMain: page = LCD_DataPage_Main(ps); break;
-  //   case DataAuto: page = LCD_DataPage_Auto(ps); break;
-  //   case DataManual: page = LCD_DataPage_Manual(ps); break;
-  //   case DataSetup: page = LCD_DataPage_Setup(ps); break;
-
-  //   //------------------------------------------------UltraSonic
-  //   case DataSonic:
-  //   case DataSonicAuto:
-  //   case DataSonicBoot:
-  //   case DataSonicBootR:
-  //   case DataSonicBootW: page = LCD_DataPage_Sonic(page, p_min, p_sec, ps); break;
-
-  //   default: break;
-  // }
-
   // save page
   t_page save_page = ps->page_state->page;
 
@@ -1059,9 +818,9 @@ void LCD_DataPage(struct PlantState *ps)
   switch(ps->page_state->page)
   {
     case DataPage: ps->page_state->page = DataMain; break;
-    case DataSonicAuto: Sonic_Data_Auto(); break;
-    case DataSonicBootR: Sonic_Data_BootRead(); ps->page_state->page = DataSonic; break;
-    case DataSonicBootW: Sonic_Data_BootWrite(); ps->page_state->page = DataSonic; break;
+    case DataSonicAuto: Sonic_Data_Auto(ps); break;
+    case DataSonicBootR: Sonic_Data_BootRead(ps); ps->page_state->page = DataSonic; break;
+    case DataSonicBootW: Sonic_Data_BootWrite(ps); ps->page_state->page = DataSonic; break;
     default: break;
   }
 
@@ -1081,77 +840,6 @@ void LCD_DataPage(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Data Main
- * ------------------------------------------------------------------*/
-
-// void LCD_DataPage_Main(struct PlantState *ps)
-// {
-//   t_page page = DataMain;
-//   page = Touch_DataLinker(Touch_Matrix(), page);
-//   if(page != DataMain) LCD_Data_Symbols(page, p_min, p_sec, ps);
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Data Auto
- * ------------------------------------------------------------------*/
-
-// void LCD_DataPage_Auto(struct PlantState *ps)
-// {
-//   t_page page = DataAuto;
-//   page = Touch_DataAutoLinker(Touch_Matrix(), page);
-//   if(page != DataAuto) LCD_Data_Symbols(page, p_min, p_sec, ps); 
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Data Manual
- * ------------------------------------------------------------------*/
-
-// void LCD_DataPage_Manual(struct PlantState *ps)
-// {
-//   t_page page = DataManual;
-//   page = Touch_DataManualLinker(Touch_Matrix(), page);
-//   if(page != DataManual) LCD_Data_Symbols(page, p_min, p_sec, ps);
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Data Setup
- * ------------------------------------------------------------------*/
-
-// void LCD_DataPage_Setup(struct PlantState *ps)
-// {
-//   t_page page = DataSetup;
-//   page = Touch_DataSetupLinker(Touch_Matrix(), page);
-//   if(page != DataSetup) LCD_Data_Symbols(page, p_min, p_sec, ps);
-// }
-
-
-/* ------------------------------------------------------------------*
- *            Data UltraSonic
- * ------------------------------------------------------------------*/
-
-// void LCD_DataPage_Sonic(struct PlantState *ps)
-// {
-//   //*p_min = 5;
-//   ps->page_state->page_time->min = 5;
-//   page = Touch_DataSonicLinker(Touch_Matrix(), page);
-
-//   switch(ps->page_state->page)
-//   {
-//     case DataSonicAuto: Sonic_Data_Auto(); break;
-//     case DataSonicBootR: Sonic_Data_BootRead(); page = DataSonic; break;
-//     case DataSonicBootW: Sonic_Data_BootWrite(); page = DataSonic; break;
-//     default: break;
-//   }
-
-//   if(page != DataSonic && page != DataSonicAuto && page != DataSonicBootR && page != DataSonicBootW) LCD_Data_Symbols(page, p_min, p_sec, ps);
-// }
-
-
-
-/* ------------------------------------------------------------------*
  *            Data Set Pages
  * ------------------------------------------------------------------*/
 
@@ -1166,7 +854,7 @@ void LCD_Data_Symbols(struct PlantState *ps)
     case DataAuto: LCD_Sym_Data_Auto(); break;
     case DataManual: LCD_Sym_Data_Manual(); break;
     case DataSetup: LCD_Sym_Data_Setup(); break;
-    case DataSonic: LCD_Sym_Data_Sonic(); break;
+    case DataSonic: LCD_Sym_Data_Sonic(ps); break;
     default: break;
   }
 }

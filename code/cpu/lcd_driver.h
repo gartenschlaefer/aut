@@ -12,9 +12,9 @@
  *            Backlight 30000 -> ca. 3 min
  * ------------------------------------------------------------------*/
 
-#define BACKLIGHT_TON_FRAMES (3000)
-#define BACKLIGHT_ERROR_ON (400)
-#define BACKLIGHT_ERROR_OFF (2000)
+#define BACKLIGHT_TON_FRAMES (900)
+#define BACKLIGHT_ERROR_ON_FRAMES (180)
+#define BACKLIGHT_ERROR_OFF_FRAMES (60)
 
 
 /* ------------------------------------------------------------------*

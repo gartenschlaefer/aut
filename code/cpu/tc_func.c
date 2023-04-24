@@ -130,11 +130,6 @@ void TCC0_wait_sec(int sec)
  *            TCC0 - PageTimer
  * ------------------------------------------------------------------*/
 
-void TCC0_Main_Wait(void)
-{
-  TCC0_wait_ms(200);
-}
-
 void TCC0_Touch_Wait(void)
 {
   TCC0_wait_ms(15);
@@ -564,5 +559,10 @@ void TCF1_FrameTimer_WaitUntilFrameEnded(struct FrameCounter *frame_counter)
 
   // keep track of frame
   frame_counter->frame++;
-  if(frame_counter->frame >= TC_FPS){ frame_counter->frame = 0; }
+  if(frame_counter->frame >= TC_FPS)
+  { 
+    frame_counter->frame = 0;
+    frame_counter->sixty_sec_counter++;
+    if(frame_counter->sixty_sec_counter >= 60){ frame_counter->sixty_sec_counter = 0; }
+  }
 }

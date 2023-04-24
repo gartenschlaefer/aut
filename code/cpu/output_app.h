@@ -31,6 +31,5 @@ void OUT_Clr_IPAir(void);
 // valves
 void OUT_Valve_CloseAll(void);
 void OUT_Valve_Init(void);
-void OUT_Valve_AutoClose(t_page page);
 
 #endif
