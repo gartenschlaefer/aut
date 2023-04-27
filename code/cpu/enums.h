@@ -7,11 +7,19 @@
 
 
 /* ------------------------------------------------------------------*
+ *            backlight states
+ * ------------------------------------------------------------------*/
+
+typedef enum
+{
+  _bl_off, _bl_on, _bl_error
+}t_backlight_states;
+/* ------------------------------------------------------------------*
  *            phosphor states
  * ------------------------------------------------------------------*/
 
 typedef enum
-{ ph_on, ph_off, ph_disabled
+{ _ph_off, _ph_on, _ph_disabled
 }t_phosphor_states;
 
 
@@ -20,7 +28,7 @@ typedef enum
  * ------------------------------------------------------------------*/
 
 typedef enum
-{ ip_on, ip_off, ip_disabled
+{ _ip_off, _ip_on, _ip_disabled
 }t_inflow_pump_states;
 
 
@@ -92,7 +100,7 @@ typedef enum
 typedef enum
 {
   Auto, Manual, Setup, Data, Sonic, Shot, OpenV, Boot, Read, Write
-}t_textButtons;
+}t_text_buttons;
 
 
 /* ------------------------------------------------------------------*
@@ -282,8 +290,7 @@ typedef enum
 typedef enum
 { 
   OPEN_Reserve, CLOSE_Reserve, OPEN_MudPump, CLOSE_MudPump,
-  OPEN_Air, CLOSE_Air, OPEN_ClearWater, CLOSE_ClearWater, CLOSE_IPAir,  
-  SET_STATE_CLOSE, SET_STATE_OPEN, SET_STATE_ALL_CLOSED, SET_STATE_ALL_OPEN, READ_STATE
+  OPEN_Air, CLOSE_Air, OPEN_ClearWater, CLOSE_ClearWater, CLOSE_IPAir
 }t_valve;
 
 #endif

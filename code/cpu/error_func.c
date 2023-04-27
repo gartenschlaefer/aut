@@ -21,17 +21,17 @@
  *  set error signals
  * ------------------------------------------------------------------*/
 
-void Error_ON(struct LcdBacklight *b)
+void Error_On(struct PlantState *ps)
 {
-  PORT_Buzzer(_error);
-  LCD_Backlight(_error, b);
+  ps->port_state->buzzer_on = true;
+  PORT_Backlight_Error(ps->backlight);
   PORT_RelaisSet(R_ALARM);
 }
 
-void Error_OFF(struct LcdBacklight *b)
+void Error_Off(struct PlantState *ps)
 {
-  PORT_Buzzer(_off);
-  LCD_Backlight(_on, b);
+  ps->port_state->buzzer_on = false;
+  PORT_Backlight_On(ps->backlight);
   PORT_RelaisClr(R_ALARM);
 }
 
@@ -46,10 +46,10 @@ void Error_Read(struct PlantState *ps)
   ps->error_state->pending_err_code = 0;
 
   // temp
-  if(MCP9800_PlusTemp() > MEM_EEPROM_ReadVar(ALARM_temp)) ps->error_state->pending_err_code |= E_T;
+  if(MCP9800_PlusTemp(ps->twi_state) > MEM_EEPROM_ReadVar(ALARM_temp)){ ps->error_state->pending_err_code |= E_T; }
 
   // over-pressure
-  if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | (MEM_EEPROM_ReadVar(MAX_L_druck)))) ps->error_state->pending_err_code |= E_OP;
+  if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | (MEM_EEPROM_ReadVar(MAX_L_druck)))){ ps->error_state->pending_err_code |= E_OP; }
 
   // under-pressure check if necessary
   unsigned char check_up_err = 0;
@@ -58,17 +58,17 @@ void Error_Read(struct PlantState *ps)
     case AutoCircOff: case AutoAirOff:
 
       // inflow pump
-      if(ps->inflow_pump_state->ip_state == ip_on)
+      if(ps->inflow_pump_state->ip_state == _ip_on)
       {
         // mammoth pump
-        if(!(MEM_EEPROM_ReadVar(PUMP_inflowPump))) check_up_err = 1;
+        if(!(MEM_EEPROM_ReadVar(PUMP_inflowPump))){ check_up_err = 1; }
       }
       break;
 
     case AutoPumpOff:
 
       // mammoth pump
-      if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))) check_up_err = 1;
+      if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))){ check_up_err = 1; }
       break;
 
     case AutoZone: case AutoMud: case AutoCircOn: case AutoAirOn:
@@ -79,7 +79,7 @@ void Error_Read(struct PlantState *ps)
   }
 
   // under-pressure
-  if(check_up_err && (MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck) << 8) | (MEM_EEPROM_ReadVar(MIN_L_druck))))) ps->error_state->pending_err_code |= E_UP;
+  if(check_up_err && (MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck) << 8) | (MEM_EEPROM_ReadVar(MIN_L_druck))))){ ps->error_state->pending_err_code |= E_UP; }
 
   // max in tank
   //if(MPX_ReadTank(AutoAirOn, _error) == ErrorMPX) ps->error_state->pending_err_code |= E_IT;
@@ -93,8 +93,6 @@ void Error_Read(struct PlantState *ps)
 
 void Error_Detection(struct PlantState *ps)
 {
-  //static struct ErrorState treat = {.page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00 };
-
   // check if errors occur
   //unsigned char err = Error_Read(ps);
   Error_Read(ps);
@@ -103,7 +101,7 @@ void Error_Detection(struct PlantState *ps)
   ps->error_state->page = ps->page_state->page;
 
   // run the buzzer
-  PORT_Buzzer(_exe);
+  PORT_Buzzer_Update(ps);
 
   // error timer on
   if(ps->error_state->pending_err_code && !ps->error_state->err_code)
@@ -141,7 +139,7 @@ void Error_Detection(struct PlantState *ps)
   if(ps->error_state->err_reset_flag)
   {
     ps->error_state->err_reset_flag = 0;
-    Error_OFF(ps->lcd_backlight);
+    Error_Off(ps);
     TCE0_ErrorTimer(_reset);
     LCD_Sym_Auto_SetManager(ps);
   }
@@ -168,13 +166,13 @@ void Error_Treatment(struct PlantState *ps)
   if(ps->error_state->err_code & E_OP)
   {
     // ps->error_state->ent
-    if(Error_Action_OP_Air(ps)) ps->error_state->err_code &= ~E_OP;
+    if(Error_Action_OP_Air(ps)){ ps->error_state->err_code &= ~E_OP; }
   }
 
   // under-pressure
   if(ps->error_state->err_code & E_UP)
   {
-    if(Error_Action_UP_Air(ps)) ps->error_state->err_code &= ~E_UP;
+    if(Error_Action_UP_Air(ps)){ ps->error_state->err_code &= ~E_UP; }
   }
 
   // max in tank
@@ -202,10 +200,8 @@ void Error_Treatment(struct PlantState *ps)
 
 unsigned char Error_Action_OP_Air(struct PlantState *ps)
 {
-  static unsigned char s_op = 0;
-
   // start closing valves
-  if(!s_op)
+  if(!ps->error_state->op_state)
   {
     // stop compressor and set errors
     OUT_Clr_Compressor();
@@ -215,81 +211,118 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
     switch(ps->page_state->page)
     {
       // pump off: mammoth pump
-      case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VALVE.OUTSET = C_CLRW; PORT_Valve(SET_STATE_CLOSE, V_CLW); } break;
+      case AutoPumpOff: 
+        if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
+        { 
+          P_VALVE.OUTSET = C_CLRW; 
+          ps->port_state->valve_state &= ~V_CLW; 
+        }
+        break;
 
       // mud
-      case AutoMud: P_VALVE.OUTSET = C_MUD; PORT_Valve(SET_STATE_CLOSE, V_MUD); break;
+      case AutoMud: 
+        P_VALVE.OUTSET = C_MUD; 
+        ps->port_state->valve_state &= ~V_MUD; 
+        break;
 
       // air off
       case AutoAirOff:
       case AutoCircOff:
-        if((ps->inflow_pump_state->ip_state == ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
+        if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
         {
           P_VALVE.OUTSET = C_RES;
-          PORT_Valve(SET_STATE_CLOSE, V_RES);
+          ps->port_state->valve_state &= ~V_RES;
         }
         break;
 
       // air on
       case AutoCircOn:
       case AutoAirOn:
-      case AutoZone: P_VALVE.OUTSET = C_AIR; PORT_Valve(SET_STATE_CLOSE, V_AIR); break;
+      case AutoZone: 
+        P_VALVE.OUTSET = C_AIR; 
+        ps->port_state->valve_state &= ~V_AIR; 
+        break;
+
       default: break;
     }
-    s_op = 1;
+    ps->error_state->op_state = 1;
   }
 
   // stop closing and start opening
-  else if(s_op == 1)
+  else if(ps->error_state->op_state == 1)
   {
     if(TCE0_ErrorTimer(_cvent))
     {
       switch(ps->page_state->page)
       {
         // pump off (mammoth pump)
-        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VALVE.OUTCLR = C_CLRW; P_VALVE.OUTSET = O_CLRW; PORT_Valve(SET_STATE_OPEN, V_CLW); } break;
+        case AutoPumpOff: 
+          if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
+          { 
+            P_VALVE.OUTCLR = C_CLRW; P_VALVE.OUTSET = O_CLRW; 
+            ps->port_state->valve_state |= V_CLW;
+          }
+          break;
 
         // mud
-        case AutoMud: P_VALVE.OUTCLR = C_MUD; P_VALVE.OUTSET = O_MUD; PORT_Valve(SET_STATE_OPEN, V_MUD); break;
+        case AutoMud: 
+          P_VALVE.OUTCLR = C_MUD; 
+          P_VALVE.OUTSET = O_MUD; 
+          ps->port_state->valve_state |= V_MUD;
+          break;
 
         // air off
         case AutoAirOff:
         case AutoCircOff:
-          if((ps->inflow_pump_state->ip_state == ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
+          if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
           {
             P_VALVE.OUTCLR = C_RES;
             P_VALVE.OUTSET = O_RES;
-            PORT_Valve(SET_STATE_OPEN, V_RES);
+            ps->port_state->valve_state |= V_RES;
           }
           break;
 
         // air on
         case AutoCircOn:
         case AutoAirOn:
-        case AutoZone: P_VALVE.OUTCLR = C_AIR; P_VALVE.OUTSET = O_AIR; PORT_Valve(SET_STATE_OPEN, V_AIR); break;
+        case AutoZone: 
+          P_VALVE.OUTCLR = C_AIR; 
+          P_VALVE.OUTSET = O_AIR; 
+          ps->port_state->valve_state |= V_AIR;
+          break;
+
         default: break;
       }
-      s_op = 2;
+      ps->error_state->op_state = 2;
     }
   }
 
   // stop opening, set compressor on
-  else if(s_op == 2)
+  else if(ps->error_state->op_state == 2)
   {
     if(TCE0_ErrorTimer(_ovent))
     {
       switch(ps->page_state->page)
       {
         // pump off: mammoth pump
-        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ P_VALVE.OUTCLR = O_CLRW; OUT_Set_Compressor(); } break;
+        case AutoPumpOff: 
+          if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
+          { 
+            P_VALVE.OUTCLR = O_CLRW; 
+            OUT_Set_Compressor(); 
+          }
+          break;
 
         // mud
-        case AutoMud: P_VALVE.OUTCLR = O_MUD; OUT_Set_Compressor(); break;
+        case AutoMud: 
+          P_VALVE.OUTCLR = O_MUD; 
+          OUT_Set_Compressor(); 
+          break;
 
         // no air
         case AutoAirOff:
         case AutoCircOff:
-          if((ps->inflow_pump_state->ip_state == ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)) 
+          if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)) 
           {
             P_VALVE.OUTCLR = O_RES;
             OUT_Set_Compressor();
@@ -299,12 +332,16 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
         // air
         case AutoCircOn:
         case AutoAirOn:
-        case AutoZone: P_VALVE.OUTCLR = O_AIR; OUT_Set_Compressor(); break;
+        case AutoZone: 
+          P_VALVE.OUTCLR = O_AIR; 
+          OUT_Set_Compressor(); 
+          break;
+
         default: break;
       }
 
       // error treated
-      s_op = 0;
+      ps->error_state->op_state = 0;
       return 1;
     }
   }
@@ -322,7 +359,7 @@ unsigned char Error_Action_UP_Air(struct PlantState *ps)
   {
     case AutoAirOff:
     case AutoCircOff:
-      if((ps->inflow_pump_state->ip_state == ip_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
+      if((ps->inflow_pump_state->ip_state == _ip_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
       {
         Error_Action_UP_SetError(ps);
         OUT_Set_Compressor();
@@ -347,17 +384,15 @@ unsigned char Error_Action_UP_Air(struct PlantState *ps)
 
 void Error_Action_Temp_SetError(struct PlantState *ps)
 {
-  static unsigned char c = 0;
-
   LCD_Sym_Error(E_T);
-  c++;
-  if(c == 2)
+  ps->error_state->error_counter[ERROR_ID_T]++;
+  if(ps->error_state->error_counter[ERROR_ID_T] == 2)
   {
-    Error_ON(ps->lcd_backlight);
-    MEM_EEPROM_WriteAutoEntry(0, 1, Write_Error);
-    Error_ModemAction(E_T);
+    Error_On(ps);
+    MEM_EEPROM_WriteAutoEntry(ps, 0, 1, Write_Error);
+    Error_ModemAction(ps, E_T);
   }
-  if(c > 250) c = 0;
+  if(ps->error_state->error_counter[ERROR_ID_T] > 250){ ps->error_state->error_counter[ERROR_ID_T] = 0; }
 }
 
 
@@ -367,17 +402,15 @@ void Error_Action_Temp_SetError(struct PlantState *ps)
 
 void Error_Action_OP_SetError(struct PlantState *ps)
 {
-  static unsigned char c = 0;
-
   LCD_Sym_Error(E_OP);
-  c++;
-  if(c == 2)
+  ps->error_state->error_counter[ERROR_ID_OP]++;
+  if(ps->error_state->error_counter[ERROR_ID_OP] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_comp)) Error_ON(ps->lcd_backlight);
-    MEM_EEPROM_WriteAutoEntry(0, 2, Write_Error);
-    Error_ModemAction(E_OP);
+    if(MEM_EEPROM_ReadVar(ALARM_comp)){ Error_On(ps); }
+    MEM_EEPROM_WriteAutoEntry(ps, 0, 2, Write_Error);
+    Error_ModemAction(ps, E_OP);
   }
-  if(c > 250) c = 0;
+  if(ps->error_state->error_counter[ERROR_ID_OP] > 250){ ps->error_state->error_counter[ERROR_ID_OP] = 0; }
 }
 
 
@@ -387,17 +420,15 @@ void Error_Action_OP_SetError(struct PlantState *ps)
 
 void Error_Action_UP_SetError(struct PlantState *ps)
 {
-  static unsigned char c = 0;
-
   LCD_Sym_Error(E_UP);
-  c++;
-  if(c == 2)
+  ps->error_state->error_counter[ERROR_ID_UP]++;
+  if(ps->error_state->error_counter[ERROR_ID_UP] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_comp)) Error_ON(ps->lcd_backlight);
-    MEM_EEPROM_WriteAutoEntry(0, 4, Write_Error);
-    Error_ModemAction(E_UP);
+    if(MEM_EEPROM_ReadVar(ALARM_comp)){ Error_On(ps); }
+    MEM_EEPROM_WriteAutoEntry(ps, 0, 4, Write_Error);
+    Error_ModemAction(ps, E_UP);
   }
-  if(c > 250) c = 0;
+  if(ps->error_state->error_counter[ERROR_ID_UP] > 250){ ps->error_state->error_counter[ERROR_ID_UP] = 0; }
 }
 
 
@@ -407,17 +438,15 @@ void Error_Action_UP_SetError(struct PlantState *ps)
 
 void Error_Action_IT_SetError(struct PlantState *ps)
 {
-  static unsigned char c = 0;
-
   LCD_Sym_Error(E_IT);
-  c++;
-  if(c == 2)
+  ps->error_state->error_counter[ERROR_ID_IT]++;
+  if(ps->error_state->error_counter[ERROR_ID_IT] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON(ps->lcd_backlight);
-    MEM_EEPROM_WriteAutoEntry(0, 8, Write_Error);
-    Error_ModemAction(E_IT);
+    if(MEM_EEPROM_ReadVar(ALARM_sensor)){ Error_On(ps); }
+    MEM_EEPROM_WriteAutoEntry(ps, 0, 8, Write_Error);
+    Error_ModemAction(ps, E_IT);
   }
-  if(c > 250) c = 0;
+  if(ps->error_state->error_counter[ERROR_ID_IT] > 250){ ps->error_state->error_counter[ERROR_ID_IT] = 0; }
 }
 
 
@@ -427,17 +456,15 @@ void Error_Action_IT_SetError(struct PlantState *ps)
 
 void Error_Action_OT_SetError(struct PlantState *ps)
 {
-  static unsigned char c = 0;
-
   LCD_Sym_Error(E_OT);
-  c++;
-  if(c == 2)
+  ps->error_state->error_counter[ERROR_ID_OT]++;
+  if(ps->error_state->error_counter[ERROR_ID_OT] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_sensor)) Error_ON(ps->lcd_backlight);
-    MEM_EEPROM_WriteAutoEntry(0, 16, Write_Error);
-    Error_ModemAction(E_OT);
+    if(MEM_EEPROM_ReadVar(ALARM_sensor)){ Error_On(ps); }
+    MEM_EEPROM_WriteAutoEntry(ps, 0, 16, Write_Error);
+    Error_ModemAction(ps, E_OT);
   }
-  if(c > 250) c = 0;
+  if(ps->error_state->error_counter[ERROR_ID_OT] > 250){ ps->error_state->error_counter[ERROR_ID_OT] = 0; }
 }
 
 
@@ -445,7 +472,7 @@ void Error_Action_OT_SetError(struct PlantState *ps)
  *            Error Modem
  * ------------------------------------------------------------------*/
 
-void Error_ModemAction(unsigned char error)
+void Error_ModemAction(struct PlantState *ps, unsigned char error)
 {
   // SMS message
   char msg[20] = "Error: ";
@@ -462,5 +489,5 @@ void Error_ModemAction(unsigned char error)
   }
 
   // Alert Modem
-  Modem_Alert(msg);
+  Modem_Alert(ps, msg);
 }

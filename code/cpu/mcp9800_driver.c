@@ -52,14 +52,14 @@ void MCP9800_OneShot(void)
  *  MCP9800 receive byte
  * ------------------------------------------------------------------*/
 
-unsigned char MCP9800_ReceiveByte(unsigned char pointer)
+unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char pointer)
 {
   unsigned char send[] = {pointer};
   unsigned char *rec;
   unsigned char rData;
 
-  TWI2_Master_WriteString(MCP_ADDR, send, 1);
-  rec = TWI2_Master_ReadString(MCP_ADDR, 1);
+  TWI_D_Master_WriteString(MCP_ADDR, send, 1);
+  rec = TWI_D_Master_ReadString(twi_state, MCP_ADDR, 1);
   rec++;
   rData = *rec;
   return rData;
@@ -73,25 +73,20 @@ unsigned char MCP9800_ReceiveByte(unsigned char pointer)
 void MCP9800_SendByte(unsigned char pointer, unsigned char sData)
 {
   unsigned char send[] = {pointer, sData};
-  TWI2_Master_WriteString(MCP_ADDR, send, 2);
+  TWI_D_Master_WriteString(MCP_ADDR, send, 2);
 }
 
-
-
-/* ==================================================================*
- *            FUNCTIONS - Apps
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  MPC9800 - Read Temperature (only PlusTemp)
  * ------------------------------------------------------------------*/
 
-unsigned char MCP9800_PlusTemp(void)
+unsigned char MCP9800_PlusTemp(struct TWIState *twi_state)
 {
   unsigned char temp = 0;
 
   // read temperature
-  temp = MCP9800_ReceiveByte(0x00);
+  temp = MCP9800_ReceiveByte(twi_state, 0x00);
 
   // minus sign
   if(temp & 0x80) temp = 0;
@@ -104,33 +99,21 @@ unsigned char MCP9800_PlusTemp(void)
  *  MPC9800 - WriteTemp
  * ------------------------------------------------------------------*/
 
-void MCP9800_WriteTemp(void)
+void MCP9800_WriteTemp(struct TWIState *twi_state)
 {
-  unsigned char temp = 0;
-  static unsigned char run = 0;
+  // read temperature
+  unsigned char temp = MCP9800_ReceiveByte(twi_state, 0x00);
 
-  run++;
-
-  // 1 second
-  if(run > 10)
+  // indicate minus
+  if(temp & 0x80)
   {
-    // reset run
-    run = 0;
-
-    // read temperature
-    temp = MCP9800_ReceiveByte(0x00);
-
-    // indicate minus
-    if(temp & 0x80)
-    {
-      LCD_WriteAnyStringFont(f_6x8_p, 17,84,"-");
-      temp = -temp;
-    }
-
-    // clear minus sign
-    else LCD_ClrSpace(17, 84, 2, 6);
-
-    // write temperature
-    LCD_WriteAnyValue(f_6x8_p, 2, 17, 90, (temp & 0x7F));
+    LCD_WriteAnyStringFont(f_6x8_p, 17, 84, "-");
+    temp = -temp;
   }
+
+  // clear minus sign
+  else{ LCD_ClrSpace(17, 84, 2, 6); }
+
+  // write temperature
+  LCD_WriteAnyValue(f_6x8_p, 2, 17, 90, (temp & 0x7F));
 }

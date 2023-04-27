@@ -20,6 +20,7 @@
 #include "sonic_app.h"
 #include "basic_func.h"
 #include "output_app.h"
+#include "port_func.h"
 
 
 /*-------------------------------------------------------------------*
@@ -60,7 +61,7 @@ void LCD_AutoPage(struct PlantState *ps)
     case AutoPage:
 
       // set auto page
-      LCD_Sym_Auto_Main(); 
+      LCD_Sym_Auto_Main(ps); 
       LCD_Sym_Auto_CountDown(ps->page_state->page_time);
 
       // get previous state and time
@@ -87,7 +88,7 @@ void LCD_AutoPage(struct PlantState *ps)
         LCD_AirState_SetAutoStartTime(ps);
         LCD_Auto_InflowPump_Init(ps);
         LCD_Auto_Phosphor_Init(ps);
-        OUT_Valve_Init();
+        OUT_Valve_Init(ps);
         ps->init = 1;
 
         // read tank init timer
@@ -114,7 +115,7 @@ void LCD_AutoPage(struct PlantState *ps)
   Error_Detection(ps);
 
   // countdown end handling
-  if((Eval_CountDown(ps->page_state->page_time)) && (ps->page_state->page != ErrorTreat)){ LCD_Auto_CountDownEndAction(ps); }
+  if((Basic_CountDown(ps)) && (ps->page_state->page != ErrorTreat)){ LCD_Auto_CountDownEndAction(ps); }
 
   // touch linker
   Touch_AutoLinker(ps);
@@ -135,7 +136,7 @@ void LCD_AutoPage(struct PlantState *ps)
   }
 
   // execute in all auto pages
-  LCD_Backlight(_exe, ps->lcd_backlight);
+  PORT_Backlight_Update(ps->backlight);
   LCD_Auto_InflowPump_Main(ps);
   LCD_Auto_Phosphor(ps);
   MPX_ReadAverage(ps, _exe);
@@ -216,22 +217,22 @@ void LCD_Auto_SetStateOutput(struct PlantState *ps)
     case AutoPage: break;
 
     // other auto pages
-    case AutoZone: OUT_Set_Air(); break;
+    case AutoZone: OUT_Set_Air(ps); break;
     case AutoSetDown: OUT_SetDown(); break;
-    case AutoPumpOff: OUT_Set_PumpOff(); break;
+    case AutoPumpOff: OUT_Set_PumpOff(ps); break;
     case AutoMud: if((ps->page_state->page_time->min == 0) && (ps->page_state->page_time->sec == 0)){ ps->page_state->page_time->sec = 1; break; }
-      OUT_Set_Mud();
+      OUT_Set_Mud(ps);
       break;
 
     case AutoCircOn: 
     case AutoAirOn: 
-      OUT_Set_Air();
+      OUT_Set_Air(ps);
       break;
 
     case AutoCircOff:
     case AutoAirOff:
       // inflow pump
-      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
+      if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
       break;
 
     default: break;
@@ -247,16 +248,16 @@ void LCD_Auto_ResetAutoSavePageState(struct PlantState *ps)
 {
   switch(ps->auto_save_page_state->page)
   {
-    case AutoZone: OUT_Clr_Air(); break;
+    case AutoZone: OUT_Clr_Air(ps); break;
     case AutoSetDown: break;
-    case AutoPumpOff: OUT_Clr_PumpOff(); break;
-    case AutoMud: OUT_Clr_Mud(); break;
-    case AutoCircOn: OUT_Clr_Air(); break;
-    case AutoAirOn: OUT_Clr_Air(); break;
+    case AutoPumpOff: OUT_Clr_PumpOff(ps); break;
+    case AutoMud: OUT_Clr_Mud(ps); break;
+    case AutoCircOn: OUT_Clr_Air(ps); break;
+    case AutoAirOn: OUT_Clr_Air(ps); break;
 
     case AutoCircOff: 
     case AutoAirOff:
-      if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); } 
+      if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); } 
       break;
 
     default: break;
@@ -283,9 +284,9 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
     case AutoMud:
 
       // oxygen entry, todo: check this
-      Eval_Oxygen(_entry, 0);
-      MEM_EEPROM_WriteAutoEntry(0, 0, Write_Entry);
-      Eval_Oxygen(_clear, 0);
+      MEM_EEPROM_WriteAutoEntry(ps, ps->compressor_state->cycle_o2_min, 0, Write_o2);
+      MEM_EEPROM_WriteAutoEntry(ps, 0, 0, Write_Entry);
+      ps->compressor_state->cycle_o2_min = 0;
 
       // calibration for pressure sensing
       if(MEM_EEPROM_ReadVar(CAL_Redo_on) && !(MEM_EEPROM_ReadVar(SONIC_on))){ ps->page_state->page = AutoZone; }
@@ -323,13 +324,13 @@ void LCD_AirState_Manager(struct PlantState *ps)
         t_page cPage = p;
         MPX_ReadTank(ps, _exe);
         MPX_ReadTank(ps, _write);
-        OUT_Clr_Air();
+        OUT_Clr_Air(ps);
 
         // change page
         if(cPage != p)
         { 
           // inflow pump reset
-          if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
+          if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
         }
 
         // set ps
@@ -338,7 +339,7 @@ void LCD_AirState_Manager(struct PlantState *ps)
         LCD_Sym_AutoAirOn(p);
 
         // inflow pump
-        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
+        if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
 
         LCD_AirState_SetAutoStartTime(ps);
         break;
@@ -348,10 +349,10 @@ void LCD_AirState_Manager(struct PlantState *ps)
       case AutoCircOff:
 
         // inflow pump reset
-        if(ps->inflow_pump_state->ip_state == ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(); }
+        if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
 
         // set air on
-        OUT_Set_Air();
+        OUT_Set_Air(ps);
 
         // set pages
         if(p == AutoAirOff){ ps->page_state->page = AutoAirOn; }
@@ -365,7 +366,7 @@ void LCD_AirState_Manager(struct PlantState *ps)
         if(p == ManualCircOn){ ps->page_state->page = ManualCircOff; }
         MPX_ReadTank(ps, _exe);
         MPX_ReadTank(ps, _write);
-        OUT_Clr_Air();
+        OUT_Clr_Air(ps);
         air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
         air_tms->sec = 0;
         break;
@@ -373,7 +374,7 @@ void LCD_AirState_Manager(struct PlantState *ps)
       // manual air off
       case ManualCircOff:
         if(p == ManualCircOff) ps->page_state->page = ManualCircOn;
-        OUT_Set_Air();
+        OUT_Set_Air(ps);
         air_tms->min = MEM_EEPROM_ReadVar(OFF_circ);
         air_tms->sec = 0;
         break;
@@ -401,7 +402,13 @@ void LCD_AirState_Manager(struct PlantState *ps)
   if((p == AutoCircOn) || (p == AutoAirOn) || (p == ErrorTreat))
   {
     LCD_Sym_Auto_PageTime(ps, air_tms);
-    Eval_Oxygen(_count, air_tms->min);
+
+    // o2 min counting
+    if(ps->compressor_state->old_min != air_tms->min)
+    {
+      ps->compressor_state->old_min = air_tms->min;
+      ps->compressor_state->cycle_o2_min++;
+    }
   }
   else{ LCD_Sym_Auto_PageTime(ps, air_tms); }
 }
@@ -438,7 +445,7 @@ void LCD_Auto_InflowPump_Init(struct PlantState *ps)
 void LCD_Auto_InflowPump_Main(struct PlantState *ps)
 {
   // disabled
-  if(ps->inflow_pump_state->ip_state == ip_disabled){ return; }
+  if(ps->inflow_pump_state->ip_state == _ip_disabled){ return; }
 
   // handlers
   int *ip_count = &ps->inflow_pump_state->ip_count;
@@ -447,16 +454,16 @@ void LCD_Auto_InflowPump_Main(struct PlantState *ps)
   t_page p = ps->page_state->page;
 
   // AutoChange2Off
-  if(*ip_state == ip_on && p != ErrorTreat && !ip_thms->min && !ip_thms->sec)
+  if(*ip_state == _ip_on && p != ErrorTreat && !ip_thms->min && !ip_thms->sec)
   {
     *ip_state = _off;
     ip_thms->hou = MEM_EEPROM_ReadVar(T_IP_off_h); ip_thms->min = MEM_EEPROM_ReadVar(OFF_inflowPump); ip_thms->sec = 2;
     LCD_Sym_Auto_Ip_Base(ps);
-    OUT_Clr_InflowPump();
+    OUT_Clr_InflowPump(ps);
   }
 
   // auto change to on state
-  else if( (*ip_state == ip_off) && (p != ErrorTreat) && !ip_thms->hou && !ip_thms->min && !ip_thms->sec && (p == AutoAirOff || p == AutoCircOff))
+  else if( (*ip_state == _ip_off) && (p != ErrorTreat) && !ip_thms->hou && !ip_thms->min && !ip_thms->sec && (p == AutoAirOff || p == AutoCircOff))
   {
     *ip_state = _on;
     ip_thms->hou = 0; ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump); ip_thms->sec = 2;
@@ -465,7 +472,7 @@ void LCD_Auto_InflowPump_Main(struct PlantState *ps)
   }
 
   // countdown
-  if(*ip_state == ip_off || ((p == AutoAirOff || p == AutoCircOff) && *ip_state == ip_on))
+  if(*ip_state == _ip_off || ((p == AutoAirOff || p == AutoCircOff) && *ip_state == _ip_on))
   {
     if(*ip_count != ps->page_state->page_time->sec)
     {
@@ -502,10 +509,10 @@ void LCD_Auto_InflowPump_Main(struct PlantState *ps)
 void LCD_Auto_Phosphor_Init(struct PlantState *ps)
 {
   ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor);
-  if(!ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->sec = 0; ps->phosphor_state->ph_state = ph_disabled; return; }
+  if(!ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->sec = 0; ps->phosphor_state->ph_state = _ph_disabled; return; }
   ps->phosphor_state->ph_tms->min = 1;
   ps->phosphor_state->ph_tms->sec = 5;
-  ps->phosphor_state->ph_state = ph_off;
+  ps->phosphor_state->ph_state = _ph_off;
 }
 
 
@@ -516,7 +523,7 @@ void LCD_Auto_Phosphor_Init(struct PlantState *ps)
 void LCD_Auto_Phosphor(struct PlantState *ps)
 {
   // disabled
-  if(ps->phosphor_state->ph_state == ph_disabled){ return; }
+  if(ps->phosphor_state->ph_state == _ph_disabled){ return; }
 
   // phosphor count
   if(ps->phosphor_state->ph_count != ps->page_state->page_time->sec)
@@ -533,18 +540,18 @@ void LCD_Auto_Phosphor(struct PlantState *ps)
   }
 
   // change to off state
-  if(ps->phosphor_state->ph_state == ph_on && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
+  if(ps->phosphor_state->ph_state == _ph_on && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
   {
-    ps->phosphor_state->ph_state = ph_off;
+    ps->phosphor_state->ph_state = _ph_off;
     ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(OFF_phosphor); ps->phosphor_state->ph_tms->sec = 0;
     LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor);
     OUT_Clr_Phosphor();
   }
 
   // change to on state
-  else if(ps->phosphor_state->ph_state == ph_off && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
+  else if(ps->phosphor_state->ph_state == _ph_off && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
   {
-    ps->phosphor_state->ph_state = ph_on;
+    ps->phosphor_state->ph_state = _ph_on;
     ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor); ps->phosphor_state->ph_tms->sec = 0;
     LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor);
     OUT_Set_Phosphor();
@@ -580,20 +587,20 @@ void LCD_ManualPage(struct PlantState *ps)
   }
 
   // count down
-  if(Eval_CountDown(ps->page_state->page_time)){ MEM_EEPROM_WriteManualEntry(0, 0, _write); ps->page_state->page = AutoPage; }
+  if(Basic_CountDown(ps)){ MEM_EEPROM_WriteManualEntry(ps, 0, 0, _write); ps->page_state->page = AutoPage; }
 
   // check if page changed
   if(save_page != ps->page_state->page) 
   {
     // clear old state
-    LCD_Manual_ResetState(save_page);
+    LCD_Manual_ResetState(ps, save_page);
 
     // set new state
     LCD_Manual_SetState(ps);
   }
 
   // backlight
-  LCD_Backlight(_exe, ps->lcd_backlight);
+  PORT_Backlight_Update(ps->backlight);
   if(ps->page_state->page != ManualPumpOff)
   {
     LCD_Sym_Manual_PageTime(ps->page_state->page_time);
@@ -623,19 +630,19 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualMain: 
       *p_min = 5; *p_sec = 0; 
       LCD_Sym_Manual_Main(ps);
-      if(!ps->init){ OUT_Valve_Init(); }
+      if(!ps->init){ OUT_Valve_Init(ps); }
       break;
 
     case ManualCircOn:
       ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
       ps->air_circ_state->air_tms->sec = 0;
-      OUT_Set_Air(); *p_min = 60; *p_sec = 0;
+      OUT_Set_Air(ps); *p_min = 60; *p_sec = 0;
       break;
 
     case ManualAir:
       ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_air);
       ps->air_circ_state->air_tms->sec = 0;
-     OUT_Set_Air(); *p_min = 60; *p_sec = 0;
+     OUT_Set_Air(ps); *p_min = 60; *p_sec = 0;
      break;
 
     case ManualSetDown: *p_min = 60; *p_sec = 0; break;
@@ -650,14 +657,14 @@ void LCD_Manual_SetState(struct PlantState *ps)
       break;
 
     case ManualPumpOff_On:
-      OUT_Set_PumpOff();
+      OUT_Set_PumpOff(ps);
       LCD_ClrSpace(15, 2, 5, 120);
       *p_min = 29;
       *p_sec = 59;
       LCD_Sym_Manual_Text(ps);
       break;
 
-    case ManualMud: OUT_Set_Mud(); *p_min = 5; *p_sec = 0; break;
+    case ManualMud: OUT_Set_Mud(ps); *p_min = 5; *p_sec = 0; break;
     case ManualCompressor: OUT_Set_Compressor(); *p_min = 0; *p_sec = 10; break;
     case ManualPhosphor: OUT_Set_Phosphor(); *p_min = 30; *p_sec = 0; break;
     case ManualInflowPump: OUT_Set_InflowPump(ps); *p_min = 5; *p_sec = 0; break;
@@ -670,19 +677,19 @@ void LCD_Manual_SetState(struct PlantState *ps)
  *            manual reset state
  * ------------------------------------------------------------------*/
 
-void LCD_Manual_ResetState(t_page save_page)
+void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page)
 {
   switch(save_page)
   {
     case ManualSetDown: break;
-    case ManualCircOn: OUT_Clr_Air(); break;
-    case ManualAir: OUT_Clr_Air(); break;
+    case ManualCircOn: OUT_Clr_Air(ps); break;
+    case ManualAir: OUT_Clr_Air(ps); break;
     case ManualPumpOff: break;
-    case ManualPumpOff_On: OUT_Clr_PumpOff(); break;
-    case ManualMud: OUT_Clr_Mud(); break;
+    case ManualPumpOff_On: OUT_Clr_PumpOff(ps); break;
+    case ManualMud: OUT_Clr_Mud(ps); break;
     case ManualCompressor: OUT_Clr_Compressor(); break;
     case ManualPhosphor: OUT_Clr_Phosphor(); break;
-    case ManualInflowPump: OUT_Clr_InflowPump(); break;
+    case ManualInflowPump: OUT_Clr_InflowPump(ps); break;
     default: break;
   }
 }
@@ -718,7 +725,7 @@ void LCD_SetupPage(struct PlantState *ps)
     LCD_Setup_Symbols(ps);
 
     // special ones in change
-    if(ps->page_state->page == SetupCalPressure){ *p_min = 4; *p_sec = 120; OUT_Set_Air(); }
+    if(ps->page_state->page == SetupCalPressure){ *p_min = 4; *p_sec = 120; OUT_Set_Air(ps); }
   }
 
   // special cases
@@ -746,7 +753,7 @@ void LCD_SetupPage(struct PlantState *ps)
         {
           MPX_LevelCal(ps, _new);
           MPX_LevelCal(ps, _write);
-          OUT_Clr_Air();
+          OUT_Clr_Air(ps);
 
           // clear countdown
           LCD_ClrSpace(17, 100, 2, 20);
@@ -756,16 +763,16 @@ void LCD_SetupPage(struct PlantState *ps)
       }
       break;
 
-    case SetupAlarm: MCP9800_WriteTemp(); break;
+    case SetupAlarm: MCP9800_WriteTemp(ps->twi_state); break;
     default: break;
   }
 
   //else if(page != SetupCal){ LCD_Setup_Symbols(ps); } 
 
   // countdown 
-  if(Eval_CountDown(ps->page_state->page_time))
+  if(Basic_CountDown(ps))
   { 
-    if(ps->page_state->page == SetupCalPressure){ OUT_Valve_CloseAll(); }
+    if(ps->page_state->page == SetupCalPressure){ OUT_Valve_CloseAll(ps); }
     ps->page_state->page = AutoPage;
   }
 }
@@ -794,7 +801,7 @@ void LCD_Setup_Symbols(struct PlantState *ps)
     case SetupPhosphor: LCD_Sym_Setup_Phosphor(); break;
     case SetupInflowPump: LCD_Sym_Setup_InflowPump(); break;
     case SetupCal: LCD_Sym_Setup_Cal(ps); break;
-    case SetupAlarm: LCD_Sym_Setup_Alarm(); break;
+    case SetupAlarm: LCD_Sym_Setup_Alarm(ps); break;
     case SetupWatch: LCD_Sym_Setup_Watch(); break;
     case SetupZone: LCD_Sym_Setup_Zone(); break;
     default: break;
@@ -835,7 +842,7 @@ void LCD_DataPage(struct PlantState *ps)
   BASIC_WDT_RESET;
 
   // timeout -> auto page
-  if(Eval_CountDown(ps->page_state->page_time)){ ps->page_state->page = AutoPage; }
+  if(Basic_CountDown(ps)){ ps->page_state->page = AutoPage; }
 }
 
 
@@ -861,7 +868,7 @@ void LCD_Data_Symbols(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Pin Page
+ *            pin page init
  * ------------------------------------------------------------------*/
 
 void LCD_PinPage_Init(struct PlantState *ps)
@@ -870,6 +877,11 @@ void LCD_PinPage_Init(struct PlantState *ps)
   ps->page_state->page_time->min = 5; 
   ps->page_state->page_time->sec = 0;
 }
+
+
+/* ------------------------------------------------------------------*
+ *            pin page main
+ * ------------------------------------------------------------------*/
 
 void LCD_PinPage_Main(struct PlantState *ps)
 {
@@ -886,7 +898,7 @@ void LCD_PinPage_Main(struct PlantState *ps)
   if(save_page != ps->page_state->page){ LCD_Clean(); }
 
   // end condition on countdown
-  if(Eval_CountDown(ps->page_state->page_time)){ LCD_Clean(); ps->page_state->page = AutoPage; }
+  if(Basic_CountDown(ps)){ LCD_Clean(); ps->page_state->page = AutoPage; }
 }
 
 
@@ -1030,7 +1042,7 @@ void LCD_WriteSetupEntryPage(unsigned char page)
  *  Writes One Entry line, call in entryPages
  * ------------------------------------------------------------------*/
 
-void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool half)
+void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half)
 {
   unsigned char i = 0;
   unsigned char startPa = 0;
@@ -1078,7 +1090,7 @@ void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool 
  *            Minus
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char cnt)
+unsigned char LCD_eep_minus(t_text_buttons data, unsigned char eep, unsigned char cnt)
 {
   unsigned char i = 0;
   unsigned char startPa = 0;
@@ -1133,9 +1145,9 @@ void LCD_Calibration(void)
   int x = 0;
   int y = 0;
 
-  struct LcdBacklight lcd_backlight = { .state = _off, .count = 0 };
+  struct Backlight backlight = { .state = _off, .count = 0 };
 
-  LCD_Backlight(_on, &lcd_backlight);
+  PORT_Backlight_On(&backlight);
   Touch_Cal_Main();
   LCD_Clean();
 

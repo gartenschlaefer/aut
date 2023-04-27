@@ -48,10 +48,10 @@ void MCP7941_InitDefault(void)
  *            Write Data i
  * ------------------------------------------------------------------*/
 
-void MCP7941_Write(unsigned char *send, unsigned char i)
+void MCP7941_WriteString(unsigned char *send, unsigned char i)
 {
   // control byte | data bytes | count of bytes
-  TWI2_Master_WriteString(WRITE_RTC_RAM, send, i );
+  TWI_D_Master_WriteString(WRITE_RTC_RAM, send, i );
 }
 
 
@@ -59,11 +59,10 @@ void MCP7941_Write(unsigned char *send, unsigned char i)
  *            Read Data i
  * ------------------------------------------------------------------*/
 
-unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i)
+unsigned char *MCP7941_ReadString(struct TWIState *twi_state, unsigned char *addr, unsigned char i)
 {
-  static unsigned char *mcpRec;
-  TWI2_Master_WriteString(WRITE_RTC_RAM, addr, i);
-  mcpRec = TWI2_Master_ReadString(READ_RTC_RAM, 1);
+  TWI_D_Master_WriteString(WRITE_RTC_RAM, addr, i);
+  unsigned char *mcpRec = TWI_D_Master_ReadString(twi_state, READ_RTC_RAM, 1);
   return mcpRec;
 }
 
@@ -75,7 +74,7 @@ unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i)
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
 {
   unsigned char send[] = { addr, sData };
-  MCP7941_Write(send, 2);
+  MCP7941_WriteString(send, 2);
 }
 
 
@@ -83,12 +82,10 @@ void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
  *            Receive Byte
  * ------------------------------------------------------------------*/
 
-unsigned char MCP7941_ReadByte(unsigned char addr)
+unsigned char MCP7941_ReadByte(struct TWIState *twi_state, unsigned char addr)
 {
   unsigned char send[] = { addr };
-  unsigned char *rec;
-
-  rec = MCP7941_Read(send, 1);
+  unsigned char *rec = MCP7941_ReadString(twi_state, send, 1);
   rec++;
   return *rec;
 }
@@ -112,11 +109,11 @@ void MCP7941_Write_Comp_OpHours(int hours)
  *            Read Compressor OpHoursFromRAM
  * ------------------------------------------------------------------*/
 
-int MCP7941_Read_Comp_OpHours(void)
+int MCP7941_Read_Comp_OpHours(struct TWIState *twi_state)
 {
-  unsigned char h = MCP7941_ReadByte(RAM_OP_ADDR_H);
+  unsigned char h = MCP7941_ReadByte(twi_state, RAM_OP_ADDR_H);
   TCC0_wait_us(25);
-  unsigned char l = MCP7941_ReadByte(RAM_OP_ADDR_L);
+  unsigned char l = MCP7941_ReadByte(twi_state, RAM_OP_ADDR_L);
   TCC0_wait_us(25);
 
   return ((h << 8) | l);
@@ -127,34 +124,34 @@ int MCP7941_Read_Comp_OpHours(void)
  *            Read Time
  * ------------------------------------------------------------------*/
 
-unsigned char MCP7941_ReadTime(unsigned char cmd)
+unsigned char MCP7941_ReadTime(struct TWIState *twi_state, unsigned char cmd)
 {
   unsigned char time = 0;
   unsigned char wTime = 0;
   switch(cmd)
   {
     case TIC_SEC:
-      time = MCP7941_ReadByte(TIC_SEC);
+      time = MCP7941_ReadByte(twi_state, TIC_SEC);
       wTime = (((time >> 4) & 0x07) * 10 + (time & 0x0F)); break;
 
     case TIC_MIN:
-      time = MCP7941_ReadByte(TIC_MIN);
+      time = MCP7941_ReadByte(twi_state, TIC_MIN);
       wTime = (((time >> 4) & 0x07) * 10 + (time & 0x0F)); break;
 
     case TIC_HOUR:
-      time = MCP7941_ReadByte(TIC_HOUR);
+      time = MCP7941_ReadByte(twi_state, TIC_HOUR);
       wTime = (((time >> 4) & 0x03) * 10 + (time & 0x0F)); break;
 
     case TIC_DATE:
-      time = MCP7941_ReadByte(TIC_DATE);
+      time = MCP7941_ReadByte(twi_state, TIC_DATE);
       wTime = (((time >> 4) & 0x03) * 10 + (time & 0x0F)); break;
 
     case TIC_MONTH:
-      time = MCP7941_ReadByte(TIC_MONTH);
+      time = MCP7941_ReadByte(twi_state, TIC_MONTH);
       wTime = (((time >> 4) & 0x01) * 10 + (time & 0x0F)); break;
 
     case TIC_YEAR:
-      time = MCP7941_ReadByte(TIC_YEAR);
+      time = MCP7941_ReadByte(twi_state, TIC_YEAR);
       wTime = (((time >> 4) & 0x0F) * 10 + (time & 0x0F)); break;
   }
   TCC0_wait_us(25);

@@ -43,14 +43,14 @@ void Modem_ReadSLED(t_page page);
 unsigned char Modem_CTS_ready(void);
 void Modem_ReadCTS(void);
 
-char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr);
+char Modem_TelNr(struct PlantState *ps, t_FuncCmd cmd, struct TelNr nr);
 
-unsigned char Modem_Call(struct TelNr nr);
-void Modem_SMS(struct TelNr nr, char msg[]);
+unsigned char Modem_Call(struct PlantState *ps, struct TelNr nr);
+void Modem_SMS(struct PlantState *ps, struct TelNr nr, char msg[]);
 
-void Modem_CallAllNumbers(void);
-void Modem_SMSAllNumbers(char msg[]);
-void Modem_Alert(char msg[]);
+void Modem_Call_AllNumbers(struct PlantState *ps);
+void Modem_SMS_AllNumbers(struct PlantState *ps, char msg[]);
+void Modem_Alert(struct PlantState *ps, char msg[]);
 
 void Modem_SendTest(void);
 void Modem_Test(struct PlantState *ps);

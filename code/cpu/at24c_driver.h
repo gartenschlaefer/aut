@@ -5,6 +5,9 @@
 #ifndef AT24C_DRIVER_H   
 #define AT24C_DRIVER_H
 
+#include "enums.h"
+#include "structs.h"
+
 /* ------------------------------------------------------------------*
  *            defines
  * ------------------------------------------------------------------*/
@@ -21,7 +24,7 @@
 void AT24C_Init(void);
 void AT24C_WriteByte(int addr, unsigned char sData);
 void AT24C_WritePage(int addr, unsigned char *sData);
-unsigned char AT24C_ReadByte(int addr);
-unsigned char *AT24C_Read8Byte(int addr);
+unsigned char AT24C_ReadByte(struct TWIState *twi_state, int addr);
+unsigned char *AT24C_Read8Byte(struct TWIState *twi_state, int addr);
 
 #endif

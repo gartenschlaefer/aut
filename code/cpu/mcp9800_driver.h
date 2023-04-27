@@ -6,6 +6,8 @@
 #define MCP_9800_DRIVER_H
 
 #include <avr/io.h>
+#include "enums.h"
+#include "structs.h"
 
 /* ------------------------------------------------------------------*
  *            defines
@@ -63,10 +65,10 @@
 void MCP9800_Init(void);
 void MCP9800_OneShot(void);
 
-unsigned char MCP9800_ReceiveByte(unsigned char pointer);
+unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char pointer);
 void MCP9800_SendByte(unsigned char pointer, unsigned char sData);
 
-unsigned char MCP9800_PlusTemp(void);
-void MCP9800_WriteTemp(void);
+unsigned char MCP9800_PlusTemp(struct TWIState *twi_state);
+void MCP9800_WriteTemp(struct TWIState *twi_state);
 
 #endif

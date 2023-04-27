@@ -24,7 +24,7 @@ void LCD_Sym_Auto_CountDown(struct Tms *tms);
 void LCD_Sym_Auto_Text(struct PlantState *ps);
 
 // cycle state
-void LCD_Sym_Auto_Main(void);
+void LCD_Sym_Auto_Main(struct PlantState *ps);
 void LCD_Sym_Auto_Zone(void);
 void LCD_Sym_Auto_SetDown(void);
 void LCD_Sym_Auto_PumpOff(void);
@@ -77,7 +77,7 @@ void LCD_Sym_Setup_Compressor(void);
 void LCD_Sym_Setup_Phosphor(void);
 void LCD_Sym_Setup_InflowPump(void);
 void LCD_Sym_Setup_Cal(struct PlantState *ps);
-void LCD_Sym_Setup_Alarm(void);
+void LCD_Sym_Setup_Alarm(struct PlantState *ps);
 void LCD_Sym_Setup_Watch(void);
 void LCD_Sym_Setup_Zone(void);
 
@@ -123,17 +123,19 @@ void LCD_Sym_Pin_RightMessage(void);
 void LCD_Sym_Pin_WrongMessage(void);
 void LCD_Sym_Pin_OpHoursMessage(void);
 void LCD_Sym_Pin_Clear(void);
-void LCD_Sym_Pin_PrintWholeTelNumber(struct TelNr nr);
+void LCD_Sym_Pin_PrintWholeTelNumber(struct PlantState *ps, struct TelNr nr);
 void LCD_Sym_Pin_PrintOneTelNumberDigit(struct TelNr nr);
 void LCD_pPinButtons(unsigned char pPin);
 void LCD_nPinButtons(unsigned char nPin);
+void LCD_Sym_Pin_DelDigits(void);
+void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char codePos);
 
 
 /* ------------------------------------------------------------------*
  *            Control
  * ------------------------------------------------------------------*/
 
-void LCD_TextButton(t_textButtons text, unsigned char pos);
+void LCD_TextButton(t_text_buttons text, unsigned char pos);
 void LCD_ControlButtons(t_CtrlButtons ctrl);
 void LCD_ControlButtons2(t_CtrlButtons ctrl);
 void LCD_Sym_Pin_OkButton(unsigned char on);
@@ -143,7 +145,7 @@ void LCD_Sym_Pin_OkButton(unsigned char on);
  *            Misc
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_MarkTextButton(t_textButtons text);
+void LCD_Sym_MarkTextButton(t_text_buttons text);
 void LCD_Sym_Mark_ManualSymbol(t_SetupSym sym);
 
 void LCD_WriteCtrlButton(void);
@@ -173,8 +175,8 @@ void LCD_Sym_Error(unsigned char err);
  *            timer ic
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Time(void);
-void LCD_Sym_Auto_Date(void);
+void LCD_Sym_Auto_Time(struct PlantState *ps);
+void LCD_Sym_Auto_Date(struct PlantState *ps);
 
 
 /* ------------------------------------------------------------------*

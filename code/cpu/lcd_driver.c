@@ -8,6 +8,7 @@
 #include "lcd_driver.h"
 #include "twi_func.h"
 #include "symbols.h"
+#include "tc_func.h"
 
 
 /*-------------------------------------------------------------------*
@@ -19,64 +20,12 @@ void LCD_Init(void)
   unsigned char LcdInitMacro[] = {Set_Com_End_H, Set_Com_End_L, Set_LCD_Mapping_Control, Set_Scroll_Line_LSB, Set_Scroll_Line_MSB, Set_Panel_Loading, Set_LCD_Bias_Ratio, Set_Vbias_Potentiometer_H, Set_Vbias_Potentiometer_L, Set_RAM_Address_Control, Set_Display_Enable};
 
   // set ports
-  LCD_LED_DIR;
   LCD_RST_DIR;
   LCD_RST_OFF;
   LCD_Rst();
 
   // initialize macros
   while(LCD_SendCmd(LcdInitMacro, 11));
-}
-
-
-/*-------------------------------------------------------------------*
- *  LCD backlight
- * ------------------------------------------------------------------*/
-
-void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b)
-{
-  switch(cmd)
-  {
-    // turn on
-    case _on: LCD_LED_ON; b->state = _on; b->count = 0; break;
-
-    // turn off
-    case _off: LCD_LED_OFF; b->state = _off; break;
-
-    // go into error state
-    case _error: b->state = _error; break;
-
-    // execute
-    case _exe:
-
-      //***LightAlwaysOn-Debug
-      if(DEBUG){ return; }
-
-      // light is on
-      if(b->state == _on)
-      {
-        // b->counting up
-        b->count++;
-
-        // Ton = 3 min
-        if(b->count > BACKLIGHT_TON_FRAMES){ b->count = 0; LCD_LED_OFF; b->state = _off; }
-      }
-
-      // error
-      else if(b->state == _error)
-      {
-        b->count++;
-        if(b->count > BACKLIGHT_ERROR_ON_FRAMES){ LCD_LED_OFF; }
-        if(b->count > BACKLIGHT_ERROR_OFF_FRAMES){ b->count = 0; LCD_LED_ON; }
-      }             
-      break;
-
-    // reset
-    case _reset: b->count = 0; break;
-
-    // default
-    default: break;
-  }
 }
 
 
@@ -89,7 +38,7 @@ unsigned char LCD_SendCmd(unsigned char* SCmd, unsigned char i)
   unsigned char twiErr = 0;
 
   // address, command, count of bytes
-  twiErr = TWI_Master_WriteString(W_CMD, SCmd, i);
+  twiErr = TWI_C_Master_WriteString(W_CMD, SCmd, i);
 
   // check if error occurred
   if(twiErr == E_TWI_NO_DATA || twiErr == E_TWI_WAIT || twiErr == E_TWI_ARBLOST || twiErr == E_TWI_BUSERR  || twiErr == E_TWI_NO_SENT) return 1;
@@ -104,7 +53,7 @@ unsigned char LCD_SendCmd(unsigned char* SCmd, unsigned char i)
 
 void LCD_SendData(unsigned char* SData, unsigned char i)
 {
-  TWI_Master_WriteString(W_DATA, SData, i);
+  TWI_C_Master_WriteString(W_DATA, SData, i);
 }
 
 
@@ -184,11 +133,6 @@ void LCD_WP_Column(unsigned char startCA, unsigned char endCA)
 }
 
 
-
-/* ==================================================================*
- *            FUNCTIONS     Commands
- * ==================================================================*/
-
 /*-------------------------------------------------------------------*
  *  LCD software reset
  * ------------------------------------------------------------------*/
@@ -250,12 +194,12 @@ void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, u
   unsigned char LcdData[160] = {0xFF};
 
   // fill array
-  for(unsigned char p = 0; p < 160; p++) LcdData[p] = 0xFF;
+  for(unsigned char p = 0; p < 160; p++){ LcdData[p] = 0xFF; }
 
   LCD_WP_SetFrame(row, col, height, len);
   
   // 25 pages
-  for(unsigned char p = 0; p < height; p++) LCD_SendData(LcdData, (len));
+  for(unsigned char p = 0; p < height; p++){ LCD_SendData(LcdData, (len)); }
 
   LCD_WP_Disable();
 }
@@ -270,21 +214,16 @@ void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, un
   unsigned char LcdData[160] = {0x00};
 
   // zero
-  for(unsigned char p = 0; p < 160; p++) LcdData[p] = 0x00;
+  for(unsigned char p = 0; p < 160; p++){ LcdData[p] = 0x00; }
 
   LCD_WP_SetFrame(row, col, height, len);
   
   // 25 pages
-  for(unsigned char p = 0; p < height; p++) LCD_SendData(LcdData, (len));
+  for(unsigned char p = 0; p < height; p++){ LCD_SendData(LcdData, (len)); }
 
   LCD_WP_Disable();
 }
 
-
-
-/* ==================================================================*
- *            font, stings, and values
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  write any font with window programming
@@ -456,11 +395,11 @@ unsigned char LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, u
 }
 
 
-/* ==================================================================*
- *            Text
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            text button
+ * ------------------------------------------------------------------*/
 
-void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons text, unsigned char pos)
+void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, unsigned char pos)
 {
   char t[7] = "";
 
@@ -492,24 +431,16 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons te
  *            DeathMan
  * ------------------------------------------------------------------*/
 
-void LCD_DeathMan(unsigned char row, unsigned char col)
+void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col)
 {
-  static unsigned char state = 1;
-
-  if(state){ LCD_FillSpace(row, col, 1, 4); state = 0; }
-  else{ LCD_ClrSpace(row, col, 1, 4); state = 1; }
+  if(ps->frame_counter->frame < TC_FPS_HALF){ LCD_FillSpace(row, col, 1, 4); }
+  else{ LCD_ClrSpace(row, col, 1, 4); }
 }
 
-
-
-/* ==================================================================*
- *            Built-in-Functions
- * ==================================================================*/
 
 /*-------------------------------------------------------------------*
  *  sets the frame for window programming
  * ------------------------------------------------------------------*/
-
 
 void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
 { 
@@ -533,10 +464,10 @@ unsigned char LCD_ConvertWP(unsigned char con)
 {
   unsigned char convert = 0;
 
-  if(con & 0x01) convert += 0x03;
-  if(con & 0x02) convert += 0x0C;
-  if(con & 0x04) convert += 0x30;
-  if(con & 0x08) convert += 0xC0;
+  if(con & 0x01){ convert += 0x03; }
+  if(con & 0x02){ convert += 0x0C; }
+  if(con & 0x04){ convert += 0x30; }
+  if(con & 0x08){ convert += 0xC0; }
 
   return convert;
 }

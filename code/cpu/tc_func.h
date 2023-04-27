@@ -15,6 +15,7 @@
 #define TC_OSC_F        16000000
 #define TC_OSC_DIV1024  15625
 #define TC_FPS          60
+#define TC_FPS_HALF     30
 #define TC_CAN_MS       100
 
 

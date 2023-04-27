@@ -2,7 +2,7 @@
 // port functions
 
 // include guard
-#ifndef PORT_FUNC_H   
+#ifndef PORT_FUNC_H
 #define PORT_FUNC_H
 
 #include <avr/io.h>
@@ -11,12 +11,12 @@
 
 
 /* ------------------------------------------------------------------*
- *            PORT
+ *            port definitions
  * ------------------------------------------------------------------*/
 
-#define P_OPTO    (PORTH)
-#define P_VALVE  (PORTJ)
-#define P_RELAIS  (PORTK)
+#define P_OPTO (PORTH)
+#define P_VALVE (PORTJ)
+#define P_RELAIS (PORTK)
 
 
 /* ------------------------------------------------------------------*
@@ -29,6 +29,27 @@
 #define OC4 (PIN4_bm)
 
 #define IN_FLOAT_S3 (!(P_OPTO.IN & OC1))
+
+
+/* ------------------------------------------------------------------*
+ *            buzzer
+ * ------------------------------------------------------------------*/
+
+#define BUZZER_DIR (PORTD.DIRSET = PIN6_bm)
+#define BUZZER_ON (PORTD.OUTSET = PIN6_bm)
+#define BUZZER_OFF (PORTD.OUTCLR = PIN6_bm)
+
+
+/* ------------------------------------------------------------------*
+ *            backlight
+ * ------------------------------------------------------------------*/
+
+#define BACKLIGHT_DIR (PORTC.DIRSET = PIN3_bm)
+#define BACKLIGHT_ON (PORTC.OUTSET = PIN3_bm)
+#define BACKLIGHT_OFF (PORTC.OUTCLR = PIN3_bm)
+#define BACKLIGHT_TON_FRAMES (900)
+#define BACKLIGHT_ERROR_ON_FRAMES (180)
+#define BACKLIGHT_ERROR_OFF_FRAMES (60)
 
 
 /* ------------------------------------------------------------------*
@@ -47,6 +68,7 @@
 #define O_CLRW    0x40
 #define C_CLRW    0x80
 
+// valve positions
 #define V_AIR (1 << 0)
 #define V_MUD (1 << 1)
 #define V_CLW (1 << 2) 
@@ -103,17 +125,23 @@
 void PORT_Init(void);
 void PORT_Bootloader(void);
 
-void PORT_Buzzer(t_FuncCmd cmd);
-void PORT_Ventilator(void);
+void PORT_Buzzer_Update(struct PlantState *ps);
+
+void PORT_Backlight_On(struct Backlight *backlight);
+void PORT_Backlight_Off(struct Backlight *backlight);
+void PORT_Backlight_Error(struct Backlight *backlight);
+void PORT_Backlight_Update(struct Backlight *backlight);
+
+void PORT_Ventilator(struct PlantState *ps);
 void PORT_Auto_RunTime(struct PlantState *ps);
 
-unsigned char PORT_Valve(t_valve valve, unsigned char new_state);
-void PORT_Valve_OpenAll(void);
-void PORT_Valve_CloseAll(void);
+void PORT_Valve(struct PlantState *ps, t_valve valve);
+void PORT_Valve_OpenAll(struct PlantState *ps);
+void PORT_Valve_CloseAll(struct PlantState *ps);
 
 void PORT_RelaisSet(unsigned char relais);
 void PORT_RelaisClr(unsigned char relais);
 
-void PORT_Debug(void);
+void PORT_Debug(struct PlantState *ps);
 
 #endif

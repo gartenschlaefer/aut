@@ -221,7 +221,7 @@ void Modem_ReadCTS(void)
  *            Modem Tel.Nr
  * ------------------------------------------------------------------*/
 
-char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr)
+char Modem_TelNr(struct PlantState *ps, t_FuncCmd cmd, struct TelNr nr)
 {
   static char tmp[16] = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 };
   unsigned char i = 0;
@@ -231,7 +231,7 @@ char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr)
   {
     for(i = 0; i < 16; i++)
     {
-      tmp[i] = AT24C_ReadVar(i + 16 * (nr.id - 1));
+      tmp[i] = AT24C_ReadVar(ps->twi_state, i + 16 * (nr.id - 1));
       TCC0_wait_us(50);
     }
   }
@@ -245,21 +245,21 @@ char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr)
   //--------------------------------------------------ReadEEPROM
   else if(cmd == _read)
   {
-    if(!nr.id)  return 'X';
-    return AT24C_ReadVar(nr.pos + 16 * (nr.id - 1));
+    if(!nr.id){ return 'X'; }
+    return AT24C_ReadVar(ps->twi_state, nr.pos + 16 * (nr.id - 1));
   }
 
   //--------------------------------------------------ReadTmp
   else if(cmd == _read2)
   {
-    if(!nr.id)  return 'X';
+    if(!nr.id){ return 'X'; }
     return tmp[nr.pos];
   }
 
   //--------------------------------------------------Write2EEPROM
   else if(cmd == _save)
   {
-    if(!nr.id)  return 'X';
+    if(!nr.id){ return 'X'; }
     for(i = 0; i < 16; i++)
     {
       AT24C_WriteVar(i + 16*(nr.id - 1), tmp[i]);
@@ -270,29 +270,28 @@ char Modem_TelNr(t_FuncCmd cmd, struct TelNr nr)
   //--------------------------------------------------ResetTemp
   else if(cmd == _reset)
   {
-    if(!nr.id)  return 'X';
+    if(!nr.id){ return 'X'; }
     for(i = 0; i < 16; i++)
     {
       tmp[i] = 11;
       TCC0_wait_ms(10);
     }
   }
-  return AT24C_ReadVar(nr.pos);
+  return AT24C_ReadVar(ps->twi_state, nr.pos);
 }
-
 
 
 /* ------------------------------------------------------------------*
  *            Modem Call
  * ------------------------------------------------------------------*/
 
-unsigned char Modem_Call(struct TelNr nr)
+unsigned char Modem_Call(struct PlantState *ps, struct TelNr nr)
 {
   nr.pos = 0;
   TCC0_wait_us(25);
 
   // NoNumber selected
-  if(Modem_TelNr(_read, nr) == 11) return 1;
+  if(Modem_TelNr(ps, _read, nr) == 11) return 1;
 
   //--------------------------------------------------DialNumber
   USART_WriteString("AT+FCLASS=8");
@@ -302,7 +301,7 @@ unsigned char Modem_Call(struct TelNr nr)
 
   for(nr.pos= 0; ((nr.tel != 11) && (nr.pos < 16)); nr.pos++)
   {
-    nr.tel= Modem_TelNr(_read, nr);
+    nr.tel= Modem_TelNr(ps, _read, nr);
     if(nr.tel != 11) USART_WriteByte(nr.tel+48);
   }
   USART_WriteByte(CHAR_CR);
@@ -336,9 +335,12 @@ unsigned char Modem_Call(struct TelNr nr)
 }
 
 
-void Modem_SMS(struct TelNr nr, char msg[])
-{
+/* ------------------------------------------------------------------*
+ *            Modem SMS
+ * ------------------------------------------------------------------*/
 
+void Modem_SMS(struct PlantState *ps, struct TelNr nr, char msg[])
+{
   // text mode
   USART_WriteString("AT+CMGF=1");
   USART_WriteByte(CHAR_CR);
@@ -355,7 +357,7 @@ void Modem_SMS(struct TelNr nr, char msg[])
   // get number and write
   for(nr.pos= 0; ((nr.tel != 11) && (nr.pos < 16)); nr.pos++)
   {
-    nr.tel= Modem_TelNr(_read, nr);
+    nr.tel = Modem_TelNr(ps, _read, nr);
     if(nr.tel != 11) USART_WriteByte(nr.tel+48);
   }
 
@@ -377,17 +379,17 @@ void Modem_SMS(struct TelNr nr, char msg[])
  *            Modem Call / SMS / Alert
  * ------------------------------------------------------------------*/
 
-void Modem_CallAllNumbers(void)
+void Modem_Call_AllNumbers(struct PlantState *ps)
 {
   struct TelNr nr;
   nr.id = 1;
-  Modem_Call(nr);
+  Modem_Call(ps, nr);
   nr.id = 2;
-  Modem_Call(nr);
+  Modem_Call(ps, nr);
 }
 
 
-void Modem_SMSAllNumbers(char msg[])
+void Modem_SMS_AllNumbers(struct PlantState *ps, char msg[])
 {
   struct TelNr nr;
 
@@ -395,29 +397,23 @@ void Modem_SMSAllNumbers(char msg[])
   nr.id = 1;
 
   BASIC_WDT_RESET;
-  Modem_SMS(nr, msg);
+  Modem_SMS(ps, nr, msg);
   TCC0_wait_sec(5);
 
   // second number
   nr.id = 2;
   BASIC_WDT_RESET;
-  Modem_SMS(nr, msg);
+  Modem_SMS(ps, nr, msg);
 }
 
 
-void Modem_Alert(char msg[])
+void Modem_Alert(struct PlantState *ps, char msg[])
 {
   //*** debug modem alert off
-  if(DEB_MODEM) return;
+  if(DEB_MODEM){ return; }
 
-  if(SMS_ON)
-  {
-    Modem_SMSAllNumbers(msg);
-  }
-  else
-  {
-    Modem_CallAllNumbers();
-  }
+  if(SMS_ON){ Modem_SMS_AllNumbers(ps, msg); }
+  else{ Modem_Call_AllNumbers(ps); }
 }
 
 
@@ -558,7 +554,7 @@ void Modem_Test(struct PlantState *ps)
       }
 
       // see if it still runs
-      LCD_DeathMan(0, 0);
+      LCD_DeathMan(ps, 0, 0);
     }
   }
 }

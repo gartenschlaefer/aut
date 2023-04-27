@@ -21,7 +21,10 @@
 
 void Basic_Init(struct PlantState *ps);
 void Basic_Init_Mem(void);
-void Clock_Init(void);
-void Watchdog_Init(void);
+void Basic_Clock_Init(void);
+void Basic_Watchdog_Init(void);
+void Basic_TimeState_Init(struct PlantState *ps);
+void Basic_TimeState_Update(struct PlantState *ps);
+unsigned char Basic_CountDown(struct PlantState *ps);
 
 #endif

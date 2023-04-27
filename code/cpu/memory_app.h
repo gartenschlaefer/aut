@@ -6,6 +6,7 @@
 #define MEMORY_APP_H
 
 #include "enums.h"
+#include "structs.h"
 
 
 /* ------------------------------------------------------------------*
@@ -48,9 +49,9 @@ void MEM_EEPROM_WriteVar(t_var var, unsigned char eeData);
 unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_data var);
 void MEM_EEPROM_LoadData(unsigned char entry, t_data byte, unsigned char eeData);
 
-void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write);
-void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd cmd);
-void MEM_EEPROM_WriteSetupEntry(void);
+void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps, int o2, unsigned char error, t_auto_entry write);
+void MEM_EEPROM_WriteManualEntry(struct PlantState *ps, unsigned char h, unsigned char min, t_FuncCmd cmd);
+void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps);
 
 void MEM_EEPROM_SetZero(void);
 void MEM_EEPROM_WriteVarDefault_Short(void);

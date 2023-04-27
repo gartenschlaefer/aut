@@ -16,7 +16,7 @@
  *            init
  * ------------------------------------------------------------------*/
 
-void TWI_Master_Init(void)
+void TWI_C_Master_Init(void)
 {
   // master disable
   TWIC.MASTER.CTRLA &= ~TWI_MASTER_ENABLE_bm;
@@ -41,19 +41,17 @@ void TWI_Master_Init(void)
 }
 
 
-
-
 /* ------------------------------------------------------------------*
  *            Error
  * ------------------------------------------------------------------*/
 
-unsigned char TWI_Master_Error(void)
+unsigned char TWI_C_Master_Error(void)
 {
   // arbitration
   if(TWIC.MASTER.STATUS & (1 << TWI_MASTER_ARBLOST_bp))
   {
     TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-    TWI_Master_Reset();
+    TWI_C_Master_Reset();
     return E_TWI_ARBLOST;
   }
 
@@ -61,7 +59,7 @@ unsigned char TWI_Master_Error(void)
   if(TWIC.MASTER.STATUS & (1 << TWI_MASTER_BUSERR_bp))
   {
     TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-    TWI_Master_Reset();
+    TWI_C_Master_Reset();
     return E_TWI_BUSERR;
   }
 
@@ -69,7 +67,7 @@ unsigned char TWI_Master_Error(void)
   if(TWIC.MASTER.STATUS & (1 << TWI_MASTER_RXACK_bp))
   {
     TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-    TWI_Master_Reset();
+    TWI_C_Master_Reset();
     return E_TWI_NACK;
   }
 
@@ -78,16 +76,11 @@ unsigned char TWI_Master_Error(void)
 }
 
 
-
-/* ==================================================================*
- *            FUNCTIONS Write Read
- * ==================================================================*/
-
 /* ------------------------------------------------------------------*
  *            Write String
  * ------------------------------------------------------------------*/
 
-unsigned char TWI_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i)
+unsigned char TWI_C_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i)
 {
   unsigned char error = 0;
   unsigned char send = 0;
@@ -98,16 +91,16 @@ unsigned char TWI_Master_WriteString(unsigned char address, unsigned char *sendD
   if( (TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == TWI_MASTER_BUSSTATE_IDLE_gc )
   {
     // send address
-    error = TWI_Master_AddressWriteMode(address);
-    if(error) return error;
+    error = TWI_C_Master_AddressWriteMode(address);
+    if(error){ return error; }
     //------------------------------------------------------------------------
     //ACK Received
     //--------------------------------------------------start-Transaction-----
     while(i)
     {
       send = *sendData;
-      error = TWI_Master_Send(send);
-      if(error) return error;
+      error = TWI_C_Master_Send(send);
+      if(error){ return error; }
       sendData++;
       i--;
     }
@@ -117,7 +110,7 @@ unsigned char TWI_Master_WriteString(unsigned char address, unsigned char *sendD
     return F_TWI_DATA_SENT;
   }
 
-  TWI_Master_Reset();
+  TWI_C_Master_Reset();
   TCC1_Stop();
   return E_TWI_WAIT;
 }
@@ -127,88 +120,83 @@ unsigned char TWI_Master_WriteString(unsigned char address, unsigned char *sendD
  *            ReadString
  * ------------------------------------------------------------------*/
 
-unsigned char *TWI_Master_ReadString(unsigned char address, unsigned char i)
-{
-  static unsigned char receiveData[10] = {0x00,0xFF};
-  unsigned char error1 = 0;
-  unsigned char *p_data;
+// unsigned char *TWI_C_Master_ReadString(unsigned char address, unsigned char i)
+// {
+//   static unsigned char receiveData[10] = {0x00, 0xFF};
+//   unsigned char error = 0;
+//   unsigned char *p_data;
 
-  // max duration
-  TCC1_WaitMilliSec_Init(300);
+//   // max duration
+//   TCC1_WaitMilliSec_Init(300);
 
-  if( ((TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == TWI_MASTER_BUSSTATE_IDLE_gc) || ((TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == TWI_MASTER_BUSSTATE_OWNER_gc) )
-  {
-    // send address
-    TWIC.MASTER.ADDR = (C_TWI_ADDRESS(address) | C_TWI_READ);
-    //--------------------------------------------------------ACK Received
+//   if( ((TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == TWI_MASTER_BUSSTATE_IDLE_gc) || ((TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == TWI_MASTER_BUSSTATE_OWNER_gc) )
+//   {
+//     // send address
+//     TWIC.MASTER.ADDR = (C_TWI_ADDRESS(address) | C_TWI_READ);
+//     //--------------------------------------------------------ACK Received
 
-    // read data
-    while(i)
-    {
-      while(!(TWIC.MASTER.STATUS & TWI_MASTER_RIF_bm))
-      {
-        // timer
-        if(TCC1_Wait_Query())
-        {
-          TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-          receiveData[0] = E_TWI_NO_SENT;
-          p_data = &receiveData[0];
-          return p_data;
-        }
-      }
+//     // read data
+//     while(i)
+//     {
+//       while(!(TWIC.MASTER.STATUS & TWI_MASTER_RIF_bm))
+//       {
+//         // timer
+//         if(TCC1_Wait_Query())
+//         {
+//           TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
+//           receiveData[0] = E_TWI_NO_SENT;
+//           p_data = &receiveData[0];
+//           return p_data;
+//         }
+//       }
 
-      // error
-      error1 = TWI_Master_Error();
-      if(error1)
-      {
-        receiveData[0] = error1;
-        p_data = &receiveData[0];
-        return p_data;
-      }
+//       // error
+//       error = TWI_C_Master_Error();
+//       if(error)
+//       {
+//         receiveData[0] = error;
+//         p_data = &receiveData[0];
+//         return p_data;
+//       }
 
-      // receive byte
-      receiveData[i] = TWIC.MASTER.DATA;
+//       // receive byte
+//       receiveData[i] = TWIC.MASTER.DATA;
 
-      // ACK or NACK?
-      if(i == 1) 
-      {
-        //----------------------------------------SendNACK------------
-        TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-        //-----------------------------------------------------------
-      }
-      else 
-      {
-        //----------------------------------------SendACK------------
-        TWIC.MASTER.CTRLC =  (TWIC.MASTER.CTRLC & ~(TWI_MASTER_ACKACT_bm)) | TWI_MASTER_CMD_RECVTRANS_gc;
-        //-----------------------------------------------------------
-      }
-      i--;
-    }
-    TCC1_Stop();
-    receiveData[0] = 0;
-    p_data = &receiveData[0];
-    return p_data;
-  }
+//       // ACK or NACK?
+//       if(i == 1) 
+//       {
+//         //----------------------------------------SendNACK------------
+//         TWIC.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
+//         //-----------------------------------------------------------
+//       }
+//       else 
+//       {
+//         //----------------------------------------SendACK------------
+//         TWIC.MASTER.CTRLC =  (TWIC.MASTER.CTRLC & ~(TWI_MASTER_ACKACT_bm)) | TWI_MASTER_CMD_RECVTRANS_gc;
+//         //-----------------------------------------------------------
+//       }
+//       i--;
+//     }
+//     TCC1_Stop();
+//     receiveData[0] = 0;
+//     p_data = &receiveData[0];
+//     return p_data;
+//   }
 
-  // set idle
-  if((TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == (TWI_MASTER_BUSSTATE_UNKNOWN_gc)) TWIC.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
-  TCC1_Stop();
-  receiveData[0] = E_TWI_WAIT;
-  p_data = &receiveData[0];
-  return p_data;
-}
+//   // set idle
+//   if((TWIC.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == (TWI_MASTER_BUSSTATE_UNKNOWN_gc)) TWIC.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
+//   TCC1_Stop();
+//   receiveData[0] = E_TWI_WAIT;
+//   p_data = &receiveData[0];
+//   return p_data;
+// }
 
-
-
-/* ==================================================================*
- *            Build-In Functions
- * ==================================================================*/
 
 /* ------------------------------------------------------------------*
  *            Master Send Data
  * ------------------------------------------------------------------*/
 
-unsigned char TWI_Master_Send(unsigned char send)
+unsigned char TWI_C_Master_Send(unsigned char send)
 {
   unsigned char error = 0;
 
@@ -220,7 +208,7 @@ unsigned char TWI_Master_Send(unsigned char send)
     {
       TWIC.MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
       TWIC.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
-      TWI_Master_Init();
+      TWI_C_Master_Init();
       LCD_Init();
       TCC1_Stop();
       return E_TWI_NO_SENT;
@@ -228,8 +216,8 @@ unsigned char TWI_Master_Send(unsigned char send)
   }
 
   // error
-  error = TWI_Master_Error();
-  if(error) return error;
+  error = TWI_C_Master_Error();
+  if(error){ return error; }
 
   return 0;
 }
@@ -239,7 +227,7 @@ unsigned char TWI_Master_Send(unsigned char send)
  *            Master Send Address
  * ------------------------------------------------------------------*/
 
-unsigned char TWI_Master_AddressWriteMode(unsigned char f_address)
+unsigned char TWI_C_Master_AddressWriteMode(unsigned char f_address)
 {
   unsigned char error = 0;
 
@@ -251,7 +239,7 @@ unsigned char TWI_Master_AddressWriteMode(unsigned char f_address)
     if(TCC1_Wait_Query())
     {
       TWIC.MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
-      TWI_Master_Reset();
+      TWI_C_Master_Reset();
       TCC1_Stop();
 
       // stop
@@ -260,8 +248,8 @@ unsigned char TWI_Master_AddressWriteMode(unsigned char f_address)
   }
 
   // error
-  error = TWI_Master_Error();
-  if(error) return error;
+  error = TWI_C_Master_Error();
+  if(error){ return error; }
 
   return 0;
 }
@@ -271,10 +259,10 @@ unsigned char TWI_Master_AddressWriteMode(unsigned char f_address)
  *            TWI Reset
  * ------------------------------------------------------------------*/
 
-void TWI_Master_Reset(void)
+void TWI_C_Master_Reset(void)
 {
   TWIC.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
-  TWI_Master_Init();
+  TWI_C_Master_Init();
 }
 
 
@@ -287,7 +275,7 @@ void TWI_Master_Reset(void)
  *            TWI2 - Master init
  * ------------------------------------------------------------------*/
 
-void TWI2_Master_Init(void)
+void TWI_D_Master_Init(void)
 {
   TWID.MASTER.CTRLA &= ~TWI_MASTER_ENABLE_bm;
   PORTD.DIRSET = PIN0_bm | PIN1_bm;
@@ -314,13 +302,13 @@ void TWI2_Master_Init(void)
  *            Error
  * ------------------------------------------------------------------*/
 
-unsigned char TWI2_Master_Error(void)
+unsigned char TWI_D_Master_Error(void)
 {
   // arbitration
   if(TWID.MASTER.STATUS & (1 << TWI_MASTER_ARBLOST_bp))
   {
     TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-    TWI2_Master_Init();
+    TWI_D_Master_Init();
     return E_TWI_ARBLOST;
   }
 
@@ -328,7 +316,7 @@ unsigned char TWI2_Master_Error(void)
   else if(TWID.MASTER.STATUS & (1 << TWI_MASTER_BUSERR_bp))
   {
     TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-    TWI2_Master_Init();
+    TWI_D_Master_Init();
     return E_TWI_BUSERR;
   }
 
@@ -336,7 +324,7 @@ unsigned char TWI2_Master_Error(void)
   else if(TWID.MASTER.STATUS & (1 << TWI_MASTER_RXACK_bp))
   {
     TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
-    TWI2_Master_Init();
+    TWI_D_Master_Init();
     return E_TWI_NACK;
   }
   return 0;
@@ -347,7 +335,7 @@ unsigned char TWI2_Master_Error(void)
  *            Write String
  * ------------------------------------------------------------------*/
 
-unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i)
+unsigned char TWI_D_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i)
 {
   unsigned char error = 0;
   unsigned char send = 0;
@@ -357,20 +345,20 @@ unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *send
   // wait for idle
   while((TWID.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) != TWI_MASTER_BUSSTATE_IDLE_gc)
   {
-    if(TCC1_Wait_Query()){ TWI2_Master_Init(); TCC1_WaitMilliSec_Init(10); error++; }
+    if(TCC1_Wait_Query()){ TWI_D_Master_Init(); TCC1_WaitMilliSec_Init(10); error++; }
     if(error > 3) return E_TWI_NO_SENT;
   }
 
   // send address
-  error = TWI2_Master_AddressWriteMode(address);
-  if(error) return error;
+  error = TWI_D_Master_AddressWriteMode(address);
+  if(error){ return error; }
 
   // transaction
   while(i)
   {
     send = *sendData;
-    error = TWI2_Master_Send(send);
-    if(error) return error;
+    error = TWI_D_Master_Send(send);
+    if(error){ return error; }
     sendData++;
     i--;
   }
@@ -386,7 +374,7 @@ unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *send
  *            Master Send Address
  * ------------------------------------------------------------------*/
 
-unsigned char TWI2_Master_AddressWriteMode(unsigned char f_address)
+unsigned char TWI_D_Master_AddressWriteMode(unsigned char f_address)
 {
   unsigned char error = 0;
 
@@ -394,10 +382,10 @@ unsigned char TWI2_Master_AddressWriteMode(unsigned char f_address)
   TWID.MASTER.ADDR = (C_TWI_ADDRESS(f_address) | C_TWI_WRITE);
   while(!(TWID.MASTER.STATUS & (1 << TWI_MASTER_WIF_bp)))
   {
-    if(TCC1_Wait_Query()){ TWI2_Master_Init(); return E_TWI_NO_SENT; }
+    if(TCC1_Wait_Query()){ TWI_D_Master_Init(); return E_TWI_NO_SENT; }
   }
-  error = TWI2_Master_Error();
-  if(error) return error;
+  error = TWI_D_Master_Error();
+  if(error){ return error; }
   return 0;
 }
 
@@ -406,7 +394,7 @@ unsigned char TWI2_Master_AddressWriteMode(unsigned char f_address)
  *            Master Send Data
  * ------------------------------------------------------------------*/
 
-unsigned char TWI2_Master_Send(unsigned char send)
+unsigned char TWI_D_Master_Send(unsigned char send)
 {
   unsigned char error = 0;
 
@@ -414,10 +402,10 @@ unsigned char TWI2_Master_Send(unsigned char send)
   TWID.MASTER.DATA = send;
   while(!(TWID.MASTER.STATUS & (1 << TWI_MASTER_WIF_bp)))
   {
-    if(TCC1_Wait_Query()){ TWI2_Master_Init(); return E_TWI_NO_SENT; }
+    if(TCC1_Wait_Query()){ TWI_D_Master_Init(); return E_TWI_NO_SENT; }
   }
-  error = TWI2_Master_Error();
-  if(error) return error;
+  error = TWI_D_Master_Error();
+  if(error){ return error; }
   return 0;
 }
 
@@ -426,10 +414,8 @@ unsigned char TWI2_Master_Send(unsigned char send)
  *            Read String
  * ------------------------------------------------------------------*/
 
-unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i)
+unsigned char *TWI_D_Master_ReadString(struct TWIState *twi_state, unsigned char address, unsigned char i)
 {
-  static unsigned char receiveData[10];
-  unsigned char error1 = 0;
   unsigned char *p_data;
   unsigned char a = 1;
 
@@ -451,23 +437,23 @@ unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i)
           TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc;
 
           // error code
-          receiveData[0] = E_TWI_NO_SENT;
-          p_data = &receiveData[0];
+          twi_state->twid_rx_buffer[0] = E_TWI_NO_SENT;
+          p_data = &twi_state->twid_rx_buffer[0];
           return p_data;
         }
       }
 
       // error detection
-      error1 = TWI2_Master_Error();
-      if(error1)
+      unsigned char error = TWI_D_Master_Error();
+      if(error)
       {
-        receiveData[0] = error1;
-        p_data = &receiveData[0];
+        twi_state->twid_rx_buffer[0] = error;
+        p_data = &twi_state->twid_rx_buffer[0];
         return p_data;
       }
 
       // receive byte
-      receiveData[a] = TWID.MASTER.DATA;
+      twi_state->twid_rx_buffer[a] = TWID.MASTER.DATA;
 
       // ack, stop
       if(i == 1){ TWID.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc; }
@@ -480,8 +466,8 @@ unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i)
     TCC1_Stop();
 
     // no errors
-    receiveData[0] = 0;
-    p_data = &receiveData[0];
+    twi_state->twid_rx_buffer[0] = 0;
+    p_data = &twi_state->twid_rx_buffer[0];
     return p_data;
   }
 
@@ -489,7 +475,7 @@ unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i)
   if((TWID.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) == (TWI_MASTER_BUSSTATE_UNKNOWN_gc)) TWID.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
 
   TCC1_Stop();
-  receiveData[0] = E_TWI_WAIT;
-  p_data = &receiveData[0];
+  twi_state->twid_rx_buffer[0] = E_TWI_WAIT;
+  p_data = &twi_state->twid_rx_buffer[0];
   return p_data;
 }

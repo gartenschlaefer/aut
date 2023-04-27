@@ -7,58 +7,15 @@
 
 #include <stdbool.h>
 
-
 /* ------------------------------------------------------------------*
- *            structs
+ *            general structs
  * ------------------------------------------------------------------*/
-
-struct InputHandler 
-{
-  unsigned char float_sw_alarm;
-};
-
-
-struct Modem 
-{
-  unsigned char turned_on;
-  unsigned char turn_on_state;
-  unsigned char turn_on_error;
-  int startup_delay;
-};
-
 
 struct TelNr
 {
   unsigned char id;
   char tel;
   unsigned char pos;
-};
-
-
-struct ErrorState
-{
-  t_page page;
-  unsigned char err_code;
-  unsigned char pending_err_code;
-  unsigned char err_reset_flag;
-};
-
-
-struct LcdBacklight
-{
-  t_FuncCmd state;
-  unsigned int count;
-};
-
-
-struct FrameCounter
-{
-  unsigned int usv;
-  unsigned int lcd_reset;
-  unsigned int frame;
-  unsigned int sixty_sec_counter;
-  float fps;
-  int delta_t;
 };
 
 
@@ -77,10 +34,74 @@ struct Tms
 };
 
 
+/* ------------------------------------------------------------------*
+ *            plant state structs
+ * ------------------------------------------------------------------*/
+
 struct PageState
 {
   t_page page;
   struct Tms *page_time;
+};
+
+
+struct InputHandler 
+{
+  unsigned char float_sw_alarm;
+};
+
+
+struct Modem 
+{
+  unsigned char turned_on;
+  unsigned char turn_on_state;
+  unsigned char turn_on_error;
+  int startup_delay;
+};
+
+
+struct PortState
+{
+  bool buzzer_on;
+  unsigned char valve_state;
+};
+
+
+struct CompressorState
+{
+  int operation_hours;
+  int cycle_o2_min;
+  int old_min;
+  unsigned char operation_sixty_min_count;
+};
+
+
+struct ErrorState
+{
+  t_page page;
+  unsigned char err_code;
+  unsigned char pending_err_code;
+  unsigned char err_reset_flag;
+  unsigned char op_state;
+  unsigned char error_counter[5];
+};
+
+
+struct Backlight
+{
+  t_backlight_states state;
+  unsigned int count;
+};
+
+
+struct FrameCounter
+{
+  unsigned int usv;
+  unsigned int lcd_reset;
+  unsigned int frame;
+  unsigned int sixty_sec_counter;
+  float fps;
+  int delta_t;
 };
 
 
@@ -124,6 +145,12 @@ struct CANState
 };
 
 
+struct TWIState
+{
+  unsigned char twid_rx_buffer[10];
+};
+
+
 struct SonicState
 {
   t_sonic_app app_type;
@@ -140,12 +167,27 @@ struct SonicState
 };
 
 
+struct TimeState
+{
+  unsigned char tic_dat;
+  unsigned char tic_mon;
+  unsigned char tic_yea;
+  unsigned char tic_hou;
+  unsigned char tic_min;
+  unsigned char tic_sec;
+  unsigned char old_sec;
+  bool tic_sec_update_flag;
+};
+
+
 struct PlantState
 {
   unsigned char init;
   struct PageState *page_state;
   struct PageState *auto_save_page_state;
-  struct LcdBacklight *lcd_backlight;
+  struct PortState *port_state;
+  struct CompressorState *compressor_state;
+  struct Backlight *backlight;
   struct FrameCounter *frame_counter;
   struct ErrorState *error_state;
   struct MPXState *mpx_state;
@@ -153,9 +195,11 @@ struct PlantState
   struct InflowPumpState *inflow_pump_state;
   struct AirCircState *air_circ_state;
   struct CANState *can_state;
+  struct TWIState *twi_state;
   struct SonicState *sonic_state;
   struct InputHandler *input_handler;
   struct Modem *modem;
+  struct TimeState *time_state;
 }; 
 
 #endif

@@ -6,6 +6,7 @@
 #define MCP_7941_DRIVER_H
 
 #include "enums.h"
+#include "structs.h"
 
 
 /* ------------------------------------------------------------------*
@@ -35,8 +36,11 @@
 #define TIC_CAL     0x08
 #define TIC_UNLOCK  0x09
 
-#define TIC_EXTOSC  (1 << 3)    //ExternalOszillator->TIC_CTRL
-#define TIC_ST      (1 << 7)    //Start->TIC_SEC
+// external oscillator
+#define TIC_EXTOSC  (1 << 3)
+
+// start tic sec
+#define TIC_ST      (1 << 7)
 
 
 /* ------------------------------------------------------------------*
@@ -47,21 +51,20 @@
 #define RAM_OP_ADDR_H   (0x21)
 
 
-
-/* ==================================================================*
- *            FUCNTION API
- * ==================================================================*/
+/* ------------------------------------------------------------------*
+ *            function header
+ * ------------------------------------------------------------------*/
 
 void MCP7941_Init(void);
 void MCP7941_InitDefault(void);
 
-void MCP7941_Write(unsigned char *send, unsigned char i);
-unsigned char *MCP7941_Read(unsigned char *addr, unsigned char i);
+void MCP7941_WriteString(unsigned char *send, unsigned char i);
+unsigned char *MCP7941_ReadString(struct TWIState *twi_state, unsigned char *addr, unsigned char i);
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData);
-unsigned char MCP7941_ReadByte(unsigned char addr);
+unsigned char MCP7941_ReadByte(struct TWIState *twi_state, unsigned char addr);
 
 void MCP7941_Write_Comp_OpHours(int hours);
-int MCP7941_Read_Comp_OpHours(void);
-unsigned char MCP7941_ReadTime(unsigned char cmd);
+int MCP7941_Read_Comp_OpHours(struct TWIState *twi_state);
+unsigned char MCP7941_ReadTime(struct TWIState *twi_state, unsigned char cmd);
 
 #endif

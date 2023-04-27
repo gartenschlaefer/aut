@@ -259,7 +259,7 @@ unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_dat
  *  Safes Variables or write Auto Entry to EEPROM
  * ------------------------------------------------------------------*/
 
-void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write)
+void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps, int o2, unsigned char error, t_auto_entry write)
 {
   unsigned char i = 0;
   unsigned char data[8] = {0x00};
@@ -282,11 +282,11 @@ void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write)
     case Write_Entry:
 
       // time
-      data[0] = MCP7941_ReadTime(TIC_DATE);
-      data[1] = MCP7941_ReadTime(TIC_MONTH);
-      data[2] = MCP7941_ReadTime(TIC_YEAR);
-      data[3] = MCP7941_ReadTime(TIC_HOUR);
-      data[4] = MCP7941_ReadTime(TIC_MIN);
+      data[0] = ps->time_state->tic_dat;
+      data[1] = ps->time_state->tic_mon;
+      data[2] = ps->time_state->tic_yea;
+      data[3] = ps->time_state->tic_hou;
+      data[4] = ps->time_state->tic_min;
 
       // o2 low / high
       data[6] = (s_o2 & 0x00FF);
@@ -311,13 +311,10 @@ void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write)
       }
 
       // write protection
-      if(page < MEM_AUTO_START_SECTION) page = MEM_AUTO_START_SECTION;
+      if(page < MEM_AUTO_START_SECTION){ page = MEM_AUTO_START_SECTION; }
 
       // write entry
-      for(i = 0; i < 8; i++)
-      {
-        MEM_EEPROM_LoadData(entry, i, data[i]);
-      }
+      for(i = 0; i < 8; i++){ MEM_EEPROM_LoadData(entry, i, data[i]); }
       MEM_EEPROM_PageEraseWrite(page); 
       break;
 
@@ -330,7 +327,7 @@ void MEM_EEPROM_WriteAutoEntry(int o2, unsigned char error, t_auto_entry write)
  *            ManualEntry
  * ------------------------------------------------------------------*/
 
-void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd cmd)
+void MEM_EEPROM_WriteManualEntry(struct PlantState *ps, unsigned char h, unsigned char min, t_FuncCmd cmd)
 {
   unsigned char i = 0;
   unsigned char data[7] = {0x00};
@@ -352,13 +349,15 @@ void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd c
   }
   else
   {
-    data[0] = MCP7941_ReadTime(TIC_DATE);
-    data[1] = MCP7941_ReadTime(TIC_MONTH);
-    data[2] = MCP7941_ReadTime(TIC_YEAR);
+
+    // time and o2
+    data[0] = ps->time_state->tic_dat;
+    data[1] = ps->time_state->tic_mon;
+    data[2] = ps->time_state->tic_yea;
     data[3] = entryH;
     data[4] = entryMin;
-    data[5] = MCP7941_ReadTime(TIC_HOUR); 
-    data[6] = MCP7941_ReadTime(TIC_MIN);
+    data[5] = ps->time_state->tic_hou;
+    data[6] = ps->time_state->tic_min;
 
     // update pointer
     page = *p_null;
@@ -391,7 +390,7 @@ void MEM_EEPROM_WriteManualEntry(unsigned char h, unsigned char min, t_FuncCmd c
  *            SetupEntry
  * ------------------------------------------------------------------*/
 
-void MEM_EEPROM_WriteSetupEntry(void)
+void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps)
 {
   unsigned char i = 0;
   unsigned char data[7] = {0x00};
@@ -400,14 +399,15 @@ void MEM_EEPROM_WriteSetupEntry(void)
   unsigned char entry = 0;
   unsigned char null = 0;
 
-  unsigned char *p_null =  Eval_Memory_NoEntry(Setup);
+  unsigned char *p_null = Eval_Memory_NoEntry(Setup);
   unsigned char *p_old = Eval_Memory_OldestEntry(Setup);
 
-  data[0]= MCP7941_ReadTime(TIC_DATE);
-  data[1]= MCP7941_ReadTime(TIC_MONTH);
-  data[2]= MCP7941_ReadTime(TIC_YEAR);
-  data[3]= MCP7941_ReadTime(TIC_HOUR);
-  data[4]= MCP7941_ReadTime(TIC_MIN);
+  // time
+  data[0] = ps->time_state->tic_dat;
+  data[1] = ps->time_state->tic_mon;
+  data[2] = ps->time_state->tic_yea;
+  data[3] = ps->time_state->tic_hou;
+  data[4] = ps->time_state->tic_min;
 
   // update variables
   page = *p_null;

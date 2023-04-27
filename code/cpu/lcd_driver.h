@@ -8,27 +8,14 @@
 #include "enums.h"
 #include "structs.h"
 
-/* ------------------------------------------------------------------*
- *            Backlight 30000 -> ca. 3 min
- * ------------------------------------------------------------------*/
-
-#define BACKLIGHT_TON_FRAMES (900)
-#define BACKLIGHT_ERROR_ON_FRAMES (180)
-#define BACKLIGHT_ERROR_OFF_FRAMES (60)
-
 
 /* ------------------------------------------------------------------*
  *            PORT
  * ------------------------------------------------------------------*/
 
 #define LCD_RST_DIR   (PORTC.DIRSET = PIN2_bm)
-#define LCD_LED_DIR   (PORTC.DIRSET = PIN3_bm)
-
 #define LCD_RST_OFF   (PORTC.OUTSET = PIN2_bm)
 #define LCD_RST_ON    (PORTC.OUTCLR = PIN2_bm)
-
-#define LCD_LED_ON    (PORTC.OUTSET = PIN3_bm)
-#define LCD_LED_OFF   (PORTC.OUTCLR = PIN3_bm)
 
 
 /* ------------------------------------------------------------------*
@@ -93,7 +80,6 @@ void LCD_SetColumnAdress(unsigned char CA);
 void LCD_Rst(void);
 void LCD_HardwareRst(void);
 void LCD_Clean(void);
-void LCD_Backlight(t_FuncCmd cmd, struct LcdBacklight *b);
 
 
 /* ------------------------------------------------------------------*
@@ -120,8 +106,8 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
  * ------------------------------------------------------------------*/
 
 unsigned char LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, unsigned char col, t_any_symbol any_symbol);
-void LCD_Write_TextButton(unsigned char row, unsigned char col, t_textButtons text, unsigned char pos);
-void LCD_DeathMan(unsigned char row, unsigned char col);
+void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, unsigned char pos);
+void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col);
 
 
 /* ------------------------------------------------------------------*

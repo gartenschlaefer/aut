@@ -113,10 +113,8 @@ void ADC_USV_Ch(void)
  *  USV - voltage surveillance and error if USV active
  * ------------------------------------------------------------------*/
 
-void ADC_USV_Check(unsigned int *p_c)
+void ADC_USV_Check(struct PlantState *ps)
 {
-  int c = *p_c;
-
   // start conversion
   ADCA.CTRLA |= ADC_CH2START_bm;
 
@@ -132,11 +130,9 @@ void ADC_USV_Check(unsigned int *p_c)
   // check if supply voltage is under 24V: ~3110 = 24V
   if(data < 2500)
   {
-    c++;
-    if(c == 2){ Modem_Alert("Error: USV is active"); }
-    if(c > 60){ c = 0; }
+    ps->frame_counter->usv++;
+    if(ps->frame_counter->usv == 2){ Modem_Alert(ps, "Error: USV is active"); }
+    if(ps->frame_counter->usv > 60){ ps->frame_counter->usv = 0; }
   }
-  else{ c = 0; }
-
-  *p_c = c;
+  else{ ps->frame_counter->usv = 0; }
 }

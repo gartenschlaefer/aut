@@ -6,6 +6,7 @@
 #define AT24C_APP_H
 
 #include "enums.h"
+#include "structs.h"
 
 
 /* ------------------------------------------------------------------*
@@ -13,6 +14,6 @@
  * ------------------------------------------------------------------*/
 
 void AT24C_WriteVar(t_EEvar var, unsigned char sData);
-unsigned char AT24C_ReadVar (t_EEvar var);
+unsigned char AT24C_ReadVar(struct TWIState *twi_state, t_EEvar var);
 
 #endif

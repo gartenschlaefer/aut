@@ -14,6 +14,7 @@
 #include "modem_driver.h"
 #include "error_func.h"
 #include "basic_func.h"
+#include "port_func.h"
 
 
 /* ------------------------------------------------------------------*
@@ -35,6 +36,10 @@ void PORT_Init(void)
 
   // FirmwareUpdate PullUp
   PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
+
+  // buzzer output
+  BUZZER_DIR;
+  BACKLIGHT_DIR;
 }
 
 
@@ -57,46 +62,68 @@ void PORT_Bootloader(void)
  *            buzzer
  * ------------------------------------------------------------------*/
 
-void PORT_Buzzer(t_FuncCmd cmd)
+void PORT_Buzzer_Update(struct PlantState *ps)
 {
-  static int count = 0;
-  static t_FuncCmd state = _off;
-
-  switch(cmd)
+  // error sound
+  if(ps->port_state->buzzer_on)
   {
-    case _error:
-      //*** debug disable buzzer
-      if(DEB_BUZ) return;
-      state = _error;       
-      break;
-
-    case _off:
-      state = _off;
-      PORTD.DIRCLR =  PIN6_bm;
-      PORTD.OUTCLR =  PIN6_bm;    
-      break;
-
-    case _exe:
-      if(state == _error)
-      {
-        count++;
-        if(count > 400)
-        {
-          PORTD.DIRCLR =  PIN6_bm;
-          PORTD.OUTCLR =  PIN6_bm;
-        }
-        if(count > 2000)
-        {
-          count = 0;
-          PORTD.DIRSET =  PIN6_bm;
-          PORTD.OUTSET =  PIN6_bm;
-        }
-      }
-      break;
-
-    default: break;
+    if(ps->frame_counter->sixty_sec_counter % 3){ BUZZER_ON; }
+    else{ BUZZER_OFF; }
   }
 
+  // off state
+  else{ BUZZER_OFF; }
+}
+
+
+/*-------------------------------------------------------------------*
+ *  LCD backlight on / off / reset
+ * ------------------------------------------------------------------*/
+
+void PORT_Backlight_On(struct Backlight *backlight)
+{
+  BACKLIGHT_ON;
+  backlight->count = 0;
+  backlight->state = _bl_on;
+}
+
+void PORT_Backlight_Off(struct Backlight *backlight)
+{
+  BACKLIGHT_OFF;
+  backlight->count = 0;
+  backlight->state = _bl_off;
+}
+
+void PORT_Backlight_Error(struct Backlight *backlight)
+{
+  backlight->count = 0;
+  backlight->state = _bl_error;
+}
+
+
+/*-------------------------------------------------------------------*
+ *  LCD backlight update
+ * ------------------------------------------------------------------*/
+
+void PORT_Backlight_Update(struct Backlight *b)
+{
+  //***LightAlwaysOn-Debug
+  if(DEBUG){ return; }
+
+  // light is on
+  if(b->state == _bl_on)
+  {
+    b->count++;
+    if(b->count > BACKLIGHT_TON_FRAMES){ PORT_Backlight_Off(b); }
+  }
+
+  // error
+  else if(b->state == _bl_error)
+  {
+    b->count++;
+    if(b->count > BACKLIGHT_ERROR_ON_FRAMES){ BACKLIGHT_OFF; }
+    if(b->count > BACKLIGHT_ERROR_OFF_FRAMES){ b->count = 0; BACKLIGHT_ON; }
+  }
 }
 
 
@@ -104,25 +131,21 @@ void PORT_Buzzer(t_FuncCmd cmd)
  *            ventilator
  * ------------------------------------------------------------------*/
 
-void PORT_Ventilator(void)
+void PORT_Ventilator(struct PlantState *ps)
 {
-  unsigned char temp = 0;
-  unsigned char hystOn = 0;
-  unsigned char hystOff = 0;
-
   // temperature
-  temp = MCP9800_PlusTemp();
+  unsigned char temp = MCP9800_PlusTemp(ps->twi_state);
 
   // hysteresis
-  hystOn =  (MEM_EEPROM_ReadVar(ALARM_temp) - 15);
-  hystOff = (MEM_EEPROM_ReadVar(ALARM_temp) - 20);
+  unsigned char hystOn = (MEM_EEPROM_ReadVar(ALARM_temp) - 15);
+  unsigned char hystOff = (MEM_EEPROM_ReadVar(ALARM_temp) - 20);
 
   if(!(temp & 0x80))
   {
-    if(temp > hystOn)   PORT_RelaisSet(R_VENTILATOR);
-    if(temp < hystOff)  PORT_RelaisClr(R_VENTILATOR);
+    if(temp > hystOn){ PORT_RelaisSet(R_VENTILATOR); }
+    if(temp < hystOff){ PORT_RelaisClr(R_VENTILATOR); }
   }
-  else PORT_RelaisClr(R_VENTILATOR);
+  else{ PORT_RelaisClr(R_VENTILATOR); }
 }
 
 
@@ -130,10 +153,8 @@ void PORT_Ventilator(void)
  *            valves
  * ------------------------------------------------------------------*/
 
-unsigned char PORT_Valve(t_valve valve, unsigned char new_state)
+void PORT_Valve(struct PlantState *ps, t_valve valve)
 {
-  static unsigned char state = 0;
-
   // watchdog reset
   BASIC_WDT_RESET;
 
@@ -143,72 +164,66 @@ unsigned char PORT_Valve(t_valve valve, unsigned char new_state)
       P_VALVE.OUTSET = O_RES;
       TCC0_wait_openValve();
       P_VALVE.OUTCLR = O_RES; 
-      state |= V_RES;
+      ps->port_state->valve_state |= V_RES;
       break;
 
     case CLOSE_Reserve:
       P_VALVE.OUTSET = C_RES;
       TCC0_wait_closeValve();
       P_VALVE.OUTCLR = C_RES;
-      state &= ~V_RES;      
+      ps->port_state->valve_state &= ~V_RES;      
       break;
 
     case OPEN_MudPump:
       P_VALVE.OUTSET = O_MUD;
       TCC0_wait_openValve();
       P_VALVE.OUTCLR = O_MUD;
-      state |= V_MUD;     
+      ps->port_state->valve_state |= V_MUD;     
       break;
 
     case CLOSE_MudPump:
       P_VALVE.OUTSET = C_MUD;
       TCC0_wait_closeValve();
       P_VALVE.OUTCLR = C_MUD;
-      state &= ~V_MUD;
+      ps->port_state->valve_state &= ~V_MUD;
       break;
 
     case OPEN_Air:
       P_VALVE.OUTSET = O_AIR;
       TCC0_wait_openValve();
       P_VALVE.OUTCLR = O_AIR;
-      state |= V_AIR;   
+      ps->port_state->valve_state |= V_AIR;   
       break;
 
     case CLOSE_Air:
       P_VALVE.OUTSET = C_AIR;
       TCC0_wait_closeValve();
       P_VALVE.OUTCLR = C_AIR;
-      state &= ~V_AIR;
+      ps->port_state->valve_state &= ~V_AIR;
       break;
 
     case OPEN_ClearWater:
       P_VALVE.OUTSET = O_CLRW;
       TCC0_wait_openValve();
       P_VALVE.OUTCLR = O_CLRW;
-      state |= V_CLW;   
+      ps->port_state->valve_state |= V_CLW;   
       break;
 
     case CLOSE_ClearWater:
       P_VALVE.OUTSET = C_CLRW;
       TCC0_wait_closeValve();
       P_VALVE.OUTCLR = C_CLRW;
-      state &= ~V_CLW;
+      ps->port_state->valve_state &= ~V_CLW;
       break;
 
     case CLOSE_IPAir:
       P_VALVE.OUTSET = C_AIR | C_RES;
       TCC0_wait_closeValve();
-      P_VALVE.OUTCLR = C_AIR | C_RES;  
+      P_VALVE.OUTCLR = C_AIR | C_RES;
       break;
 
-    // states
-    case SET_STATE_CLOSE: state &= ~new_state; break;
-    case SET_STATE_OPEN: state |= new_state; break;
-    case SET_STATE_ALL_CLOSED: state = 0x00; break;
-    case SET_STATE_ALL_OPEN: state = 0x0F; break;
     default: break;
   }
-  return state;
 }
 
 
@@ -216,7 +231,7 @@ unsigned char PORT_Valve(t_valve valve, unsigned char new_state)
  *            valve open all
  * ------------------------------------------------------------------*/
 
-void PORT_Valve_OpenAll(void)
+void PORT_Valve_OpenAll(struct PlantState *ps)
 {
   // watchdog reset
   BASIC_WDT_RESET;
@@ -243,8 +258,8 @@ void PORT_Valve_OpenAll(void)
   TCC0_wait_ms(500);
   P_VALVE.OUTCLR = O_CLRW;
 
-  // set state
-  PORT_Valve(SET_STATE_ALL_OPEN, 0);
+  // set state all open
+  ps->port_state->valve_state = 0x0F;
 }
 
 
@@ -252,7 +267,7 @@ void PORT_Valve_OpenAll(void)
  *            valve close all
  * ------------------------------------------------------------------*/
 
-void PORT_Valve_CloseAll(void)
+void PORT_Valve_CloseAll(struct PlantState *ps)
 {
   // watchdog reset
   BASIC_WDT_RESET;
@@ -278,7 +293,7 @@ void PORT_Valve_CloseAll(void)
   P_VALVE.OUTCLR = C_CLRW;
 
   // set state
-  PORT_Valve(SET_STATE_ALL_CLOSED, 0);
+  ps->port_state->valve_state = 0x00;
 }
 
 
@@ -306,15 +321,15 @@ void PORT_Auto_RunTime(struct PlantState *ps)
   // once per minute check
   if(ps->frame_counter->sixty_sec_counter == 20)
   {
-    PORT_Ventilator();
+    PORT_Ventilator(ps);
 
     // Floating switch alarm
     if(IN_FLOAT_S3 && !ps->input_handler->float_sw_alarm)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
-        Modem_Alert("Error: floating switch");
-        Error_ON(ps->lcd_backlight);
+        Modem_Alert(ps, "Error: floating switch");
+        Error_On(ps);
       }
       ps->input_handler->float_sw_alarm = 1;
     }
@@ -322,7 +337,7 @@ void PORT_Auto_RunTime(struct PlantState *ps)
     {
       if(MEM_EEPROM_ReadVar(ALARM_sensor))
       {
-        Error_OFF(ps->lcd_backlight);
+        Error_Off(ps);
       }
       ps->input_handler->float_sw_alarm = 0;
     }
@@ -330,7 +345,7 @@ void PORT_Auto_RunTime(struct PlantState *ps)
     //*** debug USVCheckVoltageSupply
     if(!DEBUG)
     {
-      ADC_USV_Check(&ps->frame_counter->usv);
+      ADC_USV_Check(ps);
     }
   }
 }
@@ -340,46 +355,33 @@ void PORT_Auto_RunTime(struct PlantState *ps)
  *            debug
  * ------------------------------------------------------------------*/
 
-void PORT_Debug(void)
+void PORT_Debug(struct PlantState *ps)
 { 
-  static unsigned char refresh = 0;
-  static unsigned char blink = 1;
-
   unsigned char y_pos_r = 19;
   unsigned char y_pos_v = 21;
 
-  refresh++;
-
-  if(refresh == 150)
+  // print register names
+  if(ps->frame_counter->frame % 2)
   {
-    refresh = 0;
-
-    // print register names
-    if(blink)
+    LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
+    LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 0, "V: Ai Mu Cl Re");
+  }
+  
+  // print register states
+  else
+  {
+    // relays
+    for(int relais = 0; relais < 8; relais++)
     {
-      blink = 0;
-      LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
-      LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 0, "V: Ai Mu Cl Re");
+      if(P_RELAIS.OUT & (1<<relais)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "1 "); }
+      else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 "); }
     }
-    
-    // print register states
-    else
+
+    // valves
+    for(int valve = 0; valve < 4; valve++)
     {
-      blink = 1;
-
-      // relays
-      for(int relais = 0; relais < 8; relais++)
-      {
-        if(P_RELAIS.OUT & (1<<relais)) LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "1 ");
-        else LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 ");
-      }
-
-      // valves
-      for(int valve = 0; valve < 4; valve++)
-      {
-        if(PORT_Valve(READ_STATE, 0) & (1<<valve)) LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "1 ");
-        else LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "0 ");
-      }
+      if(ps->port_state->valve_state & (1 << valve)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "1 "); }
+      else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "0 "); }
     }
   }
 }

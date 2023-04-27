@@ -12,152 +12,6 @@
 #include "tc_func.h"
 
 
-/* ------------------------------------------------------------------*
- *            O2 evaluation
- * ------------------------------------------------------------------*/
-
-void Eval_Oxygen(t_FuncCmd cmd, int min)
-{
-  static int o2 = 0;
-  static int o2Min = 0;
-
-  switch(cmd)
-  {
-    case _entry:
-      MEM_EEPROM_WriteAutoEntry(o2, 0, Write_o2);
-      break;
-
-    case _clear:
-      o2 = 0;
-      break;
-
-    case _count:
-      if(o2Min != min)
-      {
-        o2Min = min;
-        o2++;
-      }
-      break;
-
-    case _dec:
-      o2--;
-      break;
-
-    default: break;
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *  Eval_PinWrite: Writes Number on Display, corresponding to pressed NumButton
- * ------------------------------------------------------------------*/
-
-void Eval_PinWrite(unsigned char pin, unsigned char codePos)
-{
-  LCD_nPinButtons(pin);
-  LCD_WriteAnyFont(f_6x8_p, 3, 125 + 6 * codePos, pin + 15);
-}
-
-
-/* ------------------------------------------------------------------*
- *  Eval_PinDel: Delete written Numbers
- * ------------------------------------------------------------------*/
-
-void Eval_PinDel(void)
-{
-  LCD_WriteAnyStringFont(f_6x8_p, 3, 125, "xxxx");
-}
-
-
-/* ------------------------------------------------------------------*
- *  Eval_PinDel: unmark all Buttons
- * ------------------------------------------------------------------*/
-
-void Eval_PinClr(unsigned char *pin)
-{
-  unsigned char i = 0;
-
-  for(i = 0; i < 11; i++)
-  {
-    if(pin[i]) LCD_pPinButtons(i);
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *  Eval Comp_OpHours: Returns operating hours of Compressor, if add hours++
- * ------------------------------------------------------------------*/
-
-int Eval_Comp_OpHours(t_FuncCmd cmd)
-{
-  int hours = MCP7941_Read_Comp_OpHours();
-  if(cmd == _add)
-  {
-    hours++;
-    MCP7941_Write_Comp_OpHours(hours);
-    hours = MCP7941_Read_Comp_OpHours();
-  }
-  return hours;
-}
-
-
-/* ------------------------------------------------------------------*
- *  Eval_Countdown: If *value==0, return 1  else return 0
- * ------------------------------------------------------------------*/
-
-unsigned char Eval_CountDown(struct Tms *tms)
-{
-  static unsigned char ctOld = 0;
-
-  int min = tms->min;
-  int sec = tms->sec;
-
-  // savety for seconds
-  if(sec < 0 || sec > 61){ sec = 0; }  
-  
-  // read seconds from timer ic
-  unsigned char count = MCP7941_ReadByte(TIC_SEC);
-
-  // Countdown
-  if(count != ctOld)
-  {
-    ctOld = count;
-
-    // minute counter
-    if(!sec && min)
-    {
-      sec = 60;
-      min--;
-
-      //*** entry debug every minute
-      if(DEB_ENTRY)
-      {
-        MEM_EEPROM_WriteAutoEntry(10, 2, Write_Error);
-        MEM_EEPROM_WriteAutoEntry(10, 2, Write_o2);
-        MEM_EEPROM_WriteAutoEntry(10, 2, Write_Entry);
-        MEM_EEPROM_WriteManualEntry(0, 0, _write);
-        MEM_EEPROM_WriteSetupEntry();
-      }
-    }
-    if(sec){ sec--; }
-  }
-
-  // End of Timer
-  if(!sec && !min)
-  {
-    min = 0;
-    sec = 5;
-    tms->min = min;
-    tms->sec = sec;
-    return 1;
-  }
-
-  tms->min = min;
-  tms->sec = sec;
-  
-  return 0;
-}
-
 
 /* ------------------------------------------------------------------*
  *  Eval_SetupPlus/Minus: evaluation of Circulate Page, write variables
@@ -324,7 +178,7 @@ void Eval_SetupWatchMark(t_DateTime time, unsigned char *p_dT)
  *  Eval_Memory_NoAutoEntry(): finds out the the placement of a no entry, return position
  * ------------------------------------------------------------------*/
 
-unsigned char *Eval_Memory_NoEntry(t_textButtons data)
+unsigned char *Eval_Memory_NoEntry(t_text_buttons data)
 {
   static unsigned char memCount[3] = {MEM_AUTO_START_SECTION, 0, 0};
 
@@ -385,7 +239,7 @@ unsigned char *Eval_Memory_NoEntry(t_textButtons data)
  *          old entry
  * ---------------------------------------------------------------*/
 
-unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
+unsigned char *Eval_Memory_OldestEntry(t_text_buttons data)
 {
   static unsigned char old[2] = {MEM_AUTO_START_SECTION, 0};
 
@@ -457,7 +311,7 @@ unsigned char *Eval_Memory_OldestEntry(t_textButtons data)
  *          Latest Entry
  * ---------------------------------------------------------------*/
 
-unsigned char *Eval_Memory_LatestEntry(t_textButtons data)
+unsigned char *Eval_Memory_LatestEntry(t_text_buttons data)
 {
   static unsigned char latest[2] = {MEM_AUTO_START_SECTION, 0};
 

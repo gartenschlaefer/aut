@@ -18,13 +18,19 @@
 #define   E_IT    (1 << 3)      //MaxinTank
 #define   E_OT    (1 << 4)      //OutTank
 
+#define ERROR_ID_T (0)
+#define ERROR_ID_OP (1)
+#define ERROR_ID_UP (2)
+#define ERROR_ID_IT (3)
+#define ERROR_ID_OT (4)
+
 
 /* ------------------------------------------------------------------*
  *            function header
  * ------------------------------------------------------------------*/
 
-void Error_ON(struct LcdBacklight *b);
-void Error_OFF(struct LcdBacklight *b);
+void Error_On(struct PlantState *ps);
+void Error_Off(struct PlantState *ps);
 
 void Error_Read(struct PlantState *ps);
 void Error_Detection(struct PlantState *ps);
@@ -38,6 +44,6 @@ void Error_Action_OP_SetError(struct PlantState *ps);
 void Error_Action_UP_SetError(struct PlantState *ps);
 void Error_Action_IT_SetError(struct PlantState *ps);
 void Error_Action_OT_SetError(struct PlantState *ps);
-void Error_ModemAction(unsigned char error);
+void Error_ModemAction(struct PlantState *ps, unsigned char error);
 
 #endif

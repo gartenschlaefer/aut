@@ -5,6 +5,9 @@
 #ifndef TWI_FUNC_H   
 #define TWI_FUNC_H
 
+#include "enums.h"
+#include "structs.h"
+
 
 /* ------------------------------------------------------------------*
  *            defines
@@ -28,22 +31,21 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void TWI_Master_Init(void);
-unsigned char TWI_Master_Error(void);
+void TWI_C_Master_Init(void);
+void TWI_D_Master_Init(void);
+unsigned char TWI_C_Master_Error(void);
+unsigned char TWI_D_Master_Error(void);
 
-void TWI2_Master_Init(void);
-unsigned char TWI2_Master_Error(void);
+//unsigned char *TWI_C_Master_ReadString(unsigned char address, unsigned char i);
+unsigned char *TWI_D_Master_ReadString(struct TWIState *twi_state, unsigned char address, unsigned char i);
+unsigned char TWI_C_Master_WriteString( unsigned char address, unsigned char *sendData, unsigned char i);
+unsigned char TWI_D_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i);
 
-unsigned char *TWI_Master_ReadString(unsigned char address, unsigned char i);
-unsigned char TWI_Master_WriteString( unsigned char address, unsigned char *sendData, unsigned char i);
-unsigned char *TWI2_Master_ReadString(unsigned char address, unsigned char i);
-unsigned char TWI2_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i);
+unsigned char TWI_C_Master_Send(unsigned char send);
+unsigned char TWI_C_Master_AddressWriteMode(unsigned char f_address);
+void TWI_C_Master_Reset(void);
 
-unsigned char TWI_Master_Send(unsigned char send);
-unsigned char TWI_Master_AddressWriteMode(unsigned char f_address);
-void TWI_Master_Reset(void);
-
-unsigned char TWI2_Master_Send(unsigned char send);
-unsigned char TWI2_Master_AddressWriteMode(unsigned char f_address);
+unsigned char TWI_D_Master_Send(unsigned char send);
+unsigned char TWI_D_Master_AddressWriteMode(unsigned char f_address);
 
 #endif

@@ -14,22 +14,22 @@
 
 // set or clear states
 void OUT_SetDown(void);
-void OUT_Set_PumpOff(void);
-void OUT_Clr_PumpOff(void);
-void OUT_Set_Mud(void);
-void OUT_Clr_Mud(void);
-void OUT_Set_Air(void);
-void OUT_Clr_Air(void);
+void OUT_Set_PumpOff(struct PlantState *ps);
+void OUT_Clr_PumpOff(struct PlantState *ps);
+void OUT_Set_Mud(struct PlantState *ps);
+void OUT_Clr_Mud(struct PlantState *ps);
+void OUT_Set_Air(struct PlantState *ps);
+void OUT_Clr_Air(struct PlantState *ps);
 void OUT_Set_Compressor(void);
 void OUT_Clr_Compressor(void);
 void OUT_Set_Phosphor(void);
 void OUT_Clr_Phosphor(void);
 void OUT_Set_InflowPump(struct PlantState *ps);
-void OUT_Clr_InflowPump(void);
-void OUT_Clr_IPAir(void);
+void OUT_Clr_InflowPump(struct PlantState *ps);
+void OUT_Clr_IPAir(struct PlantState *ps);
 
 // valves
-void OUT_Valve_CloseAll(void);
-void OUT_Valve_Init(void);
+void OUT_Valve_CloseAll(struct PlantState *ps);
+void OUT_Valve_Init(struct PlantState *ps);
 
 #endif

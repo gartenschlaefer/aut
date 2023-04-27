@@ -34,7 +34,7 @@ void AT24C_WriteByte(int addr, unsigned char sData)
   send[1] = addr & 0x00FF;
   send[2] = sData;
 
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 3);
+  TWI_D_Master_WriteString(AT24C_ADDR_WRITE, send, 3);
 }
 
 
@@ -50,7 +50,7 @@ void AT24C_WritePage(int addr, unsigned char *sData)
   send[0] = ((addr >> 8) & 0x00FF);
   send[1] = addr & 0x00FF;
   for(i = 0; i < 128; i++) send[i+2] = sData[i];
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 130);
+  TWI_D_Master_WriteString(AT24C_ADDR_WRITE, send, 130);
 }
 
 
@@ -58,7 +58,7 @@ void AT24C_WritePage(int addr, unsigned char *sData)
  *            Read Byte
  * ------------------------------------------------------------------*/
 
-unsigned char AT24C_ReadByte(int addr)
+unsigned char AT24C_ReadByte(struct TWIState *twi_state, int addr)
 {
   unsigned char send[] = {0, 0};
   unsigned char *rec;
@@ -67,8 +67,8 @@ unsigned char AT24C_ReadByte(int addr)
   send[0] = ((addr >> 8) & 0x00FF);
   send[1] = addr & 0x00FF;
 
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 2);
-  rec = TWI2_Master_ReadString(AT24C_ADDR_READ, 1);
+  TWI_D_Master_WriteString(AT24C_ADDR_WRITE, send, 2);
+  rec = TWI_D_Master_ReadString(twi_state, AT24C_ADDR_READ, 1);
   rec++;
   rData = *rec;
 
@@ -80,7 +80,7 @@ unsigned char AT24C_ReadByte(int addr)
  *            Read 8Byte
  * ------------------------------------------------------------------*/
 
-unsigned char *AT24C_Read8Byte(int addr)
+unsigned char *AT24C_Read8Byte(struct TWIState *twi_state, int addr)
 {
   unsigned char send[] = {0, 0};
   unsigned char *rec;
@@ -88,8 +88,8 @@ unsigned char *AT24C_Read8Byte(int addr)
   send[0] = ((addr >> 8) & 0x00FF);
   send[1] = addr & 0x00FF;
 
-  TWI2_Master_WriteString(AT24C_ADDR_WRITE, send, 2);
-  rec = TWI2_Master_ReadString(AT24C_ADDR_READ, 8);
+  TWI_D_Master_WriteString(AT24C_ADDR_WRITE, send, 2);
+  rec = TWI_D_Master_ReadString(twi_state, AT24C_ADDR_READ, 8);
   rec++;
 
   return rec;

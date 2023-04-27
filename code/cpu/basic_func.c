@@ -31,14 +31,14 @@
 void Basic_Init(struct PlantState *ps)
 {
   // ports init
-  Clock_Init();
+  Basic_Clock_Init();
   PORT_Init();
   ADC_Init();
 
   // communication init
   USART_Init();
-  TWI_Master_Init();
-  TWI2_Master_Init();
+  TWI_C_Master_Init();
+  TWI_D_Master_Init();
 
   // display init
   LCD_HardwareRst();
@@ -51,7 +51,7 @@ void Basic_Init(struct PlantState *ps)
   if(MEM_INIT){ Basic_Init_Mem(); }
 
   // watchdog
-  Watchdog_Init();
+  Basic_Watchdog_Init();
 
   // devices init
   MCP7941_Init();
@@ -73,13 +73,16 @@ void Basic_Init(struct PlantState *ps)
   // init sonic
   Sonic_Init(ps);
 
+  // timer ic variables init
+  Basic_TimeState_Init(ps);
+
   // backlight on
-  LCD_Backlight(_on, ps->lcd_backlight);
+  PORT_Backlight_On(ps->backlight);
 }
 
 
 /* ------------------------------------------------------------------*
- *  memory init
+ *            memory init
  * ------------------------------------------------------------------*/
 
 void Basic_Init_Mem(void)
@@ -112,7 +115,7 @@ void Basic_Init_Mem(void)
  *            Clock
  * ------------------------------------------------------------------*/
 
-void Clock_Init(void)
+void Basic_Clock_Init(void)
 {
   // init oscillator
   OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
@@ -130,14 +133,122 @@ void Clock_Init(void)
 
 
 /*-------------------------------------------------------------------*
- *  Watchdog_Init
+ *            watchdog init
  * ------------------------------------------------------------------*/
 
-void Watchdog_Init(void)
+void Basic_Watchdog_Init(void)
 {
   // io protection
   CCP = CCP_IOREG_gc;
 
   // watchdog init
   WDT.CTRL =  WDT_CEN_bm | WDT_PER_8KCLK_gc | WDT_ENABLE_bm;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            timer update
+ * ------------------------------------------------------------------*/
+
+void Basic_TimeState_Init(struct PlantState *ps)
+{
+  // read timer ic vars
+  ps->time_state->tic_sec = MCP7941_ReadTime(ps->twi_state, TIC_SEC);
+  ps->time_state->tic_min = MCP7941_ReadTime(ps->twi_state, TIC_MIN);
+  ps->time_state->tic_hou = MCP7941_ReadTime(ps->twi_state, TIC_HOUR);
+  ps->time_state->tic_dat = MCP7941_ReadTime(ps->twi_state, TIC_DATE);
+  ps->time_state->tic_mon = MCP7941_ReadTime(ps->twi_state, TIC_MONTH);
+  ps->time_state->tic_yea = MCP7941_ReadTime(ps->twi_state, TIC_YEAR);
+}
+
+
+/* ------------------------------------------------------------------*
+ *            timer update
+ * ------------------------------------------------------------------*/
+
+void Basic_TimeState_Update(struct PlantState *ps)
+{
+  // read seconds from timer ic
+  unsigned char act_sec = MCP7941_ReadTime(ps->twi_state, TIC_SEC);
+
+  // second change
+  if(act_sec != ps->time_state->tic_sec)
+  {
+    // second update
+    ps->time_state->tic_sec = act_sec;
+    ps->time_state->tic_sec_update_flag = true;
+
+    // minute change
+    if(!act_sec)
+    {
+      // minute update
+      ps->time_state->tic_min = MCP7941_ReadTime(ps->twi_state, TIC_MIN);
+
+      // hour change
+      if(!ps->time_state->tic_min)
+      {
+        // hour update
+        ps->time_state->tic_hou = MCP7941_ReadTime(ps->twi_state, TIC_HOUR);
+
+        // day change
+        if(!ps->time_state->tic_hou)
+        {
+          // other updates
+          ps->time_state->tic_dat = MCP7941_ReadTime(ps->twi_state, TIC_DATE);
+          ps->time_state->tic_mon = MCP7941_ReadTime(ps->twi_state, TIC_MONTH);
+          ps->time_state->tic_yea = MCP7941_ReadTime(ps->twi_state, TIC_YEAR);
+        }
+      }
+    }
+  }
+
+  // no second change
+  else
+  {
+    ps->time_state->tic_sec_update_flag = false;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            countdown of page time
+ * ------------------------------------------------------------------*/
+
+unsigned char Basic_CountDown(struct PlantState *ps)
+{
+  // countdown update
+  if(ps->time_state->tic_sec_update_flag)
+  {
+    // safety for seconds
+    if(ps->page_state->page_time->sec < 0 || ps->page_state->page_time->sec > 61){ ps->page_state->page_time->sec = 0; }
+
+    // minute update
+    if(!ps->page_state->page_time->sec && ps->page_state->page_time->min)
+    {
+      ps->page_state->page_time->sec = 60;
+      ps->page_state->page_time->min--;
+
+      //*** entry debug every minute
+      if(DEB_ENTRY)
+      {
+        MEM_EEPROM_WriteAutoEntry(ps, 10, 2, Write_Error);
+        MEM_EEPROM_WriteAutoEntry(ps, 10, 2, Write_o2);
+        MEM_EEPROM_WriteAutoEntry(ps, 10, 2, Write_Entry);
+        MEM_EEPROM_WriteManualEntry(ps, 0, 0, _write);
+        MEM_EEPROM_WriteSetupEntry(ps);
+      }
+    }
+
+    // second update
+    if(ps->page_state->page_time->sec){ ps->page_state->page_time->sec--; }
+
+    // end of page time
+    if(!ps->page_state->page_time->sec && !ps->page_state->page_time->min)
+    {
+      ps->page_state->page_time->min = 0;
+      ps->page_state->page_time->sec = 5;
+      return 1;
+    }
+  }
+  return 0;
 }

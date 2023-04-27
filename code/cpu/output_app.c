@@ -25,25 +25,25 @@ void OUT_SetDown(void)
  *            PumpOff
  * ------------------------------------------------------------------*/
 
-void OUT_Set_PumpOff(void)
+void OUT_Set_PumpOff(struct PlantState *ps)
 {
   // mammoth pump
   if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff)))
   {
-    PORT_Valve(OPEN_ClearWater, 0);
+    PORT_Valve(ps, OPEN_ClearWater);
     OUT_Set_Compressor();
   }
-  else PORT_RelaisSet(R_CLEARWATER);
+  else{ PORT_RelaisSet(R_CLEARWATER); }
 }
 
-void OUT_Clr_PumpOff(void)
+void OUT_Clr_PumpOff(struct PlantState *ps)
 {
   // relays
   OUT_Clr_Compressor();
   PORT_RelaisClr(R_CLEARWATER);
 
   // mammoth pump
-  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))) PORT_Valve(CLOSE_ClearWater, 0);
+  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))){ PORT_Valve(ps, CLOSE_ClearWater); }
 }
 
 
@@ -51,16 +51,16 @@ void OUT_Clr_PumpOff(void)
  *            Mud
  * ------------------------------------------------------------------*/
 
-void OUT_Set_Mud(void)
+void OUT_Set_Mud(struct PlantState *ps)
 {
-  PORT_Valve(OPEN_MudPump, 0);
+  PORT_Valve(ps, OPEN_MudPump);
   OUT_Set_Compressor();
 }
 
-void OUT_Clr_Mud(void)
+void OUT_Clr_Mud(struct PlantState *ps)
 {
   OUT_Clr_Compressor();
-  PORT_Valve(CLOSE_MudPump, 0);
+  PORT_Valve(ps, CLOSE_MudPump);
 }
 
 
@@ -68,16 +68,16 @@ void OUT_Clr_Mud(void)
  *            Air
  * ------------------------------------------------------------------*/
 
-void OUT_Set_Air(void)
+void OUT_Set_Air(struct PlantState *ps)
 {
-  PORT_Valve(OPEN_Air, 0);
+  PORT_Valve(ps, OPEN_Air);
   OUT_Set_Compressor();
 }
 
-void OUT_Clr_Air(void)
+void OUT_Clr_Air(struct PlantState *ps)
 {
   OUT_Clr_Compressor();
-  PORT_Valve(CLOSE_Air, 0);
+  PORT_Valve(ps, CLOSE_Air);
 }
 
 
@@ -122,7 +122,7 @@ void OUT_Set_InflowPump(struct PlantState *ps)
   switch(MEM_EEPROM_ReadVar(PUMP_inflowPump))
   {
     // mammoth pump
-    case 0: PORT_Valve(OPEN_Reserve, 0); OUT_Set_Compressor(); break;
+    case 0: PORT_Valve(ps, OPEN_Reserve); OUT_Set_Compressor(); break;
 
     // ext. pump 1
     case 1: PORT_RelaisSet(R_INFLOW1); break;
@@ -137,13 +137,13 @@ void OUT_Set_InflowPump(struct PlantState *ps)
   }
 }
 
-void OUT_Clr_InflowPump(void)
+void OUT_Clr_InflowPump(struct PlantState *ps)
 {
   OUT_Clr_Compressor();
   PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
 
-  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump)) PORT_Valve(CLOSE_Reserve, 0);
+  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump)){ PORT_Valve(ps, CLOSE_Reserve); }
 }
 
 
@@ -151,12 +151,12 @@ void OUT_Clr_InflowPump(void)
  *            InflowPump and Air
  * ------------------------------------------------------------------*/
 
-void OUT_Clr_IPAir(void)
+void OUT_Clr_IPAir(struct PlantState *ps)
 {
   OUT_Clr_Compressor();
   PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
-  PORT_Valve(CLOSE_IPAir, 0);
+  PORT_Valve(ps, CLOSE_IPAir);
 }
 
 
@@ -164,10 +164,10 @@ void OUT_Clr_IPAir(void)
  *            All Off
  * ------------------------------------------------------------------*/
 
-void OUT_Valve_CloseAll(void)
+void OUT_Valve_CloseAll(struct PlantState *ps)
 {
   OUT_Clr_Compressor();
-  PORT_Valve_CloseAll();
+  PORT_Valve_CloseAll(ps);
 }
 
 
@@ -175,18 +175,18 @@ void OUT_Valve_CloseAll(void)
  *            initialize valves to all closed
  * ------------------------------------------------------------------*/
 
-void OUT_Valve_Init(void)
+void OUT_Valve_Init(struct PlantState *ps)
 {
   // valves with springs
   if(SPRING_VALVE_ON)
   {
     // open all valves
-    PORT_Valve_OpenAll();
+    PORT_Valve_OpenAll(ps);
 
     // close all valves
-    OUT_Valve_CloseAll();
+    OUT_Valve_CloseAll(ps);
   }
 
   // valves without springs
-  else{ OUT_Valve_CloseAll(); }
+  else{ OUT_Valve_CloseAll(ps); }
 }

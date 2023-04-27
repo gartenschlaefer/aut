@@ -46,7 +46,7 @@ void LCD_Auto_Phosphor_Init(struct PlantState *ps);
 void LCD_Auto_Phosphor(struct PlantState *ps);
 
 void LCD_Manual_SetState(struct PlantState *ps);
-void LCD_Manual_ResetState(t_page save_page);
+void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page);
 
 void LCD_Setup_Symbols(struct PlantState *ps);
 void LCD_Data_Symbols(struct PlantState *ps);
@@ -61,8 +61,8 @@ void LCD_WriteAutoEntryPage(unsigned char page);
 void LCD_WriteManualEntryPage(unsigned char page);
 void LCD_WriteSetupEntryPage(unsigned char page);
 
-void LCD_wPage(t_textButtons data, unsigned char eep, unsigned char entry, bool half);
-unsigned char LCD_eep_minus(t_textButtons data, unsigned char eep, unsigned char cnt);
+void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half);
+unsigned char LCD_eep_minus(t_text_buttons data, unsigned char eep, unsigned char cnt);
 void LCD_Sym_Data_EndText(void);
 
 void LCD_AirState_SetAutoStartTime(struct PlantState *ps);

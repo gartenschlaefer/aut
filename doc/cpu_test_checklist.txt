@@ -1,0 +1,6 @@
+--
+test following for cpu code:
+
+- touch functionalities
+- oxygen minutes per cycle
+- operational hours for compressor
