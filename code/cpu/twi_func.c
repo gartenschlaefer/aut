@@ -77,7 +77,7 @@ unsigned char TWI_C_Master_Error(void)
 
 
 /* ------------------------------------------------------------------*
- *            Write String
+ *            write string
  * ------------------------------------------------------------------*/
 
 unsigned char TWI_C_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i)
@@ -193,7 +193,7 @@ unsigned char TWI_C_Master_WriteString(unsigned char address, unsigned char *sen
 
 
 /* ------------------------------------------------------------------*
- *            Master Send Data
+ *            master send data
  * ------------------------------------------------------------------*/
 
 unsigned char TWI_C_Master_Send(unsigned char send)
@@ -224,7 +224,7 @@ unsigned char TWI_C_Master_Send(unsigned char send)
 
 
 /* ------------------------------------------------------------------*
- *            Master Send Address
+ *            master send address
  * ------------------------------------------------------------------*/
 
 unsigned char TWI_C_Master_AddressWriteMode(unsigned char f_address)
@@ -272,7 +272,7 @@ void TWI_C_Master_Reset(void)
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            TWI2 - Master init
+ *            TWI2 - master init
  * ------------------------------------------------------------------*/
 
 void TWI_D_Master_Init(void)
@@ -332,7 +332,7 @@ unsigned char TWI_D_Master_Error(void)
 
 
 /* ------------------------------------------------------------------*
- *            Write String
+ *            write string
  * ------------------------------------------------------------------*/
 
 unsigned char TWI_D_Master_WriteString(unsigned char address, unsigned char *sendData, unsigned char i)
@@ -371,7 +371,7 @@ unsigned char TWI_D_Master_WriteString(unsigned char address, unsigned char *sen
 
 
 /* ------------------------------------------------------------------*
- *            Master Send Address
+ *            master send address
  * ------------------------------------------------------------------*/
 
 unsigned char TWI_D_Master_AddressWriteMode(unsigned char f_address)
@@ -391,7 +391,7 @@ unsigned char TWI_D_Master_AddressWriteMode(unsigned char f_address)
 
 
 /* ------------------------------------------------------------------*
- *            Master Send Data
+ *            master send data
  * ------------------------------------------------------------------*/
 
 unsigned char TWI_D_Master_Send(unsigned char send)
@@ -411,7 +411,7 @@ unsigned char TWI_D_Master_Send(unsigned char send)
 
 
 /* ------------------------------------------------------------------*
- *            Read String
+ *            read string
  * ------------------------------------------------------------------*/
 
 unsigned char *TWI_D_Master_ReadString(struct TWIState *twi_state, unsigned char address, unsigned char i)

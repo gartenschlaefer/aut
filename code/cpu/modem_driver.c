@@ -490,7 +490,7 @@ void Modem_Test(struct PlantState *ps)
     // check modem status -> turn on
     Modem_Check(ps);
 
-    // Read status
+    // read status
     Modem_ReadPWR();
     Modem_ReadCTS();
 
@@ -515,7 +515,7 @@ void Modem_Test(struct PlantState *ps)
         // read buffer
         else
         {
-          unsigned char *p_rec = USART_Rx_Buffer(_read, 0);
+          unsigned char *p_rec = USART_Rx_Buffer_Read(ps->usart_state);
           unsigned char len = *p_rec;
           unsigned char i = 0;
           unsigned char j = 0;
@@ -531,20 +531,12 @@ void Modem_Test(struct PlantState *ps)
             p_rec++;
             len--;
             i++;
-            if (i > 11)
-            {
-              i = 0;
-              j++;
-            }
-            if (j > 2)
-            {
-              j = 0;
-            }
-
+            if (i > 11){ i = 0; j++; }
+            if (j > 2){ j = 0; }
           }
 
           // clear buffer
-          USART_Rx_Buffer(_clear, 0);
+          USART_Rx_Buffer_Clear(ps->usart_state);
         }
       }
 

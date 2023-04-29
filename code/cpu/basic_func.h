@@ -27,4 +27,7 @@ void Basic_TimeState_Init(struct PlantState *ps);
 void Basic_TimeState_Update(struct PlantState *ps);
 unsigned char Basic_CountDown(struct PlantState *ps);
 
+int Basic_LimitAdd(int value, int max);
+int Basic_LimitDec(int value, int min);
+
 #endif

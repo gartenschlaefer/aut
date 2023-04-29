@@ -1,6 +1,21 @@
 --
 test following for cpu code:
 
+
+--
+general
+
 - touch functionalities
+
+
+--
+cycle vars
+
 - oxygen minutes per cycle
 - operational hours for compressor
+
+
+--
+data entries
+
+- check manual and setup start and leaving time

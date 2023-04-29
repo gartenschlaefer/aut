@@ -15,28 +15,28 @@
 unsigned char Touch_Matrix(void);
 void Touch_SelectLinker(struct PlantState *ps);
 
-void Touch_AutoLinker(struct PlantState *ps);
-void Touch_ManualLinker(struct PlantState *ps);
-void Touch_SetupLinker(struct PlantState *ps);
-void Touch_DataLinker(struct PlantState *ps);
-void Touch_PinLinker(struct PlantState *ps);
+void Touch_Auto_Linker(struct PlantState *ps);
+void Touch_Manual_Linker(struct PlantState *ps);
+void Touch_Setup_Linker(struct PlantState *ps);
+void Touch_Data_Linker(struct PlantState *ps);
+void Touch_Pin_Linker(struct PlantState *ps);
 
-void Touch_SetupCirculateLinker(struct PlantState *ps);
-void Touch_SetupAirLinker(struct PlantState *ps);
-void Touch_SetupWatchLinker(struct PlantState *ps);
-void Touch_SetupSetDownLinker(struct PlantState *ps);
-void Touch_SetupPumpOffLinker(struct PlantState *ps);
-void Touch_SetupMudLinker(struct PlantState *ps);
-void Touch_SetupCompressorLinker(struct PlantState *ps);
-void Touch_SetupPhosphorLinker(struct PlantState *ps);
-void Touch_SetupInflowPumpLinker(struct PlantState *ps);
-void Touch_SetupCalLinker(struct PlantState *ps);
-void Touch_SetupAlarmLinker(struct PlantState *ps);
-void Touch_SetupZoneLinker(struct PlantState *ps);
+void Touch_Setup_CirculateLinker(struct PlantState *ps);
+void Touch_Setup_AirLinker(struct PlantState *ps);
+void Touch_Setup_WatchLinker(struct PlantState *ps);
+void Touch_Setup_SetDownLinker(struct PlantState *ps);
+void Touch_Setup_PumpOffLinker(struct PlantState *ps);
+void Touch_Setup_MudLinker(struct PlantState *ps);
+void Touch_Setup_CompressorLinker(struct PlantState *ps);
+void Touch_Setup_PhosphorLinker(struct PlantState *ps);
+void Touch_Setup_InflowPumpLinker(struct PlantState *ps);
+void Touch_Setup_CalLinker(struct PlantState *ps);
+void Touch_Setup_AlarmLinker(struct PlantState *ps);
+void Touch_Setup_ZoneLinker(struct PlantState *ps);
 
-void Touch_DataAutoLinker(struct PlantState *ps);
-void Touch_DataManualLinker(struct PlantState *ps);
-void Touch_DataSetupLinker(struct PlantState *ps);
-void Touch_DataSonicLinker(struct PlantState *ps);
+void Touch_Data_AutoLinker(struct PlantState *ps);
+void Touch_Data_ManualLinker(struct PlantState *ps);
+void Touch_Data_SetupLinker(struct PlantState *ps);
+void Touch_Data_SonicLinker(struct PlantState *ps);
 
 #endif

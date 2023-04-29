@@ -26,7 +26,7 @@ void MCP7941_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            init Time Default
+ *            init time default
  * ------------------------------------------------------------------*/
 
 void MCP7941_InitDefault(void)
@@ -45,7 +45,7 @@ void MCP7941_InitDefault(void)
 
 
 /* ------------------------------------------------------------------*
- *            Write Data i
+ *            write data i
  * ------------------------------------------------------------------*/
 
 void MCP7941_WriteString(unsigned char *send, unsigned char i)
@@ -56,7 +56,7 @@ void MCP7941_WriteString(unsigned char *send, unsigned char i)
 
 
 /* ------------------------------------------------------------------*
- *            Read Data i
+ *            read data i
  * ------------------------------------------------------------------*/
 
 unsigned char *MCP7941_ReadString(struct TWIState *twi_state, unsigned char *addr, unsigned char i)
@@ -68,7 +68,7 @@ unsigned char *MCP7941_ReadString(struct TWIState *twi_state, unsigned char *add
 
 
 /* ------------------------------------------------------------------*
- *            Write Byte
+ *            write byte
  * ------------------------------------------------------------------*/
 
 void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
@@ -79,7 +79,7 @@ void MCP7941_WriteByte(unsigned char addr, unsigned char sData)
 
 
 /* ------------------------------------------------------------------*
- *            Receive Byte
+ *            receive byte
  * ------------------------------------------------------------------*/
 
 unsigned char MCP7941_ReadByte(struct TWIState *twi_state, unsigned char addr)
@@ -92,7 +92,7 @@ unsigned char MCP7941_ReadByte(struct TWIState *twi_state, unsigned char addr)
 
 
 /* ------------------------------------------------------------------*
- *            Write Compressor OpHours2RAM
+ *            write compressor operation hours to RAM
  * ------------------------------------------------------------------*/
 
 void MCP7941_Write_Comp_OpHours(int hours)
@@ -106,7 +106,7 @@ void MCP7941_Write_Comp_OpHours(int hours)
 
 
 /* ------------------------------------------------------------------*
- *            Read Compressor OpHoursFromRAM
+ *            read compressor operation hours from RAM
  * ------------------------------------------------------------------*/
 
 int MCP7941_Read_Comp_OpHours(struct TWIState *twi_state)
@@ -121,7 +121,7 @@ int MCP7941_Read_Comp_OpHours(struct TWIState *twi_state)
 
 
 /* ------------------------------------------------------------------*
- *            Read Time
+ *            read time
  * ------------------------------------------------------------------*/
 
 unsigned char MCP7941_ReadTime(struct TWIState *twi_state, unsigned char cmd)

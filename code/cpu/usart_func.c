@@ -18,7 +18,7 @@ ISR(USARTF1_RXC_vect)
   unsigned char data = USARTF1.DATA;
 
   // add byte to buffer
-  USART_Rx_Buffer(_add, data);
+  USART_Rx_Buffer_AddByte(&global_usart_state, data);
 }
 
 
@@ -83,7 +83,7 @@ void USART_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            USART Read Byte
+ *            USART read byte
  * ------------------------------------------------------------------*/
 
 int USART_ReadByte(void)
@@ -107,43 +107,7 @@ int USART_ReadByte(void)
 
 
 /* ------------------------------------------------------------------*
- *            USART RX Buffer
- * ------------------------------------------------------------------*/
-
-unsigned char *USART_Rx_Buffer(t_FuncCmd cmd, char c)
-{
-  static unsigned char rx_buffer[50] = {0};
-  static unsigned char pos = 0;
-
-  // add byte to buffer
-  if(cmd == _add)
-  {
-    if(pos >= 49){ return &rx_buffer[0]; }
-    rx_buffer[pos+1] = c;
-    pos++;
-  }
-
-  // get zeros position with num of entries
-  else if(cmd == _read)
-  {
-    // amount of entries
-    rx_buffer[0] = pos;
-    return &rx_buffer[0];
-  }
-
-  // clear buffer
-  else if(cmd == _clear)
-  {
-    for(pos = 0; pos < 50; pos++){ rx_buffer[pos] = 0x00; }
-    pos = 0;
-  }
-
-  return &rx_buffer[0];
-}
-
-
-/* ------------------------------------------------------------------*
- *            Write Byte
+ *            write byte
  * ------------------------------------------------------------------*/
 
 void USART_WriteByte(char write)
@@ -156,7 +120,7 @@ void USART_WriteByte(char write)
 
 
 /* ------------------------------------------------------------------*
- *            Write Stirng
+ *            write stirng
  * ------------------------------------------------------------------*/
 
 void USART_WriteString(char write[])
@@ -168,4 +132,41 @@ void USART_WriteString(char write[])
     USART_WriteByte(write[i]);
     i++;
   }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            USART RX buffer
+ * ------------------------------------------------------------------*/
+
+void USART_Rx_Buffer_AddByte(struct USARTState *usart_state, unsigned char data_byte)
+{
+  if(usart_state->pos >= 49){ return; }
+  usart_state->rx_buffer[usart_state->pos+1] = data_byte;
+  usart_state->pos++;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            USART RX buffer
+ * ------------------------------------------------------------------*/
+
+void USART_Rx_Buffer_Clear(struct USARTState *usart_state)
+{
+  for(usart_state->pos = 0; usart_state->pos < 50; usart_state->pos++){ usart_state->rx_buffer[usart_state->pos] = 0x00; }
+  usart_state->pos = 0;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            USART RX Buffer
+ * ------------------------------------------------------------------*/
+
+unsigned char *USART_Rx_Buffer_Read(struct USARTState *usart_state)
+{
+  // amount of entries
+  usart_state->rx_buffer[0] = usart_state->pos;
+
+  // return data
+  return &usart_state->rx_buffer[0];
 }

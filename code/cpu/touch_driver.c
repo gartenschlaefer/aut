@@ -169,7 +169,7 @@ void Touch_Clean(void)
  *  Touch_Y_Measure
  * --------------------------------------------------------------
  *  Set TOP   and BOTTOM  as Output, TOP = 0, BOTTOM=1
- *  Set LEFT  and RIGHT   as Input, Read at LEFT (ADC0)
+ *  Set LEFT  and RIGHT   as Input, read at LEFT (ADC0)
  * ------------------------------------------------------------------*/
 
 void Touch_Y_Measure(void)
@@ -189,8 +189,8 @@ void Touch_Y_Measure(void)
 /*-------------------------------------------------------------------*
  *  Touch_Y_Read
  * --------------------------------------------------------------
- *  Wait until Conversion Complete and return Data
- *  Read at LEFT (ADC3),  Convert CH0
+ *  Wait until Conversion Complete and return data
+ *  read at LEFT (ADC3),  Convert CH0
  * ------------------------------------------------------------------*/
 
  int Touch_Y_Read(void)
@@ -216,7 +216,7 @@ void Touch_Y_Measure(void)
  *  Touch_Cal_Y_ReadData
  * --------------------------------------------------------------
  *  Set UP Measure through Touch_Y_Measure
- *  Read Data on LEFT ADC0 through  Touch_Y_Read
+ *  read data on LEFT ADC0 through  Touch_Y_Read
  *  Clean Up Measure through Touch_Clean
  * ------------------------------------------------------------------*/
 
@@ -224,13 +224,13 @@ int Touch_Cal_Y_ReadData(void)
 {
   int yData = 0;
 
-  // Setup Pins
+  // setup Pins
   Touch_Clean();
   TCC0_Touch_Wait();
   Touch_Y_Measure();
   TCC0_Touch_Wait();
 
-  // Read at ADC0
+  // read at ADC0
   yData = Touch_Y_Read();
   Touch_Clean();
 
@@ -242,7 +242,7 @@ int Touch_Cal_Y_ReadData(void)
  *  Touch_X_Measure
  * --------------------------------------------------------------
  *  Set LEFT  and RIGHT   as Output,  LEFT=1, RIGTH = 0
- *  Set TOP   and BOTTOM  as Input,   Read at TOP (ADC1)
+ *  Set TOP   and BOTTOM  as Input,   read at TOP (ADC1)
  * ------------------------------------------------------------------*/
 
 void Touch_X_Measure(void)
@@ -262,8 +262,8 @@ void Touch_X_Measure(void)
 /*-------------------------------------------------------------------*
  *  Touch_X_Read
  * --------------------------------------------------------------
- *  Wait until Conversion Complete and return Data
- *  Read at TOP (ADC2), Convert CH1
+ *  Wait until Conversion Complete and return data
+ *  read at TOP (ADC2), Convert CH1
  * ------------------------------------------------------------------*/
 
  int Touch_X_Read(void)
@@ -284,22 +284,20 @@ void Touch_X_Measure(void)
 /*-------------------------------------------------------------------*
  *  Touch_Cal_X_ReadData
  * --------------------------------------------------------------
- *  Set UP Measure through      Touch_X_Measure
- *  Read Data at TOP ADC1 throuch   Touch_X_Read
- *  Clean Up Measure through    Touch_Clean
+ *  set up measure, read data at TOP ADC1, clean
  * ------------------------------------------------------------------*/
 
  int Touch_Cal_X_ReadData(void)
  {
   int xData = 0;
 
-  // Setup Port
+  // setup port
   Touch_Clean();
   TCC0_Touch_Wait();
   Touch_X_Measure();
   TCC0_Touch_Wait();
 
-  // Read at ADC0
+  // read at ADC0
   xData = Touch_X_Read();
   Touch_Clean();
 

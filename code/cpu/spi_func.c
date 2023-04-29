@@ -27,7 +27,7 @@ void SPI_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            Write Byte
+ *            write byte
  * ------------------------------------------------------------------*/
 
 unsigned char SPI_WriteByte(unsigned char wByte)
@@ -48,7 +48,7 @@ unsigned char SPI_WriteByte(unsigned char wByte)
 
 
 /* ------------------------------------------------------------------*
- *            Write String
+ *            write string
  * ------------------------------------------------------------------*/
 
 unsigned char SPI_WriteString(unsigned char *sendData, unsigned char i)
@@ -71,7 +71,7 @@ unsigned char SPI_WriteString(unsigned char *sendData, unsigned char i)
 
 
 /* ------------------------------------------------------------------*
- *            Read Byte
+ *            read byte
  * ------------------------------------------------------------------*/
 
 unsigned char SPI_ReadByte(void)

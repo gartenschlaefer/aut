@@ -23,7 +23,7 @@ void AT24C_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            Write Byte
+ *            write byte
  * ------------------------------------------------------------------*/
 
 void AT24C_WriteByte(int addr, unsigned char sData)
@@ -39,7 +39,7 @@ void AT24C_WriteByte(int addr, unsigned char sData)
 
 
 /* ------------------------------------------------------------------*
- *            Write Page - 128Byte
+ *            write page - 128byte
  * ------------------------------------------------------------------*/
 
 void AT24C_WritePage(int addr, unsigned char *sData)
@@ -55,7 +55,7 @@ void AT24C_WritePage(int addr, unsigned char *sData)
 
 
 /* ------------------------------------------------------------------*
- *            Read Byte
+ *            read byte
  * ------------------------------------------------------------------*/
 
 unsigned char AT24C_ReadByte(struct TWIState *twi_state, int addr)
@@ -77,7 +77,7 @@ unsigned char AT24C_ReadByte(struct TWIState *twi_state, int addr)
 
 
 /* ------------------------------------------------------------------*
- *            Read 8Byte
+ *            read 8 bytes
  * ------------------------------------------------------------------*/
 
 unsigned char *AT24C_Read8Byte(struct TWIState *twi_state, int addr)

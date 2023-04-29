@@ -1,5 +1,5 @@
 // --
-// ADC Setup
+// ADC setup
 
 // include guard
 #ifndef ADC_FUNC_H   

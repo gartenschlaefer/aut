@@ -404,26 +404,26 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons t
   char t[7] = "";
 
   // write frame
-  if(pos) LCD_WriteAnySymbol(s_39x16, row, col, p_text_frame);
-  else LCD_WriteAnySymbol(s_39x16, row, col, n_text_frame);
+  if(pos){ LCD_WriteAnySymbol(s_39x16, row, col, _p_text_frame); }
+  else{ LCD_WriteAnySymbol(s_39x16, row, col, _n_text_frame); }
 
   switch(text)
   {
-    case Auto:    row += 1; col += 8; strcat(t, "Auto");  break;
-    case Manual:  row += 1; col += 2; strcat(t, "Manual");break;
-    case Setup:   row += 1; col += 5; strcat(t, "Setup"); break;
-    case Data:    row += 1; col += 8; strcat(t, "Data");  break;
-    case Sonic:   row += 1; col += 5; strcat(t, "Sonic"); break;
-    case Shot:    row += 1; col += 8; strcat(t, "Shot");  break;
-    case OpenV:   row += 1; col += 5; strcat(t, "OpenV"); break;
-    case Boot:    row += 1; col += 8; strcat(t, "Boot");  break;
-    case Read:    row += 1; col += 8; strcat(t, "Read");  break;
-    case Write:   row += 1; col += 5; strcat(t, "Write"); break;
+    case TEXT_BUTTON_auto: row += 1; col += 8; strcat(t, "Auto");  break;
+    case TEXT_BUTTON_manual: row += 1; col += 2; strcat(t, "Manual");break;
+    case TEXT_BUTTON_setup: row += 1; col += 5; strcat(t, "Setup"); break;
+    case TEXT_BUTTON_data: row += 1; col += 8; strcat(t, "Data");  break;
+    case TEXT_BUTTON_sonic: row += 1; col += 5; strcat(t, "Sonic"); break;
+    case TEXT_BUTTON_shot: row += 1; col += 8; strcat(t, "Shot");  break;
+    case TEXT_BUTTON_open_ventil: row += 1; col += 5; strcat(t, "OpenV"); break;
+    case TEXT_BUTTON_boot: row += 1; col += 8; strcat(t, "Boot");  break;
+    case TEXT_BUTTON_read: row += 1; col += 8; strcat(t, "Read");  break;
+    case TEXT_BUTTON_write: row += 1; col += 5; strcat(t, "Write"); break;
   }
 
   // write text
-  if(pos) LCD_WriteAnyStringFont(f_6x8_p, row, col, t);
-  else LCD_WriteAnyStringFont(f_6x8_n, row, col, t);
+  if(pos){ LCD_WriteAnyStringFont(f_6x8_p, row, col, t); }
+  else{ LCD_WriteAnyStringFont(f_6x8_n, row, col, t); }
 }
 
 
@@ -456,8 +456,8 @@ void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height,
 
 
 /*-------------------------------------------------------------------*
- *  Converts a Nibble to the LED Standards of the Display:
- *  Each Pixel in the H is converted to 2 Bits, 11 px On - 00 px Off
+ *  converts a nibble to the LED standards of the Display:
+ *  each pixel in the H is converted to 2 Bits, 11 px On - 00 px off
  * ------------------------------------------------------------------*/
 
 unsigned char LCD_ConvertWP(unsigned char con)

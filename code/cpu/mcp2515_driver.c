@@ -57,7 +57,7 @@ void MCP2515_SWReset(void)
 
 
 /* ------------------------------------------------------------------*
- *            Write Register
+ *            write register
  * ------------------------------------------------------------------*/
 
 void MCP2515_WriteReg(unsigned char addr, unsigned char data)
@@ -71,7 +71,7 @@ void MCP2515_WriteReg(unsigned char addr, unsigned char data)
 
 
 /* ------------------------------------------------------------------*
- *            Read Register
+ *            read register
  * ------------------------------------------------------------------*/
 
 unsigned char MCP2515_ReadReg(unsigned char addr)
@@ -100,7 +100,7 @@ unsigned char MCP2515_ReadReg(unsigned char addr)
 
 
 /* ------------------------------------------------------------------*
- *            Read RxB0 or RxB1 -> macros
+ *            read RxB0 or RxB1 -> macros
  * ------------------------------------------------------------------*/
 
 // unsigned char MCP2515_ReadRxB(unsigned char cmd)

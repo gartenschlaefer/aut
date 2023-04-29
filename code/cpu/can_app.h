@@ -57,8 +57,8 @@ void CAN_Update(struct CANState *can_state);
 void CAN_RxB0_Read(struct CANState *can_state);
 void CAN_RxB0_Clear(struct CANState *can_state);
 unsigned char CAN_RxB0_Ack(struct CANState *can_state);
-unsigned char CAN_TxB0_Write(unsigned char *txB0);
-void CAN_TxCmd(t_can_cmd cmd);
+unsigned char CAN_TxB0_Write(struct CANState *can_state, unsigned char *txB0);
+void CAN_TxCmd(struct CANState *can_state, t_can_cmd cmd);
 //void CAN_TxUSSREG(unsigned char reg);
 
 #endif

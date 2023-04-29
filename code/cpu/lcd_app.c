@@ -24,7 +24,7 @@
 
 
 /*-------------------------------------------------------------------*
- *  display refresh
+ *            display refresh
  * ------------------------------------------------------------------*/
 
 void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
@@ -35,7 +35,7 @@ void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
 
       // lcd_reset
       if(ps->frame_counter->lcd_reset == 600){ LCD_Init(); }
-      else if(ps->frame_counter->lcd_reset == 1200){ LCD_Sym_MarkTextButton(Auto); }
+      else if(ps->frame_counter->lcd_reset == 1200){ LCD_Sym_MarkTextButton(TEXT_BUTTON_auto); }
       else if(ps->frame_counter->lcd_reset == 1800){ LCD_Sym_Logo(); }
       else if(ps->frame_counter->lcd_reset > 2400){ LCD_Sym_Auto_SetManager(ps); ps->frame_counter->lcd_reset = 0; }
       break;
@@ -49,7 +49,7 @@ void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
 
 
 /*-------------------------------------------------------------------*
- *  main automatic page
+ *            main auto page
  * ------------------------------------------------------------------*/
 
 void LCD_AutoPage(struct PlantState *ps)
@@ -118,7 +118,7 @@ void LCD_AutoPage(struct PlantState *ps)
   if((Basic_CountDown(ps)) && (ps->page_state->page != ErrorTreat)){ LCD_Auto_CountDownEndAction(ps); }
 
   // touch linker
-  Touch_AutoLinker(ps);
+  Touch_Auto_Linker(ps);
 
   // sonic
   Sonic_ReadTank(ps);
@@ -284,8 +284,7 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
     case AutoMud:
 
       // oxygen entry, todo: check this
-      MEM_EEPROM_WriteAutoEntry(ps, ps->compressor_state->cycle_o2_min, 0, Write_o2);
-      MEM_EEPROM_WriteAutoEntry(ps, 0, 0, Write_Entry);
+      MEM_EEPROM_WriteAutoEntry(ps);
       ps->compressor_state->cycle_o2_min = 0;
 
       // calibration for pressure sensing
@@ -304,7 +303,7 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Auto Air
+ *            auto air manager
  * ------------------------------------------------------------------*/
 
 void LCD_AirState_Manager(struct PlantState *ps)
@@ -336,7 +335,7 @@ void LCD_AirState_Manager(struct PlantState *ps)
         // set ps
         if(p == AutoAirOn){ ps->page_state->page = AutoAirOff; }
         else if(p == AutoCircOn){ ps->page_state->page = AutoCircOff; }
-        LCD_Sym_AutoAirOn(p);
+        LCD_Sym_Auto_AirPageSelect(p);
 
         // inflow pump
         if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
@@ -357,7 +356,7 @@ void LCD_AirState_Manager(struct PlantState *ps)
         // set pages
         if(p == AutoAirOff){ ps->page_state->page = AutoAirOn; }
         else if(p == AutoCircOff){ ps->page_state->page = AutoCircOn; }
-        LCD_Sym_AutoAirOn(p);
+        LCD_Sym_Auto_AirPageSelect(p);
         LCD_AirState_SetAutoStartTime(ps);
         break;
 
@@ -415,7 +414,7 @@ void LCD_AirState_Manager(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Auto Inflow Pump
+ *            auto inflow pump init
  * ------------------------------------------------------------------*/
 
 void LCD_Auto_InflowPump_Init(struct PlantState *ps)
@@ -441,6 +440,11 @@ void LCD_Auto_InflowPump_Init(struct PlantState *ps)
     *ip_state = _off;
   }
 }
+
+
+/* ------------------------------------------------------------------*
+ *            auto inflow pump main
+ * ------------------------------------------------------------------*/
 
 void LCD_Auto_InflowPump_Main(struct PlantState *ps)
 {
@@ -503,7 +507,7 @@ void LCD_Auto_InflowPump_Main(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Auto Phosphor Init
+ *            auto phosphor init
  * ------------------------------------------------------------------*/
 
 void LCD_Auto_Phosphor_Init(struct PlantState *ps)
@@ -517,7 +521,7 @@ void LCD_Auto_Phosphor_Init(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Auto Phosphor
+ *            auto phosphor
  * ------------------------------------------------------------------*/
 
 void LCD_Auto_Phosphor(struct PlantState *ps)
@@ -544,7 +548,7 @@ void LCD_Auto_Phosphor(struct PlantState *ps)
   {
     ps->phosphor_state->ph_state = _ph_off;
     ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(OFF_phosphor); ps->phosphor_state->ph_tms->sec = 0;
-    LCD_WriteAnySymbol(s_19x19, 6, 134, p_phosphor);
+    LCD_WriteAnySymbol(s_19x19, 6, 134, _p_phosphor);
     OUT_Clr_Phosphor();
   }
 
@@ -553,14 +557,14 @@ void LCD_Auto_Phosphor(struct PlantState *ps)
   {
     ps->phosphor_state->ph_state = _ph_on;
     ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor); ps->phosphor_state->ph_tms->sec = 0;
-    LCD_WriteAnySymbol(s_19x19, 6, 134, n_phosphor);
+    LCD_WriteAnySymbol(s_19x19, 6, 134, _n_phosphor);
     OUT_Set_Phosphor();
   }
 }
 
 
 /* ------------------------------------------------------------------*
- *            Manual Pages
+ *            manual page
  * ------------------------------------------------------------------*/
 
 void LCD_ManualPage(struct PlantState *ps)
@@ -569,7 +573,7 @@ void LCD_ManualPage(struct PlantState *ps)
   t_page save_page = ps->page_state->page;
 
   // touch
-  Touch_SelectLinker(ps);
+  Touch_Manual_Linker(ps);
 
   // specials
   switch(ps->page_state->page)
@@ -587,7 +591,7 @@ void LCD_ManualPage(struct PlantState *ps)
   }
 
   // count down
-  if(Basic_CountDown(ps)){ MEM_EEPROM_WriteManualEntry(ps, 0, 0, _write); ps->page_state->page = AutoPage; }
+  if(Basic_CountDown(ps)){ MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = AutoPage; }
 
   // check if page changed
   if(save_page != ps->page_state->page) 
@@ -603,20 +607,20 @@ void LCD_ManualPage(struct PlantState *ps)
   PORT_Backlight_Update(ps->backlight);
   if(ps->page_state->page != ManualPumpOff)
   {
-    LCD_Sym_Manual_PageTime(ps->page_state->page_time);
+    LCD_Sym_Manual_PageTime(ps);
     MPX_ReadAverage(ps, _exe);
     Sonic_ReadTank(ps);
   }
 
   // lcd refresh
   if(ps->frame_counter->sixty_sec_counter == 30){ LCD_Init(); }
-  if(ps->frame_counter->lcd_reset > 120){ LCD_Sym_MarkTextButton(Manual); ps->frame_counter->lcd_reset = 0; }
+  if(ps->frame_counter->lcd_reset > 120){ LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); ps->frame_counter->lcd_reset = 0; }
   //ps->frame_counter->lcd_reset++;
 }
 
 
 /* ------------------------------------------------------------------*
- *            Manual Set Page
+ *            manual set page
  * ------------------------------------------------------------------*/
 
 void LCD_Manual_SetState(struct PlantState *ps)
@@ -630,6 +634,9 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualMain: 
       *p_min = 5; *p_sec = 0; 
       LCD_Sym_Manual_Main(ps);
+      // save manual entry time
+      ps->eeprom_state->time_manual_entry.hou = ps->time_state->tic_hou;
+      ps->eeprom_state->time_manual_entry.min = ps->time_state->tic_min;
       if(!ps->init){ OUT_Valve_Init(ps); }
       break;
 
@@ -650,7 +657,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualPumpOff:
       LCD_ClrSpace(15, 2, 5, 120);
       LCD_Sym_Manual_PumpOff_PressOk(f_6x8_p);
-      LCD_WriteAnySymbol(s_19x19, 15, 85, p_ok);
+      LCD_WriteAnySymbol(s_19x19, 15, 85, _p_ok);
       *p_min = 30;
       *p_sec = 0;
       LCD_Sym_Manual_CountDown(ps->page_state->page_time);
@@ -738,7 +745,7 @@ void LCD_SetupPage(struct PlantState *ps)
       {
         Sonic_LevelCal(ps);
         LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
-        LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
+        LCD_WriteAnySymbol(s_29x17, 15, 1, _p_level);
         ps->page_state->page = SetupCal;
       }
 
@@ -757,7 +764,7 @@ void LCD_SetupPage(struct PlantState *ps)
 
           // clear countdown
           LCD_ClrSpace(17, 100, 2, 20);
-          LCD_WriteAnySymbol(s_29x17, 15, 1, p_level);
+          LCD_WriteAnySymbol(s_29x17, 15, 1, _p_level);
           ps->page_state->page = SetupCal; 
         }
       }
@@ -810,7 +817,7 @@ void LCD_Setup_Symbols(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Data Page
+ *            data page
  * ------------------------------------------------------------------*/
 
 void LCD_DataPage(struct PlantState *ps)
@@ -847,7 +854,7 @@ void LCD_DataPage(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Data Set Pages
+ *            data set pages
  * ------------------------------------------------------------------*/
 
 void LCD_Data_Symbols(struct PlantState *ps)
@@ -892,7 +899,7 @@ void LCD_PinPage_Main(struct PlantState *ps)
   BASIC_WDT_RESET;
 
   // touch
-  Touch_PinLinker(ps);
+  Touch_Pin_Linker(ps);
 
   // touch change -> clean display
   if(save_page != ps->page_state->page){ LCD_Clean(); }
@@ -903,7 +910,7 @@ void LCD_PinPage_Main(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Auto Entry Clear Pages
+ *            auto entry clear pages
  * ------------------------------------------------------------------*/
 
 void LCD_Entry_Clr(void)
@@ -913,14 +920,14 @@ void LCD_Entry_Clr(void)
 
 
 /* ------------------------------------------------------------------*
- *            Auto Entry
+ *            auto entry
  * ------------------------------------------------------------------*/
 
 void LCD_WriteAutoEntryPage(unsigned char page)
 {
   unsigned char entry = 0;
   unsigned char eep = 0;
-  unsigned char *p_ct = Eval_Memory_LatestEntry(Auto);
+  unsigned char *p_ct = Eval_Memory_LatestEntry(TEXT_BUTTON_auto);
 
   // get pointer stuff
   eep = *p_ct;
@@ -935,33 +942,33 @@ void LCD_WriteAutoEntryPage(unsigned char page)
   LCD_WriteAnyFont(f_4x6_p, 1, 144, (page + 1) % 10);
 
   // get right eep
-  unsigned char wep = LCD_eep_minus(Auto, eep, (2 * page));
+  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_auto, eep, (2 * page));
 
   // write corresponding page
   if (page >= DATA_PAGE_NUM_AUTO)
   {
     // half page
-    LCD_wPage(Auto, wep, entry, true);
+    LCD_wPage(TEXT_BUTTON_auto, wep, entry, true);
     LCD_Sym_Data_EndText();
   }
   else
   {
     // full page
-    LCD_wPage(Auto, wep, entry, false);
+    LCD_wPage(TEXT_BUTTON_auto, wep, entry, false);
   }
 }
 
 
 
 /* ------------------------------------------------------------------*
- *            Data Manual Entry Page
+ *            data manual entry page
  * ------------------------------------------------------------------*/
 
 void LCD_WriteManualEntryPage(unsigned char page)
 {
   unsigned char entry = 0;
   unsigned char eep = 0;
-  unsigned char *p_ct = Eval_Memory_LatestEntry(Manual);
+  unsigned char *p_ct = Eval_Memory_LatestEntry(TEXT_BUTTON_manual);
 
   // pointer stuff
   eep = *p_ct;
@@ -975,33 +982,33 @@ void LCD_WriteManualEntryPage(unsigned char page)
   LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
 
   // get right eep
-  unsigned char wep = LCD_eep_minus(Manual, eep, (2 * page));
+  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_manual, eep, (2 * page));
 
   // write corresponding page
   if (page >= DATA_PAGE_NUM_MANUAL)
   {
     // half page
-    LCD_wPage(Manual, wep, entry, true);
+    LCD_wPage(TEXT_BUTTON_manual, wep, entry, true);
     LCD_Sym_Data_EndText();
   }
   else
   {
     // full page
-    LCD_wPage(Manual, wep, entry, false);
+    LCD_wPage(TEXT_BUTTON_manual, wep, entry, false);
   }
 }
 
 
 
 /* ------------------------------------------------------------------*
- *            Data Setup Entry Page
+ *            data setup entry page
  * ------------------------------------------------------------------*/
 
 void LCD_WriteSetupEntryPage(unsigned char page)
 {
   unsigned char entry = 0;
   unsigned char eep = 0;
-  unsigned char *p_ct = Eval_Memory_LatestEntry(Setup);
+  unsigned char *p_ct = Eval_Memory_LatestEntry(TEXT_BUTTON_setup);
 
   // pointer stuff
   eep = *p_ct;
@@ -1015,19 +1022,19 @@ void LCD_WriteSetupEntryPage(unsigned char page)
   LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
 
   // get right eep
-  unsigned char wep = LCD_eep_minus(Setup, eep, (2 * page));
+  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_setup, eep, (2 * page));
 
   // write corresponding page
   if (page >= DATA_PAGE_NUM_MANUAL)
   {
     // half page
-    LCD_wPage(Setup, wep, entry, true);
+    LCD_wPage(TEXT_BUTTON_setup, wep, entry, true);
     LCD_Sym_Data_EndText();
   }
   else
   {
     // full page
-    LCD_wPage(Setup, wep, entry, false);
+    LCD_wPage(TEXT_BUTTON_setup, wep, entry, false);
   }
 }
 
@@ -1035,11 +1042,11 @@ void LCD_WriteSetupEntryPage(unsigned char page)
 /*-------------------------------------------------------------------*
  *  LCD_wPage
  * --------------------------------------------------------------
- *  t_textSymbols data  - Display Page Selection
+ *  t_textSymbols data  - Display page Selection
  *  unsigned char eep   - EEPROM-Page
  *  unsigned char entry - entry
  * --------------------------------------------------------------
- *  Writes One Entry line, call in entryPages
+ *  writes one entry line, call in entryPages
  * ------------------------------------------------------------------*/
 
 void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half)
@@ -1054,24 +1061,25 @@ void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool
   // determine start and end page
   switch(data)
   {
-    case Auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case Manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case Setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
+    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
     default: break;
   }
 
-  // Write the data page to display
+  // write the data page to display
   for(i = 0; i < 8; i++)
   {
-    //-------------------------------------------Write-Entry-------
+    // write entry
     switch(data)
     {
-      case Auto: LCD_WriteAutoEntry(5+(2*i), eep, entry); break;
-      case Manual: LCD_WriteManualEntry(5+(2*i), eep, entry); break;
-      case Setup: LCD_WriteSetupEntry(5+(2*i), eep, entry); break;
+      case TEXT_BUTTON_auto: LCD_Sym_Data_WriteAutoEntry(5+(2*i), eep, entry); break;
+      case TEXT_BUTTON_manual: LCD_Sym_Data_WriteManualEntry(5+(2*i), eep, entry); break;
+      case TEXT_BUTTON_setup: LCD_Sym_Data_WriteSetupEntry(5+(2*i), eep, entry); break;
       default: break;
     }
-    //-------------------------------------------Update------------
+
+    // update
     if(entry < 1)
     {
       entry = 4;
@@ -1081,35 +1089,34 @@ void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool
     entry--;
 
     // return if only half page needed
-    if (i >= 4 && half) return;
+    if (i >= 4 && half){ return; }
   }
 }
 
 
 /* ------------------------------------------------------------------*
- *            Minus
+ *            mem pages eep minus
  * ------------------------------------------------------------------*/
 
 unsigned char LCD_eep_minus(t_text_buttons data, unsigned char eep, unsigned char cnt)
 {
-  unsigned char i = 0;
   unsigned char startPa = 0;
   unsigned char endPa = 0;
 
   // determine start and end page
   switch(data)
   {
-    case Auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case Manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case Setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
+    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
     default: break;
   }
 
   // get right EEPROM page
-  for(i = 0; i < cnt; i++)
+  for(unsigned char i = 0; i < cnt; i++)
   {
     eep--;
-    if (eep < startPa){ eep = endPa; }
+    if(eep < startPa){ eep = endPa; }
   }
 
   return eep;

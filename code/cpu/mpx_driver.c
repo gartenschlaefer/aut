@@ -36,7 +36,7 @@ int MPX_Read(void)
 
 
 /* ------------------------------------------------------------------*
- *            MPX - Read Calibrated
+ *            MPX - read calibrated
  * ------------------------------------------------------------------*/
 
 int MPX_ReadCal(void)
@@ -55,7 +55,7 @@ int MPX_ReadCal(void)
 
 
 /*-------------------------------------------------------------------*
- *  MPX Read Average Value: Wait until Conversion Complete and return Data
+ *  MPX read average value: wait until conversion complete and return data
  * ------------------------------------------------------------------*/
 
 int MPX_ReadAverage(struct PlantState *ps, t_FuncCmd cmd)
@@ -79,20 +79,20 @@ int MPX_ReadAverage(struct PlantState *ps, t_FuncCmd cmd)
     {
       ps->mpx_state->mpx_count = 0;
       int add = 0;
-      for(unsigned char a = 0; a < 10; a++) add += ps->mpx_state->mpx_values[a];
-      add = add / 10;
+      for(unsigned char a = 0; a < 10; a++){ add += ps->mpx_state->mpx_values[a]; }
+      add /= 10;
 
       switch(ps->page_state->page)
       {
         case AutoPage:    
-          LCD_WriteAnyValue(f_4x6_p, 3, 13,43, add);
+          LCD_WriteAnyValue(f_4x6_p, 3, 13, 43, add);
           return add;
 
         case ManualPage: 
-          LCD_WriteAnyValue(f_6x8_p, 3, 17,42, add);
+          LCD_WriteAnyValue(f_6x8_p, 3, 17, 42, add);
           return add;
 
-        case Data: return add;
+        case DataPage: return add;
         default: break;
       }
     }
@@ -102,7 +102,7 @@ int MPX_ReadAverage(struct PlantState *ps, t_FuncCmd cmd)
 
 
 /* ------------------------------------------------------------------*
- *            Average notCalibrated
+ *            average not calibrated
  * ------------------------------------------------------------------*/
 
 int MPX_ReadAverage_UnCal(struct MPXState *mpx_state)
@@ -126,7 +126,7 @@ int MPX_ReadAverage_UnCal(struct MPXState *mpx_state)
 
 
 /* ------------------------------------------------------------------*
- *            Average Waterlevel
+ *            average Waterlevel
  * ------------------------------------------------------------------*/
 
 void MPX_LevelCal(struct PlantState *ps, t_FuncCmd cmd)
@@ -172,7 +172,7 @@ void MPX_LevelCal(struct PlantState *ps, t_FuncCmd cmd)
 
 
 /*-------------------------------------------------------------------*
- *  MPX Read Tank via pressure
+ *  MPX read tank level via pressure
  * --------------------------------------------------------------
  *  Reads the position of Water, call only in air times
  *  gives back page to go next, or stay in same
@@ -181,21 +181,20 @@ void MPX_LevelCal(struct PlantState *ps, t_FuncCmd cmd)
 void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
 {
   // return if Ultrasonic
-  if(MEM_EEPROM_ReadVar(SONIC_on)) return;
+  if(MEM_EEPROM_ReadVar(SONIC_on)){ return; }
 
-  // variables
-  int perP = 0;
+  // handles
   t_page p = ps->page_state->page;
 
-  // disabled read tank
+  // disabled read tank (also not use it in pump off and mud cycle)
   if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) || p == AutoPumpOff || p == AutoMud)
   {
     // manual
-    if(p == ManualCircOn || p == ManualCircOff || p == ManualAir){ LCD_Sym_MPX(_mmbar, perP); }
+    if(p == ManualCircOn || p == ManualCircOff || p == ManualAir){ return; }
 
     // auto zone
-    else if(p == AutoZone){ LCD_Sym_MPX(_notav, 0); ps->page_state->page = AutoCircOn; }
-    LCD_Sym_MPX(_notav, 0);
+    else if(p == AutoZone){ ps->page_state->page = AutoCircOn; }
+    LCD_Sym_MPX_Auto_DisabledLevelMeasure();
     return;
   }
 
@@ -209,8 +208,8 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
   {
     // read pressure
     MPX_LevelCal(ps, _new);
-    if(p == ManualCircOn) return;
-    LCD_Sym_MPX(_mbar, ps->mpx_state->level_cal);
+    if(p == ManualCircOn){ return; }
+    LCD_Sym_MPX_Auto_MbarValue(ps->mpx_state->level_cal);
 
     // error
     if(ps->mpx_state->level_cal >= (hO2 + minP))
@@ -248,12 +247,12 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
   else if(cmd == _write)
   {
     // calculate percentage
-    perP = ps->mpx_state->level_cal - minP;
+    int perP = ps->mpx_state->level_cal - minP;
     if(perP <= 0){ perP = 0; }
     perP = ((perP * 100) / hO2);
 
     //ManualWrite
-    if(p == ManualCircOn){ LCD_Sym_MPX(_mmbar, perP); return; }
-    LCD_Sym_MPX(_debug, perP);
+    if(p == ManualCircOn){ LCD_Sym_MPX_Manual_LevelPerc(perP); return; }
+    LCD_Sym_MPX_Auto_LevelPerc(perP);
   }
 }

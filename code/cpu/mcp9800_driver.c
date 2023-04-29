@@ -10,7 +10,7 @@
 
 
 /*-------------------------------------------------------------------*
- *  MCP9800_Init
+ *            init
  * ------------------------------------------------------------------*/
 
 void MCP9800_Init(void)
@@ -43,13 +43,8 @@ void MCP9800_OneShot(void)
 }
 
 
-
-/* ==================================================================*
- *            FUNCTIONS Write and Read
- * ==================================================================*/
-
 /*-------------------------------------------------------------------*
- *  MCP9800 receive byte
+ *            receive byte
  * ------------------------------------------------------------------*/
 
 unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char pointer)
@@ -67,7 +62,7 @@ unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char poin
 
 
 /*-------------------------------------------------------------------*
- *  MCP9800 send byte
+ *            send byte
  * ------------------------------------------------------------------*/
 
 void MCP9800_SendByte(unsigned char pointer, unsigned char sData)
@@ -78,7 +73,7 @@ void MCP9800_SendByte(unsigned char pointer, unsigned char sData)
 
 
 /*-------------------------------------------------------------------*
- *  MPC9800 - Read Temperature (only PlusTemp)
+ *            read temperature
  * ------------------------------------------------------------------*/
 
 unsigned char MCP9800_PlusTemp(struct TWIState *twi_state)
@@ -96,7 +91,7 @@ unsigned char MCP9800_PlusTemp(struct TWIState *twi_state)
 
 
 /*-------------------------------------------------------------------*
- *  MPC9800 - WriteTemp
+ *            write temperature
  * ------------------------------------------------------------------*/
 
 void MCP9800_WriteTemp(struct TWIState *twi_state)

@@ -61,7 +61,7 @@ void Basic_Init(struct PlantState *ps)
 
   // sonic jump to app version
   TCE1_WaitMilliSec_Init(25);
-  CAN_TxCmd(CAN_CMD_sonic_app);
+  CAN_TxCmd(ps->can_state, CAN_CMD_sonic_app);
   while(CAN_RxB0_Ack(ps->can_state) != CAN_CMD_sonic_ack)
   {
     CAN_RxB0_Read(ps->can_state);
@@ -229,14 +229,12 @@ unsigned char Basic_CountDown(struct PlantState *ps)
       ps->page_state->page_time->min--;
 
       //*** entry debug every minute
-      if(DEB_ENTRY)
-      {
-        MEM_EEPROM_WriteAutoEntry(ps, 10, 2, Write_Error);
-        MEM_EEPROM_WriteAutoEntry(ps, 10, 2, Write_o2);
-        MEM_EEPROM_WriteAutoEntry(ps, 10, 2, Write_Entry);
-        MEM_EEPROM_WriteManualEntry(ps, 0, 0, _write);
-        MEM_EEPROM_WriteSetupEntry(ps);
-      }
+      // if(DEB_ENTRY)
+      // {
+      //   MEM_EEPROM_WriteAutoEntry(ps);
+      //   MEM_EEPROM_WriteManualEntry(ps, 0, 0, _write);
+      //   MEM_EEPROM_WriteSetupEntry(ps);
+      // }
     }
 
     // second update
@@ -251,4 +249,23 @@ unsigned char Basic_CountDown(struct PlantState *ps)
     }
   }
   return 0;
+}
+
+
+/* ------------------------------------------------------------------*
+ *  limit functions
+ * ------------------------------------------------------------------*/
+
+int Basic_LimitAdd(int value, int max)
+{
+  if(value < max){ value++; }
+  else{ value = value; }
+  return value;
+}
+
+int Basic_LimitDec(int value, int min)
+{
+  if(value > min){ value--; }
+  else{ value = value; }
+  return value;
 }

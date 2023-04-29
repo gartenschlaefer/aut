@@ -19,6 +19,13 @@ struct TelNr
 };
 
 
+struct Thm
+{
+  int hou;
+  int min;
+};
+
+
 struct Thms
 {
   int hou;
@@ -31,6 +38,13 @@ struct Tms
 {
   int min;
   int sec;
+};
+
+
+struct RowColPos
+{
+ unsigned char row;
+ unsigned char col;
 };
 
 
@@ -84,6 +98,7 @@ struct ErrorState
   unsigned char err_reset_flag;
   unsigned char op_state;
   unsigned char error_counter[5];
+  unsigned char cycle_error_code_record;
 };
 
 
@@ -140,6 +155,7 @@ struct AirCircState
 
 struct CANState
 {
+  bool mcp2525_ok_flag;
   unsigned char rxb0_buffer[10];
   bool rxb0_data_av;
 };
@@ -151,19 +167,33 @@ struct TWIState
 };
 
 
+struct USARTState
+{
+  unsigned char rx_buffer[50];
+  unsigned char pos;
+};
+
+
 struct SonicState
 {
   t_sonic_app app_type;
   unsigned char software_version;
+  unsigned char no_us_error_counter;
   bool no_us_flag;
   int level_cal;
   int d_mm;
   int d_mm_prev;
+  int d_mm_max;
+  int d_mm_min;
   int temp;
+  int temp_max;
+  int temp_min;
   unsigned char d_error;
   unsigned char read_tank_state;
   t_sonic_query_states query_state;
   unsigned char query_error_count;
+  unsigned char record_position;
+  unsigned char record_error_update;
 };
 
 
@@ -177,6 +207,12 @@ struct TimeState
   unsigned char tic_sec;
   unsigned char old_sec;
   bool tic_sec_update_flag;
+};
+
+
+struct EEPROMState
+{
+  struct Thm time_manual_entry;
 };
 
 
@@ -196,10 +232,12 @@ struct PlantState
   struct AirCircState *air_circ_state;
   struct CANState *can_state;
   struct TWIState *twi_state;
+  struct USARTState *usart_state;
   struct SonicState *sonic_state;
   struct InputHandler *input_handler;
   struct Modem *modem;
   struct TimeState *time_state;
+  struct EEPROMState *eeprom_state;
 }; 
 
 #endif

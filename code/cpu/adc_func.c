@@ -1,5 +1,5 @@
 // --
-// ADC Setup
+// ADC setup
 
 #include <avr/io.h>
 #include <stddef.h>
@@ -62,7 +62,7 @@ unsigned char ReadCalibrationByte(unsigned char index)
  *  ADC_Touch_Ch - ADC Channel
  * --------------------------------------------------------------
  *  Set TOP   and BOTTOM  as Output, TOP=1, BOTTOM=0
- *  Set LEFT  and RIGHT   as Input, Read at LEFT (ADC0)
+ *  Set LEFT  and RIGHT   as input, read at LEFT (ADC0)
  *  ADC_Init
  * ------------------------------------------------------------------*/
 

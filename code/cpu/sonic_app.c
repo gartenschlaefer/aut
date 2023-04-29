@@ -25,7 +25,7 @@ void Sonic_Init(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            sonic - LCD-Data - Shot
+ *            sonic - LCD data - shot
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_Shot(struct PlantState *ps)
@@ -44,14 +44,14 @@ void Sonic_Data_Shot(struct PlantState *ps)
     // error
     if(ps->sonic_state->query_state >= _usErrTimeout1)
     {
-      LCD_Sym_Data_SonicWrite(_noUS, 0);
+      LCD_Sym_Data_Sonic_NoUs();
       run = 0;
     }
 
     // ok
     else if(ps->sonic_state->query_state == _usTempSuccess)
     {
-      LCD_Sym_Data_SonicWrite(_temp, ps->sonic_state->temp);
+      LCD_Sym_Data_Sonic_SingleTemp(ps);
       run = 0;
     }
   }
@@ -68,14 +68,14 @@ void Sonic_Data_Shot(struct PlantState *ps)
     // error
     if(ps->sonic_state->query_state >= _usErrTimeout1)
     {
-      LCD_Sym_Data_SonicWrite(_noUS, 0);
+      LCD_Sym_Data_Sonic_NoUs();
       run = 0;
     }
 
     // ok
     else if(ps->sonic_state->query_state == _usDistSuccess)
     {
-      LCD_Sym_Data_SonicWrite(_shot, ps->sonic_state->d_mm);
+      LCD_Sym_Data_Sonic_SingleShot(ps);
       run = 0;
     }
   }
@@ -83,7 +83,7 @@ void Sonic_Data_Shot(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            sonic - LCDData - Auto
+ *            sonic in data
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_Auto(struct PlantState *ps)
@@ -94,20 +94,20 @@ void Sonic_Data_Auto(struct PlantState *ps)
   // error
   if(ps->sonic_state->query_state >= _usErrTimeout1)
   {
-    LCD_Sym_Data_SonicWrite(_noUS, 0);
+    LCD_Sym_Data_Sonic_NoUs();
   }
 
   // distance
   else if(ps->sonic_state->query_state == _usDistSuccess)
   {
-    LCD_Sym_Data_SonicWrite(_shot1, ps->sonic_state->d_mm);
+    LCD_Sym_Data_Sonic_SequentialShots(ps);
     Sonic_Query_Temp_Init(ps);
   }
 
   // temperature
   else if(ps->sonic_state->query_state == _usTempSuccess)
   {
-    LCD_Sym_Data_SonicWrite(_temp1, ps->sonic_state->temp);
+    LCD_Sym_Data_Sonic_SequentialTemp(ps);
     Sonic_Query_Dist_Init(ps);
   }
 }
@@ -132,15 +132,21 @@ void Sonic_ReadTank(struct PlantState *ps)
     if(ps->sonic_state->query_state >= _usErrTimeout1)
     {
       Sonic_Query_Dist_Init(ps);
-      LCD_Sym_Sonic_NoUS(ps->page_state->page, _write);
+      ps->sonic_state->no_us_error_counter++;
+      if(ps->sonic_state->no_us_error_counter >= 10)
+      {
+        ps->sonic_state->no_us_flag = true;
+        LCD_Sym_Sonic_NoUS_Message(ps);
+      }
     }
 
     // distance
     else if(ps->sonic_state->query_state == _usDistSuccess)
     {
-      LCD_Sym_Auto_SonicVal(ps->page_state->page, ps->sonic_state->d_mm);
+      LCD_Sym_Auto_SonicVal(ps);
       Sonic_ChangePage(ps);
-      LCD_Sym_Sonic_NoUS(ps->page_state->page, _clear);
+      LCD_Sym_Sonic_NoUS_Clear(ps);
+      ps->sonic_state->no_us_flag = false;
       ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
     }
   }
@@ -262,7 +268,7 @@ void Sonic_LevelCal(struct PlantState *ps)
     // error
     if(ps->sonic_state->query_state >= _usErrTimeout1)
     {
-      LCD_Sym_Sonic_NoUS(SetupCal, _write);
+      LCD_Sym_Sonic_NoUS_Message(ps);
       ps->sonic_state->level_cal = 0;
       run = 0;
     }
@@ -271,7 +277,8 @@ void Sonic_LevelCal(struct PlantState *ps)
     else if(ps->sonic_state->query_state == _usDistSuccess)
     {
       ps->sonic_state->level_cal = ps->sonic_state->d_mm;
-      LCD_Sym_Sonic_NoUS(SetupCal, _clear);
+      LCD_Sym_Sonic_NoUS_Clear(ps);
+      ps->sonic_state->no_us_flag = false;
       run = 0;
     }
   }
@@ -280,7 +287,7 @@ void Sonic_LevelCal(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            sonic - LCD-Data - Bootloader
+ *            sonic - LCD data - Bootloader
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_Boot_On(struct PlantState *ps)
@@ -295,11 +302,11 @@ void Sonic_Data_Boot_On(struct PlantState *ps)
   if(ps->sonic_state->app_type != SONIC_APP_boot)
   {
     // command to activate boot mode
-    CAN_TxCmd(CAN_CMD_sonic_boot);
+    CAN_TxCmd(ps->can_state, CAN_CMD_sonic_boot);
     while(CAN_RxB0_Ack(ps->can_state) != CAN_CMD_sonic_boot)
     {
       CAN_RxB0_Read(ps->can_state);
-      if(TCE1_Wait_Query()){ LCD_Sym_Data_SonicWrite(_noUS, 0); break; }
+      if(TCE1_Wait_Query()){ LCD_Sym_Data_Sonic_NoUs(); break; }
     }
     CAN_RxB0_Clear(ps->can_state);
   }
@@ -317,11 +324,11 @@ void Sonic_Data_Boot_Off(struct PlantState *ps)
   if(ps->sonic_state->app_type == SONIC_APP_boot)
   {
     // send command to return to usual application
-    CAN_TxCmd(CAN_CMD_sonic_app);
+    CAN_TxCmd(ps->can_state, CAN_CMD_sonic_app);
     while(CAN_RxB0_Ack(ps->can_state) != CAN_CMD_sonic_app)
     {
       CAN_RxB0_Read(ps->can_state);
-      if(TCE1_Wait_Query()){ LCD_Sym_Data_SonicWrite(_noUS, 0); break;}
+      if(TCE1_Wait_Query()){ LCD_Sym_Data_Sonic_NoUs(); break;}
     }
     CAN_RxB0_Clear(ps->can_state);
   }
@@ -330,7 +337,7 @@ void Sonic_Data_Boot_Off(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            sonic - LCD-Data - Bootloader Read
+ *            sonic - LCD data - bootloader read
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_BootRead(struct PlantState *ps)
@@ -343,17 +350,17 @@ void Sonic_Data_BootRead(struct PlantState *ps)
   // check success
   switch(state)
   {
-    case 4: LCD_Sym_Data_SonicWrite(_success, 0); break;
-    case 11: LCD_Sym_Data_SonicWrite(_noBoot, 0); break;
-    case 12: LCD_Sym_Data_SonicWrite(_error, 0); break;
-    case 13: LCD_Sym_Data_SonicWrite(_noData, 0); break;
+    case 4: LCD_Sym_Data_Sonic_BootSucess(); break;
+    case 11: LCD_Sym_Data_Sonic_BootNone(); break;
+    case 12: LCD_Sym_Data_Sonic_BootError(); break;
+    case 13: LCD_Sym_Data_Sonic_BootNoData(); break;
     default: break;
   }
 }
 
 
 /* ------------------------------------------------------------------*
- *            sonic - LCD-Data - Bootloader Write
+ *            sonic - LCD data - bootloader write
  * ------------------------------------------------------------------*/
 
 void Sonic_Data_BootWrite(struct PlantState *ps)
@@ -366,16 +373,16 @@ void Sonic_Data_BootWrite(struct PlantState *ps)
   // check success
   switch(state)
   {
-    case 4: LCD_Sym_Data_SonicWrite(_ok, 0); break;
-    case 11: LCD_Sym_Data_SonicWrite(_noBoot, 0); break;
-    case 12: LCD_Sym_Data_SonicWrite(_error, 0); break;
+    case 4: LCD_Sym_Data_Sonic_BootOk(); break;
+    case 11: LCD_Sym_Data_Sonic_BootNone(); break;
+    case 12: LCD_Sym_Data_Sonic_BootError(); break;
     default: break;
   }
 }
 
 
 /* ------------------------------------------------------------------*
- *            Read Software Version
+ *            read software version
  * ------------------------------------------------------------------*/
 
 void Sonic_ReadVersion(struct PlantState *ps)
@@ -383,7 +390,7 @@ void Sonic_ReadVersion(struct PlantState *ps)
   // init
   unsigned char err = 0;
   TCE1_WaitMilliSec_Init(25);
-  CAN_TxCmd(CAN_CMD_sonic_read_sversion);
+  CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_sversion);
   unsigned char run = 1;
 
   // read and wait
@@ -398,7 +405,7 @@ void Sonic_ReadVersion(struct PlantState *ps)
       err++;
       if(err >= 4){ TCE1_Stop(); return; }
       CAN_RxB0_Clear(ps->can_state);
-      CAN_TxCmd(CAN_CMD_sonic_read_sversion);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_sversion);
     }
 
     // data available
@@ -426,14 +433,14 @@ void Sonic_ReadVersion(struct PlantState *ps)
 void Sonic_Query_Dist_Init(struct PlantState *ps)
 {
   TCE1_WaitMilliSec_Init(25);
-  CAN_TxCmd(_usDistReq);
+  CAN_TxCmd(ps->can_state, _usDistReq);
   ps->sonic_state->query_state = _usDistReq;
 }
 
 void Sonic_Query_Temp_Init(struct PlantState *ps)
 {
   TCE1_WaitMilliSec_Init(25);
-  CAN_TxCmd(_usTempReq);
+  CAN_TxCmd(ps->can_state, _usTempReq);
   ps->sonic_state->query_state = _usTempReq;
 }
 
@@ -452,7 +459,7 @@ void Sonic_Query_Temp_Update(struct PlantState *ps)
     {
       ps->sonic_state->query_error_count++;
       if(ps->sonic_state->query_error_count >= 5){ ps->sonic_state->query_state = _usErrTimeout1; return; }
-      CAN_TxCmd(CAN_CMD_sonic_start_temp);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_start_temp);
     }
 
     // check ack
@@ -463,7 +470,7 @@ void Sonic_Query_Temp_Update(struct PlantState *ps)
     {
       ps->sonic_state->query_state = _usTempAckOK;
       CAN_RxB0_Clear(ps->can_state);
-      CAN_TxCmd(CAN_CMD_sonic_read_USSREG);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_USSREG);
       TCE1_WaitMilliSec_Init(25);
     }
 
@@ -484,10 +491,10 @@ void Sonic_Query_Temp_Update(struct PlantState *ps)
     {
       ps->sonic_state->query_error_count++;
       if(ps->sonic_state->query_error_count >= 5){ ps->sonic_state->query_state = _usErrTimeout2; return; }
-      CAN_TxCmd(CAN_CMD_sonic_read_USSREG);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_USSREG);
     }
 
-    // Check if Data available
+    // Check if data available
     if(ps->can_state->rxb0_data_av)
     {
       if(ps->can_state->rxb0_buffer[2] == CAN_CMD_sonic_read_USSREG)
@@ -498,7 +505,7 @@ void Sonic_Query_Temp_Update(struct PlantState *ps)
         if(ps->can_state->rxb0_buffer[3] & TEMPA)
         {
           ps->sonic_state->query_state = _usTempAv;
-          CAN_TxCmd(CAN_CMD_sonic_read_temp);
+          CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_temp);
           TCE1_WaitMilliSec_Init(25);
         }
       }
@@ -513,7 +520,7 @@ void Sonic_Query_Temp_Update(struct PlantState *ps)
     {
       ps->sonic_state->query_error_count++;
       if(ps->sonic_state->query_error_count >= 5){ ps->sonic_state->query_state = _usErrTimeout3; return; }
-      CAN_TxCmd(CAN_CMD_sonic_read_temp);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_temp);
     }
 
     // check data
@@ -545,7 +552,7 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
       ps->sonic_state->query_error_count++;
       if(ps->sonic_state->query_error_count >= 5){ ps->sonic_state->query_state = _usErrTimeout1; return; }
       CAN_RxB0_Clear(ps->can_state);
-      CAN_TxCmd(CAN_CMD_sonic_start_5shots);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_start_5shots);
     }
 
     // check ack
@@ -556,7 +563,7 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
     {
       ps->sonic_state->query_state = _usDistAckOK;
       CAN_RxB0_Clear(ps->can_state);
-      CAN_TxCmd(CAN_CMD_sonic_read_USSREG);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_USSREG);
       TCE1_WaitMilliSec_Init(25);
     }
 
@@ -577,10 +584,10 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
     {
       ps->sonic_state->query_error_count++;
       if(ps->sonic_state->query_error_count >= 5){ ps->sonic_state->query_state = _usErrTimeout2; return; }
-      CAN_TxCmd(CAN_CMD_sonic_read_USSREG);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_USSREG);
     }
 
-    // Check if Data available
+    // Check if data available
     if(ps->can_state->rxb0_data_av)
     {
       if(ps->can_state->rxb0_buffer[2] == CAN_CMD_sonic_read_USSREG)
@@ -591,7 +598,7 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
         if(ps->can_state->rxb0_buffer[3] & DISA)
         {
           ps->sonic_state->query_state = _usDistAv;
-          CAN_TxCmd(CAN_CMD_sonic_read_dist);
+          CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_dist);
           TCE1_WaitMilliSec_Init(25);
         }
       }
@@ -607,7 +614,7 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
       ps->sonic_state->query_error_count++;
       if(ps->sonic_state->query_error_count >= 5){ ps->sonic_state->query_state = _usErrTimeout3; return; }
       CAN_RxB0_Clear(ps->can_state);
-      CAN_TxCmd(CAN_CMD_sonic_read_dist);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_dist);
     }
 
     // check data
@@ -625,7 +632,7 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            Sonic Read Application Program
+ *            sonic read application program
  * ------------------------------------------------------------------*/
 
 unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
@@ -636,7 +643,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
   if(state == 0)
   { 
     TCE1_WaitMilliSec_Init(TC_CAN_MS);
-    CAN_TxCmd(CAN_CMD_sonic_read_program);
+    CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_program);
     state = 1;
   }
 
@@ -651,7 +658,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
     {
       CAN_RxB0_Clear(ps->can_state);
       TCE1_WaitMilliSec_Init(TC_CAN_MS);
-      CAN_TxCmd(CAN_CMD_sonic_read_program);
+      CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_program);
       state = 2;
     }
   }
@@ -685,7 +692,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
         // safety timer and read program cmd
         TCE1_WaitMilliSec_Init(TC_CAN_MS);
         CAN_RxB0_Clear(ps->can_state);
-        CAN_TxCmd(CAN_CMD_sonic_read_program);
+        CAN_TxCmd(ps->can_state, CAN_CMD_sonic_read_program);
       }
 
       // watchdog restart
@@ -698,7 +705,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
     state = 4;
 
     // end
-    CAN_TxCmd(CAN_CMD_sonic_ack);
+    CAN_TxCmd(ps->can_state, CAN_CMD_sonic_ack);
     TCE1_Stop();
   }
 
@@ -707,7 +714,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
 
 
 /* ------------------------------------------------------------------*
- *            Sonic Write Application Program
+ *            sonic write application program
  * ------------------------------------------------------------------*/
 
 unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
@@ -718,7 +725,7 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
   if(state == 0)
   {
     TCE1_WaitMilliSec_Init(TC_CAN_MS);
-    CAN_TxCmd(CAN_CMD_sonic_program);
+    CAN_TxCmd(ps->can_state, CAN_CMD_sonic_program);
     state = 1;
   }
 
@@ -749,7 +756,7 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
         {
           tx[i + 2] = p_data[i];
         }
-        CAN_TxB0_Write(&tx[0]);
+        CAN_TxB0_Write(ps->can_state, &tx[0]);
         TCE1_WaitMilliSec_Init(TC_CAN_MS);
 
         while(CAN_RxB0_Ack(ps->can_state) != CAN_CMD_sonic_program)
@@ -760,7 +767,7 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
       }
     }
     state = 4;
-    CAN_TxCmd(CAN_CMD_sonic_ack);
+    CAN_TxCmd(ps->can_state, CAN_CMD_sonic_ack);
     TCE1_Stop();
   }
   return state;

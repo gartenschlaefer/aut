@@ -52,6 +52,9 @@ void CAN_Update(struct CANState *can_state)
 {
   // read rxb0
   CAN_RxB0_Read(can_state);
+
+  // okay flag
+  if(!can_state->mcp2525_ok_flag){ LCD_Sym_CAN_MCPFail(); }
 }
 
 
@@ -110,7 +113,7 @@ void CAN_RxB0_Clear(struct CANState *can_state)
  *  txB0[3]: data - following DataBytes   - return[3..10]
  * ------------------------------------------------------------------*/
 
-unsigned char CAN_TxB0_Write(unsigned char *txB0)
+unsigned char CAN_TxB0_Write(struct CANState *can_state, unsigned char *txB0)
 {
   int err = 0;
   unsigned char i = 0;
@@ -146,7 +149,7 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
     if(err > 1000)
     {
       err = 0;
-      LCD_Sym_Data_SonicWrite(_mcp_fail, 0);
+      can_state->mcp2525_ok_flag = false;
       return 2;
     }
     err++;
@@ -163,10 +166,10 @@ unsigned char CAN_TxB0_Write(unsigned char *txB0)
  *  txB0[2]: cmd  - Command
  * ------------------------------------------------------------------*/
 
-void CAN_TxCmd(t_can_cmd cmd)
+void CAN_TxCmd(struct CANState *can_state, t_can_cmd cmd)
 {
   unsigned char tx[3] = {1, 0x01, cmd};
-  CAN_TxB0_Write(&tx[0]);
+  CAN_TxB0_Write(can_state, &tx[0]);
 }
 
 

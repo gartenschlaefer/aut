@@ -68,27 +68,27 @@ typedef enum
 typedef enum
 {
   // 35 x 23 [8]
-  n_pumpOff, n_mud, n_inflowPump, n_pump2, p_pumpOff, p_mud, p_inflowPump, p_pump2,
+  _n_pumpOff, _n_mud, _n_inflowPump, _n_pump2, _p_pumpOff, _p_mud, _p_inflowPump, _p_pump2,
 
   // 29 x 17 [20]
-  n_setDown, n_alarm, n_air, n_sensor, n_watch, n_compressor, n_circulate, n_cal, n_zone, n_level,
-  p_setDown, p_alarm, p_air, p_sensor, p_watch, p_compressor, p_circulate, p_cal, p_zone, p_level,
+  _n_setDown, _n_alarm, _n_air, _n_sensor, _n_watch, _n_compressor, _n_circulate, _n_cal, _n_zone, _n_level,
+  _p_setDown, _p_alarm, _p_air, _p_sensor, _p_watch, _p_compressor, _p_circulate, _p_cal, _p_zone, _p_level,
 
   // 19 x 19 [23]
-  n_phosphor, n_pump, n_esc, n_plus, n_minus, n_arrowUp, n_arrowDown, n_ok, n_grad, n_sonic, n_arrowRedo,
-  p_phosphor, p_pump, p_esc, p_plus, p_minus, p_arrowUp, p_arrowDown, p_ok, p_line, p_grad, p_sonic, p_arrowRedo,
+  _n_phosphor, _n_pump, _n_esc, _n_plus, _n_minus, _n_arrow_up, _n_arrow_down, _n_ok, _n_grad, _n_sonic, _n_arrow_redo,
+  _p_phosphor, _p_pump, _p_esc, _p_plus, _p_minus, _p_arrow_up, _p_arrow_down, _p_ok, _p_line, _p_grad, _p_sonic, _p_arrow_redo,
 
   // 34 x 21 [6]
-  frame, p_escape, p_del, black, n_escape, n_del,
+  _frame, _p_escape, _p_del, _black, _n_escape, _n_del,
 
   // 39 x 16 [2]
-  n_text_frame, p_text_frame,
+  _n_text_frame, _p_text_frame,
 
   // hecs [1]
-  logo_hecs,
+  _logo_hecs,
 
   // purator [1]
-  logo_purator
+  _logo_purator
 
 }t_any_symbol;
 
@@ -99,7 +99,16 @@ typedef enum
 
 typedef enum
 {
-  Auto, Manual, Setup, Data, Sonic, Shot, OpenV, Boot, Read, Write
+  TEXT_BUTTON_auto = 0,
+  TEXT_BUTTON_manual = 1,
+  TEXT_BUTTON_setup = 2,
+  TEXT_BUTTON_data = 3,
+  TEXT_BUTTON_sonic = 4,
+  TEXT_BUTTON_shot = 5,
+  TEXT_BUTTON_open_ventil = 6,
+  TEXT_BUTTON_boot = 7,
+  TEXT_BUTTON_read = 8,
+  TEXT_BUTTON_write = 9
 }t_text_buttons;
 
 
@@ -109,13 +118,13 @@ typedef enum
 
 typedef enum
 {
-  sn_circulate, sn_air, sn_setDown, sn_pumpOff,
-  sn_mud, sn_compressor, sn_phosphor, sn_inflowPump,
-  sn_cal, sn_alarm, sn_watch, sn_zone,
-  sp_circulate, sp_air, sp_setDown, sp_pumpOff,
-  sp_mud, sp_compressor, sp_phosphor, sp_inflowPump,
-  sp_cal, sp_alarm, sp_watch, sp_zone,
-}t_SetupSym;
+  _setup_neg_sym_circulate, _setup_neg_sym_air, _setup_neg_sym_setDown, _setup_neg_sym_pumpOff,
+  _setup_neg_sym_mud, _setup_neg_sym_compressor, _setup_neg_sym_phosphor, _setup_neg_sym_inflowPump,
+  _setup_neg_sym_cal, _setup_neg_sym_alarm, _setup_neg_sym_watch, _setup_neg_sym_zone,
+  _setup_pos_sym_circulate, _setup_pos_sym_air, _setup_pos_sym_setDown, _setup_pos_sym_pumpOff,
+  _setup_pos_sym_mud, _setup_pos_sym_compressor, _setup_pos_sym_phosphor, _setup_pos_sym_inflowPump,
+  _setup_pos_sym_cal, _setup_pos_sym_alarm, _setup_pos_sym_watch, _setup_pos_sym_zone,
+}t_setup_sym;
 
 
 /* ------------------------------------------------------------------*
@@ -124,8 +133,8 @@ typedef enum
 
 typedef enum
 {
-  sn_plus, sn_minus, sn_esc, sn_ok,
-  sp_plus, sp_minus, sp_esc, sp_ok
+  _setup_neg_sym_plus, _setup_neg_sym_minus, _setup_neg_sym_esc, _setup_neg_sym_ok,
+  _setup_pos_sym_plus, _setup_pos_sym_minus, _setup_pos_sym_esc, _setup_pos_sym_ok
 }t_CtrlButtons;
 
 
@@ -135,8 +144,8 @@ typedef enum
 
 typedef enum
 {
-  n_h, n_min, n_day, n_month, n_year,
-  p_h, p_min, p_day, p_month, p_year
+  _n_h, _n_min, _n_day, _n_month, _n_year,
+  _p_h, _p_min, _p_day, _p_month, _p_year
 }t_DateTime;
 
 
@@ -254,33 +263,61 @@ typedef enum
 
 typedef enum
 { 
-  ON_circ, OFF_circ, TIME_H_circ, TIME_L_circ,
-  ON_air, OFF_air, TIME_H_air, TIME_L_air,
-  TIME_setDown,
-  ON_pumpOff, PUMP_pumpOff,
-  ON_MIN_mud, ON_SEC_mud,
-  MIN_H_druck, MIN_L_druck, MAX_H_druck, MAX_L_druck,
-  ON_phosphor, OFF_phosphor, ON_inflowPump, OFF_inflowPump,
-  PUMP_inflowPump, T_IP_off_h, SENSOR_inTank, SENSOR_outTank,
-  ALARM_temp, ALARM_comp,  ALARM_sensor,
-  CAL_H_druck, CAL_L_druck, CAL_Redo_on,
-  SONIC_H_LV, SONIC_L_LV, SONIC_on,
-  TANK_H_Circ, TANK_L_Circ,
-  TANK_H_O2, TANK_L_O2,
-  TANK_H_MinP, TANK_L_MinP,
-  TOUCH_X_max, TOUCH_Y_max,
-  TOUCH_X_min, TOUCH_Y_min
-}t_var;
+  ON_circ = 0, 
+  OFF_circ = 1, 
+  TIME_H_circ = 2, 
+  TIME_L_circ = 3,
+  ON_air = 4, 
+  OFF_air = 5, 
+  TIME_H_air = 6, 
+  TIME_L_air = 7,
+  TIME_setDown = 8,
+  ON_pumpOff = 9, 
+  PUMP_pumpOff = 10,
+  ON_MIN_mud = 11, 
+  ON_SEC_mud = 12,
+  MIN_H_druck = 13, 
+  MIN_L_druck = 14, 
+  MAX_H_druck = 15, 
+  MAX_L_druck = 16,
+  ON_phosphor = 17, 
+  OFF_phosphor = 18, 
+  ON_inflowPump = 19, 
+  OFF_inflowPump = 20,
+  PUMP_inflowPump = 21, 
+  T_IP_off_h = 22, 
+  SENSOR_inTank = 23, 
+  SENSOR_outTank = 24,
+  ALARM_temp = 25, 
+  ALARM_comp = 26,  
+  ALARM_sensor = 27,
+  CAL_H_druck = 28, 
+  CAL_L_druck = 29, 
+  CAL_Redo_on = 30,
+  SONIC_H_LV = 31, 
+  SONIC_L_LV = 32, 
+  SONIC_on = 33,
+  TANK_H_Circ = 34, 
+  TANK_L_Circ = 35,
+  TANK_H_O2 = 36, 
+  TANK_L_O2 = 37,
+  TANK_H_MinP = 38, 
+  TANK_L_MinP = 39,
+  TOUCH_X_max = 40, 
+  TOUCH_Y_max = 41,
+  TOUCH_X_min = 42, 
+  TOUCH_Y_min = 43
+}t_eeprom_var;
+
+
+/* ------------------------------------------------------------------*
+ *            data request
+ * ------------------------------------------------------------------*/
 
 typedef enum
 { 
   DATA_day, DATA_month, DATA_year, DATA_hour, DATA_minute, DATA_H_O2, DATA_L_O2, DATA_ERROR
 }t_data;
-
-typedef enum
-{ 
-  Write_o2, Write_Error, Write_Entry
-}t_auto_entry;
 
 
 /* ------------------------------------------------------------------*

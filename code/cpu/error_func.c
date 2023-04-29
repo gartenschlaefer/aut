@@ -389,7 +389,7 @@ void Error_Action_Temp_SetError(struct PlantState *ps)
   if(ps->error_state->error_counter[ERROR_ID_T] == 2)
   {
     Error_On(ps);
-    MEM_EEPROM_WriteAutoEntry(ps, 0, 1, Write_Error);
+    ps->error_state->cycle_error_code_record |= E_T;
     Error_ModemAction(ps, E_T);
   }
   if(ps->error_state->error_counter[ERROR_ID_T] > 250){ ps->error_state->error_counter[ERROR_ID_T] = 0; }
@@ -407,7 +407,7 @@ void Error_Action_OP_SetError(struct PlantState *ps)
   if(ps->error_state->error_counter[ERROR_ID_OP] == 2)
   {
     if(MEM_EEPROM_ReadVar(ALARM_comp)){ Error_On(ps); }
-    MEM_EEPROM_WriteAutoEntry(ps, 0, 2, Write_Error);
+    ps->error_state->cycle_error_code_record |= E_OP;
     Error_ModemAction(ps, E_OP);
   }
   if(ps->error_state->error_counter[ERROR_ID_OP] > 250){ ps->error_state->error_counter[ERROR_ID_OP] = 0; }
@@ -425,7 +425,7 @@ void Error_Action_UP_SetError(struct PlantState *ps)
   if(ps->error_state->error_counter[ERROR_ID_UP] == 2)
   {
     if(MEM_EEPROM_ReadVar(ALARM_comp)){ Error_On(ps); }
-    MEM_EEPROM_WriteAutoEntry(ps, 0, 4, Write_Error);
+    ps->error_state->cycle_error_code_record |= E_UP;
     Error_ModemAction(ps, E_UP);
   }
   if(ps->error_state->error_counter[ERROR_ID_UP] > 250){ ps->error_state->error_counter[ERROR_ID_UP] = 0; }
@@ -443,7 +443,7 @@ void Error_Action_IT_SetError(struct PlantState *ps)
   if(ps->error_state->error_counter[ERROR_ID_IT] == 2)
   {
     if(MEM_EEPROM_ReadVar(ALARM_sensor)){ Error_On(ps); }
-    MEM_EEPROM_WriteAutoEntry(ps, 0, 8, Write_Error);
+    ps->error_state->cycle_error_code_record |= E_IT;
     Error_ModemAction(ps, E_IT);
   }
   if(ps->error_state->error_counter[ERROR_ID_IT] > 250){ ps->error_state->error_counter[ERROR_ID_IT] = 0; }
@@ -461,7 +461,7 @@ void Error_Action_OT_SetError(struct PlantState *ps)
   if(ps->error_state->error_counter[ERROR_ID_OT] == 2)
   {
     if(MEM_EEPROM_ReadVar(ALARM_sensor)){ Error_On(ps); }
-    MEM_EEPROM_WriteAutoEntry(ps, 0, 16, Write_Error);
+    ps->error_state->cycle_error_code_record |= E_OT;
     Error_ModemAction(ps, E_OT);
   }
   if(ps->error_state->error_counter[ERROR_ID_OT] > 250){ ps->error_state->error_counter[ERROR_ID_OT] = 0; }
