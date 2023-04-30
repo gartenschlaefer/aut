@@ -32,15 +32,18 @@ int main(void)
   struct Tms phosphor_time = { .min = 0, .sec = 5 };
   struct Thms ip_thms = { .hou = 0, .min = 0, .sec = 6 };
   struct Tms air_tms = { .min = 0, .sec = 0 };
+  struct TeleNr tele_nr1 = { .id = 1, .nr = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 } };
+  struct TeleNr tele_nr2 = { .id = 2, .nr = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 } };
+  struct TeleNr tele_nr_temp = { .id = 0, .nr = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 } };
 
   // datatypes and states
   struct Backlight backlight = { .state = _off, .count = 0 };
   struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
   struct PageState auto_save_page_state = { .page = NoPage, .page_time = &auto_save_page_time };
-  struct PortState port_state = { .buzzer_on = false, .valve_state = 0x00 };
+  struct PortState port_state = { .buzzer_on = false, .valve_state = 0 };
   struct CompressorState compressor_state = { .operation_hours = 0, .cycle_o2_min = 0, .old_min = 0 };
-  struct ErrorState error_state = { .page = ErrorTreat, .err_code = 0x00, .err_reset_flag = 0x00, .op_state = 0, .error_counter = { 0x00 }, .cycle_error_code_record = 0 };
+  struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = 0, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
   struct MPXState mpx_state = { .mpx_count = 0, .mpx_values = { 0x00 }, .error_counter = 0, .level_cal = 0 };
   struct PhosphorState phosphor_state = { .ph_count = 0, .ph_tms = &phosphor_time, .ph_state = _ph_off };
   struct InflowPumpState inflow_pump_state = { .ip_count = 0, .ip_thms = &ip_thms, .ip_state = _ip_off, .ip_active_pump_id = 0 };
@@ -49,12 +52,13 @@ int main(void)
   struct TWIState twi_state = { .twid_rx_buffer = { 0x00, 0xFF } };
   struct SonicState sonic_state = { .app_type = SONIC_APP_none, .software_version = 0, .no_us_error_counter = 0, .no_us_flag = false, .level_cal = 0, .d_mm = 0, .d_mm_prev = 0, .d_mm_max = 0, .d_mm_min = 10000, .temp = 0, .temp_max = 0, .temp_min = 10000, .d_error = 0, .read_tank_state = SONIC_TANK_timer_init, .query_state = _usWait, .query_error_count = 0, .record_position = 5, .record_error_update = 0 };
   struct InputHandler input_handler = { .float_sw_alarm = 0 };
-  struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0 };
+  struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0, .tele_nr1 = &tele_nr1, .tele_nr2 = &tele_nr2, .tele_nr_temp = &tele_nr_temp };
   struct TimeState time_state = { .tic_sec_update_flag = false };
   struct EEPROMState eeprom_state = { .time_manual_entry = { .hou = 0, .min = 0} };
+  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 } };
 
   // plant state
-  struct PlantState ps = { .init = 0, .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state };
+  struct PlantState ps = { .init = 0, .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state, .touch_state = &touch_state };
 
   // init
   Basic_Init(&ps);

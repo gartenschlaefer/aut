@@ -1601,38 +1601,24 @@ void LCD_Sym_Pin_Clear(void)
  *            pin page telephone number
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Pin_PrintWholeTelNumber(struct PlantState *ps, struct TelNr nr)
+void LCD_Sym_Pin_PrintWholeTelNumber(struct TeleNr *tele_nr)
 {
-  unsigned char i = 0;
-
   // telx:
   LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "Tel");
-  LCD_WriteAnyFont(f_6x8_p, 6, 137, nr.id + 14);
+  LCD_WriteAnyFont(f_6x8_p, 6, 137, tele_nr->id + 14);
   LCD_WriteAnyStringFont(f_6x8_p, 6, 143, ":");
 
   // +
-  LCD_WriteAnyFont(f_4x6_p, 9, 119, 20); 
+  LCD_WriteAnyFont(f_4x6_p, 9, 119, 20);
 
   // 43
-  for(i = 0; i < 2; i++)
-  {
-    nr.pos = i;
-    LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * i, Modem_TelNr(ps, _read2, nr));
-  }
+  for(unsigned char i = 0; i < 2; i++){ LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * i, tele_nr->nr[i]); }
 
   // 680
-  for(i = 2; i < 5; i++)
-  {               
-    nr.pos = i;
-    LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (i - 2), Modem_TelNr(ps, _read2, nr));
-  }
+  for(unsigned char i = 2; i < 5; i++){ LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (i - 2), tele_nr->nr[i]); }
 
   // number
-  for(i = 5; i < 14; i++)
-  {                   
-    nr.pos = i;
-    LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (i - 5), Modem_TelNr(ps, _read2, nr));
-  }
+  for(unsigned char i = 5; i < 14; i++){ LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (i - 5), tele_nr->nr[i]); }
 }
 
 
@@ -1640,29 +1626,29 @@ void LCD_Sym_Pin_PrintWholeTelNumber(struct PlantState *ps, struct TelNr nr)
  *            pin page telephone digit
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Pin_PrintOneTelNumberDigit(struct TelNr nr)
+void LCD_Sym_Pin_PrintOneTelNumberDigit(unsigned char digit, unsigned char pos)
 {
-  LCD_nPinButtons(nr.tel);
-  if(nr.pos < 2)
+  LCD_nPinButtons(digit);
+  if(pos < 2)
   {
-    LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * nr.pos, nr.tel);
-    nr.pos++;
-    if(nr.pos < 2) LCD_WriteAnyFont(f_4x6_n, 9, 127, 14);
-    else LCD_WriteAnyFont(f_4x6_n, 9, 135, 14);
+    LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * pos, digit);
+    pos++;
+    if(pos < 2){ LCD_WriteAnyFont(f_4x6_n, 9, 127, 14); }
+    else{ LCD_WriteAnyFont(f_4x6_n, 9, 135, 14); }
   }
 
-  else if((nr.pos > 1) && (nr.pos < 5))
+  else if((pos > 1) && (pos < 5))
   {
-    LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (nr.pos - 2), nr.tel);
-    nr.pos++;
-    if(nr.pos < 5) LCD_WriteAnyFont(f_4x6_n, 9, 135 + 4 * (nr.pos - 2), 14);
-    else LCD_WriteAnyFont(f_4x6_n, 11, 119, 14);
+    LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (pos - 2), digit);
+    pos++;
+    if(pos < 5){ LCD_WriteAnyFont(f_4x6_n, 9, 135 + 4 * (pos - 2), 14); }
+    else{ LCD_WriteAnyFont(f_4x6_n, 11, 119, 14); }
   }
   else
   {
-    LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (nr.pos - 5), nr.tel);
-    nr.pos++;
-    if(nr.pos < 14) LCD_WriteAnyFont(f_4x6_n, 11, 119 + 4 * (nr.pos - 5), 14);
+    LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (pos - 5), digit);
+    pos++;
+    if(pos < 14){ LCD_WriteAnyFont(f_4x6_n, 11, 119 + 4 * (pos - 5), 14); }
   }
 }
 

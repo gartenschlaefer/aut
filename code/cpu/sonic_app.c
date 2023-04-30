@@ -666,7 +666,8 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
   // read application
   else if(state == 2)
   {
-    for(int page = 0; page < 32; page++)  //32Pages = 4kB
+    // 32 pages = 4kB
+    for(int page = 0; page < 32; page++)
     {
       LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
 
@@ -701,6 +702,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
       // set page address and write
       int adr = ((AT24C_BOOT_PAGE_OS + page) << 8);
       AT24C_WritePage(adr, &data[0]);
+      TCC0_wait_ms(5);
     }
     state = 4;
 

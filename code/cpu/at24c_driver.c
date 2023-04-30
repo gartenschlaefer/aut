@@ -7,10 +7,10 @@
 
 
 /* ------------------------------------------------------------------*
- *            init
+ *            memory reset
  * ------------------------------------------------------------------*/
 
-void AT24C_Init(void)
+void AT24C_MemoryReset(void)
 {
   unsigned char addr = 0;
   for(addr = 0; addr < 32; addr++)
@@ -49,7 +49,7 @@ void AT24C_WritePage(int addr, unsigned char *sData)
 
   send[0] = ((addr >> 8) & 0x00FF);
   send[1] = addr & 0x00FF;
-  for(i = 0; i < 128; i++) send[i+2] = sData[i];
+  for(i = 0; i < 128; i++){ send[i + 2] = sData[i]; }
   TWI_D_Master_WriteString(AT24C_ADDR_WRITE, send, 130);
 }
 

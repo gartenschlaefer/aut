@@ -110,20 +110,17 @@ int Touch_Cal_Y_Init(void)
  *  x-space will be calibrated
  * ------------------------------------------------------------------*/
 
-int Touch_Cal_X_Value(int x_space)
+int Touch_Cal_X_Value(float x_space)
 {
-  int xCal = 0;
-  int maxCal = 0;
-  int minCal = 0;
+  // calibration data
+  unsigned char max_cal = MEM_EEPROM_ReadVar(TOUCH_X_max);
+  unsigned char min_cal = MEM_EEPROM_ReadVar(TOUCH_X_min);
 
-  maxCal = MEM_EEPROM_ReadVar(TOUCH_X_max);
-  minCal = MEM_EEPROM_ReadVar(TOUCH_X_min);
+  float x_cal = x_space - min_cal;
+  if(x_cal < 0) x_cal = 0;
+  x_cal = ((x_cal * 155.0) / max_cal);
 
-  xCal = x_space - minCal;
-  if(xCal < 0) xCal = 0;
-  xCal = ((xCal * 155) / maxCal);
-
-  return xCal;
+  return f_round_int(x_cal);
 }
 
 
@@ -131,20 +128,17 @@ int Touch_Cal_X_Value(int x_space)
  *  y-space will be calibrated
  * ------------------------------------------------------------------*/
 
-int Touch_Cal_Y_Value(int y_space)
+int Touch_Cal_Y_Value(float y_space)
 {
-  int yCal = 0;
-  int maxCal = 0;
-  int minCal = 0;
+  // calibration data
+  unsigned char max_cal = MEM_EEPROM_ReadVar(TOUCH_Y_max);
+  unsigned char min_cal = MEM_EEPROM_ReadVar(TOUCH_Y_min);
 
-  maxCal = MEM_EEPROM_ReadVar(TOUCH_Y_max);
-  minCal = MEM_EEPROM_ReadVar(TOUCH_Y_min);
+  float y_cal = y_space - min_cal;
+  if(y_cal < 0){ y_cal = 0; }
+  y_cal = ((y_cal * 105.0) / max_cal);
 
-  yCal = y_space - minCal;
-  if(yCal < 0)  yCal = 0;
-  yCal = (((yCal) * 105) / maxCal);
-
-  return yCal;
+  return f_round_int(y_cal);
 }
 
 
@@ -282,8 +276,6 @@ void Touch_X_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Cal_X_ReadData
- * --------------------------------------------------------------
  *  set up measure, read data at TOP ADC1, clean
  * ------------------------------------------------------------------*/
 
@@ -305,55 +297,54 @@ void Touch_X_Measure(void)
 }
 
 
-unsigned char *Touch_Read(void)
-{
-  // state, y, x
-  static unsigned char touch[3] = {_clean, 0x00, 0x00 };
+/*-------------------------------------------------------------------*
+ *            main read
+ * ------------------------------------------------------------------*/
 
+void Touch_Read(struct TouchState *touch_state)
+{
   // x-measure
-  if(touch[0] == _clean)
+  if(touch_state->state == _touch_clean)
   {
     Touch_Clean();
     TCD0_WaitMilliSec_Init(5);
-    touch[0] = _read1;
+    touch_state->state = _touch_setup_x;
   }
 
-  else if((touch[0] == _read1) && TCD0_Wait_Query())
+  else if((touch_state->state == _touch_setup_x) && TCD0_Wait_Query())
   {
     Touch_X_Measure();
     TCD0_WaitMilliSec_Init(5);
-    touch[0] = _write1;
+    touch_state->state = _touch_read_x;
   }
 
-  else if((touch[0] == _write1) && TCD0_Wait_Query())
+  else if((touch_state->state == _touch_read_x) && TCD0_Wait_Query())
   {
-    touch[2] = (Touch_X_Read() >> 4);
+    touch_state->x = (Touch_X_Read() >> 4);
     Touch_Clean();
     TCD0_WaitMilliSec_Init(5);
-    touch[0] = _read2;
+    touch_state->state = _touch_setup_y;
   }
 
   // y-measure
-  else if((touch[0] == _read2) && TCD0_Wait_Query())
+  else if((touch_state->state == _touch_setup_y) && TCD0_Wait_Query())
   {
     Touch_Y_Measure();
     TCD0_WaitMilliSec_Init(5);
-    touch[0] = _write2;
+    touch_state->state = _touch_read_y;
   }
 
-  else if((touch[0] == _write2) && TCD0_Wait_Query())
+  else if((touch_state->state == _touch_read_y) && TCD0_Wait_Query())
   {
-    touch[1] = (Touch_Y_Read() >> 4);
+    touch_state->y = (Touch_Y_Read() >> 4);
     Touch_Clean();
     TCD0_Stop();
-    touch[0] = _ready;
+    touch_state->state = _touch_ready;
   }
 
-  // repeat loop and safety
-  else if(touch[0] == _ready || (touch[0] != _clean && touch[0] != _read1 && touch[0] != _write1 && touch[0] != _read2 && touch[0] != _write2))
+  // repeat loop
+  else if(touch_state->state == _touch_ready)
   {
-    touch[0] = _clean;
+    touch_state->state = _touch_clean;
   }
-
-  return &touch[0];
 }

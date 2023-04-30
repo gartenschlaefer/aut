@@ -76,6 +76,9 @@ void Basic_Init(struct PlantState *ps)
   // timer ic variables init
   Basic_TimeState_Init(ps);
 
+  // modem init
+  Modem_Init(ps);
+
   // backlight on
   PORT_Backlight_On(ps->backlight);
 }
@@ -88,7 +91,7 @@ void Basic_Init(struct PlantState *ps)
 void Basic_Init_Mem(void)
 {
   // tel. nr. in EEPROM
-  AT24C_Init();
+  AT24C_MemoryReset();
 
   // set data pages zero
   MEM_EEPROM_SetZero();

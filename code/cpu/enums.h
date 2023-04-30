@@ -7,6 +7,18 @@
 
 
 /* ------------------------------------------------------------------*
+ *            touch states
+ * ------------------------------------------------------------------*/
+
+typedef enum
+{
+  _touch_clean, 
+  _touch_setup_x, _touch_read_x,
+  _touch_setup_y, _touch_read_y,
+  _touch_ready
+}t_touch_state;
+
+/* ------------------------------------------------------------------*
  *            backlight states
  * ------------------------------------------------------------------*/
 
@@ -14,6 +26,8 @@ typedef enum
 {
   _bl_off, _bl_on, _bl_error
 }t_backlight_states;
+
+
 /* ------------------------------------------------------------------*
  *            phosphor states
  * ------------------------------------------------------------------*/
@@ -30,6 +44,17 @@ typedef enum
 typedef enum
 { _ip_off, _ip_on, _ip_disabled
 }t_inflow_pump_states;
+
+
+/* ------------------------------------------------------------------*
+ *            touch states
+ * ------------------------------------------------------------------*/
+
+typedef enum
+{
+  _error_op_ok, _error_op_close_start, _error_op_close_process,
+  _error_op_stop_close_start_open, _error_op_open_process, _error_op_open_process_spring, _error_op_open_stop
+}t_error_op_state;
 
 
 /* ------------------------------------------------------------------*
@@ -155,15 +180,39 @@ typedef enum
 
 typedef enum
 {
-  TEL1_0, TEL1_1, TEL1_2, TEL1_3,
-  TEL1_4, TEL1_5, TEL1_6, TEL1_7,
-  TEL1_8, TEL1_9, TEL1_A, TEL1_B,
-  TEL1_C, TEL1_D, TEL1_E, TEL1_F,
-  TEL2_0, TEL2_1, TEL2_2, TEL2_3,
-  TEL2_4, TEL2_5, TEL2_6, TEL2_7,
-  TEL2_8, TEL2_9, TEL2_A, TEL2_B,
-  TEL2_C, TEL2_D, TEL2_E, TEL2_F,
-}t_EEvar;
+  TEL1_0 = 0,
+  TEL1_1 = 1,
+  TEL1_2 = 2,
+  TEL1_3 = 3,
+  TEL1_4 = 4,
+  TEL1_5 = 5,
+  TEL1_6 = 6,
+  TEL1_7 = 7,
+  TEL1_8 = 8,
+  TEL1_9 = 9,
+  TEL1_A = 10,
+  TEL1_B = 11,
+  TEL1_C = 12,
+  TEL1_D = 13,
+  TEL1_E = 14,
+  TEL1_F = 15,
+  TEL2_0 = 16,
+  TEL2_1 = 17,
+  TEL2_2 = 18,
+  TEL2_3 = 19,
+  TEL2_4 = 20,
+  TEL2_5 = 21,
+  TEL2_6 = 22,
+  TEL2_7 = 23,
+  TEL2_8 = 24,
+  TEL2_9 = 25,
+  TEL2_A = 26,
+  TEL2_B = 27,
+  TEL2_C = 28,
+  TEL2_D = 29,
+  TEL2_E = 30,
+  TEL2_F = 31
+}t_at24c_eeprom_var;
 
 
 /* ------------------------------------------------------------------*
@@ -172,25 +221,25 @@ typedef enum
 
 typedef enum
 {
-  CAN_CMD_sonic_set_can_address = 0, 
-  CAN_CMD_sonic_one_shot = 1, 
-  CAN_CMD_sonic_start_5shots = 2, 
-  CAN_CMD_sonic_start_temp = 3, 
-  CAN_CMD_sonic_read_dist = 4, 
+  CAN_CMD_sonic_set_can_address = 0,
+  CAN_CMD_sonic_one_shot = 1,
+  CAN_CMD_sonic_start_5shots = 2,
+  CAN_CMD_sonic_start_temp = 3,
+  CAN_CMD_sonic_read_dist = 4,
   CAN_CMD_sonic_read_temp = 5,
-  CAN_CMD_sonic_read_USSREG = 6, 
-  CAN_CMD_sonic_read_USCREG1 = 7, 
-  CAN_CMD_sonic_read_USCREG2 = 8, 
-  CAN_CMD_sonic_write_USSREG = 9, 
+  CAN_CMD_sonic_read_USSREG = 6,
+  CAN_CMD_sonic_read_USCREG1 = 7,
+  CAN_CMD_sonic_read_USCREG2 = 8,
+  CAN_CMD_sonic_write_USSREG = 9,
   CAN_CMD_sonic_write_USCREG1 = 10,
   CAN_CMD_sonic_write_USCREG2 = 11,
-  CAN_CMD_sonic_read_sversion = 12, 
-  CAN_CMD_sonic_working = 13, 
-  CAN_CMD_sonic_ack = 14, 
-  CAN_CMD_sonic_wait = 15, 
-  CAN_CMD_sonic_boot = 16, 
-  CAN_CMD_sonic_app = 17, 
-  CAN_CMD_sonic_program = 18, 
+  CAN_CMD_sonic_read_sversion = 12,
+  CAN_CMD_sonic_working = 13,
+  CAN_CMD_sonic_ack = 14,
+  CAN_CMD_sonic_wait = 15,
+  CAN_CMD_sonic_boot = 16,
+  CAN_CMD_sonic_app = 17,
+  CAN_CMD_sonic_program = 18,
   CAN_CMD_sonic_read_program = 19,
   CAN_CMD_sonic_end_mark = 20
 }t_can_cmd;

@@ -5,13 +5,14 @@
 
 #include "at24c_app.h"
 #include "at24c_driver.h"
+#include "tc_func.h"
 
 
 /* ------------------------------------------------------------------*
- *            WriteVar
+ *            write var
  * ------------------------------------------------------------------*/
 
-void AT24C_WriteVar(t_EEvar var, unsigned char sData)
+void AT24C_WriteVar(t_at24c_eeprom_var var, unsigned char sData)
 {
   switch(var)
   {
@@ -64,7 +65,7 @@ void AT24C_WriteVar(t_EEvar var, unsigned char sData)
  *            ReadVar
  * ------------------------------------------------------------------*/
 
-unsigned char AT24C_ReadVar(struct TWIState *twi_state, t_EEvar var)
+unsigned char AT24C_ReadVar(struct TWIState *twi_state, t_at24c_eeprom_var var)
 {
   switch(var)
   {
@@ -111,4 +112,30 @@ unsigned char AT24C_ReadVar(struct TWIState *twi_state, t_EEvar var)
     default: break;
   }
   return 0;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            read telephone number to modem
+ * ------------------------------------------------------------------*/
+
+void AT24C_TeleNr_ReadToModem(struct PlantState *ps)
+{
+  // read nr 1 and 2
+  for(unsigned char i = 0; i < 16; i++){ ps->modem->tele_nr1->nr[i] = AT24C_ReadVar(ps->twi_state, i + TEL1_0); }
+  for(unsigned char i = 0; i < 16; i++){ ps->modem->tele_nr2->nr[i] = AT24C_ReadVar(ps->twi_state, i + TEL2_0); }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            write telephone number to eeprom
+ * ------------------------------------------------------------------*/
+
+void AT24C_TeleNr_Write(struct TeleNr *tele_nr)
+{
+  // exception
+  if(tele_nr->id != 1 && tele_nr->id != 2){ return; }
+
+  // write number
+  for(unsigned char i = 0; i < 16; i++){ AT24C_WriteVar(i + 16 * (tele_nr->id - 1), tele_nr->nr[i]); TCC0_wait_ms(5); }
 }

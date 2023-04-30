@@ -12,7 +12,7 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-unsigned char Touch_Matrix(void);
+unsigned char Touch_Matrix(struct TouchState *touch_state);
 void Touch_SelectLinker(struct PlantState *ps);
 
 void Touch_Auto_Linker(struct PlantState *ps);
@@ -20,6 +20,7 @@ void Touch_Manual_Linker(struct PlantState *ps);
 void Touch_Setup_Linker(struct PlantState *ps);
 void Touch_Data_Linker(struct PlantState *ps);
 void Touch_Pin_Linker(struct PlantState *ps);
+void Touch_Pin_Linker_TeleTemp_AddDigit(struct PlantState *ps, unsigned char digit);
 
 void Touch_Setup_CirculateLinker(struct PlantState *ps);
 void Touch_Setup_AirLinker(struct PlantState *ps);

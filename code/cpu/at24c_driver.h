@@ -21,7 +21,7 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void AT24C_Init(void);
+void AT24C_MemoryReset(void);
 void AT24C_WriteByte(int addr, unsigned char sData);
 void AT24C_WritePage(int addr, unsigned char *sData);
 unsigned char AT24C_ReadByte(struct TWIState *twi_state, int addr);

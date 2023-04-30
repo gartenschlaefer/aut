@@ -11,11 +11,11 @@
  *            general structs
  * ------------------------------------------------------------------*/
 
-struct TelNr
+
+struct TeleNr
 {
   unsigned char id;
-  char tel;
-  unsigned char pos;
+  unsigned char nr[16];
 };
 
 
@@ -71,6 +71,10 @@ struct Modem
   unsigned char turn_on_state;
   unsigned char turn_on_error;
   int startup_delay;
+  struct TeleNr *tele_nr1;
+  struct TeleNr *tele_nr2;
+  struct TeleNr *tele_nr_temp;
+  unsigned char temp_digit_pos;
 };
 
 
@@ -93,12 +97,13 @@ struct CompressorState
 struct ErrorState
 {
   t_page page;
-  unsigned char err_code;
+  unsigned char error_code;
   unsigned char pending_err_code;
-  unsigned char err_reset_flag;
-  unsigned char op_state;
+  unsigned char error_reset_flag;
+  t_error_op_state op_state;
   unsigned char error_counter[5];
   unsigned char cycle_error_code_record;
+  unsigned char error_on_counter;
 };
 
 
@@ -216,6 +221,17 @@ struct EEPROMState
 };
 
 
+struct TouchState
+{
+  t_touch_state state;
+  unsigned char x;
+  unsigned char y;
+  unsigned char chunk;
+  int x_data[2];
+  int y_data[2];
+};
+
+
 struct PlantState
 {
   unsigned char init;
@@ -238,6 +254,7 @@ struct PlantState
   struct Modem *modem;
   struct TimeState *time_state;
   struct EEPROMState *eeprom_state;
+  struct TouchState *touch_state;
 }; 
 
 #endif

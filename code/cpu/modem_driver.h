@@ -32,6 +32,7 @@
  *            function header
  * ------------------------------------------------------------------*/
 
+void Modem_Init(struct PlantState *ps);
 void Modem_Port_Init(void);
 
 unsigned char Modem_Check(struct PlantState *ps);
@@ -43,10 +44,8 @@ void Modem_ReadSLED(t_page page);
 unsigned char Modem_CTS_ready(void);
 void Modem_ReadCTS(void);
 
-char Modem_TelNr(struct PlantState *ps, t_FuncCmd cmd, struct TelNr nr);
-
-unsigned char Modem_Call(struct PlantState *ps, struct TelNr nr);
-void Modem_SMS(struct PlantState *ps, struct TelNr nr, char msg[]);
+void Modem_Call(struct PlantState *ps, unsigned char id);
+void Modem_SMS(struct PlantState *ps, unsigned char id, char msg[]);
 
 void Modem_Call_AllNumbers(struct PlantState *ps);
 void Modem_SMS_AllNumbers(struct PlantState *ps, char msg[]);

@@ -70,7 +70,6 @@ void TCE0_WaitSec_Init(int sec);
 void TCE0_WaitMilliSec_Init(int milli_sec);
 unsigned char TCE0_Wait_Query (void);
 void TCE0_Stop(void);
-unsigned char TCE0_ErrorTimer(t_FuncCmd error);
 
 
 /* ------------------------------------------------------------------*

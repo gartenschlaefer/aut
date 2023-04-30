@@ -20,6 +20,7 @@
 #include "sonic_app.h"
 #include "can_app.h"
 #include "basic_func.h"
+#include "at24c_app.h"
 
 
 /*-------------------------------------------------------------------*
@@ -31,72 +32,70 @@
  *    2.Row: 21, 22, 23 ,24, usw.
  * ------------------------------------------------------------------*/
 
-unsigned char Touch_Matrix(void)
+unsigned char Touch_Matrix(struct TouchState *touch_state)
 {
-  static int x[2] = {0, 0};
-  static int y[2] = {0, 0};
-  int xAv = 0;
-  int yAv = 0;
   unsigned char lx = 0;
   unsigned char hy = 0;
-  static unsigned char state = 0;
-  unsigned char *p_touch = Touch_Read();
 
-  // first state, read data
-  if(p_touch[0] == _ready && (state == 0 || state == 1))
+  // read touchpanel
+  Touch_Read(touch_state);
+
+  // ready for new data
+  if(touch_state->state == _touch_ready)
   {
-    y[state] = p_touch[1];
-    x[state] = p_touch[2];
-    state++;
-  }
-
-  // interpret data
-  if(p_touch[0] == _ready && state == 2)
-  {
-    state = 0;
-
-    // too much diffs, reject sample
-    if(x[0] < x[1] - 10 || x[0] > x[1] + 10) return 0;
-    if(y[0] < y[1] - 10 || y[0] > y[1] + 10) return 0;
-
-    // calibrate
-    yAv = Touch_Cal_Y_Value(((y[0] + y[1]) / 2));
-    xAv = Touch_Cal_X_Value(((x[0] + x[1]) / 2));
-
-    // x-matrix
-    if (xAv < 16) lx = 0;
-    else if (xAv > 16 && xAv < 35)  lx = 1;
-    else if (xAv > 47 && xAv < 70)  lx = 2;
-    else if (xAv > 80 && xAv < 105) lx = 3;
-    else if (xAv > 115 && xAv < 145) lx = 4;
-    else lx = 5;
-
-    // y-matrix
-    if (yAv < 16) hy = 0;
-    else if (yAv > 18 && yAv < 37) hy = 1;
-    else if (yAv > 45 && yAv < 58) hy = 2;
-    else if (yAv > 65 && yAv < 77) hy = 3;
-    else if (yAv > 85 && yAv < 105) hy = 4;
-    else hy = 5;
-
-    //*** debug touch matrix
-    if (DEBUG)
+    // collect data
+    if(touch_state->chunk < 2)
     {
-      LCD_WriteAnyValue(f_4x6_p, 2, 22, 152, hy);
-      LCD_WriteAnyValue(f_4x6_p, 2, 24, 152, lx);
+      touch_state->y_data[touch_state->chunk] = touch_state->y;
+      touch_state->x_data[touch_state->chunk] = touch_state->x;
+      touch_state->chunk++;
     }
+
+    // interpret data
+    if(touch_state->chunk >= 2)
+    {
+      // reset chunk pos
+      touch_state->chunk = 0;
+
+      // too much diffs, reject sample
+      if((touch_state->x_data[0] < touch_state->x_data[1] - 10) || (touch_state->x_data[0] > touch_state->x_data[1] + 10)){ return 0; }
+      if((touch_state->y_data[0] < touch_state->y_data[1] - 10) || (touch_state->y_data[0] > touch_state->y_data[1] + 10)){ return 0; }
+
+      // average data
+      float x_av = (touch_state->x_data[0] + touch_state->x_data[1]) / 2.0;
+      float y_av = (touch_state->y_data[0] + touch_state->y_data[1]) / 2.0;
+
+      // calibrate with average
+      int x_av_cal = Touch_Cal_X_Value(x_av);
+      int y_av_cal = Touch_Cal_Y_Value(y_av);
+
+      // x-matrix
+      if(x_av_cal < 16){ lx = 0; }
+      else if(x_av_cal > 16 && x_av_cal < 35){ lx = 1; }
+      else if(x_av_cal > 47 && x_av_cal < 70){ lx = 2; }
+      else if(x_av_cal > 80 && x_av_cal < 105){ lx = 3; }
+      else if(x_av_cal > 115 && x_av_cal < 145){ lx = 4; }
+      else{ lx = 5; }
+
+      // y-matrix
+      if(y_av_cal < 16){ hy = 0; }
+      else if(y_av_cal > 18 && y_av_cal < 37){ hy = 1; }
+      else if(y_av_cal > 45 && y_av_cal < 58){ hy = 2; }
+      else if(y_av_cal > 65 && y_av_cal < 77){ hy = 3; }
+      else if(y_av_cal > 85 && y_av_cal < 105){ hy = 4; }
+      else{ hy = 5; }
+
+      //*** debug touch matrix
+      // if(DEBUG)
+      // {
+      //   LCD_WriteAnyValue(f_4x6_p, 2, 22, 152, hy);
+      //   LCD_WriteAnyValue(f_4x6_p, 2, 24, 152, lx);
+      // }
+    }
+    // all other touch positions, this is important
+    else{ hy = 6; lx = 6; }
   }
-
-  // other, this is important
-  else
-  {
-    hy = 6; 
-    lx = 6;
-  }
-
-  // safety state
-  if (state > 2) state = 0;
-
+  
   return ((hy << 4) | lx);
 }
 
@@ -146,7 +145,7 @@ void Touch_Auto_Linker(struct PlantState *ps)
   static unsigned char bug = 0;
   static unsigned char touch = 0;
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // backlight
     case 0x11: PORT_Backlight_On(ps->backlight); bug = 0; break;
@@ -239,7 +238,7 @@ void Touch_Auto_Linker(struct PlantState *ps)
 
 void Touch_Manual_Linker(struct PlantState *ps)
 {
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     case 0x11: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_circulate); ps->page_state->page = ManualCircOn; break;
     case 0x12: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_air); ps->page_state->page = ManualAir; break;
@@ -270,7 +269,7 @@ void Touch_Manual_Linker(struct PlantState *ps)
 
 void Touch_Setup_Linker(struct PlantState *ps)
 {
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     case 0x11: ps->page_state->page = SetupCirculate; break;
     case 0x12: ps->page_state->page = SetupAir; break;
@@ -327,7 +326,7 @@ void Touch_Setup_CirculateLinker(struct PlantState *ps)
     LCD_Sym_Setup_CircText(on, p_circ);
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13:
@@ -435,7 +434,7 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
     LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   { 
     // esc
     case 0x13:
@@ -534,7 +533,7 @@ void Touch_Setup_SetDownLinker(struct PlantState *ps)
     LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, setDown);
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons(_setup_neg_sym_esc); }
@@ -597,7 +596,7 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
     else{ LCD_WriteAnySymbol(s_29x17, 15, 0, _p_compressor); LCD_WriteAnySymbol(s_19x19, 14, 50, _n_pump); }
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons(_setup_neg_sym_esc); }
@@ -668,7 +667,7 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
     LCD_WriteAnyStringFont(f_6x8_p, 16,55,"sec");
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(_setup_neg_sym_esc); }
@@ -754,7 +753,7 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
     if(!on){ LCD_WriteAnyValue(f_6x8_p, 3, 11, 7, druckMin); LCD_WriteAnyValue(f_6x8_n, 3, 16, 7, druckMax); }
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13: 
@@ -846,7 +845,7 @@ void Touch_Setup_PhosphorLinker(struct PlantState *ps)
     }
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     case 0x13:
       if(!touch){ touch = 6; LCD_ControlButtons(_setup_neg_sym_esc); }
@@ -933,7 +932,7 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
     LCD_Sym_Setup_InflowPump_Values(0b00110100, &t_ipVal[0]);
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // off h
     case 0x12:
@@ -1087,7 +1086,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     }
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13: 
@@ -1173,7 +1172,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     case 0x00:
       if(touch)
       {
-        if(touch == 4) LCD_WriteAnySymbol(s_29x17, 9,125, _p_cal);
+        if(touch == 4){ LCD_WriteAnySymbol(s_29x17, 9,125, _p_cal); }
         touch = 0;
       } break;
 
@@ -1220,7 +1219,7 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
     else LCD_WriteAnySymbol(s_29x17, 15, 0, _p_sensor);
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13:
@@ -1311,7 +1310,7 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
     on = 0;
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // esc
     case 0x13: if(!touch){ touch = 6; LCD_ControlButtons2(_setup_neg_sym_esc); } 
@@ -1446,7 +1445,7 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
     LCD_WriteAnyStringFont(f_6x8_p, 16,60,"cm");
   }
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     case 0x12: 
       if(!touch)
@@ -1538,7 +1537,7 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
 
 void Touch_Data_Linker(struct PlantState *ps)
 {
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // auto
     case 0x21: LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, 0); ps->page_state->page = DataAuto; break;
@@ -1565,7 +1564,7 @@ void Touch_Data_AutoLinker(struct PlantState *ps)
   static unsigned char mark = 0;
   static unsigned char iData = 0;
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // arrow up
     case 0x14:
@@ -1623,7 +1622,7 @@ void Touch_Data_ManualLinker(struct PlantState *ps)
   static unsigned char mark = 0;
   static unsigned char iData = 0;
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
 
     // arrow up
@@ -1682,7 +1681,7 @@ void Touch_Data_SetupLinker(struct PlantState *ps)
   static unsigned char mark = 0;
   static unsigned char iData = 0;
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // arrow up
     case 0x14:
@@ -1739,7 +1738,7 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
 {
   static unsigned char touch = 0;
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // shot
     case 0x11:
@@ -1823,24 +1822,23 @@ void Touch_Pin_Linker(struct PlantState *ps)
   static unsigned char touch[12] = {0x00};
   static unsigned char in[4] = {0x00};
 
-  // pin-codes
+  // pin-code secrets
   unsigned char secret[4] = {2, 5, 8, 0};
-  unsigned char compH[4] = {1, 5, 9, 3};
-  unsigned char tel1[4] = {0, 0, 0, 0};
-  unsigned char tel2[4] = {0, 0, 0, 1};
+  unsigned char secret_compH[4] = {1, 5, 9, 3};
+  unsigned char secret_tel1[4] = {0, 0, 0, 0};
+  unsigned char secret_tel2[4] = {0, 0, 0, 1};
 
   unsigned char i = 0;
   static unsigned char cp = 0;
-  static struct TelNr nr;
 
-  switch(Touch_Matrix())
+  switch(Touch_Matrix(ps->touch_state))
   {
     // 1
     case 0x11: 
       if(!touch[1])
       { 
         touch[1] = 0x11;
-        if(nr.id){ nr.tel = 1; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 1); }
         else{ LCD_Sym_Pin_WriteDigit(1, cp); in[cp] = 1; cp++; }
       } break;
 
@@ -1849,7 +1847,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[2])
       { 
         touch[2] = 0x12;
-        if(nr.id){ nr.tel = 2; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 2); }
         else{ LCD_Sym_Pin_WriteDigit(2, cp); in[cp] = 2; cp++; }
       } break;
 
@@ -1858,7 +1856,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[3])
       { 
         touch[3] = 0x13;
-        if(nr.id){ nr.tel = 3; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 3); }
         else{ LCD_Sym_Pin_WriteDigit(3, cp); in[cp] = 3; cp++; }
       } break;
 
@@ -1867,7 +1865,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[4])
       { 
         touch[4] = 0x14;
-        if(nr.id){ nr.tel = 4; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 4); }
         else{ LCD_Sym_Pin_WriteDigit(4, cp); in[cp] = 4; cp++; }
       } break;
 
@@ -1876,7 +1874,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[5])
       { 
         touch[5] = 0x15;
-        if(nr.id){ nr.tel = 5; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 5); }
         else{ LCD_Sym_Pin_WriteDigit(5, cp); in[cp] = 5; cp++; }
       } break;
 
@@ -1885,7 +1883,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[6])
       { 
         touch[6] = 0x16;
-        if(nr.id){ nr.tel = 6; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 6); }
         else{ LCD_Sym_Pin_WriteDigit(6, cp); in[cp] = 6; cp++; }
       } break;
 
@@ -1894,7 +1892,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[7])
       { 
         touch[7] = 0x17;
-        if(nr.id){ nr.tel = 7; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 7); }
         else{ LCD_Sym_Pin_WriteDigit(7, cp); in[cp] = 7; cp++; }
       } break;
 
@@ -1903,7 +1901,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[8])
       { 
         touch[8] = 0x18;
-        if(nr.id){ nr.tel = 8; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 8); }
         else{ LCD_Sym_Pin_WriteDigit(8, cp); in[cp] = 8; cp++; }
       } break;
 
@@ -1912,7 +1910,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[9])
       { 
         touch[9] = 0x19;
-        if(nr.id){ nr.tel = 9; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 9); }
         else{ LCD_Sym_Pin_WriteDigit(9, cp); in[cp] = 9; cp++; }
       } break;
 
@@ -1921,7 +1919,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
       if(!touch[0])
       { 
         touch[0] = 0x10;
-        if(nr.id){ nr.tel = 0; Modem_TelNr(ps, _write, nr); LCD_Sym_Pin_PrintOneTelNumberDigit(nr); nr.pos++; }
+        if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 0); }
         else{ LCD_Sym_Pin_WriteDigit(0, cp); in[cp] = 0; cp++; }
       } break;
 
@@ -1931,11 +1929,12 @@ void Touch_Pin_Linker(struct PlantState *ps)
       LCD_Sym_Pin_DelDigits();
       touch[10] = 0x20;
       cp = 0;
-      if(nr.id)
+      if(ps->modem->tele_nr_temp->id)
       {
-        nr.pos = 0;
-        Modem_TelNr(ps, _reset, nr);
-        LCD_Sym_Pin_PrintWholeTelNumber(ps, nr);
+        // reset temp
+        ps->modem->temp_digit_pos = 0;
+        for(i = 0; i < 16; i++){ ps->modem->tele_nr_temp->nr[i] = 11; }
+        LCD_Sym_Pin_PrintWholeTelNumber(ps->modem->tele_nr_temp);
       }
       break;
 
@@ -1943,38 +1942,46 @@ void Touch_Pin_Linker(struct PlantState *ps)
     case 0x41: 
       LCD_nPinButtons(11); 
       cp = 0;
-      nr.id = 0; nr.pos = 0;
+      ps->modem->tele_nr_temp->id = 0; 
+      ps->modem->temp_digit_pos = 0;
+      for(i = 0; i < 16; i++){ ps->modem->tele_nr_temp->nr[i] = 11; }
       ps->page_state->page = DataPage;
       break;
 
     // okay tel
     case 0x44:
-      if(!touch[11] && nr.id)
+      if(!touch[11] && ps->modem->tele_nr_temp->id)
       {
         touch[11] = 1;
         LCD_Sym_Pin_OkButton(1);
-        Modem_TelNr(ps, _save, nr);
+        AT24C_TeleNr_Write(ps->modem->tele_nr_temp);
+        AT24C_TeleNr_ReadToModem(ps);
 
         // test new number
-        if(SMS_ON){ Modem_SMS(ps, nr, "Hello from your wastewater treatment plant, your number is added."); }
-        else{ Modem_Call(ps, nr); }
-        nr.id = 0;
-        nr.pos = 0;
+        if(SMS_ON){ Modem_SMS(ps, ps->modem->tele_nr_temp->id, "Hello from your wastewater treatment plant, your number is added."); }
+        else{ Modem_Call(ps, ps->modem->tele_nr_temp->id); }
+
+        // reset temp
+        ps->modem->tele_nr_temp->id = 0;
+        for(i = 0; i < 16; i++){ ps->modem->tele_nr_temp->nr[i] = 11; }
+        ps->modem->temp_digit_pos = 0;
       }
       break;
 
     // no touch
     case 0x00:
+
       // unmark
       for(unsigned char i = 0; i < 11; i++){ if(touch[i]){ LCD_pPinButtons(i); } }
-      for(i = 0; i < 10; i++){ touch[i] = 0; }
+      for(unsigned char i = 0; i < 10; i++){ touch[i] = 0; }
       if(touch[11]){ touch[11] = 0; LCD_Sym_Pin_Clear(); }
       break;
 
     default: break;
   }
 
-  if(cp > 3 && !nr.id)
+  // secret check
+  if(cp > 3 && !ps->modem->tele_nr_temp->id)
   {
     cp = 0;
     LCD_Sym_Pin_Clear();
@@ -1992,27 +1999,29 @@ void Touch_Pin_Linker(struct PlantState *ps)
     }
 
     // reset compressor hours
-    else if((in[0] == compH[0]) && (in[1] == compH[1]) && (in[2] == compH[2]) && (in[3] == compH[3]))
+    else if((in[0] == secret_compH[0]) && (in[1] == secret_compH[1]) && (in[2] == secret_compH[2]) && (in[3] == secret_compH[3]))
     {
       MCP7941_Write_Comp_OpHours(0);
       LCD_Sym_Pin_OpHoursMessage();
     }
 
     // enter telephone 1
-    else if((in[0] == tel1[0]) && (in[1] == tel1[1]) && (in[2] == tel1[2]) && (in[3] == tel1[3]))
+    else if((in[0] == secret_tel1[0]) && (in[1] == secret_tel1[1]) && (in[2] == secret_tel1[2]) && (in[3] == secret_tel1[3]))
     {
-      nr.id = 1; nr.pos = 0;
-      Modem_TelNr(ps, _init, nr);
-      LCD_Sym_Pin_PrintWholeTelNumber(ps, nr);
+      ps->modem->tele_nr_temp->id = 1;
+      ps->modem->temp_digit_pos = 0;
+      AT24C_TeleNr_ReadToModem(ps);
+      LCD_Sym_Pin_PrintWholeTelNumber(ps->modem->tele_nr1);
       LCD_Sym_Pin_OkButton(0);
     }
 
     // enter telephone 2
-    else if((in[0] == tel2[0]) && (in[1] == tel2[1]) && (in[2] == tel2[2]) && (in[3] == tel2[3]))
+    else if((in[0] == secret_tel2[0]) && (in[1] == secret_tel2[1]) && (in[2] == secret_tel2[2]) && (in[3] == secret_tel2[3]))
     {
-      nr.id = 2; nr.pos = 0;
-      Modem_TelNr(ps, _init, nr);
-      LCD_Sym_Pin_PrintWholeTelNumber(ps, nr);
+      ps->modem->tele_nr_temp->id = 2;
+      ps->modem->temp_digit_pos = 0;
+      AT24C_TeleNr_ReadToModem(ps);
+      LCD_Sym_Pin_PrintWholeTelNumber(ps->modem->tele_nr2);
       LCD_Sym_Pin_OkButton(0);
     }
 
@@ -2022,13 +2031,26 @@ void Touch_Pin_Linker(struct PlantState *ps)
   }
 
   // stop
-  if(nr.pos > 14)
+  if(ps->modem->temp_digit_pos > 14)
   {
     // tel written
-    nr.id = 0;
-    nr.pos = 0;
+    ps->modem->tele_nr_temp->id = 0;
+    ps->modem->temp_digit_pos = 0;
     cp = 0;
     LCD_Sym_Pin_Clear();
   }
-  if(nr.id) Modem_ReadSLED(PinModem);
+  if(ps->modem->tele_nr_temp->id){ Modem_ReadSLED(PinModem); }
+}
+
+
+
+/*-------------------------------------------------------------------*
+ *  pin linker
+ * ------------------------------------------------------------------*/
+
+void Touch_Pin_Linker_TeleTemp_AddDigit(struct PlantState *ps, unsigned char digit)
+{
+  ps->modem->tele_nr_temp->nr[ps->modem->temp_digit_pos] = digit; 
+  LCD_Sym_Pin_PrintOneTelNumberDigit(digit, ps->modem->temp_digit_pos); 
+  ps->modem->temp_digit_pos++;
 }
