@@ -56,4 +56,8 @@ void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps);
 void MEM_EEPROM_SetZero(void);
 void MEM_EEPROM_WriteVarDefault_Short(void);
 
+struct MemoryEntryPos MEM_FindNoEntry(t_text_buttons data);
+struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data);
+struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data);
+
 #endif

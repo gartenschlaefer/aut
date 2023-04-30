@@ -8,7 +8,6 @@
 #include "config.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
-#include "eval_app.h"
 #include "error_func.h"
 #include "memory_app.h"
 #include "mpx_driver.h"

@@ -11,6 +11,13 @@
  *            general structs
  * ------------------------------------------------------------------*/
 
+struct MemoryEntryPos
+{
+  unsigned char page;
+  unsigned char entry;
+  bool null_flag;
+};
+
 
 struct TeleNr
 {

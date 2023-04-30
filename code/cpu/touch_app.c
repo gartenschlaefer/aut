@@ -7,7 +7,6 @@
 #include "lcd_driver.h"
 #include "lcd_sym.h"
 #include "lcd_app.h"
-#include "eval_app.h"
 #include "memory_app.h"
 #include "touch_driver.h"
 #include "mcp7941_driver.h"

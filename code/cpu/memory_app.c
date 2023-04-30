@@ -4,7 +4,6 @@
 #include "memory_app.h"
 
 #include "memory_func.h"
-#include "eval_app.h"
 #include "mcp7941_driver.h"
 
 
@@ -258,8 +257,8 @@ unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_dat
 void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps)
 {
   unsigned char data[8] = {0x00};
-  unsigned char *p_null = Eval_Memory_NoEntry(TEXT_BUTTON_auto);
-  unsigned char *p_old = Eval_Memory_OldestEntry(TEXT_BUTTON_auto);
+  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(TEXT_BUTTON_auto);
+  struct MemoryEntryPos old = MEM_FindOldestEntry(TEXT_BUTTON_auto);
 
   // time
   data[0] = ps->time_state->tic_dat;
@@ -277,18 +276,8 @@ void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps)
   ps->error_state->cycle_error_code_record = 0;
 
   // update pointer
-  unsigned char page = *p_null;
-  p_null++;
-  unsigned char entry = *p_null;
-  p_null++;
-  unsigned char null = *p_null;
-
-  if(!null)
-  {
-    page = *p_old;
-    p_old++;
-    entry = *p_old;
-  }
+  unsigned char page = (no_entry_pos.null_flag ? no_entry_pos.page : old.page);
+  unsigned char entry = (no_entry_pos.null_flag ? no_entry_pos.entry : old.entry);
 
   // write protection
   if(page < MEM_AUTO_START_SECTION){ page = MEM_AUTO_START_SECTION; }
@@ -306,8 +295,8 @@ void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps)
 void MEM_EEPROM_WriteManualEntry(struct PlantState *ps)
 {
   unsigned char data[7] = {0x00};
-  unsigned char *p_null = Eval_Memory_NoEntry(TEXT_BUTTON_manual);
-  unsigned char *p_old = Eval_Memory_OldestEntry(TEXT_BUTTON_manual);
+  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(TEXT_BUTTON_manual);
+  struct MemoryEntryPos old = MEM_FindOldestEntry(TEXT_BUTTON_manual);
 
   // time and o2
   data[0] = ps->time_state->tic_dat;
@@ -319,18 +308,8 @@ void MEM_EEPROM_WriteManualEntry(struct PlantState *ps)
   data[6] = ps->time_state->tic_min;
 
   // update pointer
-  unsigned char page = *p_null;
-  p_null++;
-  unsigned char entry = *p_null;
-  p_null++;
-  unsigned char null = *p_null;
-
-  if(!null)
-  {
-    page = *p_old;
-    p_old++;
-    entry = *p_old;
-  }
+  unsigned char page = (no_entry_pos.null_flag ? no_entry_pos.page : old.page);
+  unsigned char entry = (no_entry_pos.null_flag ? no_entry_pos.entry : old.entry);
 
   // write protection
   if(page < MEM_MANUAL_START_SECTION){ page = MEM_MANUAL_START_SECTION; }
@@ -348,8 +327,8 @@ void MEM_EEPROM_WriteManualEntry(struct PlantState *ps)
 void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps)
 {
   unsigned char data[7] = {0x00};
-  unsigned char *p_null = Eval_Memory_NoEntry(TEXT_BUTTON_setup);
-  unsigned char *p_old = Eval_Memory_OldestEntry(TEXT_BUTTON_setup);
+  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(TEXT_BUTTON_setup);
+  struct MemoryEntryPos old = MEM_FindOldestEntry(TEXT_BUTTON_setup);
 
   // time
   data[0] = ps->time_state->tic_dat;
@@ -359,18 +338,8 @@ void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps)
   data[4] = ps->time_state->tic_min;
 
   // update pointer
-  unsigned char page = *p_null;
-  p_null++;
-  unsigned char entry = *p_null;
-  p_null++;
-  unsigned char null = *p_null;
-
-  if(!null)
-  {
-    page = *p_old;
-    p_old++;
-    entry= *p_old;
-  }
+  unsigned char page = (no_entry_pos.null_flag ? no_entry_pos.page : old.page);
+  unsigned char entry = (no_entry_pos.null_flag ? no_entry_pos.entry : old.entry);
 
   // write Protection
   if(page < MEM_SETUP_START_SECTION){ page = MEM_SETUP_START_SECTION; }
@@ -476,4 +445,174 @@ void MEM_EEPROM_LoadData(unsigned char entry, t_data byte,  unsigned char eeData
         default: break;
       } break;
   }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            finds out the the placement of a no entry, return position
+ * ------------------------------------------------------------------*/
+
+struct MemoryEntryPos MEM_FindNoEntry(t_text_buttons data)
+{
+  struct MemoryEntryPos no_entry_pos = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
+
+  unsigned char stop = 0;
+  unsigned char startPa = MEM_AUTO_START_SECTION;
+  unsigned char endPa = MEM_AUTO_END_SECTION;
+
+  // determine start and end page
+  switch(data)
+  {
+    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
+    default: break;
+  }
+
+  // start page
+  no_entry_pos.page = startPa;
+
+  // pages
+  for(unsigned char eep = startPa; eep <= endPa; eep++)
+  {
+    // update page
+    no_entry_pos.page = eep;
+
+    // entries
+    for(unsigned char i = 0; i < 4; i++)
+    {
+      no_entry_pos.entry = i;
+      if(!(MEM_EEPROM_ReadData(eep, i, DATA_day)))
+      {
+        stop = 1;
+        break;
+      }
+    }
+
+    // loop termination if null found
+    if(stop)
+    {
+      // null indicator
+      no_entry_pos.null_flag = true;
+      break;
+    }
+  }
+
+  return no_entry_pos;
+}
+
+
+/* ---------------------------------------------------------------*
+ *          old entry
+ * ---------------------------------------------------------------*/
+
+struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data)
+{
+  struct MemoryEntryPos old = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
+
+  unsigned char startPa = MEM_AUTO_START_SECTION;
+  unsigned char endPa = MEM_AUTO_END_SECTION;
+
+  unsigned char day = 31;
+  unsigned char month = 12;
+  unsigned char year = 60;
+  unsigned char h = 23;
+  unsigned char min = 59;
+
+  // determine start and end page
+  switch(data)
+  {
+    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
+    default: break;
+  }
+
+  // start page
+  old.page = startPa;
+
+  // pages
+  for(unsigned char eep = startPa; eep <= endPa; eep++)
+  {
+    // entries
+    for(unsigned char i = 0; i < 4; i++)
+    {
+      unsigned char rDay = MEM_EEPROM_ReadData(eep, i, DATA_day);
+      unsigned char rMonth = MEM_EEPROM_ReadData(eep, i, DATA_month);
+      unsigned char rYear = MEM_EEPROM_ReadData(eep, i, DATA_year);
+      unsigned char rH = MEM_EEPROM_ReadData(eep, i, DATA_hour);
+      unsigned char rMin = MEM_EEPROM_ReadData(eep, i, DATA_minute);
+
+      if((rDay) && ((rYear  < year) || (rMonth < month && rYear <= year) || (rDay < day && rMonth <= month && rYear <= year) || (rH   < h && rDay <= day && rMonth <= month && rYear <= year) || (rMin <= min  && rH <= h   && rDay <= day && rMonth <= month && rYear <= year)))
+      {
+        year = rYear;
+        month = rMonth;
+        day = rDay;
+        h = rH;
+        min = rMin;
+        old.page = eep;
+        old.entry = i;    
+      }
+    }
+  }
+
+  return old;
+}
+
+
+/* ---------------------------------------------------------------*
+ *          latest entry
+ * ---------------------------------------------------------------*/
+
+struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data)
+{
+  struct MemoryEntryPos latest = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
+
+  unsigned char startPa = MEM_AUTO_START_SECTION;
+  unsigned char endPa = MEM_AUTO_END_SECTION;
+
+  unsigned char day = 0;
+  unsigned char month = 0;
+  unsigned char year = 0;
+  unsigned char h = 0;
+  unsigned char min = 0;
+
+  // determine start and end page
+  switch(data)
+  {
+    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
+    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
+    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
+    default: break;
+  }
+
+  // start page
+  latest.page = startPa;
+
+  // pages
+  for(unsigned char eep = startPa; eep <= endPa; eep++)
+  {
+    // entries
+    for(unsigned char i = 0; i < 4; i++)
+    {
+      unsigned char rDay = MEM_EEPROM_ReadData(eep, i, DATA_day);
+      unsigned char rMonth = MEM_EEPROM_ReadData(eep, i, DATA_month);
+      unsigned char rYear = MEM_EEPROM_ReadData(eep, i, DATA_year);
+      unsigned char rH = MEM_EEPROM_ReadData(eep, i, DATA_hour);
+      unsigned char rMin = MEM_EEPROM_ReadData(eep, i, DATA_minute);
+
+      if((rDay) && ((rYear  > year) || (rMonth > month && rYear >= year) || (rDay > day && rMonth >= month && rYear >= year) || (rH   > h && rDay >= day && rMonth >= month && rYear >= year) || (rMin >= min  && rH >= h && rDay >= day && rMonth >= month && rYear >= year)))
+      {
+        year = rYear;
+        month = rMonth;
+        day = rDay;
+        h = rH;
+        min = rMin;
+        latest.page = eep;
+        latest.entry = i;
+      }
+    }
+  }
+
+  return latest;
 }

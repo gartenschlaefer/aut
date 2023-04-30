@@ -10,7 +10,6 @@
 #include "lcd_sym.h"
 #include "touch_app.h"
 #include "touch_driver.h"
-#include "eval_app.h"
 #include "memory_app.h"
 #include "mpx_driver.h"
 #include "mcp9800_driver.h"
@@ -925,14 +924,7 @@ void LCD_Entry_Clr(void)
 
 void LCD_WriteAutoEntryPage(unsigned char page)
 {
-  unsigned char entry = 0;
-  unsigned char eep = 0;
-  unsigned char *p_ct = Eval_Memory_LatestEntry(TEXT_BUTTON_auto);
-
-  // get pointer stuff
-  eep = *p_ct;
-  p_ct++;
-  entry = *p_ct;
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_auto);
 
   // clear display section
   LCD_Entry_Clr();
@@ -942,19 +934,19 @@ void LCD_WriteAutoEntryPage(unsigned char page)
   LCD_WriteAnyFont(f_4x6_p, 1, 144, (page + 1) % 10);
 
   // get right eep
-  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_auto, eep, (2 * page));
+  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_auto, latest.page, (2 * page));
 
   // write corresponding page
   if (page >= DATA_PAGE_NUM_AUTO)
   {
     // half page
-    LCD_wPage(TEXT_BUTTON_auto, wep, entry, true);
+    LCD_wPage(TEXT_BUTTON_auto, wep, latest.entry, true);
     LCD_Sym_Data_EndText();
   }
   else
   {
     // full page
-    LCD_wPage(TEXT_BUTTON_auto, wep, entry, false);
+    LCD_wPage(TEXT_BUTTON_auto, wep, latest.entry, false);
   }
 }
 
@@ -966,14 +958,7 @@ void LCD_WriteAutoEntryPage(unsigned char page)
 
 void LCD_WriteManualEntryPage(unsigned char page)
 {
-  unsigned char entry = 0;
-  unsigned char eep = 0;
-  unsigned char *p_ct = Eval_Memory_LatestEntry(TEXT_BUTTON_manual);
-
-  // pointer stuff
-  eep = *p_ct;
-  p_ct++;
-  entry = *p_ct;
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_manual);
 
   // clear display section
   LCD_Entry_Clr();
@@ -981,20 +966,20 @@ void LCD_WriteManualEntryPage(unsigned char page)
   // page number
   LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
 
-  // get right eep
-  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_manual, eep, (2 * page));
+  // get right latest page
+  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_manual, latest.page, (2 * page));
 
   // write corresponding page
   if (page >= DATA_PAGE_NUM_MANUAL)
   {
     // half page
-    LCD_wPage(TEXT_BUTTON_manual, wep, entry, true);
+    LCD_wPage(TEXT_BUTTON_manual, wep, latest.entry, true);
     LCD_Sym_Data_EndText();
   }
   else
   {
     // full page
-    LCD_wPage(TEXT_BUTTON_manual, wep, entry, false);
+    LCD_wPage(TEXT_BUTTON_manual, wep, latest.entry, false);
   }
 }
 
@@ -1006,14 +991,7 @@ void LCD_WriteManualEntryPage(unsigned char page)
 
 void LCD_WriteSetupEntryPage(unsigned char page)
 {
-  unsigned char entry = 0;
-  unsigned char eep = 0;
-  unsigned char *p_ct = Eval_Memory_LatestEntry(TEXT_BUTTON_setup);
-
-  // pointer stuff
-  eep = *p_ct;
-  p_ct++;
-  entry = *p_ct;
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_setup);
 
   // clear display section
   LCD_Entry_Clr();
@@ -1022,19 +1000,19 @@ void LCD_WriteSetupEntryPage(unsigned char page)
   LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
 
   // get right eep
-  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_setup, eep, (2 * page));
+  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_setup, latest.page, (2 * page));
 
   // write corresponding page
   if (page >= DATA_PAGE_NUM_MANUAL)
   {
     // half page
-    LCD_wPage(TEXT_BUTTON_setup, wep, entry, true);
+    LCD_wPage(TEXT_BUTTON_setup, wep, latest.entry, true);
     LCD_Sym_Data_EndText();
   }
   else
   {
     // full page
-    LCD_wPage(TEXT_BUTTON_setup, wep, entry, false);
+    LCD_wPage(TEXT_BUTTON_setup, wep, latest.entry, false);
   }
 }
 
