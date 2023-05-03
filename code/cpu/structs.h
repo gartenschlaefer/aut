@@ -236,6 +236,10 @@ struct TouchState
   unsigned char chunk;
   int x_data[2];
   int y_data[2];
+  bool init;
+  unsigned char touched;
+  unsigned char var[6];
+  int int_var[3];
 };
 
 

@@ -136,13 +136,13 @@ void LCD_Sym_PinPage(void);
 void LCD_Sym_Pin_RightMessage(void);
 void LCD_Sym_Pin_WrongMessage(void);
 void LCD_Sym_Pin_OpHoursMessage(void);
-void LCD_Sym_Pin_Clear(void);
+void LCD_Sym_Pin_ClearPinCode(void);
 void LCD_Sym_Pin_PrintWholeTelNumber(struct TeleNr *tele_nr);
 void LCD_Sym_Pin_PrintOneTelNumberDigit(unsigned char digit, unsigned char pos);
 void LCD_pPinButtons(unsigned char pPin);
 void LCD_nPinButtons(unsigned char nPin);
 void LCD_Sym_Pin_DelDigits(void);
-void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char codePos);
+void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos);
 
 
 /* ------------------------------------------------------------------*

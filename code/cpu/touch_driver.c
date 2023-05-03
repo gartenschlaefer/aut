@@ -189,8 +189,6 @@ void Touch_Y_Measure(void)
 
  int Touch_Y_Read(void)
  {
-  int data = 0;
-
   // start conversion
   ADCA.CTRLA |= ADC_CH0START_bm;
 
@@ -200,7 +198,7 @@ void Touch_Y_Measure(void)
   ADCA.INTFLAGS |= (1 << ADC_CH0IF_bp);
 
   // data
-  data = ADCA.CH0RES;
+  int data = ADCA.CH0RES;
 
   return data;
 }
@@ -216,8 +214,6 @@ void Touch_Y_Measure(void)
 
 int Touch_Cal_Y_ReadData(void)
 {
-  int yData = 0;
-
   // setup Pins
   Touch_Clean();
   TCC0_Touch_Wait();
@@ -225,7 +221,7 @@ int Touch_Cal_Y_ReadData(void)
   TCC0_Touch_Wait();
 
   // read at ADC0
-  yData = Touch_Y_Read();
+  int yData = Touch_Y_Read();
   Touch_Clean();
 
   return yData;
@@ -262,14 +258,12 @@ void Touch_X_Measure(void)
 
  int Touch_X_Read(void)
  {
-  int data= 0;
-
   // start conversion
   ADCA.CTRLA |= ADC_CH1START_bm;
 
   while(!(ADCA.INTFLAGS & (1 << ADC_CH1IF_bp)));
   ADCA.INTFLAGS |= (1 << ADC_CH1IF_bp);
-  data = ADCA.CH1RES;
+  int data = ADCA.CH1RES;
 
   return data;
 }
@@ -281,8 +275,6 @@ void Touch_X_Measure(void)
 
  int Touch_Cal_X_ReadData(void)
  {
-  int xData = 0;
-
   // setup port
   Touch_Clean();
   TCC0_Touch_Wait();
@@ -290,10 +282,10 @@ void Touch_X_Measure(void)
   TCC0_Touch_Wait();
 
   // read at ADC0
-  xData = Touch_X_Read();
+  int data = Touch_X_Read();
   Touch_Clean();
 
-  return xData;
+  return data;
 }
 
 
@@ -320,7 +312,7 @@ void Touch_Read(struct TouchState *touch_state)
 
   else if((touch_state->state == _touch_read_x) && TCD0_Wait_Query())
   {
-    touch_state->x = (Touch_X_Read() >> 4);
+    touch_state->x = (unsigned char)((Touch_X_Read() >> 4) & 0x00FF);
     Touch_Clean();
     TCD0_WaitMilliSec_Init(5);
     touch_state->state = _touch_setup_y;
@@ -336,7 +328,7 @@ void Touch_Read(struct TouchState *touch_state)
 
   else if((touch_state->state == _touch_read_y) && TCD0_Wait_Query())
   {
-    touch_state->y = (Touch_Y_Read() >> 4);
+    touch_state->y = (unsigned char)((Touch_Y_Read() >> 4) & 0x00FF);
     Touch_Clean();
     TCD0_Stop();
     touch_state->state = _touch_ready;

@@ -9,6 +9,30 @@
 #include "structs.h"
 
 /* ------------------------------------------------------------------*
+ *            defines
+ * ------------------------------------------------------------------*/
+
+#define PIN_SECRET_ENTER_0 (2)
+#define PIN_SECRET_ENTER_1 (5)
+#define PIN_SECRET_ENTER_2 (8)
+#define PIN_SECRET_ENTER_3 (0)
+
+#define PIN_SECRET_COMP_0 (1)
+#define PIN_SECRET_COMP_1 (5)
+#define PIN_SECRET_COMP_2 (9)
+#define PIN_SECRET_COMP_3 (3)
+
+#define PIN_SECRET_TEL1_0 (0)
+#define PIN_SECRET_TEL1_1 (0)
+#define PIN_SECRET_TEL1_2 (0)
+#define PIN_SECRET_TEL1_3 (0)
+
+#define PIN_SECRET_TEL2_0 (0)
+#define PIN_SECRET_TEL2_1 (0)
+#define PIN_SECRET_TEL2_2 (0)
+#define PIN_SECRET_TEL2_3 (1)
+
+/* ------------------------------------------------------------------*
  *            function header
  * ------------------------------------------------------------------*/
 
@@ -39,5 +63,8 @@ void Touch_Data_AutoLinker(struct PlantState *ps);
 void Touch_Data_ManualLinker(struct PlantState *ps);
 void Touch_Data_SetupLinker(struct PlantState *ps);
 void Touch_Data_SonicLinker(struct PlantState *ps);
+
+void Touch_Matrix_MainLinker(struct PlantState *ps, unsigned char touch_matrix);
+void Touch_Matrix_MainLinker_Data(struct PlantState *ps, unsigned char touch_matrix);
 
 #endif

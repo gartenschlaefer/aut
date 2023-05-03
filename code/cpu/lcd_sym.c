@@ -615,6 +615,7 @@ void LCD_Sym_Setup_InflowPump(void)
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
 
+
 /* ------------------------------------------------------------------*
  *            inflow pump - values
  * -------------------------------------------------------------------
@@ -624,18 +625,16 @@ void LCD_Sym_Setup_InflowPump(void)
 void LCD_Sym_Setup_InflowPump_Values(unsigned char select, unsigned char *val)
 {
   // h
-  if(select & (1 << 0)){ LCD_WriteAnyValue(f_6x8_n, 2, 5, 47, *val); }
-  if(select & (1 << 4)){ LCD_WriteAnyValue(f_6x8_p, 2, 5, 47, *val); }
-  val++;
+  if(select & (1 << 0)){ LCD_WriteAnyValue(f_6x8_n, 2, 5, 47, val[0]); }
+  if(select & (1 << 4)){ LCD_WriteAnyValue(f_6x8_p, 2, 5, 47, val[0]); }
 
   // min
-  if(select & (1 << 1)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 47, *val); }
-  if(select & (1 << 5)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 47, *val); }
-  val++;
+  if(select & (1 << 1)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 47, val[1]); }
+  if(select & (1 << 5)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 47, val[1]); }
 
   // on
-  if(select & (1 << 2)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, *val); }
-  if(select & (1 << 6)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, *val); }
+  if(select & (1 << 2)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, val[2]); }
+  if(select & (1 << 6)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, val[2]); }
 }
 
 
@@ -823,28 +822,18 @@ void LCD_Sym_Setup_CircSensor(unsigned char sensor)
 
 void LCD_Sym_Setup_CircText(unsigned char on, unsigned char *p_var)
 {
-  unsigned char var[4] = {0};
-  unsigned char i = 0;
-
   LCD_ClrSpace(15, 70, 4, 20);
-
-  for(i = 0; i < 4; i++)
-  {
-    var[i] = *p_var;
-    p_var++;
-  }
-
-  LCD_Sym_Setup_OnValue(var[0]);
-  LCD_Sym_Setup_OffValue(var[1]);
-  LCD_WriteAnyValue(f_6x8_p, 3, 16, 72, (int)((var[3] << 8) | var[2]));
+  LCD_Sym_Setup_OnValue(p_var[0]);
+  LCD_Sym_Setup_OffValue(p_var[1]);
+  LCD_WriteAnyValue(f_6x8_p, 3, 16, 72, (int)((p_var[3] << 8) | p_var[2]));
 
   switch (on)
   {
-    case 0: LCD_Sym_Setup_OnValueNeg(var[0]); break;
-    case 1: LCD_Sym_Setup_OffValueNeg(var[1]); break;
+    case 0: LCD_Sym_Setup_OnValueNeg(p_var[0]); break;
+    case 1: LCD_Sym_Setup_OffValueNeg(p_var[1]); break;
     case 2: 
       LCD_FillSpace (15, 70, 4, 20);
-      LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, (int)((var[3] << 8) | var[2])); 
+      LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, (int)((p_var[3] << 8) | p_var[2])); 
       break;
 
     default: break;
@@ -858,29 +847,20 @@ void LCD_Sym_Setup_CircText(unsigned char on, unsigned char *p_var)
 
 void LCD_Sym_Setup_AirText(unsigned char on, unsigned char *p_var)
 {
-  unsigned char var[4] = {0};
-  unsigned char i = 0;
 
   LCD_ClrSpace(15, 39, 4, 51);
   LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
-
-  for(i = 0; i < 4; i++)
-  {
-    var[i] = *p_var;
-    p_var++;
-  }
-
-  LCD_Sym_Setup_OnValue(var[0]);
-  LCD_Sym_Setup_OffValue(var[1]);
-  LCD_WriteAnyValue(f_6x8_p, 3, 16, 72, ((var[3] << 8) | var[2]));
+  LCD_Sym_Setup_OnValue(p_var[0]);
+  LCD_Sym_Setup_OffValue(p_var[1]);
+  LCD_WriteAnyValue(f_6x8_p, 3, 16, 72, ((p_var[3] << 8) | p_var[2]));
 
   switch (on)
   {
-    case 0: LCD_Sym_Setup_OnValueNeg(var[0]); break;
-    case 1: LCD_Sym_Setup_OffValueNeg(var[1]); break;
+    case 0: LCD_Sym_Setup_OnValueNeg(p_var[0]); break;
+    case 1: LCD_Sym_Setup_OffValueNeg(p_var[1]); break;
     case 2:
       LCD_FillSpace (15, 70, 4, 20);
-      LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, ((var[3] << 8) | var[2]));
+      LCD_WriteAnyValue(f_6x8_n, 3, 16, 72, ((p_var[3] << 8) | p_var[2]));
       break;
 
     default: break;
@@ -915,11 +895,7 @@ void LCD_Sym_Setup_Pump(unsigned char mark)
 void LCD_Sym_Setup_Watch_Mark(t_DateTime time, unsigned char *p_dT)
 {
   // time positive
-  for(unsigned char i = 5; i < 11; i++)
-  {
-    LCD_Sym_Setup_Watch_DateTime(i, *p_dT);
-    p_dT++;
-  }
+  for(unsigned char i = 5; i < 11; i++){ LCD_Sym_Setup_Watch_DateTime(i, *p_dT); p_dT++; }
 
   // get correct value
   p_dT = p_dT - 6 + time;
@@ -1285,10 +1261,7 @@ void LCD_Sym_Data_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigne
   unsigned char i = 0;
   int o2 = 0;
 
-  for(i = 0; i < 8; i++)
-  {
-    varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i);
-  }
+  for(i = 0; i < 8; i++){ varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i); }
   o2 = ((varEnt[5] << 8) | (varEnt[6]));
 
   // write no data
@@ -1349,10 +1322,7 @@ void LCD_Sym_Data_WriteManualEntry(unsigned char pa, unsigned char eePage, unsig
   unsigned char varEnt[7] = {0x00};
   unsigned char i = 0;
 
-  for(i = 0; i < 7; i++)
-  {
-    varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i);
-  }
+  for(i = 0; i < 7; i++){ varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i); }
 
   // no data
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
@@ -1398,10 +1368,7 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
   unsigned char varEnt[7] = {0x00};
   unsigned char i = 0;
 
-  for(i = 0; i < 5; i++)
-  {
-    varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i);
-  }
+  for(i = 0; i < 5; i++){ varEnt[i] = MEM_EEPROM_ReadData(eePage, entry, i); }
 
   // no data
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
@@ -1590,7 +1557,7 @@ void LCD_Sym_Pin_OpHoursMessage(void)
  *            pin page clear
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Pin_Clear(void)
+void LCD_Sym_Pin_ClearPinCode(void)
 {
   LCD_ClrSpace(6, 119, 25, 41);
 }
@@ -1666,10 +1633,10 @@ void LCD_Sym_Pin_DelDigits(void)
  *  writes digit on pin field, corresponding to pressed one
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char codePos)
+void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos)
 {
   LCD_nPinButtons(pin);
-  LCD_WriteAnyFont(f_6x8_p, 3, 125 + 6 * codePos, pin + 15);
+  LCD_WriteAnyFont(f_6x8_p, 3, 125 + 6 * code_pos, pin + 15);
 }
 
 

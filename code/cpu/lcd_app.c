@@ -904,7 +904,7 @@ void LCD_PinPage_Main(struct PlantState *ps)
   if(save_page != ps->page_state->page){ LCD_Clean(); }
 
   // end condition on countdown
-  if(Basic_CountDown(ps)){ LCD_Clean(); ps->page_state->page = AutoPage; }
+  if(Basic_CountDown(ps)){ LCD_Clean(); ps->page_state->page = AutoPage; ps->touch_state->init = false; }
 }
 
 
