@@ -39,11 +39,11 @@ void LCD_AirState_Manager(struct PlantState *ps);
 
 // inflow pump
 void LCD_Auto_InflowPump_Init(struct PlantState *ps);
-void LCD_Auto_InflowPump_Main(struct PlantState *ps);
+void LCD_Auto_InflowPump_Update(struct PlantState *ps);
 
 // phosphor
 void LCD_Auto_Phosphor_Init(struct PlantState *ps);
-void LCD_Auto_Phosphor(struct PlantState *ps);
+void LCD_Auto_Phosphor_Update(struct PlantState *ps);
 
 void LCD_Manual_SetState(struct PlantState *ps);
 void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page);

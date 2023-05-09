@@ -152,21 +152,16 @@ void Sonic_ReadTank(struct PlantState *ps)
   }
 
   // tc init
-  else if(ps->sonic_state->read_tank_state == SONIC_TANK_timer_init)
+  else if(ps->sonic_state->read_tank_state >= SONIC_TANK_timer_init)
   {
-    TCF0_WaitSec_Init(2);
-    ps->sonic_state->read_tank_state = 2;
-  }
+    // second update
+    if(ps->time_state->tic_sec_update_flag){ ps->sonic_state->read_tank_state++; }
 
-  // next shot
-  else if(ps->sonic_state->read_tank_state >= 2)
-  {
-    if(TCF0_Wait_Query()){ ps->sonic_state->read_tank_state++; }
+    // new distance request
     if(ps->sonic_state->read_tank_state > Sonic_GetRepeatTime(ps->page_state->page))
     {
       Sonic_Query_Dist_Init(ps);
       ps->sonic_state->read_tank_state = SONIC_TANK_listen;
-      TCF0_Stop();
     }
   }
 }
@@ -178,19 +173,17 @@ void Sonic_ReadTank(struct PlantState *ps)
 
 unsigned char Sonic_GetRepeatTime(t_page page)
 {
-  unsigned char repeat_time = 30;
+  unsigned char repeat_time = 60;
 
   // different repeat times
   switch(page)
   {
-      case AutoPumpOff: repeat_time = 10; break;
+      case AutoPumpOff: repeat_time = 20; break;
       case AutoAirOff: 
-      case AutoCircOff: repeat_time = 15; break;
-
+      case AutoCircOff: repeat_time = 30; break;
       default: break;
   }
-  //*** debug SonicTime*2s
-  if(DEBUG){ repeat_time = 5; }
+  if(DEBUG){ repeat_time = 10; }
   return repeat_time;
 }
 

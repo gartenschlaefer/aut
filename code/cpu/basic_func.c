@@ -22,6 +22,7 @@
 #include "sonic_app.h"
 #include "can_app.h"
 #include "memory_app.h"
+#include "mpx_driver.h"
 
 
 /* ------------------------------------------------------------------*
@@ -70,7 +71,10 @@ void Basic_Init(struct PlantState *ps)
   CAN_RxB0_Clear(ps->can_state);
   TCE1_Stop();
 
-  // init sonic
+  // mpx init
+  MPX_Init(ps);
+
+  // sonic init
   Sonic_Init(ps);
 
   // timer ic variables init
@@ -96,15 +100,9 @@ void Basic_Init_Mem(void)
   // set data pages zero
   MEM_EEPROM_SetZero();
 
-  if(DEBUG)
-  {
-    //***VarDefaultShort
-    MEM_EEPROM_WriteVarDefault_Short();
-  }
-  else
-  {
-    MEM_EEPROM_WriteVarDefault();
-  }
+  //***VarDefaultShort
+  if(DEBUG){ MEM_EEPROM_WriteVarDefault_Short(); }
+  else{ MEM_EEPROM_WriteVarDefault(); }
 
   // timer ic init
   MCP7941_InitDefault();

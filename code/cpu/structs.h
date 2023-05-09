@@ -143,7 +143,6 @@ struct MPXState
 
 struct PhosphorState
 {
-  int ph_count;
   struct Tms *ph_tms;
   t_phosphor_states ph_state;
 };
@@ -151,7 +150,6 @@ struct PhosphorState
 
 struct InflowPumpState
 {
-  int ip_count;
   struct Thms *ip_thms;
   t_inflow_pump_states ip_state;
   unsigned char ip_active_pump_id;
@@ -160,7 +158,6 @@ struct InflowPumpState
 
 struct AirCircState
 {
-  int old_sec;
   struct Tms *air_tms;
 };
 

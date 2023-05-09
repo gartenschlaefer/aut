@@ -58,19 +58,6 @@ typedef enum
 
 
 /* ------------------------------------------------------------------*
- *            function commands
- * ------------------------------------------------------------------*/
-
-typedef enum
-{ _clean, _exe, _init, _reset, _add, _write, _saveValue, _off, _on, _count, _new, _save,
-  _set, _state, _sym, _error, _disabled, _clear, _read, _read1, _read2, _ready, _write1, 
-  _write2, _shot, _shot1, _temp, _temp1, _ton, _ovent, _cvent, _notav, _mbar, _mmbar, 
-  _right, _op, _telnr, _wrong, _debug, _entry, _dec, _check, _noData, _noUS, _noBoot, 
-  _ok, _success, _mcp_fail, _autotext
-}t_FuncCmd;
-
-
-/* ------------------------------------------------------------------*
  *            font types
  * ------------------------------------------------------------------*/
 

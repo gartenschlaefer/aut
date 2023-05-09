@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "mcp7941_driver.h"
+#include "basic_func.h"
 
 
 /* ==================================================================*
@@ -35,13 +36,12 @@ void TCC0_WaitMicroSec_Init(int micro_sec)
 
 
 /* ------------------------------------------------------------------*
- *            TCC0 - milli senond
+ *            TCC0 - milli second
  * ------------------------------------------------------------------*/
 
 void TCC0_WaitMilliSec_Init(int milli_sec)
 {
-  int milliHerz = 63;
-  int time = milli_sec * milliHerz;
+  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
 
   TCC0_CTRLA = TC_CLKSEL_OFF_gc;
   TCC0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -163,13 +163,12 @@ void TCC0_wait_closeValve(void)
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            TCC1 - milli senond
+ *            TCC1 - milli second
  * ------------------------------------------------------------------*/
 
 void TCC1_WaitMilliSec_Init(int milli_sec)
 {
-  int milliHerz = 63;
-  int time = milli_sec * milliHerz;
+  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
 
   TCC1_CTRLA = TC_CLKSEL_OFF_gc;
   TCC1.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -211,13 +210,12 @@ void TCC1_Stop(void)
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            TCD0 - milli senond
+ *            TCD0 - milli second
  * ------------------------------------------------------------------*/
 
 void TCD0_WaitMilliSec_Init(int milli_sec)
 {
-  int milliHerz = 63;
-  int time = milli_sec * milliHerz;
+  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
 
   TCD0_CTRLA = TC_CLKSEL_OFF_gc;
   TCD0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -304,13 +302,12 @@ void TCE0_WaitSec_Init(int sec)
 
 
 /* ------------------------------------------------------------------*
- *            TCE0 - milli senond
+ *            TCE0 - milli second
  * ------------------------------------------------------------------*/
 
 void TCE0_WaitMilliSec_Init(int milli_sec)
 {
-  int milliHerz = 63;
-  int time = milli_sec * milliHerz;
+  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
 
   TCE0_CTRLA = TC_CLKSEL_OFF_gc;
   TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -351,13 +348,12 @@ void TCE0_Stop(void)
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
- *            TCE1 - milli senond
+ *            TCE1 - milli second
  * ------------------------------------------------------------------*/
 
 void TCE1_WaitMilliSec_Init(int milli_sec)
 {
-  int milliHerz = 63;
-  int time = milli_sec * milliHerz;
+  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
 
   TCE1_CTRLA = TC_CLKSEL_OFF_gc;
   TCE1.CTRLB = TC_WGMODE_NORMAL_gc;
@@ -394,7 +390,7 @@ void TCE1_Stop(void)
 
 
 /* ==================================================================*
- *            TCF0 - sonic timer
+ *            TCF0 - valve timer
  * ==================================================================*/
 
 /* ------------------------------------------------------------------*
@@ -414,6 +410,26 @@ void TCF0_WaitSec_Init(int sec)
   TCF0.INTFLAGS |= (1 << TC0_CCAIF_bp);
 
   TCF0_CTRLA = TC_CLKSEL_DIV1024_gc;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            TCF0 - milli second
+ * ------------------------------------------------------------------*/
+
+void TCF0_WaitMilliSec_Init(int milli_sec)
+{
+  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
+
+  TCF0_CTRLA = TC_CLKSEL_OFF_gc;
+  TCF0.CTRLB = TC_WGMODE_NORMAL_gc;
+
+  TCF0.CNT = 0;
+  TCF0.PER = 65500;
+  TCF0.CCA = time;
+  TCF0.INTFLAGS |= (1 << TC1_CCAIF_bp);
+
+  TCF0_CTRLA = TC_CLKSEL_DIV256_gc;
 }
 
 
@@ -450,8 +466,7 @@ void TCF0_Stop(void)
 void TCF1_FrameTimer_Init(void)
 {
   // calculate frame time: 0.016666666666666666
-  float frame_time_count_f = 250000.0 / TC_FPS;
-  int frame_time_count = (int)frame_time_count_f;
+  int frame_time_count = f_round_int(250000.0 / TC_FPS);
 
   // settings
   TCF1_CTRLA = TC_CLKSEL_OFF_gc;

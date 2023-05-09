@@ -26,7 +26,6 @@ void OUT_Set_Phosphor(void);
 void OUT_Clr_Phosphor(void);
 void OUT_Set_InflowPump(struct PlantState *ps);
 void OUT_Clr_InflowPump(struct PlantState *ps);
-void OUT_Clr_IPAir(struct PlantState *ps);
 
 // valves
 void OUT_Valve_CloseAll(struct PlantState *ps);

@@ -148,19 +148,6 @@ void OUT_Clr_InflowPump(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            InflowPump and Air
- * ------------------------------------------------------------------*/
-
-void OUT_Clr_IPAir(struct PlantState *ps)
-{
-  OUT_Clr_Compressor();
-  PORT_RelaisClr(R_INFLOW1);
-  PORT_RelaisClr(R_INFLOW2);
-  PORT_Valve(ps, CLOSE_IPAir);
-}
-
-
-/* ------------------------------------------------------------------*
  *            All Off
  * ------------------------------------------------------------------*/
 

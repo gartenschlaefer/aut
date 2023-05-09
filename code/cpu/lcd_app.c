@@ -134,11 +134,11 @@ void LCD_AutoPage(struct PlantState *ps)
     LCD_Auto_SetStateOutput(ps);
   }
 
-  // execute in all auto pages
+  // updates
   PORT_Backlight_Update(ps->backlight);
-  LCD_Auto_InflowPump_Main(ps);
-  LCD_Auto_Phosphor(ps);
-  MPX_ReadAverage(ps, _exe);
+  LCD_Auto_InflowPump_Update(ps);
+  LCD_Auto_Phosphor_Update(ps);
+  MPX_ReadAverage_Update(ps);
 
   // display update
   LCD_DisplayRefresh(AutoPage, ps);
@@ -273,7 +273,7 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
   switch(ps->page_state->page)
   {
     case AutoZone: 
-      MPX_ReadTank(ps, _exe); 
+      MPX_ReadTank(ps); 
       ps->page_state->page = AutoCircOn; 
       break;
 
@@ -320,8 +320,8 @@ void LCD_AirState_Manager(struct PlantState *ps)
       case AutoAirOn:
       case AutoCircOn:
         t_page cPage = p;
-        MPX_ReadTank(ps, _exe);
-        MPX_ReadTank(ps, _write);
+        MPX_ReadTank(ps);
+        LCD_Sym_MPX_LevelPerc(ps);
         OUT_Clr_Air(ps);
 
         // change page
@@ -361,9 +361,9 @@ void LCD_AirState_Manager(struct PlantState *ps)
 
       // manual air on
       case ManualCircOn:
-        if(p == ManualCircOn){ ps->page_state->page = ManualCircOff; }
-        MPX_ReadTank(ps, _exe);
-        MPX_ReadTank(ps, _write);
+        ps->page_state->page = ManualCircOff;
+        MPX_ReadTank(ps);
+        LCD_Sym_MPX_LevelPerc(ps);
         OUT_Clr_Air(ps);
         air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
         air_tms->sec = 0;
@@ -382,9 +382,8 @@ void LCD_AirState_Manager(struct PlantState *ps)
   }
 
   // countdown
-  if(ps->page_state->page_time->sec != ps->air_circ_state->old_sec)
+  if(ps->time_state->tic_sec_update_flag)
   {
-    ps->air_circ_state->old_sec = ps->page_state->page_time->sec;
     if(!air_tms->sec && (p != ErrorTreat))
     {
       air_tms->sec = 60;
@@ -418,25 +417,21 @@ void LCD_AirState_Manager(struct PlantState *ps)
 
 void LCD_Auto_InflowPump_Init(struct PlantState *ps)
 {
-  // handlers
-  struct Thms *ip_thms = ps->inflow_pump_state->ip_thms;
-  t_inflow_pump_states *ip_state = &ps->inflow_pump_state->ip_state;
-
   // on time for inflow pump
-  ip_thms->hou = 0;
-  ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump);
+  ps->inflow_pump_state->ip_thms->hou = 0;
+  ps->inflow_pump_state->ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump);
 
   // disabled mode
-  if(!ip_thms->min)
+  if(!ps->inflow_pump_state->ip_thms->min)
   {
-    ip_thms->sec = 0;
-    *ip_state = _disabled;
+    ps->inflow_pump_state->ip_thms->sec = 0;
+    ps->inflow_pump_state->ip_state = _ip_disabled;
   }
   else
   {
-    ip_thms->min = 1;
-    ip_thms->sec = 2;
-    *ip_state = _off;
+    ps->inflow_pump_state->ip_thms->min = 1;
+    ps->inflow_pump_state->ip_thms->sec = 2;
+    ps->inflow_pump_state->ip_state = _ip_off;
   }
 }
 
@@ -445,61 +440,57 @@ void LCD_Auto_InflowPump_Init(struct PlantState *ps)
  *            auto inflow pump main
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_InflowPump_Main(struct PlantState *ps)
+void LCD_Auto_InflowPump_Update(struct PlantState *ps)
 {
   // disabled
   if(ps->inflow_pump_state->ip_state == _ip_disabled){ return; }
 
-  // handlers
-  int *ip_count = &ps->inflow_pump_state->ip_count;
-  struct Thms *ip_thms = ps->inflow_pump_state->ip_thms;
-  t_inflow_pump_states *ip_state = &ps->inflow_pump_state->ip_state;
-  t_page p = ps->page_state->page;
-
   // AutoChange2Off
-  if(*ip_state == _ip_on && p != ErrorTreat && !ip_thms->min && !ip_thms->sec)
+  if(ps->inflow_pump_state->ip_state == _ip_on && ps->page_state->page != ErrorTreat && !ps->inflow_pump_state->ip_thms->min && !ps->inflow_pump_state->ip_thms->sec)
   {
-    *ip_state = _off;
-    ip_thms->hou = MEM_EEPROM_ReadVar(T_IP_off_h); ip_thms->min = MEM_EEPROM_ReadVar(OFF_inflowPump); ip_thms->sec = 2;
+    ps->inflow_pump_state->ip_state = _ip_off;
+    ps->inflow_pump_state->ip_thms->hou = MEM_EEPROM_ReadVar(T_IP_off_h);
+    ps->inflow_pump_state->ip_thms->min = MEM_EEPROM_ReadVar(OFF_inflowPump); 
+    ps->inflow_pump_state->ip_thms->sec = 2;
     LCD_Sym_Auto_Ip_Base(ps);
     OUT_Clr_InflowPump(ps);
   }
 
   // auto change to on state
-  else if( (*ip_state == _ip_off) && (p != ErrorTreat) && !ip_thms->hou && !ip_thms->min && !ip_thms->sec && (p == AutoAirOff || p == AutoCircOff))
+  else if((ps->inflow_pump_state->ip_state == _ip_off) && (ps->page_state->page != ErrorTreat) && !ps->inflow_pump_state->ip_thms->hou && !ps->inflow_pump_state->ip_thms->min && !ps->inflow_pump_state->ip_thms->sec && (ps->page_state->page == AutoAirOff || ps->page_state->page == AutoCircOff))
   {
-    *ip_state = _on;
-    ip_thms->hou = 0; ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump); ip_thms->sec = 2;
+    ps->inflow_pump_state->ip_state = _ip_on;
+    ps->inflow_pump_state->ip_thms->hou = 0;
+    ps->inflow_pump_state->ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump);
+    ps->inflow_pump_state->ip_thms->sec = 2;
     LCD_Sym_Auto_Ip_Base(ps);
     OUT_Set_InflowPump(ps);
   }
 
-  // countdown
-  if(*ip_state == _ip_off || ((p == AutoAirOff || p == AutoCircOff) && *ip_state == _ip_on))
+  // countdown each second
+  if(ps->time_state->tic_sec_update_flag)
   {
-    if(*ip_count != ps->page_state->page_time->sec)
+    // only in off states
+    if(ps->inflow_pump_state->ip_state == _ip_off || ((ps->page_state->page == AutoAirOff || ps->page_state->page == AutoCircOff) && ps->inflow_pump_state->ip_state == _ip_on))
     {
-      *ip_count = ps->page_state->page_time->sec;
-      if(!ip_thms->sec)
+      // minute update
+      if(!ps->inflow_pump_state->ip_thms->sec)
       {
-        if(ip_thms->min || ip_thms->hou)
+        if(ps->inflow_pump_state->ip_thms->min || ps->inflow_pump_state->ip_thms->hou){ ps->inflow_pump_state->ip_thms->sec = 60; }
+        if((!ps->inflow_pump_state->ip_thms->min) && ps->inflow_pump_state->ip_thms->hou)
         {
-          ip_thms->sec = 60;
-        }
-        if((!ip_thms->min) && ip_thms->hou)
-        {
-          ip_thms->min = 60;
+          ps->inflow_pump_state->ip_thms->min = 60;
           // decrease h
-          ip_thms->hou--;
-          LCD_Sym_Auto_Ip_Time(0x06, ip_thms);
+          ps->inflow_pump_state->ip_thms->hou--;
+          LCD_Sym_Auto_Ip_Time(0x06, ps->inflow_pump_state->ip_thms);
         }
         // decrease min
-        if(ip_thms->min) ip_thms->min--;
-        LCD_Sym_Auto_Ip_Time(0x02, ip_thms);
+        if(ps->inflow_pump_state->ip_thms->min){ ps->inflow_pump_state->ip_thms->min--; }
+        LCD_Sym_Auto_Ip_Time(0x02, ps->inflow_pump_state->ip_thms);
       }
       // decrease sec
-      if(ip_thms->sec) ip_thms->sec--;
-      LCD_Sym_Auto_Ip_Time(0x01, ip_thms);
+      if(ps->inflow_pump_state->ip_thms->sec){ ps->inflow_pump_state->ip_thms->sec--; }
+      LCD_Sym_Auto_Ip_Time(0x01, ps->inflow_pump_state->ip_thms);
     }
   }
 }
@@ -523,15 +514,14 @@ void LCD_Auto_Phosphor_Init(struct PlantState *ps)
  *            auto phosphor
  * ------------------------------------------------------------------*/
 
-void LCD_Auto_Phosphor(struct PlantState *ps)
+void LCD_Auto_Phosphor_Update(struct PlantState *ps)
 {
   // disabled
   if(ps->phosphor_state->ph_state == _ph_disabled){ return; }
 
-  // phosphor count
-  if(ps->phosphor_state->ph_count != ps->page_state->page_time->sec)
+  // phosphor time update
+  if(ps->time_state->tic_sec_update_flag)
   {
-    ps->phosphor_state->ph_count = ps->page_state->page_time->sec;
     if(!ps->phosphor_state->ph_tms->sec)
     {
       ps->phosphor_state->ph_tms->sec = 60;
@@ -607,7 +597,7 @@ void LCD_ManualPage(struct PlantState *ps)
   if(ps->page_state->page != ManualPumpOff)
   {
     LCD_Sym_Manual_PageTime(ps);
-    MPX_ReadAverage(ps, _exe);
+    MPX_ReadAverage_Update(ps);
     Sonic_ReadTank(ps);
   }
 
@@ -757,8 +747,8 @@ void LCD_SetupPage(struct PlantState *ps)
         // stop air and read the preassure sensor
         if(!*p_sec)
         {
-          MPX_LevelCal(ps, _new);
-          MPX_LevelCal(ps, _write);
+          MPX_LevelCal_New(ps);
+          LCD_Sym_MPX_Setup_WriteLevelCal(ps->sonic_state->level_cal);
           OUT_Clr_Air(ps);
 
           // clear countdown
@@ -1130,7 +1120,7 @@ void LCD_Calibration(void)
   int x = 0;
   int y = 0;
 
-  struct Backlight backlight = { .state = _off, .count = 0 };
+  struct Backlight backlight = { .state = _bl_off, .count = 0 };
 
   PORT_Backlight_On(&backlight);
   Touch_Cal_Main();

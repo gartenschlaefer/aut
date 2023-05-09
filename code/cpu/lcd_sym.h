@@ -122,10 +122,11 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
  *            MPX
  * ------------------------------------------------------------------*/
 
+void LCD_Sym_MPX_AverageValue(t_page page, int av_value);
+void LCD_Sym_MPX_Setup_WriteLevelCal(int level_cal);
 void LCD_Sym_MPX_Auto_DisabledLevelMeasure(void);
 void LCD_Sym_MPX_Auto_MbarValue(int value);
-void LCD_Sym_MPX_Auto_LevelPerc(int value);
-void LCD_Sym_MPX_Manual_LevelPerc(int value);
+void LCD_Sym_MPX_LevelPerc(struct PlantState *ps);
 
 
 /* ------------------------------------------------------------------*

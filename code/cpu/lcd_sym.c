@@ -108,7 +108,7 @@ void LCD_Sym_Auto_Text(struct PlantState *ps)
   LCD_Sym_Auto_Date(ps);
 
   // read water level
-  MPX_ReadTank(ps, _write);
+  LCD_Sym_MPX_LevelPerc(ps);
   LCD_Sym_Auto_SonicVal(ps);
 
   // compressor hours
@@ -431,7 +431,7 @@ void LCD_Sym_Manual_Text(struct PlantState *ps)
   LCD_Sym_Manual_CountDown(ps->page_state->page_time);
   LCD_WriteAnyStringFont(f_6x8_p, 17, 136, ":");
   LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
-  MPX_ReadTank(ps, _write);
+  LCD_Sym_MPX_LevelPerc(ps);
 }
 
 
@@ -681,14 +681,14 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
   if(sonic)
   { 
     LCD_WriteAnySymbol(s_19x19, 2, 40, _n_sonic);
-    LCD_WriteAnyStringFont(f_6x8_p, 17,66, "mm");
+    LCD_WriteAnyStringFont(f_6x8_p, 17, 66, "mm");
     LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
   }
   else
   { 
     LCD_WriteAnySymbol(s_19x19, 2, 40, _p_sonic);
-    LCD_WriteAnyStringFont(f_6x8_p, 17,60, "mbar");
-    MPX_LevelCal(ps, _init);
+    LCD_WriteAnyStringFont(f_6x8_p, 17, 60, "mbar");
+    LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, ps->mpx_state->level_cal);
   }
 
   // calibration redo with pressure -> auto zone page
@@ -1399,6 +1399,38 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
 
 
 /* ------------------------------------------------------------------*
+ *            MPX average value
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_MPX_AverageValue(t_page page, int av_value)
+{
+  // page action
+  switch(page)
+  {
+    case AutoZone: case AutoSetDown: case AutoMud: case AutoCircOn: case AutoCircOff: case AutoPumpOff: case AutoAirOn: case AutoAirOff:
+      LCD_WriteAnyValue(f_4x6_p, 3, 13, 43, av_value);
+      break;
+
+    case ManualMain: case ManualPumpOff_On: case ManualCircOn: case ManualCircOff: case ManualAir: case ManualSetDown: case ManualPumpOff:
+    case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump:
+      LCD_WriteAnyValue(f_6x8_p, 3, 17, 42, av_value);
+      break;
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            MPX level calibration in setup
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_MPX_Setup_WriteLevelCal(int level_cal)
+{
+  LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, level_cal);
+}
+
+
+/* ------------------------------------------------------------------*
  *            MPX no level measure
  * ------------------------------------------------------------------*/
 
@@ -1410,6 +1442,7 @@ void LCD_Sym_MPX_Auto_DisabledLevelMeasure(void)
   LCD_WriteAnyFont(f_4x6_p, 15, 13, 11);
   LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
 }
+
 
 /* ------------------------------------------------------------------*
  *            MPX mbar value in auto
@@ -1427,24 +1460,34 @@ void LCD_Sym_MPX_Auto_MbarValue(int value)
 
 
 /* ------------------------------------------------------------------*
- *            MPX
+ *            level perc
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_MPX_Auto_LevelPerc(int value)
+void LCD_Sym_MPX_LevelPerc(struct PlantState *ps)
 {
-  LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, value);
-  LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
-}
+  // return if Ultrasonic
+  if(MEM_EEPROM_ReadVar(SONIC_on)){ return; }
 
-/* ------------------------------------------------------------------*
- *            MPX
- * ------------------------------------------------------------------*/
+  // read variables
+  int hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  int minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
 
-void LCD_Sym_MPX_Manual_LevelPerc(int value)
-{
-  // value and %
-  LCD_WriteAnyValue(f_4x6_p, 3, 17, 2, value);
-  LCD_WriteAnyFont(f_4x6_p, 17, 17, 19);
+  // calculate percentage
+  int perP = ps->mpx_state->level_cal - minP;
+  if(perP <= 0){ perP = 0; }
+  perP = ((perP * 100) / hO2);
+
+  // write value
+  if(ps->page_state->page == ManualCircOn || ps->page_state->page == ManualCircOff)
+  { 
+    LCD_WriteAnyValue(f_4x6_p, 3, 17, 2, perP);
+    LCD_WriteAnyFont(f_4x6_p, 17, 17, 19);
+  }
+  else
+  { 
+    LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, perP);
+    LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
+  }
 }
 
 

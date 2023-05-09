@@ -55,7 +55,7 @@ void Modem_Port_Init(void)
  *            modem check
  * ------------------------------------------------------------------*/
 
-unsigned char Modem_Check(struct PlantState *ps)
+unsigned char Modem_Update(struct PlantState *ps)
 {
   // Startup wait
   if(ps->modem->startup_delay < MO_STARTUP_DELAY)
@@ -428,7 +428,7 @@ void Modem_Test(struct PlantState *ps)
     BASIC_WDT_RESET;
 
     // check modem status -> turn on
-    Modem_Check(ps);
+    Modem_Update(ps);
 
     // read status
     Modem_ReadPWR();

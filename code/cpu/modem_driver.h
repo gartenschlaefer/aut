@@ -35,7 +35,7 @@
 void Modem_Init(struct PlantState *ps);
 void Modem_Port_Init(void);
 
-unsigned char Modem_Check(struct PlantState *ps);
+unsigned char Modem_Update(struct PlantState *ps);
 unsigned char Modem_TurnOn(struct Modem *mo);
 void Modem_TurnOff (void);
 

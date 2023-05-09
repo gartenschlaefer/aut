@@ -1044,7 +1044,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
           MEM_EEPROM_WriteVar(SONIC_L_LV, ps->sonic_state->level_cal & 0x00FF);
           MEM_EEPROM_WriteVar(SONIC_H_LV, ((ps->sonic_state->level_cal >> 8) & 0x00FF));
         }
-        else{ MPX_LevelCal(ps, _save); }
+        else{ MPX_LevelCal_SaveToEEPROM(ps); }
         ps->page_state->page = SetupPage;
       } break;
 

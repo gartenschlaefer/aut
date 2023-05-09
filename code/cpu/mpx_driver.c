@@ -10,6 +10,17 @@
 #include "memory_app.h"
 #include "tc_func.h"
 #include "error_func.h"
+#include "basic_func.h"
+
+
+/*-------------------------------------------------------------------*
+ *            init mpx
+ * ------------------------------------------------------------------*/
+
+void MPX_Init(struct PlantState *ps)
+{
+  ps->mpx_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+}
 
 
 /*-------------------------------------------------------------------*
@@ -58,44 +69,23 @@ int MPX_ReadCal(void)
  *  MPX read average value: wait until conversion complete and return data
  * ------------------------------------------------------------------*/
 
-int MPX_ReadAverage(struct PlantState *ps, t_FuncCmd cmd)
+int MPX_ReadAverage_Update(struct PlantState *ps)
 {
-  // clean
-  if(cmd == _clean)
+  // read preassure
+  ps->mpx_state->mpx_values[ps->mpx_state->mpx_count] = MPX_ReadCal();
+  ps->mpx_state->mpx_count++;
+
+  // print
+  if(ps->mpx_state->mpx_count > 9)
   {
     ps->mpx_state->mpx_count = 0;
-    for(unsigned char a = 0; a < 10; a++) ps->mpx_state->mpx_values[a] = 0x00;
-  }
+    int mpx_sum = 0;
+    for(unsigned char a = 0; a < 10; a++){ mpx_sum += ps->mpx_state->mpx_values[a]; }
+    int mpx_av = f_round_int(mpx_sum / 10.0);
 
-  // execute
-  else if(cmd == _exe)
-  {
-    // read preassure
-    ps->mpx_state->mpx_values[ps->mpx_state->mpx_count] = MPX_ReadCal();
-    ps->mpx_state->mpx_count++;
-
-    // print
-    if(ps->mpx_state->mpx_count > 9)
-    {
-      ps->mpx_state->mpx_count = 0;
-      int add = 0;
-      for(unsigned char a = 0; a < 10; a++){ add += ps->mpx_state->mpx_values[a]; }
-      add /= 10;
-
-      switch(ps->page_state->page)
-      {
-        case AutoPage:    
-          LCD_WriteAnyValue(f_4x6_p, 3, 13, 43, add);
-          return add;
-
-        case ManualPage: 
-          LCD_WriteAnyValue(f_6x8_p, 3, 17, 42, add);
-          return add;
-
-        case DataPage: return add;
-        default: break;
-      }
-    }
+    // symbols
+    LCD_Sym_MPX_AverageValue(ps->page_state->page, mpx_av);
+    return mpx_av;
   }
   return 0xFF00;
 }
@@ -126,59 +116,45 @@ int MPX_ReadAverage_UnCal(struct MPXState *mpx_state)
 
 
 /* ------------------------------------------------------------------*
- *            average Waterlevel
+ *            average water level
  * ------------------------------------------------------------------*/
 
-void MPX_LevelCal(struct PlantState *ps, t_FuncCmd cmd)
+void MPX_LevelCal_New(struct PlantState *ps)
 {
-  switch(cmd)
+  // clean data
+  ps->mpx_state->mpx_count = 0;
+  for(unsigned char a = 0; a < 10; a++){ ps->mpx_state->mpx_values[a] = 0x00; }
+
+  // collect values
+  for(unsigned char i = 0; i < 10; i++)
   {
-    // init: read from EEPROM
-    case _init:
-      ps->mpx_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
-      LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, ps->mpx_state->level_cal);
+    int av = MPX_ReadAverage_Update(ps);
+    if(!(av == 0xFF00))
+    {
+      ps->mpx_state->level_cal = av;
       break;
-
-    // save to EEPROM
-    case _save:
-      MEM_EEPROM_WriteVar(TANK_L_MinP, ps->mpx_state->level_cal & 0x00FF);
-      MEM_EEPROM_WriteVar(TANK_H_MinP, ((ps->mpx_state->level_cal >> 8) & 0x00FF));
-      break;
-
-    // measure
-    case _new:
-
-      // clean data
-      MPX_ReadAverage(ps, _clean);
-
-      // try some times
-      for(unsigned char i = 0; i < 10; i++)
-      {
-        int av = MPX_ReadAverage(ps, _exe);
-        if(!(av == 0xFF00))
-        {
-          ps->mpx_state->level_cal = av;
-          break;
-        }
-        TCC0_wait_ms(100);
-      }
-      break;
-
-    // write
-    case _write: LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, ps->mpx_state->level_cal); break;
-    default: break;
+    }
+    TCC0_wait_ms(100);
   }
 }
 
 
-/*-------------------------------------------------------------------*
- *  MPX read tank level via pressure
- * --------------------------------------------------------------
- *  Reads the position of Water, call only in air times
- *  gives back page to go next, or stay in same
+/* ------------------------------------------------------------------*
+ *            save to eeprom
  * ------------------------------------------------------------------*/
 
-void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
+void MPX_LevelCal_SaveToEEPROM(struct PlantState *ps)
+{
+  MEM_EEPROM_WriteVar(TANK_L_MinP, ps->mpx_state->level_cal & 0x00FF);
+  MEM_EEPROM_WriteVar(TANK_H_MinP, ((ps->mpx_state->level_cal >> 8) & 0x00FF));
+}
+
+
+/*-------------------------------------------------------------------*
+ *            MPX read tank level via pressure
+ * ------------------------------------------------------------------*/
+
+void MPX_ReadTank(struct PlantState *ps)
 {
   // return if Ultrasonic
   if(MEM_EEPROM_ReadVar(SONIC_on)){ return; }
@@ -203,56 +179,40 @@ void MPX_ReadTank(struct PlantState *ps, t_FuncCmd cmd)
   int hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
   int minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
 
-  // exe
-  if(cmd == _exe)
+  // read pressure
+  MPX_LevelCal_New(ps);
+  if(p == ManualCircOn){ return; }
+  LCD_Sym_MPX_Auto_MbarValue(ps->mpx_state->level_cal);
+
+  // error
+  if(ps->mpx_state->level_cal >= (hO2 + minP))
   {
-    // read pressure
-    MPX_LevelCal(ps, _new);
-    if(p == ManualCircOn){ return; }
-    LCD_Sym_MPX_Auto_MbarValue(ps->mpx_state->level_cal);
-
-    // error
-    if(ps->mpx_state->level_cal >= (hO2 + minP))
-    {
-      ps->mpx_state->error_counter++;
-      if(ps->mpx_state->error_counter >= 2){ ps->error_state->pending_err_code |= E_IT; ps->mpx_state->error_counter = 0; }
-    }
-
-    // circulate
-    if(p == AutoCircOn)
-    {
-      if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
-    }
-
-    // air
-    else if(p == AutoAirOn)
-    {
-      if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
-    }
-
-    // zone
-    else if(p == AutoZone)
-    {
-      // difference, todo: check this
-      if((ps->mpx_state->level_cal < (minP - 5)) || (ps->mpx_state->level_cal > (minP + 5))) { ps->page_state->page = AutoCircOn; }
-
-      MPX_LevelCal(ps, _save);
-      if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
-      if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
-      else { ps->page_state->page = AutoCircOn; }
-    }
+    ps->mpx_state->error_counter++;
+    if(ps->mpx_state->error_counter >= 2){ ps->error_state->pending_err_code |= E_IT; ps->mpx_state->error_counter = 0; }
   }
 
-  // write
-  else if(cmd == _write)
+  // circulate
+  if(p == AutoCircOn)
   {
-    // calculate percentage
-    int perP = ps->mpx_state->level_cal - minP;
-    if(perP <= 0){ perP = 0; }
-    perP = ((perP * 100) / hO2);
+    if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
+  }
 
-    //ManualWrite
-    if(p == ManualCircOn){ LCD_Sym_MPX_Manual_LevelPerc(perP); return; }
-    LCD_Sym_MPX_Auto_LevelPerc(perP);
+  // air
+  else if(p == AutoAirOn)
+  {
+    if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
+  }
+
+  // zone
+  else if(p == AutoZone)
+  {
+    // save calibration
+    MPX_LevelCal_SaveToEEPROM(ps);
+
+    // difference, todo: check this
+    if((ps->mpx_state->level_cal < (minP - 5)) || (ps->mpx_state->level_cal > (minP + 5))) { ps->page_state->page = AutoCircOn; }
+    if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
+    if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
+    else { ps->page_state->page = AutoCircOn; }
   }
 }

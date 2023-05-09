@@ -12,11 +12,12 @@
  *            defines
  * ------------------------------------------------------------------*/
 
-#define TC_OSC_F        16000000
-#define TC_OSC_DIV1024  15625
-#define TC_FPS          60
-#define TC_FPS_HALF     30
-#define TC_CAN_MS       100
+#define TC_OSC_F          16000000
+#define TC_OSC_DIV1024    15625
+#define TC_OSC_DIV256_MS  62.5
+#define TC_FPS            60
+#define TC_FPS_HALF       30
+#define TC_CAN_MS         100
 
 
 /* ------------------------------------------------------------------*
@@ -86,12 +87,13 @@ void TCE1_Stop(void);
  * ------------------------------------------------------------------*/
 
 void TCF0_WaitSec_Init(int sec);
+void TCF0_WaitMilliSec_Init(int milli_sec);
 unsigned char TCF0_Wait_Query(void);
 void TCF0_Stop(void);
 
 
 /* ------------------------------------------------------------------*
- *            TCF1 - Modem
+ *            TCF1 - Frame Timer
  * ------------------------------------------------------------------*/
 
 void TCF1_FrameTimer_Init(void);
