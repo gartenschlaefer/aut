@@ -2,10 +2,11 @@
 // outputs for relays and valves
 
 #include "output_app.h"
-
 #include "config.h"
+#include "basic_func.h"
 #include "port_func.h"
 #include "memory_app.h"
+#include "tc_func.h"
 
 
 /* ------------------------------------------------------------------*
@@ -28,22 +29,17 @@ void OUT_SetDown(void)
 void OUT_Set_PumpOff(struct PlantState *ps)
 {
   // mammoth pump
-  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff)))
-  {
-    PORT_Valve(ps, OPEN_ClearWater);
-    OUT_Set_Compressor();
-  }
+  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))){ OUT_Valve_Action(ps, OPEN_ClearWater); }
   else{ PORT_RelaisSet(R_CLEARWATER); }
 }
 
 void OUT_Clr_PumpOff(struct PlantState *ps)
 {
   // relays
-  OUT_Clr_Compressor();
   PORT_RelaisClr(R_CLEARWATER);
 
   // mammoth pump
-  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))){ PORT_Valve(ps, CLOSE_ClearWater); }
+  if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))){ OUT_Valve_Action(ps, CLOSE_ClearWater); }
 }
 
 
@@ -53,14 +49,12 @@ void OUT_Clr_PumpOff(struct PlantState *ps)
 
 void OUT_Set_Mud(struct PlantState *ps)
 {
-  PORT_Valve(ps, OPEN_MudPump);
-  OUT_Set_Compressor();
+  OUT_Valve_Action(ps, OPEN_MudPump);
 }
 
 void OUT_Clr_Mud(struct PlantState *ps)
 {
-  OUT_Clr_Compressor();
-  PORT_Valve(ps, CLOSE_MudPump);
+  OUT_Valve_Action(ps, CLOSE_MudPump);
 }
 
 
@@ -70,14 +64,12 @@ void OUT_Clr_Mud(struct PlantState *ps)
 
 void OUT_Set_Air(struct PlantState *ps)
 {
-  PORT_Valve(ps, OPEN_Air);
-  OUT_Set_Compressor();
+  OUT_Valve_Action(ps, OPEN_Air);
 }
 
 void OUT_Clr_Air(struct PlantState *ps)
 {
-  OUT_Clr_Compressor();
-  PORT_Valve(ps, CLOSE_Air);
+  OUT_Valve_Action(ps, CLOSE_Air);
 }
 
 
@@ -122,7 +114,7 @@ void OUT_Set_InflowPump(struct PlantState *ps)
   switch(MEM_EEPROM_ReadVar(PUMP_inflowPump))
   {
     // mammoth pump
-    case 0: PORT_Valve(ps, OPEN_Reserve); OUT_Set_Compressor(); break;
+    case 0: OUT_Valve_Action(ps, OPEN_Reserve); break;
 
     // ext. pump 1
     case 1: PORT_RelaisSet(R_INFLOW1); break;
@@ -139,22 +131,10 @@ void OUT_Set_InflowPump(struct PlantState *ps)
 
 void OUT_Clr_InflowPump(struct PlantState *ps)
 {
-  OUT_Clr_Compressor();
   PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
 
-  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump)){ PORT_Valve(ps, CLOSE_Reserve); }
-}
-
-
-/* ------------------------------------------------------------------*
- *            All Off
- * ------------------------------------------------------------------*/
-
-void OUT_Valve_CloseAll(struct PlantState *ps)
-{
-  OUT_Clr_Compressor();
-  PORT_Valve_CloseAll(ps);
+  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump)){ OUT_Valve_Action(ps, CLOSE_Reserve); }
 }
 
 
@@ -168,12 +148,221 @@ void OUT_Valve_Init(struct PlantState *ps)
   if(SPRING_VALVE_ON)
   {
     // open all valves
-    PORT_Valve_OpenAll(ps);
+    OUT_Valve_Action(ps, OPEN_All);
 
     // close all valves
-    OUT_Valve_CloseAll(ps);
+    OUT_Valve_Action(ps, CLOSE_All);
   }
 
   // valves without springs
-  else{ OUT_Valve_CloseAll(ps); }
+  else{ OUT_Valve_Action(ps, CLOSE_All); }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            valve action
+ * ------------------------------------------------------------------*/
+
+void OUT_Valve_Action(struct PlantState *ps, t_valve_action valve_action)
+{
+  // only if in idle state
+  if(!ps->port_state->valve_action_flag)
+  {
+    ps->port_state->valve_action = valve_action;
+    ps->port_state->valve_action_flag = true;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            valve update
+ * ------------------------------------------------------------------*/
+
+void OUT_Valve_Update(struct PlantState *ps)
+{
+  if(ps->port_state->valve_action_flag)
+  {
+    // idle state
+    if(ps->port_state->valve_handling == _valveHandling_idle)
+    {
+      ps->port_state->valve_handling = _valveHandling_set;
+    }
+
+    // set outputs
+    else if(ps->port_state->valve_handling == _valveHandling_set)
+    {
+      // set outputs
+      OUT_Valve_SetOutput(ps->port_state->valve_action);
+      
+      // wait one
+      OUT_Valve_Wait1(ps->port_state->valve_action);
+
+      // next handling state
+      ps->port_state->valve_handling = _valveHandling_wait1;
+    }
+
+    // wait one
+    else if(ps->port_state->valve_handling == _valveHandling_wait1)
+    {
+      if(TCF0_Wait_Query())
+      {
+        // wait two
+        OUT_Valve_Wait2(ps->port_state->valve_action);
+
+        // next handling state
+        ps->port_state->valve_handling = _valveHandling_wait2;
+      }
+    }
+
+    // wait two
+    else if(ps->port_state->valve_handling == _valveHandling_wait2)
+    {
+      if(TCF0_Wait_Query())
+      {     
+        // next handling state
+        ps->port_state->valve_handling = _valveHandling_reset;
+        TCF0_Stop();
+      }
+    }
+
+    // reset state
+    else if(ps->port_state->valve_handling == _valveHandling_reset)
+    {
+      OUT_Valve_ClrOutput(ps);
+      ps->port_state->valve_handling = _valveHandling_idle;
+      ps->port_state->valve_action = VALVE_Idle;
+      ps->port_state->valve_action_flag = false;
+    }
+
+    else{ ps->port_state->valve_handling = _valveHandling_idle; }
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            wait 1
+ * ------------------------------------------------------------------*/
+
+void OUT_Valve_Wait1(t_valve_action valve_action)
+{
+  if((valve_action == OPEN_All) || (valve_action == CLOSE_All))
+  {
+    // init time
+    if(SPRING_VALVE_ON){ TCF0_WaitSec_Init(4); }
+    else{ TCF0_WaitSec_Init(2); }
+  }
+  else
+  {
+    // init time
+    if(SPRING_VALVE_ON){ TCF0_WaitSec_Init(4); }
+    else{ TCF0_WaitSec_Init(3); }
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            wait 2
+ * ------------------------------------------------------------------*/
+
+void OUT_Valve_Wait2(t_valve_action valve_action)
+{
+  switch(valve_action)
+  {
+    case OPEN_Reserve: case OPEN_MudPump: case OPEN_Air: case OPEN_ClearWater:
+      if(SPRING_VALVE_ON){ TCF0_WaitMilliSec_Init(350); }
+      else{ TCF0_WaitMilliSec_Init(5); }
+      break;
+
+    case CLOSE_Reserve: case CLOSE_MudPump: case CLOSE_Air: case CLOSE_ClearWater:
+      if(SPRING_VALVE_ON){ TCF0_WaitMilliSec_Init(305); }
+      else{ TCF0_WaitMilliSec_Init(100); }
+      break;
+
+    case OPEN_All:
+      if(SPRING_VALVE_ON){ TCF0_WaitMilliSec_Init(50); }
+      else{ TCF0_WaitMilliSec_Init(705); }
+      break;
+
+    case CLOSE_All: 
+      if(SPRING_VALVE_ON){ TCF0_WaitMilliSec_Init(5); }
+      else{ TCF0_WaitMilliSec_Init(800); }
+      break;
+
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            valve set output
+ * ------------------------------------------------------------------*/
+
+void OUT_Valve_SetOutput(t_valve_action valve_action)
+{
+  switch(valve_action)
+  {
+    case OPEN_Reserve: P_VALVE.OUTSET = O_RES; break;
+    case OPEN_MudPump: P_VALVE.OUTSET = O_MUD; break;
+    case OPEN_Air: P_VALVE.OUTSET = O_AIR; break;
+    case OPEN_ClearWater: P_VALVE.OUTSET = O_CLRW; break;
+    case CLOSE_Reserve: OUT_Clr_Compressor(); P_VALVE.OUTSET = C_RES; break;
+    case CLOSE_MudPump: OUT_Clr_Compressor(); P_VALVE.OUTSET = C_MUD; break;
+    case CLOSE_Air: OUT_Clr_Compressor(); P_VALVE.OUTSET = C_AIR; break;
+    case CLOSE_ClearWater: OUT_Clr_Compressor(); P_VALVE.OUTSET = C_CLRW; break;
+
+    case OPEN_All: 
+      P_VALVE.OUTSET = O_RES; TCC0_wait_ms(100);
+      P_VALVE.OUTSET = O_MUD; TCC0_wait_ms(100);
+      P_VALVE.OUTSET = O_AIR; TCC0_wait_ms(100);
+      P_VALVE.OUTSET = O_CLRW;
+      break;
+
+    case CLOSE_All:
+      P_VALVE.OUTSET = C_RES; TCC0_wait_ms(100);
+      P_VALVE.OUTSET = C_MUD; TCC0_wait_ms(100);
+      P_VALVE.OUTSET = C_AIR; TCC0_wait_ms(100);
+      P_VALVE.OUTSET = C_CLRW;
+      break;
+
+    default: break;
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            valve clear output
+ * ------------------------------------------------------------------*/
+
+void OUT_Valve_ClrOutput(struct PlantState *ps)
+{
+  switch(ps->port_state->valve_action)
+  {
+    // open
+    case OPEN_Reserve: P_VALVE.OUTCLR = O_RES; ps->port_state->valve_state |= V_RES; OUT_Set_Compressor(); break;
+    case OPEN_MudPump: P_VALVE.OUTCLR = O_MUD; ps->port_state->valve_state |= V_MUD; OUT_Set_Compressor(); break;
+    case OPEN_Air: P_VALVE.OUTCLR = O_AIR; ps->port_state->valve_state |= V_AIR; OUT_Set_Compressor(); break;
+    case OPEN_ClearWater: P_VALVE.OUTCLR = O_CLRW; ps->port_state->valve_state |= V_CLW; OUT_Set_Compressor(); break;
+
+    // close
+    case CLOSE_Reserve: P_VALVE.OUTCLR = C_RES; ps->port_state->valve_state &= ~V_RES; break;
+    case CLOSE_MudPump: P_VALVE.OUTCLR = C_MUD; ps->port_state->valve_state &= ~V_MUD; break;
+    case CLOSE_Air: P_VALVE.OUTCLR = C_AIR; ps->port_state->valve_state &= ~V_AIR; break;
+    case CLOSE_ClearWater: P_VALVE.OUTCLR = C_CLRW; ps->port_state->valve_state &= ~V_CLW; break;
+
+    case OPEN_All:
+      P_VALVE.OUTCLR = O_RES; TCC0_wait_ms(100);
+      P_VALVE.OUTCLR = O_MUD; TCC0_wait_ms(100);
+      P_VALVE.OUTCLR = O_AIR; TCC0_wait_ms(100);
+      P_VALVE.OUTCLR = O_CLRW;
+      ps->port_state->valve_state = 0x0F;
+
+    case CLOSE_All:
+      P_VALVE.OUTCLR = C_RES; TCC0_wait_ms(100);
+      P_VALVE.OUTCLR = C_MUD; TCC0_wait_ms(100);
+      P_VALVE.OUTCLR = C_AIR; TCC0_wait_ms(100);
+      P_VALVE.OUTCLR = C_CLRW;
+      ps->port_state->valve_state = 0x00;
+
+    default: break;
+  }
 }

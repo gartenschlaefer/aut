@@ -8,6 +8,7 @@
 
 #include "modem_driver.h"
 #include "port_func.h"
+#include "output_app.h"
 #include "basic_func.h"
 #include "tc_func.h"
 #include "can_app.h"
@@ -41,7 +42,7 @@ int main(void)
   struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
   struct PageState auto_save_page_state = { .page = NoPage, .page_time = &auto_save_page_time };
-  struct PortState port_state = { .buzzer_on = false, .valve_state = 0 };
+  struct PortState port_state = { .buzzer_on = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle };
   struct CompressorState compressor_state = { .operation_hours = 0, .cycle_o2_min = 0, .old_min = 0 };
   struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = 0, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
   struct MPXState mpx_state = { .mpx_count = 0, .mpx_values = { 0x00 }, .error_counter = 0, .level_cal = 0 };
@@ -85,6 +86,9 @@ int main(void)
 
     // CAN update
     CAN_Update(&can_state);
+
+    // valve update
+    OUT_Valve_Update(&ps);
 
     //*** debug port and lcd page
     if(DEBUG)

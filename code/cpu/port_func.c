@@ -1,20 +1,14 @@
 // --
 // port functions
 
-//#include <avr/interrupt.h>
-
 #include "port_func.h"
-
 #include "config.h"
 #include "lcd_driver.h"
 #include "memory_app.h"
 #include "mcp9800_driver.h"
 #include "adc_func.h"
-#include "tc_func.h"
 #include "modem_driver.h"
 #include "error_func.h"
-#include "basic_func.h"
-#include "port_func.h"
 
 
 /* ------------------------------------------------------------------*
@@ -150,154 +144,6 @@ void PORT_Ventilator(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            valves
- * ------------------------------------------------------------------*/
-
-void PORT_Valve(struct PlantState *ps, t_valve valve)
-{
-  // watchdog reset
-  BASIC_WDT_RESET;
-
-  switch(valve)
-  {
-    case OPEN_Reserve:
-      P_VALVE.OUTSET = O_RES;
-      TCC0_wait_openValve();
-      P_VALVE.OUTCLR = O_RES; 
-      ps->port_state->valve_state |= V_RES;
-      break;
-
-    case CLOSE_Reserve:
-      P_VALVE.OUTSET = C_RES;
-      TCC0_wait_closeValve();
-      P_VALVE.OUTCLR = C_RES;
-      ps->port_state->valve_state &= ~V_RES;      
-      break;
-
-    case OPEN_MudPump:
-      P_VALVE.OUTSET = O_MUD;
-      TCC0_wait_openValve();
-      P_VALVE.OUTCLR = O_MUD;
-      ps->port_state->valve_state |= V_MUD;     
-      break;
-
-    case CLOSE_MudPump:
-      P_VALVE.OUTSET = C_MUD;
-      TCC0_wait_closeValve();
-      P_VALVE.OUTCLR = C_MUD;
-      ps->port_state->valve_state &= ~V_MUD;
-      break;
-
-    case OPEN_Air:
-      P_VALVE.OUTSET = O_AIR;
-      TCC0_wait_openValve();
-      P_VALVE.OUTCLR = O_AIR;
-      ps->port_state->valve_state |= V_AIR;   
-      break;
-
-    case CLOSE_Air:
-      P_VALVE.OUTSET = C_AIR;
-      TCC0_wait_closeValve();
-      P_VALVE.OUTCLR = C_AIR;
-      ps->port_state->valve_state &= ~V_AIR;
-      break;
-
-    case OPEN_ClearWater:
-      P_VALVE.OUTSET = O_CLRW;
-      TCC0_wait_openValve();
-      P_VALVE.OUTCLR = O_CLRW;
-      ps->port_state->valve_state |= V_CLW;   
-      break;
-
-    case CLOSE_ClearWater:
-      P_VALVE.OUTSET = C_CLRW;
-      TCC0_wait_closeValve();
-      P_VALVE.OUTCLR = C_CLRW;
-      ps->port_state->valve_state &= ~V_CLW;
-      break;
-
-    case CLOSE_IPAir:
-      P_VALVE.OUTSET = C_AIR | C_RES;
-      TCC0_wait_closeValve();
-      P_VALVE.OUTCLR = C_AIR | C_RES;
-      break;
-
-    default: break;
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *            valve open all
- * ------------------------------------------------------------------*/
-
-void PORT_Valve_OpenAll(struct PlantState *ps)
-{
-  // watchdog reset
-  BASIC_WDT_RESET;
-
-  // valve open
-  P_VALVE.OUTSET = O_RES;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTSET = O_MUD;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTSET = O_AIR;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTSET = O_CLRW;
-
-  // spring or usual valves
-  if(SPRING_VALVE_ON){ TCC0_wait_sec(2); TCC0_wait_ms(850); }
-  else{ TCC0_wait_sec(1); TCC0_wait_ms(500); }
-
-  // stop opening
-  P_VALVE.OUTCLR= O_RES;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTCLR = O_MUD;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTCLR = O_AIR;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTCLR = O_CLRW;
-
-  // set state all open
-  ps->port_state->valve_state = 0x0F;
-}
-
-
-/* ------------------------------------------------------------------*
- *            valve close all
- * ------------------------------------------------------------------*/
-
-void PORT_Valve_CloseAll(struct PlantState *ps)
-{
-  // watchdog reset
-  BASIC_WDT_RESET;
-  
-  P_VALVE.OUTSET = C_RES;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTSET = C_MUD;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTSET = C_AIR;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTSET = C_CLRW;
-
-  // spring valves: [2 - 4]
-  if(SPRING_VALVE_ON){ TCC0_wait_sec(2); TCC0_wait_ms(800); }
-  else{ TCC0_wait_sec(2); }
-
-  P_VALVE.OUTCLR = C_RES;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTCLR = C_MUD;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTCLR = C_AIR;
-  TCC0_wait_ms(500);
-  P_VALVE.OUTCLR = C_CLRW;
-
-  // set state
-  ps->port_state->valve_state = 0x00;
-}
-
-
-/* ------------------------------------------------------------------*
  *            relais
  * ------------------------------------------------------------------*/
 
@@ -360,28 +206,31 @@ void PORT_Debug(struct PlantState *ps)
   unsigned char y_pos_r = 19;
   unsigned char y_pos_v = 21;
 
-  // print register names
-  if(ps->frame_counter->frame % 2)
+  if(ps->time_state->tic_sec_update_flag)
   {
-    LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
-    LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 0, "V: Ai Mu Cl Re");
-  }
-  
-  // print register states
-  else
-  {
-    // relays
-    for(int relais = 0; relais < 8; relais++)
+    // print register names
+    if(ps->frame_counter->sixty_sec_counter % 2)
     {
-      if(P_RELAIS.OUT & (1<<relais)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "1 "); }
-      else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 "); }
+      LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
+      LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 0, "V: Ai Mu Cl Re");
     }
-
-    // valves
-    for(int valve = 0; valve < 4; valve++)
+    
+    // print register states
+    else
     {
-      if(ps->port_state->valve_state & (1 << valve)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "1 "); }
-      else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "0 "); }
+      // relays
+      for(int relais = 0; relais < 8; relais++)
+      {
+        if(P_RELAIS.OUT & (1 << relais)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "1 "); }
+        else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 "); }
+      }
+
+      // valves
+      for(int valve = 0; valve < 4; valve++)
+      {
+        if(ps->port_state->valve_state & (1 << valve)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "1 "); }
+        else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "0 "); }
+      }
     }
   }
 }

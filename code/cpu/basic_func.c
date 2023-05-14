@@ -220,6 +220,9 @@ unsigned char Basic_CountDown(struct PlantState *ps)
   // countdown update
   if(ps->time_state->tic_sec_update_flag)
   {
+    // no countdown when there is a valve action
+    if(ps->port_state->valve_action_flag){ return 0; }
+
     // safety for seconds
     if(ps->page_state->page_time->sec < 0 || ps->page_state->page_time->sec > 61){ ps->page_state->page_time->sec = 0; }
 

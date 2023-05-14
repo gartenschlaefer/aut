@@ -50,11 +50,14 @@ void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Manual_Main(struct PlantState *ps);
+struct SymbolData LCD_Sym_Manual_GetSymbolData(t_any_symbol sym);
 void LCD_Sym_Manual_AllSymbols(void);
-void LCD_Sym_Manual_Select(t_any_symbol sym);
+void LCD_Sym_Manual_Draw(t_any_symbol sym);
 void LCD_Sym_Manual_Text(struct PlantState *ps);
-void LCD_Sym_Manual_CountDown(struct Tms *tms);
-void LCD_Sym_Manual_PageTime(struct PlantState *ps);
+void LCD_Sym_Manual_PageTime_Min(int min);
+void LCD_Sym_Manual_PageTime_Sec(int sec);
+void LCD_Sym_Manual_PageTime_Print(struct PlantState *ps);
+void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps);
 void LCD_Sym_Manual_PumpOff_PressOk(t_font_type font_type);
 
 
@@ -206,5 +209,6 @@ void LCD_Sym_Auto_Date(struct PlantState *ps);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Data_EndText(void);
+t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym);
 
 #endif

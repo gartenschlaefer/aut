@@ -32,7 +32,7 @@
 #define SPRING_VALVE_ON 1
 
 // debug: set to zero for no debugging with buzzer off, modem off, port valve, data entry
-#define DEBUG     1
+#define DEBUG     0
 #define DEB_BUZ   0
 #define DEB_MODEM 0
 #define DEB_PORT  0

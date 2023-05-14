@@ -135,10 +135,6 @@ void PORT_Backlight_Update(struct Backlight *backlight);
 void PORT_Ventilator(struct PlantState *ps);
 void PORT_Auto_RunTime(struct PlantState *ps);
 
-void PORT_Valve(struct PlantState *ps, t_valve valve);
-void PORT_Valve_OpenAll(struct PlantState *ps);
-void PORT_Valve_CloseAll(struct PlantState *ps);
-
 void PORT_RelaisSet(unsigned char relais);
 void PORT_RelaisClr(unsigned char relais);
 

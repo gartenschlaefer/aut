@@ -590,20 +590,23 @@ void LCD_ManualPage(struct PlantState *ps)
 
     // set new state
     LCD_Manual_SetState(ps);
+
+    // new page time
+    LCD_Sym_Manual_PageTime_Print(ps);
   }
 
   // backlight
   PORT_Backlight_Update(ps->backlight);
   if(ps->page_state->page != ManualPumpOff)
   {
-    LCD_Sym_Manual_PageTime(ps);
+    LCD_Sym_Manual_PageTime_Update(ps);
     MPX_ReadAverage_Update(ps);
     Sonic_ReadTank(ps);
   }
 
   // lcd refresh
-  if(ps->frame_counter->sixty_sec_counter == 30){ LCD_Init(); }
-  if(ps->frame_counter->lcd_reset > 120){ LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); ps->frame_counter->lcd_reset = 0; }
+  //if(ps->frame_counter->sixty_sec_counter == 30){ LCD_Init(); }
+  //if(ps->frame_counter->lcd_reset > 120){ LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); ps->frame_counter->lcd_reset = 0; }
   //ps->frame_counter->lcd_reset++;
 }
 
@@ -649,7 +652,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
       LCD_WriteAnySymbol(s_19x19, 15, 85, _p_ok);
       *p_min = 30;
       *p_sec = 0;
-      LCD_Sym_Manual_CountDown(ps->page_state->page_time);
+      LCD_Sym_Manual_PageTime_Print(ps);
       break;
 
     case ManualPumpOff_On:
@@ -768,7 +771,7 @@ void LCD_SetupPage(struct PlantState *ps)
   // countdown 
   if(Basic_CountDown(ps))
   { 
-    if(ps->page_state->page == SetupCalPressure){ OUT_Valve_CloseAll(ps); }
+    if(ps->page_state->page == SetupCalPressure){ OUT_Valve_Action(ps, CLOSE_All); }
     ps->page_state->page = AutoPage;
   }
 }

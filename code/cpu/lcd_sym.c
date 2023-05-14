@@ -382,19 +382,50 @@ void LCD_Sym_Manual_Main(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
+ *            manual symbol data
+ * ------------------------------------------------------------------*/
+
+struct SymbolData LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
+{
+  struct SymbolData symbol_data = { .symbol_type = s_none, .row = 0, .col = 0 };
+
+  switch(sym)
+  {
+    case _p_circulate:
+    case _n_circulate: symbol_data.symbol_type = s_29x17; symbol_data.row = 3; symbol_data.col = 0; break;
+    case _p_air:
+    case _n_air: symbol_data.symbol_type = s_29x17; symbol_data.row = 3; symbol_data.col = 40; break;
+    case _p_setDown:
+    case _n_setDown: symbol_data.symbol_type = s_29x17; symbol_data.row = 3; symbol_data.col = 80; break;
+    case _p_pumpOff:
+    case _n_pumpOff: symbol_data.symbol_type = s_35x23; symbol_data.row = 2; symbol_data.col = 120; break;
+    case _p_mud:
+    case _n_mud: symbol_data.symbol_type = s_35x23; symbol_data.row = 8; symbol_data.col = 0; break;
+    case _p_compressor:
+    case _n_compressor: symbol_data.symbol_type = s_29x17; symbol_data.row = 9; symbol_data.col = 40; break;
+    case _p_phosphor:
+    case _n_phosphor: symbol_data.symbol_type = s_19x19; symbol_data.row = 9; symbol_data.col = 85; break;
+    case _p_inflowPump:
+    case _n_inflowPump: symbol_data.symbol_type = s_35x23; symbol_data.row = 8; symbol_data.col = 120; break;
+    default: break;
+  }
+  return symbol_data;
+}
+
+
+/* ------------------------------------------------------------------*
  *            all manual symbols
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Manual_AllSymbols(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _p_circulate);
-  LCD_WriteAnySymbol(s_29x17, 3, 40, _p_air);
-  LCD_WriteAnySymbol(s_29x17, 3, 80, _p_setDown);
-  LCD_WriteAnySymbol(s_35x23, 2, 120, _p_pumpOff);
-  LCD_WriteAnySymbol(s_35x23, 8, 0, _p_mud);
-  LCD_WriteAnySymbol(s_29x17, 9, 40, _p_compressor);
-  LCD_WriteAnySymbol(s_19x19, 9, 85, _p_phosphor);
-  LCD_WriteAnySymbol(s_35x23, 8, 120, _p_inflowPump);
+  t_any_symbol symbols[8] = {_p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump};
+
+  for(unsigned char i = 0; i < 8; i++)
+  { 
+    struct SymbolData symbol_data = LCD_Sym_Manual_GetSymbolData(symbols[i]);
+    LCD_WriteAnySymbol(symbol_data.symbol_type, symbol_data.row, symbol_data.col, symbols[i]);
+  }
 }
 
 
@@ -402,25 +433,12 @@ void LCD_Sym_Manual_AllSymbols(void)
  *            Mark manual Select
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_Select(t_any_symbol sym)
+void LCD_Sym_Manual_Draw(t_any_symbol sym)
 {
-  // all positive symbols
-  LCD_Sym_Manual_AllSymbols();
-
-  switch(sym)
-  {
-    case _n_circulate: LCD_WriteAnySymbol(s_29x17, 3, 0, _n_circulate); break;
-    case _n_air: LCD_WriteAnySymbol(s_29x17, 3, 40, _n_air); break;
-    case _n_setDown: LCD_WriteAnySymbol(s_29x17, 3, 80, _n_setDown); break;
-    case _n_pumpOff: LCD_WriteAnySymbol(s_35x23, 2, 120, _n_pumpOff); break;
-    case _n_mud: LCD_WriteAnySymbol(s_35x23, 8, 0, _n_mud); break;
-    case _n_compressor: LCD_WriteAnySymbol(s_29x17, 9, 40, _n_compressor); break;
-    case _n_phosphor: LCD_WriteAnySymbol(s_19x19, 9, 85, _n_phosphor); break;
-    case _n_inflowPump: LCD_WriteAnySymbol(s_35x23, 8, 120, _n_inflowPump); break;
-    default: break;
-  }
-
+  struct SymbolData symbol_data = LCD_Sym_Manual_GetSymbolData(sym);
+  LCD_WriteAnySymbol(symbol_data.symbol_type, symbol_data.row, symbol_data.col, sym);
 }
+
 
 /* ------------------------------------------------------------------*
  *            manual text
@@ -428,7 +446,7 @@ void LCD_Sym_Manual_Select(t_any_symbol sym)
 
 void LCD_Sym_Manual_Text(struct PlantState *ps)
 {
-  LCD_Sym_Manual_CountDown(ps->page_state->page_time);
+  LCD_Sym_Manual_PageTime_Print(ps);
   LCD_WriteAnyStringFont(f_6x8_p, 17, 136, ":");
   LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
   LCD_Sym_MPX_LevelPerc(ps);
@@ -436,13 +454,21 @@ void LCD_Sym_Manual_Text(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            countdown
+ *            page time
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_CountDown(struct Tms *tms)
+void LCD_Sym_Manual_PageTime_Min(int min){ LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, min); }
+void LCD_Sym_Manual_PageTime_Sec(int sec){ LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, sec); }
+
+
+/* ------------------------------------------------------------------*
+ *            page time print
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Manual_PageTime_Print(struct PlantState *ps)
 {
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, tms->min);
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, tms->sec);
+  LCD_Sym_Manual_PageTime_Min(ps->page_state->page_time->min);
+  LCD_Sym_Manual_PageTime_Sec(ps->page_state->page_time->sec);
 }
 
 
@@ -450,19 +476,19 @@ void LCD_Sym_Manual_CountDown(struct Tms *tms)
  *            manual page time
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_PageTime(struct PlantState *ps)
+void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps)
 {
   // sec change
   if(ps->time_state->tic_sec_update_flag)
   {
     // second
-    LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, ps->page_state->page_time->sec);
+    LCD_Sym_Manual_PageTime_Sec(ps->page_state->page_time->sec);
 
     // minute
     if(ps->page_state->page_time->sec == 59)
     {
       if(ps->page_state->page_time->min >= 100){ LCD_WriteAnyValue(f_6x8_p, 3, 17, 118, ps->page_state->page_time->min); }
-      else{ LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, ps->page_state->page_time->min); }
+      else{ LCD_Sym_Manual_PageTime_Min(ps->page_state->page_time->min); }
     }
   }
 }
@@ -1036,7 +1062,7 @@ void LCD_Sym_DataArrows(void)
 {
   LCD_WriteAnySymbol(s_19x19, 3, 140, _p_arrow_up);
   LCD_WriteAnySymbol(s_19x19, 14, 140, _p_arrow_down);
-  LCD_WriteAnySymbol(s_19x19, 8, 140, _p_line);
+  LCD_WriteAnySymbol(s_19x19, 8, 140, _line);
 }
 
 
@@ -1499,24 +1525,24 @@ void LCD_pPinButtons(unsigned char pPin)
 {
   unsigned char row = 0;
   unsigned char col = 0;
-  t_any_symbol any_symbol = _frame;
+  t_any_symbol any_symbol = _p_frame;
   unsigned char num = 0;
 
   switch(pPin)
   {
-    case 1: row = 2; col = 0; any_symbol = _frame; num = 0x01; break;
-    case 4: row = 8; col = 0; any_symbol = _frame; num = 0x04; break;
-    case 7: row = 14; col = 0; any_symbol = _frame; num = 0x07; break;
+    case 1: row = 2; col = 0; any_symbol = _p_frame; num = 0x01; break;
+    case 4: row = 8; col = 0; any_symbol = _p_frame; num = 0x04; break;
+    case 7: row = 14; col = 0; any_symbol = _p_frame; num = 0x07; break;
     case 11: row = 20; col = 0; any_symbol = _p_escape; num = 0x20; break;
 
-    case 2: row = 2; col = 40; any_symbol = _frame; num = 0x02; break;
-    case 5: row = 8; col = 40; any_symbol = _frame; num = 0x05; break;
-    case 8: row = 14; col = 40; any_symbol = _frame; num = 0x08; break;
-    case 0: row = 20; col = 40; any_symbol = _frame; num = 0x00; break;
+    case 2: row = 2; col = 40; any_symbol = _p_frame; num = 0x02; break;
+    case 5: row = 8; col = 40; any_symbol = _p_frame; num = 0x05; break;
+    case 8: row = 14; col = 40; any_symbol = _p_frame; num = 0x08; break;
+    case 0: row = 20; col = 40; any_symbol = _p_frame; num = 0x00; break;
 
-    case 3: row = 2; col = 80; any_symbol = _frame; num = 0x03; break;
-    case 6: row = 8; col = 80; any_symbol = _frame; num = 0x06; break;
-    case 9: row = 14; col = 80; any_symbol = _frame; num = 0x09; break;
+    case 3: row = 2; col = 80; any_symbol = _p_frame; num = 0x03; break;
+    case 6: row = 8; col = 80; any_symbol = _p_frame; num = 0x06; break;
+    case 9: row = 14; col = 80; any_symbol = _p_frame; num = 0x09; break;
     case 10: row = 20; col = 80; any_symbol = _p_del; num = 0x20; break;
     default: break;
   }
@@ -1533,24 +1559,24 @@ void LCD_nPinButtons(unsigned char nPin)
 {
   unsigned char row = 0;
   unsigned char col = 0;
-  t_any_symbol any_symbol = _frame;
+  t_any_symbol any_symbol = _p_frame;
   unsigned char num = 0;
 
   switch(nPin)
   {
-    case 1: row = 2; col = 0; any_symbol = _black; num = 0x01; break;
-    case 4: row = 8; col = 0; any_symbol = _black; num = 0x04; break;
-    case 7: row = 14; col = 0; any_symbol = _black; num = 0x07; break;
+    case 1: row = 2; col = 0; any_symbol = _n_frame; num = 0x01; break;
+    case 4: row = 8; col = 0; any_symbol = _n_frame; num = 0x04; break;
+    case 7: row = 14; col = 0; any_symbol = _n_frame; num = 0x07; break;
     case 11: row = 20; col = 0; any_symbol = _n_escape; num = 0x20; break;
 
-    case 2: row = 2; col = 40; any_symbol = _black; num = 0x02; break;
-    case 5: row = 8; col = 40; any_symbol = _black; num = 0x05; break;
-    case 8: row = 14; col = 40; any_symbol = _black; num = 0x08; break;
-    case 0: row = 20; col = 40; any_symbol = _black; num = 0x00; break;
+    case 2: row = 2; col = 40; any_symbol = _n_frame; num = 0x02; break;
+    case 5: row = 8; col = 40; any_symbol = _n_frame; num = 0x05; break;
+    case 8: row = 14; col = 40; any_symbol = _n_frame; num = 0x08; break;
+    case 0: row = 20; col = 40; any_symbol = _n_frame; num = 0x00; break;
 
-    case 3: row = 2; col = 80; any_symbol = _black; num = 0x03; break;
-    case 6: row = 8; col = 80; any_symbol = _black; num = 0x06; break;
-    case 9: row = 14; col = 80; any_symbol = _black; num = 0x09; break;
+    case 3: row = 2; col = 80; any_symbol = _n_frame; num = 0x03; break;
+    case 6: row = 8; col = 80; any_symbol = _n_frame; num = 0x06; break;
+    case 9: row = 14; col = 80; any_symbol = _n_frame; num = 0x09; break;
     case 10: row = 20; col = 80; any_symbol = _n_del; num = 0x20; break;
     default: break;
   }
@@ -2055,4 +2081,78 @@ void LCD_Sym_Auto_Date(struct PlantState *ps)
 void LCD_Sym_Data_EndText(void)
 {
   LCD_WriteAnyStringFont(f_6x8_p, 15, 1, "End");
+}
+
+
+/* ------------------------------------------------------------------*
+ *            anti sym
+ * ------------------------------------------------------------------*/
+
+t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
+{
+  switch(sym)
+  {
+    case _n_pumpOff: return _p_pumpOff;
+    case _n_mud: return _p_mud;
+    case _n_inflowPump: return _p_inflowPump;
+    case _n_pump2: return _p_pump2;
+    case _n_setDown: return _p_setDown; 
+    case _n_alarm: return _p_alarm; 
+    case _n_air: return _p_air;
+    case _n_sensor: return _p_sensor;
+    case _n_watch: return _p_watch;
+    case _n_compressor: return _p_compressor;
+    case _n_circulate: return _p_circulate;
+    case _n_cal: return _p_cal;
+    case _n_zone: return _p_zone;
+    case _n_level: return _p_level;
+    case _n_phosphor: return _p_phosphor;
+    case _n_pump: return _p_pump;
+    case _n_esc: return _p_esc;
+    case _n_plus: return _p_plus;
+    case _n_minus: return _p_minus;
+    case _n_arrow_up: return _p_arrow_up;
+    case _n_arrow_down: return _p_arrow_down;
+    case _n_ok: return _p_ok;
+    case _n_grad: return _p_grad;
+    case _n_sonic: return _p_sonic;
+    case _n_arrow_redo: return _p_arrow_redo;
+    case _n_frame: return _p_frame;
+    case _n_escape: return _p_escape;
+    case _n_del: return _p_del;
+    case _n_text_frame: return _p_text_frame;
+
+    case _p_pumpOff: return _n_pumpOff;
+    case _p_mud: return _n_mud;
+    case _p_inflowPump: return _n_inflowPump;
+    case _p_pump2: return _n_pump2;
+    case _p_setDown: return _n_setDown; 
+    case _p_alarm: return _n_alarm; 
+    case _p_air: return _n_air;
+    case _p_sensor: return _n_sensor;
+    case _p_watch: return _n_watch;
+    case _p_compressor: return _n_compressor;
+    case _p_circulate: return _n_circulate;
+    case _p_cal: return _n_cal;
+    case _p_zone: return _n_zone;
+    case _p_level: return _n_level;
+    case _p_phosphor: return _n_phosphor;
+    case _p_pump: return _n_pump;
+    case _p_esc: return _n_esc;
+    case _p_plus: return _n_plus;
+    case _p_minus: return _n_minus;
+    case _p_arrow_up: return _n_arrow_up;
+    case _p_arrow_down: return _n_arrow_down;
+    case _p_ok: return _n_ok;
+    case _p_grad: return _n_grad;
+    case _p_sonic: return _n_sonic;
+    case _p_arrow_redo: return _n_arrow_redo;
+    case _p_frame: return _n_frame;
+    case _p_escape: return _n_escape;
+    case _p_del: return _n_del;
+    case _p_text_frame: return _n_text_frame;
+
+    default: break;
+  }
+  return _none_symbol;
 }

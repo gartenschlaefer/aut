@@ -41,6 +41,7 @@ void Touch_SelectLinker(struct PlantState *ps);
 
 void Touch_Auto_Linker(struct PlantState *ps);
 void Touch_Manual_Linker(struct PlantState *ps);
+void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym);
 void Touch_Setup_Linker(struct PlantState *ps);
 void Touch_Data_Linker(struct PlantState *ps);
 void Touch_Pin_Linker(struct PlantState *ps);

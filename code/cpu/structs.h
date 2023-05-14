@@ -11,6 +11,14 @@
  *            general structs
  * ------------------------------------------------------------------*/
 
+struct SymbolData
+{
+  t_symbol_type symbol_type;
+  unsigned char row;
+  unsigned char col;
+};
+
+
 struct MemoryEntryPos
 {
   unsigned char page;
@@ -89,6 +97,9 @@ struct PortState
 {
   bool buzzer_on;
   unsigned char valve_state;
+  t_valve_action valve_action;
+  bool valve_action_flag;
+  t_valve_handling valve_handling;
 };
 
 

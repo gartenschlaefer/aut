@@ -28,7 +28,12 @@ void OUT_Set_InflowPump(struct PlantState *ps);
 void OUT_Clr_InflowPump(struct PlantState *ps);
 
 // valves
-void OUT_Valve_CloseAll(struct PlantState *ps);
 void OUT_Valve_Init(struct PlantState *ps);
+void OUT_Valve_Wait1(t_valve_action valve_action);
+void OUT_Valve_Wait2(t_valve_action valve_action);
+void OUT_Valve_Action(struct PlantState *ps, t_valve_action valve);
+void OUT_Valve_Update(struct PlantState *ps);
+void OUT_Valve_SetOutput(t_valve_action valve_action);
+void OUT_Valve_ClrOutput(struct PlantState *ps);
 
 #endif

@@ -238,26 +238,39 @@ void Touch_Auto_Linker(struct PlantState *ps)
 
 void Touch_Manual_Linker(struct PlantState *ps)
 {
+  if(!ps->touch_state->init)
+  {
+    ps->touch_state->init = true;
+
+    // selected
+    ps->touch_state->var[0] = _none_symbol;
+    ps->touch_state->var[1] = _none_symbol;
+    ps->touch_state->var[2] = _none_symbol;
+  }
+
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
   switch(touch_matrix)
   {
-    case 0x11: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_circulate); ps->page_state->page = ManualCircOn; break;
-    case 0x12: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_air); ps->page_state->page = ManualAir; break;
-    case 0x13: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_setDown); ps->page_state->page = ManualSetDown; break;
-    case 0x14: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_pumpOff); ps->page_state->page = ManualPumpOff; break;
+    case 0x11: if(ps->page_state->page != ManualCircOn){ Touch_Manual_Linker_Select(ps, _n_circulate); } break;
+    case 0x12: if(ps->page_state->page != ManualAir){ Touch_Manual_Linker_Select(ps, _n_air); } break;
+    case 0x13: if(ps->page_state->page != ManualSetDown){ Touch_Manual_Linker_Select(ps, _n_setDown); } break;
+    case 0x14: if(ps->page_state->page != ManualPumpOff){ Touch_Manual_Linker_Select(ps, _n_pumpOff); } break;
 
-    case 0x21: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_mud); ps->page_state->page = ManualMud; break;
-    case 0x22: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_compressor); ps->page_state->page = ManualCompressor; break;
-    case 0x23: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_phosphor); ps->page_state->page = ManualPhosphor; break;
-    case 0x24: PORT_Backlight_On(ps->backlight); LCD_Sym_Manual_Select(_n_inflowPump); ps->page_state->page = ManualInflowPump; break;
+    case 0x21: if(ps->page_state->page != ManualMud){ Touch_Manual_Linker_Select(ps, _n_mud); } break;
+    case 0x22: if(ps->page_state->page != ManualCompressor){ Touch_Manual_Linker_Select(ps, _n_compressor); } break;
+    case 0x23: if(ps->page_state->page != ManualPhosphor){ Touch_Manual_Linker_Select(ps, _n_phosphor); } break;
+    case 0x24: if(ps->page_state->page != ManualInflowPump){ Touch_Manual_Linker_Select(ps, _n_inflowPump); } break;
 
     case 0x33: if(ps->page_state->page == ManualPumpOff){ LCD_WriteAnySymbol(s_19x19, 15, 85, _n_ok); ps->page_state->page = ManualPumpOff_On; } break;
 
+    // no touch
+    case 0x00: if(ps->touch_state->var[2] != _none_symbol){ LCD_Sym_Manual_Draw(ps->touch_state->var[2]); ps->touch_state->var[2] = _none_symbol; } break;
+
     // main linker
     case 0x41: PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_auto); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = AutoPage; break;
-    case 0x42: PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = ManualPage; break;
-    case 0x43: PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_setup); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = SetupPage; break;
-    case 0x44: PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_data); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = DataPage; break;
+    case 0x42: ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = ManualPage; break;
+    case 0x43: ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_setup); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = SetupPage; break;
+    case 0x44: ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_data); MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = DataPage; break;
 
     default: break;
   }
@@ -265,7 +278,50 @@ void Touch_Manual_Linker(struct PlantState *ps)
 
 
 /*-------------------------------------------------------------------*
- *  setup linker
+ *            select stuff
+ * ------------------------------------------------------------------*/
+
+void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym)
+{
+  // new symbol select
+  ps->touch_state->var[0] = sym;
+
+  // backlight
+  PORT_Backlight_On(ps->backlight);
+
+  // select
+  LCD_Sym_Manual_Draw(sym);
+
+  // new page
+  if(!ps->port_state->valve_action_flag)
+  {
+    // deselect old state
+    LCD_Sym_Manual_Draw(LCD_Sym_GetAntiSymbol(ps->touch_state->var[1]));
+    switch(sym)
+    {
+      case _n_circulate: ps->page_state->page = ManualCircOn; break;
+      case _n_air: ps->page_state->page = ManualAir; break;
+      case _n_setDown: ps->page_state->page = ManualSetDown; break;
+      case _n_pumpOff: ps->page_state->page = ManualPumpOff; break;
+      case _n_mud: ps->page_state->page = ManualMud; break;
+      case _n_compressor: ps->page_state->page = ManualCompressor; break;
+      case _n_phosphor: ps->page_state->page = ManualPhosphor; break;
+      case _n_inflowPump: ps->page_state->page = ManualInflowPump; break;
+      default: break;  
+    }
+    // keep old symbol
+    ps->touch_state->var[1] = ps->touch_state->var[0];
+  }
+  else
+  {
+    // deselect later
+    ps->touch_state->var[2] = LCD_Sym_GetAntiSymbol(ps->touch_state->var[0]);
+  }
+}
+
+
+/*-------------------------------------------------------------------*
+ *            setup linker
  * ------------------------------------------------------------------*/
 
 void Touch_Setup_Linker(struct PlantState *ps)
@@ -1052,7 +1108,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       if(!ps->touch_state->touched && ps->page_state->page == SetupCal)
       { 
         ps->touch_state->touched = 8;
-        if(!ps->touch_state->var[1]){ ps->touch_state->var[1] = 1; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 0); PORT_Valve_OpenAll(ps); }
+        if(!ps->touch_state->var[1]){ ps->touch_state->var[1] = 1; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 0); OUT_Valve_Action(ps, OPEN_All); }
       } break;
 
     // calibration for setting pressure to zero level
@@ -1084,7 +1140,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       { 
         ps->touch_state->touched = 5;
         LCD_WriteAnySymbol(s_29x17, 15,1, _n_level);
-        if(ps->touch_state->var[1]){ ps->touch_state->var[1] = 0; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 1); OUT_Valve_CloseAll(ps); } 
+        if(ps->touch_state->var[1]){ ps->touch_state->var[1] = 0; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 1); OUT_Valve_Action(ps, CLOSE_All); } 
         ps->page_state->page = SetupCalPressure; 
       } break;
 
@@ -1119,7 +1175,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
   if(ps->page_state->page != SetupCal && ps->page_state->page != SetupCalPressure)
   {
     ps->touch_state->init = 0;
-    if(ps->touch_state->var[1]){ ps->touch_state->var[1] = 0; OUT_Valve_CloseAll(ps); }
+    if(ps->touch_state->var[1]){ ps->touch_state->var[1] = 0; OUT_Valve_Action(ps, CLOSE_All); }
   }
 }
 

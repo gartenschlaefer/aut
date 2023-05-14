@@ -73,7 +73,7 @@ typedef enum
 
 typedef enum
 {
-  s_35x23, s_29x17, s_19x19, s_34x21, s_39x16, s_logo_hecs, s_logo_purator
+  s_35x23, s_29x17, s_19x19, s_34x21, s_39x16, s_logo_hecs, s_logo_purator, s_none
 }t_symbol_type;
 
 
@@ -88,10 +88,10 @@ typedef enum
 
   // 19 x 19 [23]
   _n_phosphor, _n_pump, _n_esc, _n_plus, _n_minus, _n_arrow_up, _n_arrow_down, _n_ok, _n_grad, _n_sonic, _n_arrow_redo,
-  _p_phosphor, _p_pump, _p_esc, _p_plus, _p_minus, _p_arrow_up, _p_arrow_down, _p_ok, _p_line, _p_grad, _p_sonic, _p_arrow_redo,
+  _p_phosphor, _p_pump, _p_esc, _p_plus, _p_minus, _p_arrow_up, _p_arrow_down, _p_ok, _p_grad, _p_sonic, _p_arrow_redo, _line,
 
   // 34 x 21 [6]
-  _frame, _p_escape, _p_del, _black, _n_escape, _n_del,
+  _p_frame, _p_escape, _p_del, _n_frame, _n_escape, _n_del,
 
   // 39 x 16 [2]
   _n_text_frame, _p_text_frame,
@@ -100,7 +100,10 @@ typedef enum
   _logo_hecs,
 
   // purator [1]
-  _logo_purator
+  _logo_purator,
+
+  // no symbol
+  _none_symbol
 
 }t_any_symbol;
 
@@ -111,16 +114,16 @@ typedef enum
 
 typedef enum
 {
-  TEXT_BUTTON_auto = 0,
-  TEXT_BUTTON_manual = 1,
-  TEXT_BUTTON_setup = 2,
-  TEXT_BUTTON_data = 3,
-  TEXT_BUTTON_sonic = 4,
-  TEXT_BUTTON_shot = 5,
-  TEXT_BUTTON_open_ventil = 6,
-  TEXT_BUTTON_boot = 7,
-  TEXT_BUTTON_read = 8,
-  TEXT_BUTTON_write = 9
+  TEXT_BUTTON_auto,
+  TEXT_BUTTON_manual,
+  TEXT_BUTTON_setup,
+  TEXT_BUTTON_data,
+  TEXT_BUTTON_sonic,
+  TEXT_BUTTON_shot,
+  TEXT_BUTTON_open_ventil,
+  TEXT_BUTTON_boot,
+  TEXT_BUTTON_read,
+  TEXT_BUTTON_write
 }t_text_buttons;
 
 
@@ -167,38 +170,38 @@ typedef enum
 
 typedef enum
 {
-  TEL1_0 = 0,
-  TEL1_1 = 1,
-  TEL1_2 = 2,
-  TEL1_3 = 3,
-  TEL1_4 = 4,
-  TEL1_5 = 5,
-  TEL1_6 = 6,
-  TEL1_7 = 7,
-  TEL1_8 = 8,
-  TEL1_9 = 9,
-  TEL1_A = 10,
-  TEL1_B = 11,
-  TEL1_C = 12,
-  TEL1_D = 13,
-  TEL1_E = 14,
-  TEL1_F = 15,
-  TEL2_0 = 16,
-  TEL2_1 = 17,
-  TEL2_2 = 18,
-  TEL2_3 = 19,
-  TEL2_4 = 20,
-  TEL2_5 = 21,
-  TEL2_6 = 22,
-  TEL2_7 = 23,
-  TEL2_8 = 24,
-  TEL2_9 = 25,
-  TEL2_A = 26,
-  TEL2_B = 27,
-  TEL2_C = 28,
-  TEL2_D = 29,
-  TEL2_E = 30,
-  TEL2_F = 31
+  TEL1_0,
+  TEL1_1,
+  TEL1_2,
+  TEL1_3,
+  TEL1_4,
+  TEL1_5,
+  TEL1_6,
+  TEL1_7,
+  TEL1_8,
+  TEL1_9,
+  TEL1_A,
+  TEL1_B,
+  TEL1_C,
+  TEL1_D,
+  TEL1_E,
+  TEL1_F,
+  TEL2_0,
+  TEL2_1,
+  TEL2_2,
+  TEL2_3,
+  TEL2_4,
+  TEL2_5,
+  TEL2_6,
+  TEL2_7,
+  TEL2_8,
+  TEL2_9,
+  TEL2_A,
+  TEL2_B,
+  TEL2_C,
+  TEL2_D,
+  TEL2_E,
+  TEL2_F
 }t_at24c_eeprom_var;
 
 
@@ -273,8 +276,7 @@ typedef enum
 
 typedef enum
 {
-  SONIC_TANK_listen = 0,
-  SONIC_TANK_timer_init = 1
+  SONIC_TANK_listen, SONIC_TANK_timer_init
 }t_sonic_tank_states;
 
 
@@ -363,7 +365,14 @@ typedef enum
 typedef enum
 { 
   OPEN_Reserve, CLOSE_Reserve, OPEN_MudPump, CLOSE_MudPump,
-  OPEN_Air, CLOSE_Air, OPEN_ClearWater, CLOSE_ClearWater, CLOSE_IPAir
-}t_valve;
+  OPEN_Air, CLOSE_Air, OPEN_ClearWater, CLOSE_ClearWater,
+  CLOSE_All, OPEN_All, VALVE_Idle
+}t_valve_action;
+
+typedef enum
+{ 
+  _valveHandling_idle, _valveHandling_set, _valveHandling_wait1, _valveHandling_wait2, _valveHandling_reset
+}t_valve_handling;
+
 
 #endif

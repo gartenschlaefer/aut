@@ -340,7 +340,7 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
  *  write any symbol
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, unsigned char col, t_any_symbol any_symbol)
+void LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, unsigned char col, t_any_symbol any_symbol)
 {
   unsigned char lcd_data[158] = {0x00};
   unsigned char len = 0;
@@ -390,8 +390,6 @@ unsigned char LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, u
     LCD_SendData(lcd_data, len * 2);
   }
   LCD_WP_Disable();
-
-  return len;
 }
 
 
