@@ -146,18 +146,24 @@ void OUT_Clr_InflowPump(struct PlantState *ps)
 
 void OUT_Valve_Init(struct PlantState *ps)
 {
-  // valves with springs
-  if(SPRING_VALVE_ON)
+  if(!ps->port_state->valve_init)
   {
-    // open all valves
-    OUT_Valve_Action(ps, OPEN_All);
+    // valves with springs
+    if(SPRING_VALVE_ON)
+    {
+      // open all valves
+      OUT_Valve_Action(ps, OPEN_All);
 
-    // close all valves
-    OUT_Valve_Action(ps, CLOSE_All);
+      // close all valves
+      OUT_Valve_Action(ps, CLOSE_All);
+    }
+
+    // valves without springs
+    else{ OUT_Valve_Action(ps, CLOSE_All); }
+
+    // set init flag
+    ps->port_state->valve_init = true;
   }
-
-  // valves without springs
-  else{ OUT_Valve_Action(ps, CLOSE_All); }
 }
 
 
@@ -167,12 +173,16 @@ void OUT_Valve_Init(struct PlantState *ps)
 
 void OUT_Valve_Action(struct PlantState *ps, t_valve_action valve_action)
 {
+  // check length of queue
+  int len = queue_len(ps->port_state->queue_valve_action);
+  if(len > 2){ ps->port_state->valve_action_flag = true; return; }
+
   // new data element
-  t_valve_action *new_action = malloc(1);
+  unsigned char *new_action = malloc(1);
   *new_action = valve_action;
 
   // add valve action
-  queue_enqueue(ps->port_state->queue_valve_action, &new_action);
+  queue_enqueue(ps->port_state->queue_valve_action, new_action);
   
   // signalize action
   ps->port_state->valve_action_flag = true;
@@ -197,7 +207,7 @@ void OUT_Valve_Update(struct PlantState *ps)
       }
       else
       {
-        t_valve_action *data = queue_dequeue(ps->port_state->queue_valve_action);
+        unsigned char *data = queue_dequeue(ps->port_state->queue_valve_action);
         ps->port_state->valve_action = *data;
         ps->port_state->valve_handling = _valveHandling_set;
         free(data);

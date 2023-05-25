@@ -23,5 +23,6 @@ bool queue_empty(struct Queue *queue);
 struct Queue *queue_new(void);
 void *queue_dequeue(struct Queue *queue);
 int queue_enqueue(struct Queue *queue, void *data);
+int queue_len(struct Queue *queue);
 
 #endif

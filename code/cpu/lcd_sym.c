@@ -495,14 +495,11 @@ void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            manual variables
+ *            manual okay button
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_PumpOff_PressOk(t_font_type font_type)
-{
-  LCD_WriteAnyStringFont(font_type, 17, 15, "PRESS OK!:");
-}
-
+void LCD_Sym_Manual_PumpOff_OkButton(bool p_sym){ LCD_WriteAnySymbol(15, 85, (p_sym ? _p_ok : _n_ok)); }
+void LCD_Sym_Manual_PumpOff_OkButton_Clr(void){ LCD_ClrSpace(15, 85, 5, 104); }
 
 
 /* ------------------------------------------------------------------*

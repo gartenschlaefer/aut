@@ -887,6 +887,7 @@ unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
       ps->touch_state->init = false;MEM_EEPROM_WriteVar(ON_phosphor, ps->touch_state->var[0]);
       MEM_EEPROM_WriteVar(OFF_phosphor, ps->touch_state->var[1]);
       MEM_EEPROM_WriteSetupEntry(ps);
+      ps->phosphor_state->init_flag = false;
       LCD_Auto_Phosphor_Init(ps);
       ps->page_state->page = SetupPage;
       break;
@@ -982,6 +983,7 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
       MEM_EEPROM_WriteVar(PUMP_inflowPump, ps->touch_state->var[3]);
       MEM_EEPROM_WriteVar(SENSOR_outTank, ps->touch_state->var[4]);
       MEM_EEPROM_WriteSetupEntry(ps);
+      ps->inflow_pump_state->init_flag = false;
       LCD_Auto_InflowPump_Init(ps);
       ps->page_state->page = SetupPage;
       break;

@@ -81,18 +81,11 @@ void LCD_AutoPage(struct PlantState *ps)
       // new state symbols
       LCD_Sym_Auto_SetManager(ps);
 
-      // init procedure
-      if(!ps->init || (!ps->page_state->page_time->min && !(MEM_EEPROM_ReadVar(SENSOR_inTank))))
-      {
-        LCD_AirState_SetAutoStartTime(ps);
-        LCD_Auto_InflowPump_Init(ps);
-        LCD_Auto_Phosphor_Init(ps);
-        OUT_Valve_Init(ps);
-        ps->init = 1;
-
-        // read tank init timer
-        ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
-      }
+      // init
+      LCD_Auto_InflowPump_Init(ps);
+      LCD_Auto_Phosphor_Init(ps);
+      ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
+      OUT_Valve_Init(ps);
 
       // set state output
       LCD_Auto_SetStateOutput(ps);
@@ -417,21 +410,25 @@ void LCD_AirState_Manager(struct PlantState *ps)
 
 void LCD_Auto_InflowPump_Init(struct PlantState *ps)
 {
-  // on time for inflow pump
-  ps->inflow_pump_state->ip_thms->hou = 0;
-  ps->inflow_pump_state->ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump);
+  if(!ps->inflow_pump_state->init_flag)
+  {
+    // on time for inflow pump
+    ps->inflow_pump_state->ip_thms->hou = 0;
+    ps->inflow_pump_state->ip_thms->min = MEM_EEPROM_ReadVar(ON_inflowPump);
 
-  // disabled mode
-  if(!ps->inflow_pump_state->ip_thms->min)
-  {
-    ps->inflow_pump_state->ip_thms->sec = 0;
-    ps->inflow_pump_state->ip_state = _ip_disabled;
-  }
-  else
-  {
-    ps->inflow_pump_state->ip_thms->min = 1;
-    ps->inflow_pump_state->ip_thms->sec = 2;
-    ps->inflow_pump_state->ip_state = _ip_off;
+    // disabled mode
+    if(!ps->inflow_pump_state->ip_thms->min)
+    {
+      ps->inflow_pump_state->ip_thms->sec = 0;
+      ps->inflow_pump_state->ip_state = _ip_disabled;
+    }
+    else
+    {
+      ps->inflow_pump_state->ip_thms->min = 1;
+      ps->inflow_pump_state->ip_thms->sec = 2;
+      ps->inflow_pump_state->ip_state = _ip_off;
+    }
+    ps->inflow_pump_state->init_flag = true;
   }
 }
 
@@ -502,11 +499,15 @@ void LCD_Auto_InflowPump_Update(struct PlantState *ps)
 
 void LCD_Auto_Phosphor_Init(struct PlantState *ps)
 {
-  ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor);
-  if(!ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->sec = 0; ps->phosphor_state->ph_state = _ph_disabled; return; }
-  ps->phosphor_state->ph_tms->min = 1;
-  ps->phosphor_state->ph_tms->sec = 5;
-  ps->phosphor_state->ph_state = _ph_off;
+  if(!ps->phosphor_state->init_flag)
+  {
+    ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor);
+    if(!ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->sec = 0; ps->phosphor_state->ph_state = _ph_disabled; return; }
+    ps->phosphor_state->ph_tms->min = 1;
+    ps->phosphor_state->ph_tms->sec = 5;
+    ps->phosphor_state->ph_state = _ph_off;
+    ps->phosphor_state->init_flag = true;
+  }
 }
 
 
@@ -572,8 +573,8 @@ void LCD_ManualPage(struct PlantState *ps)
 
     // blinking pump off text
     case ManualPumpOff:
-      if(ps->frame_counter->frame == 29){ LCD_Sym_Manual_PumpOff_PressOk(f_6x8_n); }
-      if(ps->frame_counter->frame == 59){ LCD_Sym_Manual_PumpOff_PressOk(f_6x8_p); }
+      if(ps->frame_counter->frame == 29){ LCD_Sym_Manual_PumpOff_OkButton(true); }
+      if(ps->frame_counter->frame == 59){ LCD_Sym_Manual_PumpOff_OkButton(false); }
       break;
 
     default: break;
@@ -629,7 +630,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
       // save manual entry time
       ps->eeprom_state->time_manual_entry.hou = ps->time_state->tic_hou;
       ps->eeprom_state->time_manual_entry.min = ps->time_state->tic_min;
-      if(!ps->init){ OUT_Valve_Init(ps); }
+      OUT_Valve_Init(ps);
       break;
 
     case ManualCircOn:
@@ -647,9 +648,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualSetDown: *p_min = 60; *p_sec = 0; break;
 
     case ManualPumpOff:
-      LCD_ClrSpace(15, 2, 5, 120);
-      LCD_Sym_Manual_PumpOff_PressOk(f_6x8_p);
-      LCD_WriteAnySymbol(15, 85, _p_ok);
+      LCD_Sym_Manual_PumpOff_OkButton(true);
       *p_min = 30;
       *p_sec = 0;
       LCD_Sym_Manual_PageTime_Print(ps);
@@ -657,7 +656,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
 
     case ManualPumpOff_On:
       OUT_Set_PumpOff(ps);
-      LCD_ClrSpace(15, 2, 5, 120);
+      LCD_Sym_Manual_PumpOff_OkButton_Clr();
       *p_min = 29;
       *p_sec = 59;
       LCD_Sym_Manual_Text(ps);

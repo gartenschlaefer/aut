@@ -107,6 +107,7 @@ struct PortState
   bool valve_action_flag;
   t_valve_handling valve_handling;
   struct Queue *queue_valve_action;
+  bool valve_init;
 };
 
 
@@ -163,6 +164,7 @@ struct PhosphorState
 {
   struct Tms *ph_tms;
   t_phosphor_states ph_state;
+  bool init_flag;
 };
 
 
@@ -171,6 +173,7 @@ struct InflowPumpState
   struct Thms *ip_thms;
   t_inflow_pump_states ip_state;
   unsigned char ip_active_pump_id;
+  bool init_flag;
 };
 
 
@@ -260,7 +263,6 @@ struct TouchState
 
 struct PlantState
 {
-  unsigned char init;
   struct PageState *page_state;
   struct PageState *auto_save_page_state;
   struct PortState *port_state;

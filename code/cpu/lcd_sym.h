@@ -58,7 +58,8 @@ void LCD_Sym_Manual_PageTime_Min(int min);
 void LCD_Sym_Manual_PageTime_Sec(int sec);
 void LCD_Sym_Manual_PageTime_Print(struct PlantState *ps);
 void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps);
-void LCD_Sym_Manual_PumpOff_PressOk(t_font_type font_type);
+void LCD_Sym_Manual_PumpOff_OkButton(bool p_sym);
+void LCD_Sym_Manual_PumpOff_OkButton_Clr(void);
 
 
 /* ------------------------------------------------------------------*

@@ -3,6 +3,7 @@
 
 #include <avr/io.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "lcd_driver.h"
@@ -343,7 +344,6 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
 
 void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol)
 {
-  unsigned char lcd_data[158] = {0x00};
   unsigned char symbol = 0;
   unsigned char offset = 0;
 
@@ -356,14 +356,14 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
     case _n_pumpOff: case _n_mud: case _n_inflowPump: case _n_pump2:
     case _p_pumpOff: case _p_mud: case _p_inflowPump: case _p_pump2: 
       symbol_pointer = Symbols_35x23_bmp;
-      offset = _p_pump2 + 1;
+      offset = 0;
       break;
 
     // 29 x 17 [20]
     case _n_setDown: case _n_alarm: case _n_air: case _n_sensor: case _n_watch: case _n_compressor: case _n_circulate: case _n_cal: case _n_zone: case _n_level:
     case _p_setDown: case _p_alarm: case _p_air: case _p_sensor: case _p_watch: case _p_compressor: case _p_circulate: case _p_cal: case _p_zone: case _p_level:
       symbol_pointer = Symbols_29x17_bmp;
-      offset = _p_level + 1;
+      offset = _p_pump2 + 1;
       break;
 
     // 19 x 19 [23]
@@ -371,40 +371,41 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
     case _p_phosphor: case _p_pump: case _p_esc: case _p_plus: case _p_minus: case _p_arrow_up: case _p_arrow_down: case _p_ok: case _p_grad: case _p_sonic: case _p_arrow_redo: 
     case _line:
       symbol_pointer = Symbols_19x19_bmp;
-      offset = _line + 1;
+      offset = _p_level + 1;
       break;
 
     // 34 x 21 [6]
     case _p_frame: case _p_escape: case _p_del: 
     case _n_frame: case _n_escape: case _n_del:
       symbol_pointer = Symbols_34x21_bmp;
-      offset = _n_del + 1;
+      offset = _line + 1;
       break;
 
     // 39 x 16 [2]
     case _n_text_frame: 
     case _p_text_frame:
       symbol_pointer = Symbols_39x16_bmp;
-      offset = _p_text_frame + 1;
+      offset = _n_del + 1;
       break;
 
     // hecs [1]
     case _logo_hecs:
       symbol_pointer = Symbol_HECS;
-      offset = _logo_hecs + 1;
+      offset = _logo_hecs;
       break;
 
     // purator [1]
     case _logo_purator:
       symbol_pointer = Symbol_Purator;
-      offset = _logo_purator + 1;
+      offset = _logo_purator;
       break;
 
+    // todo
     // valve symbol
     case _n_valve:
     case _p_valve: 
       symbol_pointer = Symbols_35x23_bmp;
-      offset = _p_valve + 1;
+      offset = _logo_purator + 1;
       break;
 
     default: return;
@@ -416,6 +417,9 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
 
   // set frame
   LCD_WP_SetFrame(row, col, height, len);
+
+  // allocate memory
+  unsigned char *lcd_data = malloc(len * 2);
 
   // pages
   for(unsigned char p = 0; p < height; p++)
@@ -434,6 +438,7 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
     // send data
     LCD_SendData(lcd_data, len * 2);
   }
+  free(lcd_data);
   LCD_WP_Disable();
 }
 

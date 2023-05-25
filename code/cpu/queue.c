@@ -95,3 +95,18 @@ int queue_enqueue(struct Queue *queue, void *data)
   }
   return SUCCESS;
 }
+
+
+/* ------------------------------------------------------------------*
+ *            add item
+ * ------------------------------------------------------------------*/
+
+int queue_len(struct Queue *queue)
+{
+  int len = 0;
+  if(queue == NULL){ return len; }
+  if(queue->front == NULL){ return len; }
+  struct QueueNode *node = queue->front;
+  do{ node = node->next; len++; } while(node->next != NULL);
+  return len;
+}
