@@ -278,69 +278,8 @@ void TCD0_Stop(void)
 
 
 /* ==================================================================*
- *            TCE0 - Error timer
+ *            TCE0 - unused
  * ==================================================================*/
-
-/* ------------------------------------------------------------------*
- *            TCE0 - sec
- * ------------------------------------------------------------------*/
-
-void TCE0_WaitSec_Init(int sec)
-{
-  int time = sec * TC_OSC_DIV1024;
-
-  TCE0_CTRLA = TC_CLKSEL_OFF_gc;
-  TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
-
-  TCE0.CNT = 0;
-  TCE0.PER = 65500;
-  TCE0.CCA = time;
-  TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
-
-  TCE0_CTRLA = TC_CLKSEL_DIV1024_gc;
-}
-
-
-/* ------------------------------------------------------------------*
- *            TCE0 - milli second
- * ------------------------------------------------------------------*/
-
-void TCE0_WaitMilliSec_Init(int milli_sec)
-{
-  int time = f_round_int(milli_sec * TC_OSC_DIV256_MS);
-
-  TCE0_CTRLA = TC_CLKSEL_OFF_gc;
-  TCE0.CTRLB = TC_WGMODE_NORMAL_gc;
-
-  TCE0.CNT = 0;
-  TCE0.PER = 65500;
-  TCE0.CCA = time;
-  TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
-
-  TCE0_CTRLA = TC_CLKSEL_DIV256_gc;
-}
-
-
-/* ------------------------------------------------------------------*
- *            TCE0 - query and stop
- * ------------------------------------------------------------------*/
-
-unsigned char TCE0_Wait_Query(void)
-{
-  if(TCE0.INTFLAGS & (1 << TC0_CCAIF_bp))
-  {
-    TCE0.CNT = 0;
-    TCE0.INTFLAGS |= (1 << TC0_CCAIF_bp);
-    return 1;
-  }
-  return 0;
-}
-
-void TCE0_Stop(void)
-{
-  TCE0_CTRLA = TC_CLKSEL_OFF_gc;
-}
-
 
 
 /* ==================================================================*

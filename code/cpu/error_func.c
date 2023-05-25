@@ -95,7 +95,6 @@ void Error_Read(struct PlantState *ps)
 void Error_Detection(struct PlantState *ps)
 {
   // check if errors occur
-  //unsigned char err = Error_Read(ps);
   Error_Read(ps);
 
   // set treat page
@@ -117,7 +116,7 @@ void Error_Detection(struct PlantState *ps)
       ps->page_state->page = ps->error_state->page;
 
       // reset error flag
-      ps->error_state->error_reset_flag = 1;
+      ps->error_state->error_reset_flag = true;
     }
 
     // still unsolved, continue treatment
@@ -132,7 +131,7 @@ void Error_Detection(struct PlantState *ps)
       if(ps->time_state->tic_sec_update_flag){ ps->error_state->error_on_counter++; }
 
       // error time on time in seconds
-      if(ps->error_state->error_on_counter > 5)
+      if(ps->error_state->error_on_counter > ERROR_ON_TIME_SEC)
       {
         ps->error_state->error_on_counter = 0;
         ps->error_state->error_code |= ps->error_state->pending_err_code;
@@ -143,7 +142,7 @@ void Error_Detection(struct PlantState *ps)
   // error reset
   if(ps->error_state->error_reset_flag)
   {
-    ps->error_state->error_reset_flag = 0;
+    ps->error_state->error_reset_flag = false;
     ps->error_state->error_on_counter = 0;
     Error_Off(ps);
     LCD_Sym_Auto_SetManager(ps);
@@ -212,54 +211,39 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
     OUT_Clr_Compressor();
     Error_Action_OP_SetError(ps);
 
-    // page cases
-    switch(ps->page_state->page)
+    // close first (only if no spring valves)
+    if(!SPRING_VALVE_ON)
     {
-      // pump off: mammoth pump
-      case AutoPumpOff: 
-        if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
-        { 
-          P_VALVE.OUTSET = C_CLRW; 
-          ps->port_state->valve_state &= ~V_CLW; 
-        }
-        break;
+      // page cases
+      switch(ps->page_state->page)
+      {
+        // pump off: mammoth pump
+        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ OUT_Valve_Action(ps, CLOSE_ClearWater); } break;
 
-      // mud
-      case AutoMud: 
-        P_VALVE.OUTSET = C_MUD; 
-        ps->port_state->valve_state &= ~V_MUD; 
-        break;
+        // mud
+        case AutoMud: OUT_Valve_Action(ps, CLOSE_MudPump); break;
 
-      // air off
-      case AutoAirOff:
-      case AutoCircOff:
-        if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
-        {
-          P_VALVE.OUTSET = C_RES;
-          ps->port_state->valve_state &= ~V_RES;
-        }
-        break;
+        // air off
+        case AutoAirOff:
+        case AutoCircOff:
+          if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)){ OUT_Valve_Action(ps, CLOSE_Reserve); }
+          break;
 
-      // air on
-      case AutoCircOn:
-      case AutoAirOn:
-      case AutoZone: 
-        P_VALVE.OUTSET = C_AIR; 
-        ps->port_state->valve_state &= ~V_AIR; 
-        break;
+        // air on
+        case AutoCircOn: case AutoAirOn: case AutoZone: OUT_Valve_Action(ps, CLOSE_Air); break;
 
-      default: break;
+        default: break;
+      }
     }
 
     // close process timing
     ps->error_state->op_state = _error_op_close_process;
-    TCE0_WaitMilliSec_Init(100);
   }
 
   // wait until done
   else if(ps->error_state->op_state == _error_op_close_process)
   {
-    if(TCE0_Wait_Query()){ ps->error_state->op_state = _error_op_stop_close_start_open; }
+    if(!ps->port_state->valve_action_flag){ ps->error_state->op_state = _error_op_stop_close_start_open; }
   }
 
   // stop closing and start opening
@@ -268,113 +252,48 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
     switch(ps->page_state->page)
     {
       // pump off (mammoth pump)
-      case AutoPumpOff: 
-        if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
-        { 
-          P_VALVE.OUTCLR = C_CLRW; P_VALVE.OUTSET = O_CLRW; 
-          ps->port_state->valve_state |= V_CLW;
-        }
-        break;
+      case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ OUT_Valve_Action(ps, OPEN_ClearWater); } break;
 
       // mud
-      case AutoMud: 
-        P_VALVE.OUTCLR = C_MUD; 
-        P_VALVE.OUTSET = O_MUD; 
-        ps->port_state->valve_state |= V_MUD;
-        break;
+      case AutoMud: OUT_Valve_Action(ps, OPEN_MudPump); break;
 
       // air off
       case AutoAirOff:
       case AutoCircOff:
-        if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump))
-        {
-          P_VALVE.OUTCLR = C_RES;
-          P_VALVE.OUTSET = O_RES;
-          ps->port_state->valve_state |= V_RES;
-        }
+        if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)){ OUT_Valve_Action(ps, OPEN_Reserve); }
         break;
 
       // air on
-      case AutoCircOn:
-      case AutoAirOn:
-      case AutoZone: 
-        P_VALVE.OUTCLR = C_AIR; 
-        P_VALVE.OUTSET = O_AIR; 
-        ps->port_state->valve_state |= V_AIR;
-        break;
+      case AutoCircOn: case AutoAirOn: case AutoZone: OUT_Valve_Action(ps, OPEN_Air); break;
 
       default: break;
     }
 
     // open process
     ps->error_state->op_state = _error_op_open_process;
-
-    // timing spring or usual open valves
-    if(SPRING_VALVE_ON){ TCE0_WaitSec_Init(4); }
-    else{ TCE0_WaitSec_Init(3); }
   }
 
   // open process
   else if(ps->error_state->op_state == _error_op_open_process)
   {
-    if(TCE0_Wait_Query())
+    if(!ps->port_state->valve_action_flag)
     { 
-      if(SPRING_VALVE_ON){ ps->error_state->op_state = _error_op_open_process_spring; TCE0_WaitMilliSec_Init(350); }
-      else{ ps->error_state->op_state = _error_op_open_stop; }
+      ps->error_state->op_state = _error_op_open_stop; 
     }
-  }
-
-  // open process
-  else if(ps->error_state->op_state == _error_op_open_process_spring)
-  {
-    if(TCE0_Wait_Query()){ ps->error_state->op_state = _error_op_open_stop; }
   }
 
   // stop opening, set compressor on
   else if(ps->error_state->op_state == _error_op_open_stop)
   {
-    switch(ps->page_state->page)
-    {
-      // pump off: mammoth pump
-      case AutoPumpOff: 
-        if(!MEM_EEPROM_ReadVar(PUMP_pumpOff))
-        { 
-          P_VALVE.OUTCLR = O_CLRW; 
-          OUT_Set_Compressor(); 
-        }
-        break;
-
-      // mud
-      case AutoMud: 
-        P_VALVE.OUTCLR = O_MUD; 
-        OUT_Set_Compressor(); 
-        break;
-
-      // no air
-      case AutoAirOff:
-      case AutoCircOff:
-        if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)) 
-        {
-          P_VALVE.OUTCLR = O_RES;
-          OUT_Set_Compressor();
-        }
-        break;
-
-      // air
-      case AutoCircOn:
-      case AutoAirOn:
-      case AutoZone: 
-        P_VALVE.OUTCLR = O_AIR; 
-        OUT_Set_Compressor(); 
-        break;
-
-      default: break;
-    }
-
     // error treated, and cycle again if needed
     ps->error_state->op_state = _error_op_close_start;
-    TCE0_Stop();
     return 1;
+  }
+
+  // any other state
+  else
+  {
+    ps->error_state->op_state = _error_op_close_start;
   }
   return 0;
 }
@@ -423,7 +342,7 @@ void Error_Action_Temp_SetError(struct PlantState *ps)
     ps->error_state->cycle_error_code_record |= E_T;
     Error_ModemAction(ps, E_T);
   }
-  if(ps->error_state->error_counter[ERROR_ID_T] > 250){ ps->error_state->error_counter[ERROR_ID_T] = 0; }
+  if(ps->error_state->error_counter[ERROR_ID_T] > ERROR_COUNT_NEW_ACTION){ ps->error_state->error_counter[ERROR_ID_T] = 0; }
 }
 
 
@@ -441,7 +360,7 @@ void Error_Action_OP_SetError(struct PlantState *ps)
     ps->error_state->cycle_error_code_record |= E_OP;
     Error_ModemAction(ps, E_OP);
   }
-  if(ps->error_state->error_counter[ERROR_ID_OP] > 250){ ps->error_state->error_counter[ERROR_ID_OP] = 0; }
+  if(ps->error_state->error_counter[ERROR_ID_OP] > ERROR_COUNT_NEW_ACTION){ ps->error_state->error_counter[ERROR_ID_OP] = 0; }
 }
 
 
@@ -459,7 +378,7 @@ void Error_Action_UP_SetError(struct PlantState *ps)
     ps->error_state->cycle_error_code_record |= E_UP;
     Error_ModemAction(ps, E_UP);
   }
-  if(ps->error_state->error_counter[ERROR_ID_UP] > 250){ ps->error_state->error_counter[ERROR_ID_UP] = 0; }
+  if(ps->error_state->error_counter[ERROR_ID_UP] > ERROR_COUNT_NEW_ACTION){ ps->error_state->error_counter[ERROR_ID_UP] = 0; }
 }
 
 
@@ -477,7 +396,7 @@ void Error_Action_IT_SetError(struct PlantState *ps)
     ps->error_state->cycle_error_code_record |= E_IT;
     Error_ModemAction(ps, E_IT);
   }
-  if(ps->error_state->error_counter[ERROR_ID_IT] > 250){ ps->error_state->error_counter[ERROR_ID_IT] = 0; }
+  if(ps->error_state->error_counter[ERROR_ID_IT] > ERROR_COUNT_NEW_ACTION){ ps->error_state->error_counter[ERROR_ID_IT] = 0; }
 }
 
 
@@ -495,7 +414,7 @@ void Error_Action_OT_SetError(struct PlantState *ps)
     ps->error_state->cycle_error_code_record |= E_OT;
     Error_ModemAction(ps, E_OT);
   }
-  if(ps->error_state->error_counter[ERROR_ID_OT] > 250){ ps->error_state->error_counter[ERROR_ID_OT] = 0; }
+  if(ps->error_state->error_counter[ERROR_ID_OT] > ERROR_COUNT_NEW_ACTION){ ps->error_state->error_counter[ERROR_ID_OT] = 0; }
 }
 
 

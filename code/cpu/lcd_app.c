@@ -61,7 +61,7 @@ void LCD_AutoPage(struct PlantState *ps)
 
       // set auto page
       LCD_Sym_Auto_Main(ps); 
-      LCD_Sym_Auto_CountDown(ps->page_state->page_time);
+      LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time);
 
       // get previous state and time
       if(ps->auto_save_page_state->page != NoPage)
@@ -102,7 +102,7 @@ void LCD_AutoPage(struct PlantState *ps)
     case AutoAirOn: case AutoAirOff: case AutoCircOn: case AutoCircOff: LCD_AirState_Manager(ps); break;
 
     // other
-    default: LCD_Sym_Auto_PageTime(ps, ps->page_state->page_time); break;
+    default: LCD_Sym_Auto_PageTime_Update(ps, ps->page_state->page_time); break;
   }
 
   // update save page
@@ -396,10 +396,11 @@ void LCD_AirState_Manager(struct PlantState *ps)
   if(p == ManualCircOn || p == ManualCircOff){ return; }
 
   // auto variables
-  if((p == AutoCircOn) || (p == AutoAirOn) || (p == ErrorTreat))
-  {
-    LCD_Sym_Auto_PageTime(ps, air_tms);
+  LCD_Sym_Auto_PageTime_Update(ps, air_tms);
 
+  // o2 counting
+  if((p == AutoCircOn) || (p == AutoAirOn) || (p == ErrorTreat))
+  {    
     // o2 min counting
     if(ps->compressor_state->old_min != air_tms->min)
     {
@@ -407,7 +408,6 @@ void LCD_AirState_Manager(struct PlantState *ps)
       ps->compressor_state->cycle_o2_min++;
     }
   }
-  else{ LCD_Sym_Auto_PageTime(ps, air_tms); }
 }
 
 
@@ -537,7 +537,7 @@ void LCD_Auto_Phosphor_Update(struct PlantState *ps)
   {
     ps->phosphor_state->ph_state = _ph_off;
     ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(OFF_phosphor); ps->phosphor_state->ph_tms->sec = 0;
-    LCD_WriteAnySymbol(s_19x19, 6, 134, _p_phosphor);
+    LCD_WriteAnySymbol(6, 134, _p_phosphor);
     OUT_Clr_Phosphor();
   }
 
@@ -546,7 +546,7 @@ void LCD_Auto_Phosphor_Update(struct PlantState *ps)
   {
     ps->phosphor_state->ph_state = _ph_on;
     ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor); ps->phosphor_state->ph_tms->sec = 0;
-    LCD_WriteAnySymbol(s_19x19, 6, 134, _n_phosphor);
+    LCD_WriteAnySymbol(6, 134, _n_phosphor);
     OUT_Set_Phosphor();
   }
 }
@@ -649,7 +649,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualPumpOff:
       LCD_ClrSpace(15, 2, 5, 120);
       LCD_Sym_Manual_PumpOff_PressOk(f_6x8_p);
-      LCD_WriteAnySymbol(s_19x19, 15, 85, _p_ok);
+      LCD_WriteAnySymbol(15, 85, _p_ok);
       *p_min = 30;
       *p_sec = 0;
       LCD_Sym_Manual_PageTime_Print(ps);
@@ -737,7 +737,7 @@ void LCD_SetupPage(struct PlantState *ps)
       {
         Sonic_LevelCal(ps);
         LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
-        LCD_WriteAnySymbol(s_29x17, 15, 1, _p_level);
+        LCD_WriteAnySymbol(15, 1, _p_level);
         ps->page_state->page = SetupCal;
       }
 
@@ -756,7 +756,7 @@ void LCD_SetupPage(struct PlantState *ps)
 
           // clear countdown
           LCD_ClrSpace(17, 100, 2, 20);
-          LCD_WriteAnySymbol(s_29x17, 15, 1, _p_level);
+          LCD_WriteAnySymbol(15, 1, _p_level);
           ps->page_state->page = SetupCal; 
         }
       }

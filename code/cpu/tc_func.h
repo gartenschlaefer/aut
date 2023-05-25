@@ -57,24 +57,16 @@ void TCD0_WaitSec_Init(int sec);
 unsigned char TCD0_Wait_Query(void);
 void TCD0_Stop(void);
 
-
 /* ------------------------------------------------------------------*
- *            TCD1 - Safety Timer
+ *            TCD1 - unused
  * ------------------------------------------------------------------*/
 
-
 /* ------------------------------------------------------------------*
- *            TCE0 - Error Timer
+ *            TCE0 - unused
  * ------------------------------------------------------------------*/
 
-void TCE0_WaitSec_Init(int sec);
-void TCE0_WaitMilliSec_Init(int milli_sec);
-unsigned char TCE0_Wait_Query (void);
-void TCE0_Stop(void);
-
-
 /* ------------------------------------------------------------------*
- *            TCE0 - CAN Timer 1
+ *            TCE1 - CAN Timer 1
  * ------------------------------------------------------------------*/
 
 void TCE1_WaitMilliSec_Init(int milli_sec);

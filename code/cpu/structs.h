@@ -11,11 +11,17 @@
  *            general structs
  * ------------------------------------------------------------------*/
 
-struct SymbolData
+struct QueueNode
 {
-  t_symbol_type symbol_type;
-  unsigned char row;
-  unsigned char col;
+  struct QueueNode *next;
+  void *data;
+};
+
+
+struct Queue 
+{
+  struct QueueNode *front;
+  struct QueueNode *back;
 };
 
 
@@ -100,6 +106,7 @@ struct PortState
   t_valve_action valve_action;
   bool valve_action_flag;
   t_valve_handling valve_handling;
+  struct Queue *queue_valve_action;
 };
 
 
@@ -117,7 +124,7 @@ struct ErrorState
   t_page page;
   unsigned char error_code;
   unsigned char pending_err_code;
-  unsigned char error_reset_flag;
+  bool error_reset_flag;
   t_error_op_state op_state;
   unsigned char error_counter[5];
   unsigned char cycle_error_code_record;

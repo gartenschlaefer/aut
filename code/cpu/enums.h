@@ -73,12 +73,6 @@ typedef enum
 
 typedef enum
 {
-  s_35x23, s_29x17, s_19x19, s_34x21, s_39x16, s_logo_hecs, s_logo_purator, s_none
-}t_symbol_type;
-
-
-typedef enum
-{
   // 35 x 23 [8]
   _n_pumpOff, _n_mud, _n_inflowPump, _n_pump2, _p_pumpOff, _p_mud, _p_inflowPump, _p_pump2,
 
@@ -103,7 +97,10 @@ typedef enum
   _logo_purator,
 
   // no symbol
-  _none_symbol
+  _none_symbol,
+
+  // valve symbol
+   _n_valve, _p_valve
 
 }t_any_symbol;
 
@@ -289,7 +286,7 @@ typedef enum
   AutoPage, ManualPage, SetupPage, DataPage, PinManual, PinSetup, PinModem, AutoZone, AutoSetDown, AutoMud,
   AutoCircOn, AutoCircOff, AutoPumpOff, AutoAirOn, AutoAirOff, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff,
   SetupMud, SetupCompressor, SetupPhosphor, SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone, ManualMain,
-  ManualPumpOff_On, ManualCircOn, ManualCircOff, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump,
+  ManualPumpOff_On, ManualCircOn, ManualCircOff, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump, ManualValveTest,
   DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto, DataSonicBoot, DataSonicBootR, DataSonicBootW, ErrorMPX,
   ErrorTreat, NoPage
 }t_page;

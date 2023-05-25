@@ -20,7 +20,8 @@ void LCD_Sym_Logo(void);
 void LCD_Sym_Auto_SetManager(struct PlantState *ps);
 
 // symbols
-void LCD_Sym_Auto_CountDown(struct Tms *tms);
+void LCD_Sym_Auto_PageTime_Print(struct Tms *tms);
+void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps, struct Tms *tms);
 void LCD_Sym_Auto_Text(struct PlantState *ps);
 
 // cycle state
@@ -42,7 +43,6 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps);
 void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms);
 void LCD_Sym_Auto_Ph(struct PlantState *ps);
 void LCD_Sym_Auto_SonicVal(struct PlantState *ps);
-void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms);
 
 
 /* ------------------------------------------------------------------*
@@ -50,7 +50,7 @@ void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Manual_Main(struct PlantState *ps);
-struct SymbolData LCD_Sym_Manual_GetSymbolData(t_any_symbol sym);
+struct RowColPos LCD_Sym_Manual_GetSymbolData(t_any_symbol sym);
 void LCD_Sym_Manual_AllSymbols(void);
 void LCD_Sym_Manual_Draw(t_any_symbol sym);
 void LCD_Sym_Manual_Text(struct PlantState *ps);

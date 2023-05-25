@@ -12,6 +12,7 @@
 #include "basic_func.h"
 #include "tc_func.h"
 #include "can_app.h"
+#include "queue.h"
 
 
 /* ------------------------------------------------------------------*
@@ -42,9 +43,9 @@ int main(void)
   struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
   struct PageState auto_save_page_state = { .page = NoPage, .page_time = &auto_save_page_time };
-  struct PortState port_state = { .buzzer_on = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle };
+  struct PortState port_state = { .buzzer_on = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle, .queue_valve_action = queue_new() };
   struct CompressorState compressor_state = { .operation_hours = 0, .cycle_o2_min = 0, .old_min = 0 };
-  struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = 0, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
+  struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = false, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
   struct MPXState mpx_state = { .mpx_count = 0, .mpx_values = { 0x00 }, .error_counter = 0, .level_cal = 0 };
   struct PhosphorState phosphor_state = { .ph_tms = &ph_tms, .ph_state = _ph_off };
   struct InflowPumpState inflow_pump_state = { .ip_thms = &ip_thms, .ip_state = _ip_off, .ip_active_pump_id = 0 };
@@ -138,6 +139,7 @@ int main(void)
       case ManualCompressor:
       case ManualPhosphor:
       case ManualInflowPump:
+      case ManualValveTest:
         LCD_ManualPage(&ps);
         break;
 
@@ -178,4 +180,7 @@ int main(void)
     // frame timer wait
     TCF1_FrameTimer_WaitUntilFrameEnded(&frame_counter);
   }
+
+  // free stuff
+  queue_destroy(port_state.queue_valve_action);
 }

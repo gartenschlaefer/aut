@@ -24,8 +24,8 @@
 
 void LCD_Sym_Logo(void)
 {
-  if(!COMPANY){ LCD_WriteAnySymbol(s_logo_purator, 0, 0, _logo_purator); }
-  else{ LCD_WriteAnySymbol(s_logo_hecs, 0, 0, _logo_hecs); }
+  if(!COMPANY){ LCD_WriteAnySymbol(0, 0, _logo_purator); }
+  else{ LCD_WriteAnySymbol(0, 0, _logo_hecs); }
 }
 
 
@@ -41,16 +41,16 @@ void LCD_Sym_Auto_SetManager(struct PlantState *ps)
   // page dependend symbols
   switch(ps->page_state->page)
   {
-    case AutoPage: LCD_Sym_Auto_Main(ps); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
-    case AutoZone: LCD_Sym_Auto_Zone(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
-    case AutoSetDown: LCD_Sym_Auto_SetDown(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
-    case AutoPumpOff: LCD_Sym_Auto_PumpOff(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
-    case AutoMud: LCD_Sym_Auto_Mud(); LCD_Sym_Auto_CountDown(ps->page_state->page_time); break;
+    case AutoPage: LCD_Sym_Auto_Main(ps); LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time); break;
+    case AutoZone: LCD_Sym_Auto_Zone(); LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time); break;
+    case AutoSetDown: LCD_Sym_Auto_SetDown(); LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time); break;
+    case AutoPumpOff: LCD_Sym_Auto_PumpOff(); LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time); break;
+    case AutoMud: LCD_Sym_Auto_Mud(); LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time); break;
 
-    case AutoAirOn: LCD_Sym_Auto_AirOn(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
-    case AutoAirOff: LCD_Sym_Auto_AirOff(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
-    case AutoCircOn: LCD_Sym_Auto_CircOn(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
-    case AutoCircOff:LCD_Sym_Auto_CircOff(); LCD_Sym_Auto_CountDown(ps->air_circ_state->air_tms); break;
+    case AutoAirOn: LCD_Sym_Auto_AirOn(); LCD_Sym_Auto_PageTime_Print(ps->air_circ_state->air_tms); break;
+    case AutoAirOff: LCD_Sym_Auto_AirOff(); LCD_Sym_Auto_PageTime_Print(ps->air_circ_state->air_tms); break;
+    case AutoCircOn: LCD_Sym_Auto_CircOn(); LCD_Sym_Auto_PageTime_Print(ps->air_circ_state->air_tms); break;
+    case AutoCircOff:LCD_Sym_Auto_CircOff(); LCD_Sym_Auto_PageTime_Print(ps->air_circ_state->air_tms); break;
 
     default: return;
   }
@@ -70,12 +70,59 @@ void LCD_Sym_Auto_SetManager(struct PlantState *ps)
  *            auto countdown
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_CountDown(struct Tms *tms)
+void LCD_Sym_Auto_PageTime_Print(struct Tms *tms)
 {
   LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, tms->min);
   LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, tms->sec);
 }
 
+
+/* ------------------------------------------------------------------*
+ *            pagetime update
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps, struct Tms *tms)
+{
+  // sec change
+  if(ps->time_state->tic_sec_update_flag)
+  {
+    // time
+    LCD_Sym_Auto_Time(ps);
+    LCD_Sym_Auto_PageTime_Print(tms);
+
+    // minute update
+    if(tms->sec == 59)
+    { 
+      // update compressor hours
+      switch(ps->page_state->page)
+      {
+        // compressor on cases
+        case AutoPumpOff:
+        case AutoMud:
+        case AutoCircOn:
+        case AutoAirOn:
+        case AutoZone:
+          
+          // add counter
+          ps->compressor_state->operation_sixty_min_count++;
+          if(ps->compressor_state->operation_sixty_min_count >= 60)
+          {
+            // update compressor hours
+            int comp_op_h = MCP7941_Read_Comp_OpHours(ps->twi_state);
+            comp_op_h++;
+            MCP7941_Write_Comp_OpHours(comp_op_h);
+            comp_op_h = MCP7941_Read_Comp_OpHours(ps->twi_state);
+            ps->compressor_state->operation_hours = comp_op_h;
+            LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, comp_op_h);
+            ps->compressor_state->operation_sixty_min_count = 0;
+          }
+          break;
+          
+        default: break;
+      }
+    }
+  }
+}
 
 /* ------------------------------------------------------------------*
  *            auto text
@@ -115,7 +162,7 @@ void LCD_Sym_Auto_Text(struct PlantState *ps)
   LCD_WriteAnyValue(f_4x6_p, 5, 15,43, MCP7941_Read_Comp_OpHours(ps->twi_state));
 
   // ip sensor
-  if(MEM_EEPROM_ReadVar(SENSOR_outTank)){ LCD_WriteAnySymbol(s_29x17, 16, 90, _p_sensor); }
+  if(MEM_EEPROM_ReadVar(SENSOR_outTank)){ LCD_WriteAnySymbol(16, 90, _p_sensor); }
 }
 
 
@@ -137,8 +184,8 @@ void LCD_Sym_Auto_Main(struct PlantState *ps)
  *            auto compressor symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_CompressorNeg(void){ LCD_WriteAnySymbol(s_29x17, 6, 45, _n_compressor); }
-void LCD_Sym_Auto_CompressorPos(void){ LCD_WriteAnySymbol(s_29x17, 6, 45, _p_compressor); }
+void LCD_Sym_Auto_CompressorNeg(void){ LCD_WriteAnySymbol(6, 45, _n_compressor); }
+void LCD_Sym_Auto_CompressorPos(void){ LCD_WriteAnySymbol(6, 45, _p_compressor); }
 
 
 /* ------------------------------------------------------------------*
@@ -147,7 +194,7 @@ void LCD_Sym_Auto_CompressorPos(void){ LCD_WriteAnySymbol(s_29x17, 6, 45, _p_com
 
 void LCD_Sym_Auto_Zone(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 6, 0, _n_circulate);
+  LCD_WriteAnySymbol(6, 0, _n_circulate);
   LCD_Sym_Auto_CompressorNeg();
   LCD_WriteAnyStringFont(f_6x8_n, 8, 1, "z");
 }
@@ -159,7 +206,7 @@ void LCD_Sym_Auto_Zone(void)
 
 void LCD_Sym_Auto_SetDown(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 6, 0, _n_setDown);
+  LCD_WriteAnySymbol(6, 0, _n_setDown);
   LCD_Sym_Auto_CompressorPos();
 }
 
@@ -170,7 +217,7 @@ void LCD_Sym_Auto_SetDown(void)
 
 void LCD_Sym_Auto_PumpOff(void)
 {
-  LCD_WriteAnySymbol(s_35x23, 5, 0, _n_pumpOff);
+  LCD_WriteAnySymbol(5, 0, _n_pumpOff);
   if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ LCD_Sym_Auto_CompressorNeg(); }
   else{ LCD_Sym_Auto_CompressorPos(); }
 }
@@ -182,7 +229,7 @@ void LCD_Sym_Auto_PumpOff(void)
 
 void LCD_Sym_Auto_Mud(void)
 {
-  LCD_WriteAnySymbol(s_35x23, 5, 0, _n_mud);
+  LCD_WriteAnySymbol(5, 0, _n_mud);
   LCD_Sym_Auto_CompressorNeg();
 }
 
@@ -193,25 +240,25 @@ void LCD_Sym_Auto_Mud(void)
 
 void LCD_Sym_Auto_CircOn(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 6, 0, _n_circulate);
+  LCD_WriteAnySymbol(6, 0, _n_circulate);
   LCD_Sym_Auto_CompressorNeg();
 }
 
 void LCD_Sym_Auto_CircOff(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 6, 0, _p_circulate);
+  LCD_WriteAnySymbol(6, 0, _p_circulate);
   LCD_Sym_Auto_CompressorPos();
 }
 
 void LCD_Sym_Auto_AirOn(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 6, 0, _n_air);
+  LCD_WriteAnySymbol(6, 0, _n_air);
   LCD_Sym_Auto_CompressorNeg();
 }
 
 void LCD_Sym_Auto_AirOff(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 6, 0, _p_air);
+  LCD_WriteAnySymbol(6, 0, _p_air);
   LCD_Sym_Auto_CompressorPos();
 }
 
@@ -251,12 +298,12 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
     switch (pump)
     {
       case 0:
-        LCD_WriteAnySymbol(s_35x23, 5, 89, _p_inflowPump);
+        LCD_WriteAnySymbol(5, 89, _p_inflowPump);
         if(p == AutoAirOff || p == AutoCircOff){ LCD_Sym_Auto_CompressorPos(); }
         break;
 
-      case 1: LCD_WriteAnySymbol(s_19x19, 5, 90, _p_pump); break;
-      case 2: LCD_WriteAnySymbol(s_35x23, 5, 90, _p_pump2); break;
+      case 1: LCD_WriteAnySymbol(5, 90, _p_pump); break;
+      case 2: LCD_WriteAnySymbol(5, 90, _p_pump2); break;
       default: break;
     }
   }
@@ -267,12 +314,12 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
     switch (pump)
     {
       case 0:
-        LCD_WriteAnySymbol(s_35x23, 5, 89, _n_inflowPump);
+        LCD_WriteAnySymbol(5, 89, _n_inflowPump);
         if(p == AutoAirOff || p == AutoCircOff){ LCD_Sym_Auto_CompressorNeg(); }
         break;
 
-      case 1: LCD_WriteAnySymbol(s_19x19, 5, 90, _n_pump); break;
-      case 2: LCD_WriteAnySymbol(s_35x23, 5, 90, _n_pump2); break;
+      case 1: LCD_WriteAnySymbol(5, 90, _n_pump); break;
+      case 2: LCD_WriteAnySymbol(5, 90, _n_pump2); break;
       default: break;
     }
   }
@@ -304,64 +351,15 @@ void LCD_Sym_Auto_Ph(struct PlantState *ps)
   // ph symbol
   switch(ps->phosphor_state->ph_state)
   {
-    case _ph_on: LCD_WriteAnySymbol(s_19x19, 6, 134, _n_phosphor); break;
+    case _ph_on: LCD_WriteAnySymbol(6, 134, _n_phosphor); break;
     case _ph_disabled:
-    case _ph_off: LCD_WriteAnySymbol(s_19x19, 6, 134, _p_phosphor); break;
+    case _ph_off: LCD_WriteAnySymbol(6, 134, _p_phosphor); break;
     default: break;
   }
 
   // time
   LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, ps->phosphor_state->ph_tms->min);
   LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, ps->phosphor_state->ph_tms->sec);
-}
-
-
-/* ------------------------------------------------------------------*
- *            AutoVar - Comp
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_Auto_PageTime(struct PlantState *ps, struct Tms *tms)
-{
-  // sec change
-  if(ps->time_state->tic_sec_update_flag)
-  {
-    // time
-    LCD_Sym_Auto_Time(ps);
-    LCD_WriteAnyValue(f_4x6_p, 2, 13, 17, tms->sec);
-    LCD_WriteAnyValue(f_4x6_p, 2, 13, 5, tms->min);
-
-    // minute update
-    if(tms->sec == 59)
-    { 
-      // update compressor hours
-      switch(ps->page_state->page)
-      {
-        // compressor on cases
-        case AutoPumpOff:
-        case AutoMud:
-        case AutoCircOn:
-        case AutoAirOn:
-        case AutoZone:
-          
-          // add counter
-          ps->compressor_state->operation_sixty_min_count++;
-          if(ps->compressor_state->operation_sixty_min_count >= 60)
-          {
-            // update compressor hours
-            int comp_op_h = MCP7941_Read_Comp_OpHours(ps->twi_state);
-            comp_op_h++;
-            MCP7941_Write_Comp_OpHours(comp_op_h);
-            comp_op_h = MCP7941_Read_Comp_OpHours(ps->twi_state);
-            ps->compressor_state->operation_hours = comp_op_h;
-            LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, comp_op_h);
-            ps->compressor_state->operation_sixty_min_count = 0;
-          }
-          break;
-          
-        default: break;
-      }
-    }
-  }
 }
 
 
@@ -385,31 +383,33 @@ void LCD_Sym_Manual_Main(struct PlantState *ps)
  *            manual symbol data
  * ------------------------------------------------------------------*/
 
-struct SymbolData LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
+struct RowColPos LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
 {
-  struct SymbolData symbol_data = { .symbol_type = s_none, .row = 0, .col = 0 };
+  struct RowColPos position = { .row = 0, .col = 0 };
 
   switch(sym)
   {
     case _p_circulate:
-    case _n_circulate: symbol_data.symbol_type = s_29x17; symbol_data.row = 3; symbol_data.col = 0; break;
+    case _n_circulate: position.row = 3; position.col = 0; break;
     case _p_air:
-    case _n_air: symbol_data.symbol_type = s_29x17; symbol_data.row = 3; symbol_data.col = 40; break;
+    case _n_air: position.row = 3; position.col = 40; break;
     case _p_setDown:
-    case _n_setDown: symbol_data.symbol_type = s_29x17; symbol_data.row = 3; symbol_data.col = 80; break;
+    case _n_setDown: position.row = 3; position.col = 80; break;
     case _p_pumpOff:
-    case _n_pumpOff: symbol_data.symbol_type = s_35x23; symbol_data.row = 2; symbol_data.col = 120; break;
+    case _n_pumpOff: position.row = 2; position.col = 120; break;
     case _p_mud:
-    case _n_mud: symbol_data.symbol_type = s_35x23; symbol_data.row = 8; symbol_data.col = 0; break;
+    case _n_mud: position.row = 8; position.col = 0; break;
     case _p_compressor:
-    case _n_compressor: symbol_data.symbol_type = s_29x17; symbol_data.row = 9; symbol_data.col = 40; break;
+    case _n_compressor: position.row = 9; position.col = 40; break;
     case _p_phosphor:
-    case _n_phosphor: symbol_data.symbol_type = s_19x19; symbol_data.row = 9; symbol_data.col = 85; break;
+    case _n_phosphor: position.row = 9; position.col = 85; break;
     case _p_inflowPump:
-    case _n_inflowPump: symbol_data.symbol_type = s_35x23; symbol_data.row = 8; symbol_data.col = 120; break;
+    case _n_inflowPump: position.row = 8; position.col = 120; break;
+    case _p_valve: 
+    case _n_valve: position.row = 15; position.col = 0; break;
     default: break;
   }
-  return symbol_data;
+  return position;
 }
 
 
@@ -419,12 +419,12 @@ struct SymbolData LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
 
 void LCD_Sym_Manual_AllSymbols(void)
 {
-  t_any_symbol symbols[8] = {_p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump};
+  t_any_symbol symbols[9] = {_p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump, _p_valve};
 
-  for(unsigned char i = 0; i < 8; i++)
+  for(unsigned char i = 0; i < 9; i++)
   { 
-    struct SymbolData symbol_data = LCD_Sym_Manual_GetSymbolData(symbols[i]);
-    LCD_WriteAnySymbol(symbol_data.symbol_type, symbol_data.row, symbol_data.col, symbols[i]);
+    struct RowColPos position = LCD_Sym_Manual_GetSymbolData(symbols[i]);
+    LCD_WriteAnySymbol(position.row, position.col, symbols[i]);
   }
 }
 
@@ -435,8 +435,8 @@ void LCD_Sym_Manual_AllSymbols(void)
 
 void LCD_Sym_Manual_Draw(t_any_symbol sym)
 {
-  struct SymbolData symbol_data = LCD_Sym_Manual_GetSymbolData(sym);
-  LCD_WriteAnySymbol(symbol_data.symbol_type, symbol_data.row, symbol_data.col, sym);
+  struct RowColPos position = LCD_Sym_Manual_GetSymbolData(sym);
+  LCD_WriteAnySymbol(position.row, position.col, sym);
 }
 
 
@@ -524,11 +524,11 @@ void LCD_Sym_Setup_Page(void)
 
 void LCD_Sym_Setup_Circulate(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_circulate);
+  LCD_WriteAnySymbol(3, 0, _n_circulate);
   LCD_Clean();
 
   LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_circulate);
+  LCD_WriteAnySymbol(3, 0, _n_circulate);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -540,10 +540,10 @@ void LCD_Sym_Setup_Circulate(void)
 
 void LCD_Sym_Setup_Air(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 3, 40, _n_air);
+  LCD_WriteAnySymbol(3, 40, _n_air);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_air);
+  LCD_WriteAnySymbol(3, 0, _n_air);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -555,10 +555,10 @@ void LCD_Sym_Setup_Air(void)
 
 void LCD_Sym_Setup_SetDown(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 3, 80, _n_setDown);
+  LCD_WriteAnySymbol(3, 80, _n_setDown);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_setDown);
+  LCD_WriteAnySymbol(3, 0, _n_setDown);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
   LCD_WriteAnyStringFont(f_6x8_p, 10, 0, "Time:");
@@ -571,10 +571,10 @@ void LCD_Sym_Setup_SetDown(void)
 
 void LCD_Sym_Setup_PumpOff(void)
 {
-  LCD_WriteAnySymbol(s_35x23, 2, 120, _n_pumpOff);
+  LCD_WriteAnySymbol(2, 120, _n_pumpOff);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_35x23, 3, 0, _n_pumpOff);
+  LCD_WriteAnySymbol(3, 0, _n_pumpOff);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -586,10 +586,10 @@ void LCD_Sym_Setup_PumpOff(void)
 
 void LCD_Sym_Setup_Mud(void)
 {
-  LCD_WriteAnySymbol(s_35x23, 8, 0, _n_mud);
+  LCD_WriteAnySymbol(8, 0, _n_mud);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_35x23, 2, 0, _n_mud);
+  LCD_WriteAnySymbol(2, 0, _n_mud);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -601,12 +601,12 @@ void LCD_Sym_Setup_Mud(void)
 
 void LCD_Sym_Setup_Compressor(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 9, 40, _n_compressor);
+  LCD_WriteAnySymbol(9, 40, _n_compressor);
   LCD_Clean();
 
   LCD_WriteAnyStringFont(f_6x8_p, 11,28, "mbar MIN.");
   LCD_WriteAnyStringFont(f_6x8_p, 16,28, "mbar MAX.");
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_compressor);
+  LCD_WriteAnySymbol(3, 0, _n_compressor);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -618,10 +618,10 @@ void LCD_Sym_Setup_Compressor(void)
 
 void LCD_Sym_Setup_Phosphor(void)
 {
-  LCD_WriteAnySymbol(s_19x19, 9, 85, _n_phosphor);
+  LCD_WriteAnySymbol(9, 85, _n_phosphor);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_19x19, 3, 0, _n_phosphor);
+  LCD_WriteAnySymbol(3, 0, _n_phosphor);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -633,10 +633,10 @@ void LCD_Sym_Setup_Phosphor(void)
 
 void LCD_Sym_Setup_InflowPump(void)
 {
-  LCD_WriteAnySymbol(s_35x23, 8, 120, _n_inflowPump);
+  LCD_WriteAnySymbol(8, 120, _n_inflowPump);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_35x23, 1, 0, _n_inflowPump);
+  LCD_WriteAnySymbol(1, 0, _n_inflowPump);
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
 }
@@ -692,27 +692,27 @@ void LCD_Sym_Setup_InflowPump_Text(unsigned char select)
 
 void LCD_Sym_Setup_Cal(struct PlantState *ps)
 {
-  LCD_WriteAnySymbol(s_29x17, 15, 0, _n_cal);
+  LCD_WriteAnySymbol(15, 0, _n_cal);
   LCD_Clean();
-  LCD_WriteAnySymbol(s_29x17, 2, 0, _n_cal);
-  LCD_WriteAnySymbol(s_29x17, 15, 1, _p_level);
+  LCD_WriteAnySymbol(2, 0, _n_cal);
+  LCD_WriteAnySymbol(15, 1, _p_level);
   LCD_ControlButtons(_setup_pos_sym_esc);
   LCD_ControlButtons(_setup_pos_sym_ok);
   LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 1);
-  LCD_WriteAnySymbol(s_29x17, 9, 125, _p_cal);
+  LCD_WriteAnySymbol(9, 125, _p_cal);
   LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "mbar:");
 
   // sonic
   unsigned char sonic = MEM_EEPROM_ReadVar(SONIC_on);
   if(sonic)
   { 
-    LCD_WriteAnySymbol(s_19x19, 2, 40, _n_sonic);
+    LCD_WriteAnySymbol(2, 40, _n_sonic);
     LCD_WriteAnyStringFont(f_6x8_p, 17, 66, "mm");
     LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
   }
   else
   { 
-    LCD_WriteAnySymbol(s_19x19, 2, 40, _p_sonic);
+    LCD_WriteAnySymbol(2, 40, _p_sonic);
     LCD_WriteAnyStringFont(f_6x8_p, 17, 60, "mbar");
     LCD_WriteAnyValue(f_6x8_p, 3, 17, 40, ps->mpx_state->level_cal);
   }
@@ -721,8 +721,8 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
   if(!MEM_EEPROM_ReadVar(SONIC_on))
   {
     unsigned char calRedo = MEM_EEPROM_ReadVar(CAL_Redo_on);
-    if(calRedo){ LCD_WriteAnySymbol(s_19x19, 15, 130, _n_arrow_redo); }
-    else{ LCD_WriteAnySymbol(s_19x19, 15, 130, _p_arrow_redo); }
+    if(calRedo){ LCD_WriteAnySymbol(15, 130, _n_arrow_redo); }
+    else{ LCD_WriteAnySymbol(15, 130, _p_arrow_redo); }
   }
 
 
@@ -736,10 +736,10 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
 
 void LCD_Sym_Setup_Alarm(struct PlantState *ps)
 {
-  LCD_WriteAnySymbol(s_29x17, 15, 40, _n_alarm);
+  LCD_WriteAnySymbol(15, 40, _n_alarm);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_alarm);
+  LCD_WriteAnySymbol(3, 0, _n_alarm);
   LCD_WriteAnyStringFont(f_6x8_n, 10,3, "T:");
 
   // degree symbol
@@ -764,10 +764,10 @@ void LCD_Sym_Setup_Alarm(struct PlantState *ps)
 
 void LCD_Sym_Setup_Watch(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 15, 80, _n_watch);
+  LCD_WriteAnySymbol(15, 80, _n_watch);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _n_watch);
+  LCD_WriteAnySymbol(3, 0, _n_watch);
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
   LCD_Sym_WriteCtrlButton2();
 
@@ -790,10 +790,10 @@ void LCD_Sym_Setup_Watch(void)
 
 void LCD_Sym_Setup_Zone(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 15, 120, _n_zone);
+  LCD_WriteAnySymbol(15, 120, _n_zone);
   LCD_Clean();
 
-  LCD_WriteAnySymbol(s_29x17, 2, 0, _n_zone);
+  LCD_WriteAnySymbol(2, 0, _n_zone);
 
   LCD_Sym_WriteCtrlButton();
   LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
@@ -806,18 +806,18 @@ void LCD_Sym_Setup_Zone(void)
 
 void LCD_Sym_Setup_AllSymbols(void)
 {
-  LCD_WriteAnySymbol(s_29x17, 3, 0, _p_circulate);
-  LCD_WriteAnySymbol(s_29x17, 3, 40, _p_air);
-  LCD_WriteAnySymbol(s_29x17, 3, 80, _p_setDown);
-  LCD_WriteAnySymbol(s_35x23, 2, 120, _p_pumpOff);
-  LCD_WriteAnySymbol(s_35x23, 8, 0, _p_mud);
-  LCD_WriteAnySymbol(s_29x17, 9, 40, _p_compressor);
-  LCD_WriteAnySymbol(s_19x19, 9, 85, _p_phosphor);
-  LCD_WriteAnySymbol(s_35x23, 8, 120, _p_inflowPump);
-  LCD_WriteAnySymbol(s_29x17, 15, 0, _p_cal);
-  LCD_WriteAnySymbol(s_29x17, 15, 40, _p_alarm);
-  LCD_WriteAnySymbol(s_29x17, 15, 80, _p_watch);
-  LCD_WriteAnySymbol(s_29x17, 15, 120, _p_zone);
+  LCD_WriteAnySymbol(3, 0, _p_circulate);
+  LCD_WriteAnySymbol(3, 40, _p_air);
+  LCD_WriteAnySymbol(3, 80, _p_setDown);
+  LCD_WriteAnySymbol(2, 120, _p_pumpOff);
+  LCD_WriteAnySymbol(8, 0, _p_mud);
+  LCD_WriteAnySymbol(9, 40, _p_compressor);
+  LCD_WriteAnySymbol(9, 85, _p_phosphor);
+  LCD_WriteAnySymbol(8, 120, _p_inflowPump);
+  LCD_WriteAnySymbol(15, 0, _p_cal);
+  LCD_WriteAnySymbol(15, 40, _p_alarm);
+  LCD_WriteAnySymbol(15, 80, _p_watch);
+  LCD_WriteAnySymbol(15, 120, _p_zone);
 }
 
 
@@ -829,13 +829,13 @@ void LCD_Sym_Setup_CircSensor(unsigned char sensor)
 {
   if(sensor)
   {
-    LCD_WriteAnySymbol(s_29x17, 15, 0, _n_sensor);
+    LCD_WriteAnySymbol(15, 0, _n_sensor);
     LCD_ClrSpace(15, 39, 4, 31);
     LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
   }
   else
   {
-    LCD_WriteAnySymbol(s_29x17, 15, 0, _p_sensor);
+    LCD_WriteAnySymbol(15, 0, _p_sensor);
     LCD_FillSpace(15, 39, 4, 31);
     LCD_WriteAnyStringFont(f_6x8_n, 16, 40, "Time:"); 
   }
@@ -900,15 +900,15 @@ void LCD_Sym_Setup_AirText(unsigned char on, unsigned char *p_var)
 
 void LCD_Sym_Setup_Pump(unsigned char mark)
 {
-  LCD_WriteAnySymbol(s_29x17, 15, 45, _p_compressor);
-  LCD_WriteAnySymbol(s_19x19, 15, 90, _p_pump);
-  LCD_WriteAnySymbol(s_35x23, 15, 120, _p_pump2);
+  LCD_WriteAnySymbol(15, 45, _p_compressor);
+  LCD_WriteAnySymbol(15, 90, _p_pump);
+  LCD_WriteAnySymbol(15, 120, _p_pump2);
 
   switch (mark)
   {
-    case 0: LCD_WriteAnySymbol(s_29x17, 15, 45, _n_compressor); break;
-    case 1: LCD_WriteAnySymbol(s_19x19, 15, 90, _n_pump); break;
-    case 2: LCD_WriteAnySymbol(s_35x23, 15, 120, _n_pump2); break;
+    case 0: LCD_WriteAnySymbol(15, 45, _n_compressor); break;
+    case 1: LCD_WriteAnySymbol(15, 90, _n_pump); break;
+    case 2: LCD_WriteAnySymbol(15, 120, _n_pump2); break;
     default: break;
   }
 }
@@ -1060,9 +1060,9 @@ void LCD_Sym_Data_Setup(void)
 
 void LCD_Sym_DataArrows(void)
 {
-  LCD_WriteAnySymbol(s_19x19, 3, 140, _p_arrow_up);
-  LCD_WriteAnySymbol(s_19x19, 14, 140, _p_arrow_down);
-  LCD_WriteAnySymbol(s_19x19, 8, 140, _line);
+  LCD_WriteAnySymbol(3, 140, _p_arrow_up);
+  LCD_WriteAnySymbol(14, 140, _p_arrow_down);
+  LCD_WriteAnySymbol(8, 140, _line);
 }
 
 
@@ -1083,7 +1083,7 @@ void LCD_Sym_Data_Sonic(struct PlantState *ps)
   LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, 1);
   LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, 1);
 
-  LCD_WriteAnySymbol(s_19x19, 3, 50, _p_sonic);
+  LCD_WriteAnySymbol(3, 50, _p_sonic);
 }
 
 
@@ -1548,7 +1548,7 @@ void LCD_pPinButtons(unsigned char pPin)
   }
 
   // write symbol
-  LCD_WriteAnySymbol(s_34x21, row, col, any_symbol);
+  LCD_WriteAnySymbol(row, col, any_symbol);
 
   // write number if it is one
   if(num < 0x20){ LCD_WriteAnyFont(f_8x16_p, row + 1, col + 13, num); }
@@ -1581,7 +1581,7 @@ void LCD_nPinButtons(unsigned char nPin)
     default: break;
   }
 
-  LCD_WriteAnySymbol(s_34x21, row, col, any_symbol);
+  LCD_WriteAnySymbol(row, col, any_symbol);
 
   // write number if it is one
   if(num < 0x20) LCD_WriteAnyFont(f_8x16_n, row + 1, col + 13, num);
@@ -1748,15 +1748,15 @@ void LCD_ControlButtons(t_CtrlButtons ctrl)
 {
   switch(ctrl)
   {
-    case _setup_pos_sym_esc: LCD_WriteAnySymbol(s_19x19, 3, 90, _p_esc); break;
-    case _setup_pos_sym_ok: LCD_WriteAnySymbol(s_19x19, 3, 130, _p_ok); break;
-    case _setup_pos_sym_minus: LCD_WriteAnySymbol(s_19x19, 9, 90, _p_minus); break;
-    case _setup_pos_sym_plus: LCD_WriteAnySymbol(s_19x19, 9, 130, _p_plus); break;
+    case _setup_pos_sym_esc: LCD_WriteAnySymbol(3, 90, _p_esc); break;
+    case _setup_pos_sym_ok: LCD_WriteAnySymbol(3, 130, _p_ok); break;
+    case _setup_pos_sym_minus: LCD_WriteAnySymbol(9, 90, _p_minus); break;
+    case _setup_pos_sym_plus: LCD_WriteAnySymbol(9, 130, _p_plus); break;
 
-    case _setup_neg_sym_esc: LCD_WriteAnySymbol(s_19x19, 3, 90, _n_esc); break;
-    case _setup_neg_sym_ok: LCD_WriteAnySymbol(s_19x19, 3, 130, _n_ok); break;
-    case _setup_neg_sym_minus: LCD_WriteAnySymbol(s_19x19, 9, 90, _n_minus); break;
-    case _setup_neg_sym_plus: LCD_WriteAnySymbol(s_19x19, 9, 130, _n_plus); break;
+    case _setup_neg_sym_esc: LCD_WriteAnySymbol(3, 90, _n_esc); break;
+    case _setup_neg_sym_ok: LCD_WriteAnySymbol(3, 130, _n_ok); break;
+    case _setup_neg_sym_minus: LCD_WriteAnySymbol(9, 90, _n_minus); break;
+    case _setup_neg_sym_plus: LCD_WriteAnySymbol(9, 130, _n_plus); break;
 
     default: break;
   }
@@ -1766,15 +1766,15 @@ void LCD_ControlButtons2(t_CtrlButtons ctrl)
 {
   switch(ctrl)
   {
-    case _setup_pos_sym_esc: LCD_WriteAnySymbol(s_19x19,  3,  90, _p_esc); break;
-    case _setup_pos_sym_ok: LCD_WriteAnySymbol(s_19x19,  3,  130, _p_ok); break;
-    case _setup_pos_sym_minus: LCD_WriteAnySymbol(s_19x19,  15, 130, _p_minus); break;
-    case _setup_pos_sym_plus: LCD_WriteAnySymbol(s_19x19,  9,  130, _p_plus); break;
+    case _setup_pos_sym_esc: LCD_WriteAnySymbol( 3,  90, _p_esc); break;
+    case _setup_pos_sym_ok: LCD_WriteAnySymbol( 3,  130, _p_ok); break;
+    case _setup_pos_sym_minus: LCD_WriteAnySymbol( 15, 130, _p_minus); break;
+    case _setup_pos_sym_plus: LCD_WriteAnySymbol( 9,  130, _p_plus); break;
 
-    case _setup_neg_sym_esc: LCD_WriteAnySymbol(s_19x19,  3,  90, _n_esc); break;
-    case _setup_neg_sym_ok: LCD_WriteAnySymbol(s_19x19,  3,  130, _n_ok); break;
-    case _setup_neg_sym_minus: LCD_WriteAnySymbol(s_19x19,  15, 130, _n_minus); break;
-    case _setup_neg_sym_plus: LCD_WriteAnySymbol(s_19x19,  9,  130, _n_plus); break;
+    case _setup_neg_sym_esc: LCD_WriteAnySymbol( 3,  90, _n_esc); break;
+    case _setup_neg_sym_ok: LCD_WriteAnySymbol( 3,  130, _n_ok); break;
+    case _setup_neg_sym_minus: LCD_WriteAnySymbol( 15, 130, _n_minus); break;
+    case _setup_neg_sym_plus: LCD_WriteAnySymbol( 9,  130, _n_plus); break;
 
     default: break;
   }
@@ -1789,9 +1789,9 @@ void LCD_Sym_Pin_OkButton(unsigned char on)
 {
   switch(on)
   {
-    case 0: LCD_WriteAnySymbol(s_19x19, 20, 130, _p_ok); break;
-    case 1: LCD_WriteAnySymbol(s_19x19, 20, 130, _n_ok); break;
-    default: LCD_WriteAnySymbol(s_19x19, 20, 130, _n_ok); break;
+    case 0: LCD_WriteAnySymbol(20, 130, _p_ok); break;
+    case 1: LCD_WriteAnySymbol(20, 130, _n_ok); break;
+    default: LCD_WriteAnySymbol(20, 130, _n_ok); break;
   }
 }
 
@@ -1989,27 +1989,27 @@ void LCD_Sym_Error(unsigned char err)
   // temp
   if(err & E_T)
   {
-    LCD_WriteAnySymbol(s_19x19, 16, 134, _n_grad);
+    LCD_WriteAnySymbol(16, 134, _n_grad);
   }
 
   // over-pressure or under-pressure
   if((err & E_OP) || (err & E_UP))
   {
     LCD_ClrSpace(6, 44, 6, 35);
-    LCD_WriteAnySymbol(s_29x17, 6, 45, _n_alarm);
+    LCD_WriteAnySymbol(6, 45, _n_alarm);
   }
 
   // max in tank
   if(err & E_IT)
   {
-    LCD_WriteAnySymbol(s_29x17, 17, 1, _n_alarm);
+    LCD_WriteAnySymbol(17, 1, _n_alarm);
     LCD_Sym_TextButton(TEXT_BUTTON_auto, 1);
   }
 
   // max out tank
   if(err & E_OT)
   {
-    LCD_WriteAnySymbol(s_29x17, 17, 90, _n_alarm);
+    LCD_WriteAnySymbol(17, 90, _n_alarm);
     LCD_Sym_TextButton(TEXT_BUTTON_setup, 0);
   }
 }
@@ -2121,6 +2121,7 @@ t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
     case _n_escape: return _p_escape;
     case _n_del: return _p_del;
     case _n_text_frame: return _p_text_frame;
+    case _n_valve: return _p_valve;
 
     case _p_pumpOff: return _n_pumpOff;
     case _p_mud: return _n_mud;
@@ -2151,6 +2152,7 @@ t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
     case _p_escape: return _n_escape;
     case _p_del: return _n_del;
     case _p_text_frame: return _n_text_frame;
+    case _p_valve: return _n_valve;
 
     default: break;
   }

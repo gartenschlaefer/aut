@@ -239,7 +239,8 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
   switch(font_type)
   {
     case f_6x8_p: len = Font_6X8[0]; height = Font_6X8[1]; break;
-    case f_6x8_n: len = Font_6X8_Neg[0]; height = Font_6X8_Neg[1]; break;
+    //case f_6x8_n: len = Font_6X8_Neg[0]; height = Font_6X8_Neg[1]; break;
+    case f_6x8_n: len = Font_6X8[0]; height = Font_6X8[1]; break;
     case f_4x6_p: len = FontNumbers_4X6[0]; height = FontNumbers_4X6[1]; break;
     case f_4x6_n: len = FontNumbers_4X6_Neg[0]; height = FontNumbers_4X6_Neg[1]; break;
     case f_8x16_p:
@@ -259,7 +260,7 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
       switch(font_type)
       {
         case f_6x8_p: font_symbol = Font_6X8[8 + c + len * (p + word * height)]; break;
-        case f_6x8_n: font_symbol = Font_6X8_Neg[8 + c + len * (p + word * height)]; break;
+        case f_6x8_n: font_symbol = 255 - Font_6X8[8 + c + len * (p + word * height)]; break;
         case f_4x6_p: font_symbol = FontNumbers_4X6[2 + c + len * (p + word * height)]; break;
         case f_4x6_n: font_symbol = FontNumbers_4X6_Neg[2 + c + len * (p + word * height)]; break;
         case f_8x16_p: font_symbol = Font_Numbers_8X16[2 + c + len * (p + height * (word + 10))]; break;
@@ -340,25 +341,78 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
  *  write any symbol
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, unsigned char col, t_any_symbol any_symbol)
+void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol)
 {
   unsigned char lcd_data[158] = {0x00};
-  unsigned char len = 0;
-  unsigned char height = 0;
   unsigned char symbol = 0;
   unsigned char offset = 0;
 
-  switch(symbol_type)
+  unsigned char *symbol_pointer = NULL;
+
+  // get correct symbol pointer
+  switch(any_symbol)
   {
-    case s_35x23: len = Symbols_35x23_bmp[0]; height = Symbols_35x23_bmp[1]; offset = 0; break;
-    case s_29x17: len = Symbols_29x17_bmp[0]; height = Symbols_29x17_bmp[1]; offset = 8; break;
-    case s_19x19: len = Symbols_19x19_bmp[0]; height = Symbols_19x19_bmp[1]; offset = 28; break;
-    case s_34x21: len = Symbols_34x21_bmp[0]; height = Symbols_34x21_bmp[1]; offset = 51; break;
-    case s_39x16: len = Symbols_39x16_bmp[0]; height = Symbols_39x16_bmp[1]; offset = 57; break;
-    case s_logo_hecs: len = Symbol_HECS[0]; height = Symbol_HECS[1]; offset = 59; break;
-    case s_logo_purator: len = Symbol_Purator[0]; height = Symbol_Purator[1]; offset = 60; break;
-    default: break;
+    // 35 x 23 [8]
+    case _n_pumpOff: case _n_mud: case _n_inflowPump: case _n_pump2:
+    case _p_pumpOff: case _p_mud: case _p_inflowPump: case _p_pump2: 
+      symbol_pointer = Symbols_35x23_bmp;
+      offset = _p_pump2 + 1;
+      break;
+
+    // 29 x 17 [20]
+    case _n_setDown: case _n_alarm: case _n_air: case _n_sensor: case _n_watch: case _n_compressor: case _n_circulate: case _n_cal: case _n_zone: case _n_level:
+    case _p_setDown: case _p_alarm: case _p_air: case _p_sensor: case _p_watch: case _p_compressor: case _p_circulate: case _p_cal: case _p_zone: case _p_level:
+      symbol_pointer = Symbols_29x17_bmp;
+      offset = _p_level + 1;
+      break;
+
+    // 19 x 19 [23]
+    case _n_phosphor: case _n_pump: case _n_esc: case _n_plus: case _n_minus: case _n_arrow_up: case _n_arrow_down: case _n_ok: case _n_grad: case _n_sonic: case _n_arrow_redo:
+    case _p_phosphor: case _p_pump: case _p_esc: case _p_plus: case _p_minus: case _p_arrow_up: case _p_arrow_down: case _p_ok: case _p_grad: case _p_sonic: case _p_arrow_redo: 
+    case _line:
+      symbol_pointer = Symbols_19x19_bmp;
+      offset = _line + 1;
+      break;
+
+    // 34 x 21 [6]
+    case _p_frame: case _p_escape: case _p_del: 
+    case _n_frame: case _n_escape: case _n_del:
+      symbol_pointer = Symbols_34x21_bmp;
+      offset = _n_del + 1;
+      break;
+
+    // 39 x 16 [2]
+    case _n_text_frame: 
+    case _p_text_frame:
+      symbol_pointer = Symbols_39x16_bmp;
+      offset = _p_text_frame + 1;
+      break;
+
+    // hecs [1]
+    case _logo_hecs:
+      symbol_pointer = Symbol_HECS;
+      offset = _logo_hecs + 1;
+      break;
+
+    // purator [1]
+    case _logo_purator:
+      symbol_pointer = Symbol_Purator;
+      offset = _logo_purator + 1;
+      break;
+
+    // valve symbol
+    case _n_valve:
+    case _p_valve: 
+      symbol_pointer = Symbols_35x23_bmp;
+      offset = _p_valve + 1;
+      break;
+
+    default: return;
   }
+
+  // get length and height
+  unsigned char len = symbol_pointer[0];
+  unsigned char height = symbol_pointer[1];
 
   // set frame
   LCD_WP_SetFrame(row, col, height, len);
@@ -369,17 +423,8 @@ void LCD_WriteAnySymbol(t_symbol_type symbol_type, unsigned char row, unsigned c
     // columns
     for(unsigned char c = 0; c < len; c++)
     {
-      switch(symbol_type)
-      {
-        case s_35x23: symbol = Symbols_35x23_bmp[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        case s_29x17: symbol = Symbols_29x17_bmp[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        case s_19x19: symbol = Symbols_19x19_bmp[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        case s_34x21: symbol = Symbols_34x21_bmp[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        case s_39x16: symbol = Symbols_39x16_bmp[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        case s_logo_hecs: symbol = Symbol_HECS[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        case s_logo_purator: symbol = Symbol_Purator[2 + c + len * (p + (any_symbol - offset) * height)]; break;
-        default: break;
-      }
+      // get symbol
+      symbol = symbol_pointer[2 + c + len * (p + (any_symbol - offset) * height)];
 
       // convert data for window programming
       lcd_data[c] = LCD_ConvertWP(symbol & 0x0F);
@@ -402,8 +447,8 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons t
   char t[7] = "";
 
   // write frame
-  if(pos){ LCD_WriteAnySymbol(s_39x16, row, col, _p_text_frame); }
-  else{ LCD_WriteAnySymbol(s_39x16, row, col, _n_text_frame); }
+  if(pos){ LCD_WriteAnySymbol(row, col, _p_text_frame); }
+  else{ LCD_WriteAnySymbol(row, col, _n_text_frame); }
 
   switch(text)
   {

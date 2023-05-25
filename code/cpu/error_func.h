@@ -24,6 +24,9 @@
 #define ERROR_ID_IT (3)
 #define ERROR_ID_OT (4)
 
+#define ERROR_ON_TIME_SEC (5)
+#define ERROR_COUNT_NEW_ACTION (250)
+
 
 /* ------------------------------------------------------------------*
  *            function header

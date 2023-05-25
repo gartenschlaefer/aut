@@ -1,12 +1,14 @@
 // --
 // outputs for relays and valves
 
+#include <stdlib.h>
 #include "output_app.h"
 #include "config.h"
 #include "basic_func.h"
 #include "port_func.h"
 #include "memory_app.h"
 #include "tc_func.h"
+#include "queue.h"
 
 
 /* ------------------------------------------------------------------*
@@ -165,12 +167,15 @@ void OUT_Valve_Init(struct PlantState *ps)
 
 void OUT_Valve_Action(struct PlantState *ps, t_valve_action valve_action)
 {
-  // only if in idle state
-  if(!ps->port_state->valve_action_flag)
-  {
-    ps->port_state->valve_action = valve_action;
-    ps->port_state->valve_action_flag = true;
-  }
+  // new data element
+  t_valve_action *new_action = malloc(1);
+  *new_action = valve_action;
+
+  // add valve action
+  queue_enqueue(ps->port_state->queue_valve_action, &new_action);
+  
+  // signalize action
+  ps->port_state->valve_action_flag = true;
 }
 
 
@@ -182,10 +187,21 @@ void OUT_Valve_Update(struct PlantState *ps)
 {
   if(ps->port_state->valve_action_flag)
   {
-    // idle state
+    // idle state -> get action
     if(ps->port_state->valve_handling == _valveHandling_idle)
     {
-      ps->port_state->valve_handling = _valveHandling_set;
+      if(queue_empty(ps->port_state->queue_valve_action))
+      {
+        ps->port_state->valve_action = VALVE_Idle;
+        ps->port_state->valve_action_flag = false;
+      }
+      else
+      {
+        t_valve_action *data = queue_dequeue(ps->port_state->queue_valve_action);
+        ps->port_state->valve_action = *data;
+        ps->port_state->valve_handling = _valveHandling_set;
+        free(data);
+      }
     }
 
     // set outputs
@@ -230,8 +246,6 @@ void OUT_Valve_Update(struct PlantState *ps)
     {
       OUT_Valve_ClrOutput(ps);
       ps->port_state->valve_handling = _valveHandling_idle;
-      ps->port_state->valve_action = VALVE_Idle;
-      ps->port_state->valve_action_flag = false;
     }
 
     else{ ps->port_state->valve_handling = _valveHandling_idle; }
