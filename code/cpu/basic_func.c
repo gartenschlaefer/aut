@@ -42,7 +42,7 @@ void Basic_Init(struct PlantState *ps)
   TWI_D_Master_Init();
 
   // display init
-  LCD_HardwareRst();
+  LCD_Reset_Hardware();
   TCC0_wait_ms(200);
   LCD_Init();
   TCC0_wait_ms(200);

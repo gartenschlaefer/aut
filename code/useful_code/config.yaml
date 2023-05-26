@@ -1,0 +1,5 @@
+
+# for symbol converter
+symbol_converter:
+  input_file: "./test_symbols.h"
+  output_file: "./out_symbols.h"

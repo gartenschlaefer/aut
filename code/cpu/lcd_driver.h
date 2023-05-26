@@ -8,6 +8,15 @@
 #include "enums.h"
 #include "structs.h"
 
+/* ------------------------------------------------------------------*
+ *            LCD specifications
+ * ------------------------------------------------------------------*/
+
+#define LCD_SPEC_MAX_COL (160)
+#define LCD_SPEC_MAX_ROW (104)
+#define LCD_SPEC_ROW_LEN (4)
+#define LCD_SPEC_MAX_PAG (26)
+#define LCD_SPEC_MAX_PAG_SCROLL (31)
 
 /* ------------------------------------------------------------------*
  *            PORT
@@ -63,60 +72,35 @@
 
 
 /* ------------------------------------------------------------------*
- *            Config and Transfer
+ *            functions
  * ------------------------------------------------------------------*/
 
 void LCD_Init(void);
-unsigned char LCD_SendCmd(unsigned char* SCmd, unsigned char i);
+void LCD_Reset_Software(void);
+void LCD_Reset_Hardware(void);
+
+unsigned char LCD_SendCmd(unsigned char* cmd, unsigned char i);
 void LCD_SendData(unsigned char* SData, unsigned char i);
-void LCD_SetPageAddress(unsigned char PA);
-void LCD_SetColumnAdress(unsigned char CA);
-
-
-/* ------------------------------------------------------------------*
- *            Commands
- * ------------------------------------------------------------------*/
-
-void LCD_Rst(void);
-void LCD_HardwareRst(void);
-void LCD_Clean(void);
-
-
-/* ------------------------------------------------------------------*
- *            Window Programming
- * ------------------------------------------------------------------*/
+void LCD_SetPageAddress(unsigned char page);
+void LCD_SetColumnAdress(unsigned char col);
 
 void LCD_WP_Enable(void);
 void LCD_WP_Disable(void);
-void LCD_WP_Column(unsigned char startCA, unsigned char endCA);
-void LCD_WP_Page(unsigned char startPA, unsigned char endPA);
+void LCD_WP_Page(unsigned char start_page, unsigned char end_page);
+void LCD_WP_Column(unsigned char start_col, unsigned char end_col);
+void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
+unsigned char LCD_WP_ConvertData(unsigned char con);
 
-
-/* ------------------------------------------------------------------*
- *            font, strings and values
- * ------------------------------------------------------------------*/
+void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
+void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
+void LCD_Clean(void);
 
 unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word);
 void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char word[]);
 void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value);
 
-
-/* ------------------------------------------------------------------*
- *            symbols and other
- * ------------------------------------------------------------------*/
-
 void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol);
 void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, unsigned char pos);
 void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col);
-
-
-/* ------------------------------------------------------------------*
- *            built in functions
- * ------------------------------------------------------------------*/
-
-unsigned char LCD_ConvertWP(unsigned char con);
-void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
-void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
-void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 
 #endif

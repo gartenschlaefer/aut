@@ -15,6 +15,7 @@
 
 // logo
 void LCD_Sym_Logo(void);
+void LCD_Sym_ClrInfoSpace(void);
 
 // auto
 void LCD_Sym_Auto_SetManager(struct PlantState *ps);
@@ -201,7 +202,7 @@ void LCD_Sym_Error(unsigned char err);
  *            timer ic
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Time(struct PlantState *ps);
+void LCD_Sym_Auto_WorldTime(struct PlantState *ps);
 void LCD_Sym_Auto_Date(struct PlantState *ps);
 
 

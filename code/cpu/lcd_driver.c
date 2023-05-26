@@ -23,7 +23,7 @@ void LCD_Init(void)
   // set ports
   LCD_RST_DIR;
   LCD_RST_OFF;
-  LCD_Rst();
+  LCD_Reset_Software();
 
   // initialize macros
   while(LCD_SendCmd(LcdInitMacro, 11));
@@ -31,18 +31,40 @@ void LCD_Init(void)
 
 
 /*-------------------------------------------------------------------*
+ *  LCD software reset
+ * ------------------------------------------------------------------*/
+
+void LCD_Reset_Software(void)
+{
+  unsigned char Cmd[] = {System_Reset};
+  while(LCD_SendCmd(Cmd, 1));
+}
+
+
+/*-------------------------------------------------------------------*
+ *  LCD hardware reset
+ * ------------------------------------------------------------------*/
+
+void LCD_Reset_Hardware(void)
+{
+  LCD_RST_DIR;
+  LCD_RST_ON;
+}
+
+
+/*-------------------------------------------------------------------*
  *  LCD_SendCmd
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_SendCmd(unsigned char* SCmd, unsigned char i)
+unsigned char LCD_SendCmd(unsigned char* cmd, unsigned char i)
 {
   unsigned char twiErr = 0;
 
   // address, command, count of bytes
-  twiErr = TWI_C_Master_WriteString(W_CMD, SCmd, i);
+  twiErr = TWI_C_Master_WriteString(W_CMD, cmd, i);
 
   // check if error occurred
-  if(twiErr == E_TWI_NO_DATA || twiErr == E_TWI_WAIT || twiErr == E_TWI_ARBLOST || twiErr == E_TWI_BUSERR  || twiErr == E_TWI_NO_SENT) return 1;
+  if(twiErr == E_TWI_NO_DATA || twiErr == E_TWI_WAIT || twiErr == E_TWI_ARBLOST || twiErr == E_TWI_BUSERR  || twiErr == E_TWI_NO_SENT){ return 1; }
 
   return 0;
 }
@@ -52,9 +74,9 @@ unsigned char LCD_SendCmd(unsigned char* SCmd, unsigned char i)
  *  LCD_SendData
  * ------------------------------------------------------------------*/
 
-void LCD_SendData(unsigned char* SData, unsigned char i)
+void LCD_SendData(unsigned char* data, unsigned char i)
 {
-  TWI_C_Master_WriteString(W_DATA, SData, i);
+  TWI_C_Master_WriteString(W_DATA, data, i);
 }
 
 
@@ -62,13 +84,13 @@ void LCD_SendData(unsigned char* SData, unsigned char i)
  *  LCD_SetPageAddress
  * ------------------------------------------------------------------*/
 
-void LCD_SetPageAddress(unsigned char PA)
+void LCD_SetPageAddress(unsigned char page)
 {
   // page address command
-  unsigned char Cmd[] = {Page_Address + PA};
+  unsigned char Cmd[] = {Page_Address + page};
 
   // protection
-  if((Cmd[0] < 0x60) || (Cmd[0] > 0x78)) return;
+  if((Cmd[0] < 0x60) || (Cmd[0] > 0x78)){ return; }
 
   // send
   while(LCD_SendCmd(Cmd, 1));
@@ -79,16 +101,16 @@ void LCD_SetPageAddress(unsigned char PA)
  *  LCD_SetColumnAddress
  * ------------------------------------------------------------------*/
 
-void LCD_SetColumnAdress(unsigned char CA)
+void LCD_SetColumnAdress(unsigned char col)
 {
   unsigned char ColumnAddress[] = {Column_LSB0, Column_MSB0};
 
   // protection
-  if(CA > 160) return;
+  if(col > LCD_SPEC_MAX_COL){ return; }
 
   // column addresses
-  ColumnAddress[0] = (Column_LSB0 + (CA & 0x0F));
-  ColumnAddress[1] = (Column_MSB0 + ((CA & 0xF0) >> 4));
+  ColumnAddress[0] = (Column_LSB0 + (col & 0x0F));
+  ColumnAddress[1] = (Column_MSB0 + ((col & 0xF0) >> 4));
 
   // send
   while(LCD_SendCmd(ColumnAddress, 2));
@@ -116,9 +138,9 @@ void LCD_WP_Disable(void)
  *  Window Programming, Set Start Page-Address and End Page-Address
  * ------------------------------------------------------------------*/
 
-void LCD_WP_Page(unsigned char startPA, unsigned char endPA)
+void LCD_WP_Page(unsigned char start_page, unsigned char end_page)
 {
-  unsigned char Cmd[] = {WPP0, startPA, WPP1, endPA};
+  unsigned char Cmd[] = {WPP0, start_page, WPP1, end_page};
   while(LCD_SendCmd(Cmd, 4));
 }
 
@@ -127,62 +149,45 @@ void LCD_WP_Page(unsigned char startPA, unsigned char endPA)
  *  Window Programming, Set Start Column-Address and End Column-Address
  * ------------------------------------------------------------------*/
 
-void LCD_WP_Column(unsigned char startCA, unsigned char endCA)
+void LCD_WP_Column(unsigned char start_col, unsigned char end_col)
 {
-  unsigned char Cmd[] = {WPC0, startCA, WPC1, endCA};
+  unsigned char Cmd[] = {WPC0, start_col, WPC1, end_col};
   while(LCD_SendCmd(Cmd, 4));
 }
 
 
 /*-------------------------------------------------------------------*
- *  LCD software reset
+ *  sets the frame for window programming
  * ------------------------------------------------------------------*/
 
-void LCD_Rst(void)
-{
-  unsigned char Cmd[] = {System_Reset};
-  while(LCD_SendCmd(Cmd, 1));
-}
-
-
-/*-------------------------------------------------------------------*
- *  LCD hardware reset
- * ------------------------------------------------------------------*/
-
-void LCD_HardwareRst(void)
-{
-  LCD_RST_DIR;
-  LCD_RST_ON;
-}
-
-
-/*-------------------------------------------------------------------*
- *  clean LCD
- * ------------------------------------------------------------------*/
-
-void LCD_Clean(void)
-{
-  unsigned char LcdData[80] = {0x00};
-
+void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
+{ 
   // page and column address
-  LCD_SetPageAddress(0);
-  LCD_SetColumnAdress(0);
+  LCD_SetPageAddress(row);
+  LCD_SetColumnAdress(col);
 
-  // window program
+  // set frame
   LCD_WP_Enable();
-  LCD_WP_Page(0, 25);
-  LCD_WP_Column(0, 159);
+  LCD_WP_Page(row, row + height);
+  LCD_WP_Column(col, col + len - 1);
+}
 
-  // 25 pages
-  for(unsigned char p = 0; p < 52; p++)
-  {
-    // 160 columns
-    for(unsigned char c = 0; c < 2; c++)
-    {
-      LCD_SendData(LcdData, 80);
-    }
-  }
-  LCD_WP_Disable();
+
+/*-------------------------------------------------------------------*
+ *  converts a nibble to the LED standards of the Display:
+ *  each pixel in the H is converted to 2 Bits, 11 px On - 00 px off
+ * ------------------------------------------------------------------*/
+
+unsigned char LCD_WP_ConvertData(unsigned char con)
+{
+  unsigned char convert = 0;
+
+  if(con & 0x01){ convert += 0x03; }
+  if(con & 0x02){ convert += 0x0C; }
+  if(con & 0x04){ convert += 0x30; }
+  if(con & 0x08){ convert += 0xC0; }
+
+  return convert;
 }
 
 
@@ -192,17 +197,19 @@ void LCD_Clean(void)
 
 void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
 {
-  unsigned char LcdData[160] = {0xFF};
+  // allocate memory
+  unsigned char *lcd_data = malloc(len);
 
-  // fill array
-  for(unsigned char p = 0; p < 160; p++){ LcdData[p] = 0xFF; }
+  // fill memory
+  for(unsigned char p = 0; p < len; p++){ lcd_data[p] = 0xFF; }
 
+  // window programming
   LCD_WP_SetFrame(row, col, height, len);
   
-  // 25 pages
-  for(unsigned char p = 0; p < height; p++){ LCD_SendData(LcdData, (len)); }
-
+  // for each page
+  for(unsigned char p = 0; p < height; p++){ LCD_SendData(lcd_data, len); }
   LCD_WP_Disable();
+  free(lcd_data);
 }
 
 
@@ -212,18 +219,27 @@ void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, u
 
 void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
 {
-  unsigned char LcdData[160] = {0x00};
+  // allocate memory
+  unsigned char *lcd_data = malloc(len);
 
-  // zero
-  for(unsigned char p = 0; p < 160; p++){ LcdData[p] = 0x00; }
+  // zero memory
+  for(unsigned char p = 0; p < len; p++){ lcd_data[p] = 0x00; }
 
+  // window programming
   LCD_WP_SetFrame(row, col, height, len);
   
-  // 25 pages
-  for(unsigned char p = 0; p < height; p++){ LCD_SendData(LcdData, (len)); }
-
+  // for each page
+  for(unsigned char p = 0; p < height; p++){ LCD_SendData(lcd_data, len); }
   LCD_WP_Disable();
+  free(lcd_data);
 }
+
+
+/*-------------------------------------------------------------------*
+ *  clean whole screen
+ * ------------------------------------------------------------------*/
+
+void LCD_Clean(void){ LCD_ClrSpace(0, 0, LCD_SPEC_MAX_PAG, LCD_SPEC_MAX_COL); }
 
 
 /*-------------------------------------------------------------------*
@@ -232,25 +248,30 @@ void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, un
 
 unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word)
 {
-  unsigned char lcd_data[16] = {0x00};
-  unsigned char len = 0;
-  unsigned char height = 0;
-  unsigned char font_symbol = 0;
+  unsigned char *symbol_pointer = NULL;
+  bool negative = false;
+  unsigned char term = 2;
 
   switch(font_type)
   {
-    case f_6x8_p: len = Font_6X8[0]; height = Font_6X8[1]; break;
-    //case f_6x8_n: len = Font_6X8_Neg[0]; height = Font_6X8_Neg[1]; break;
-    case f_6x8_n: len = Font_6X8[0]; height = Font_6X8[1]; break;
-    case f_4x6_p: len = FontNumbers_4X6[0]; height = FontNumbers_4X6[1]; break;
-    case f_4x6_n: len = FontNumbers_4X6_Neg[0]; height = FontNumbers_4X6_Neg[1]; break;
-    case f_8x16_p:
-    case f_8x16_n: len = Font_Numbers_8X16[0]; height = Font_Numbers_8X16[1]; break;
-    default: break;
+    case f_6x8_p: symbol_pointer = Font_6X8; term = 8; break;
+    case f_6x8_n: symbol_pointer = Font_6X8; negative = true; term = 8; break;
+    case f_4x6_p: symbol_pointer = FontNumbers_4X6; break;
+    case f_4x6_n: symbol_pointer = FontNumbers_4X6_Neg; break;
+    case f_8x16_p: symbol_pointer = Font_Numbers_8X16; break;
+    case f_8x16_n: symbol_pointer = Font_Numbers_8X16; negative = true; break;
+    default: return 0;
   }
 
+  // get length and height
+  unsigned char len = symbol_pointer[0];
+  unsigned char height = symbol_pointer[1];
+
+  // allocate memory
+  unsigned char *lcd_data = malloc(2 * len);
+
   // set frame
-  LCD_WP_SetFrame(row, col, height, len);
+  LCD_WP_SetFrame(row, col, 2 * height, len);
 
   // pages
   for(unsigned char p = 0; p < height; p++)
@@ -258,27 +279,22 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
     // columns
     for(unsigned char c = 0; c < len; c++)
     {
-      switch(font_type)
-      {
-        case f_6x8_p: font_symbol = Font_6X8[8 + c + len * (p + word * height)]; break;
-        case f_6x8_n: font_symbol = 255 - Font_6X8[8 + c + len * (p + word * height)]; break;
-        case f_4x6_p: font_symbol = FontNumbers_4X6[2 + c + len * (p + word * height)]; break;
-        case f_4x6_n: font_symbol = FontNumbers_4X6_Neg[2 + c + len * (p + word * height)]; break;
-        case f_8x16_p: font_symbol = Font_Numbers_8X16[2 + c + len * (p + height * (word + 10))]; break;
-        case f_8x16_n: font_symbol = Font_Numbers_8X16[2 + c + len * (p + word * height)]; break;
-        default: break;
-      }
+      // get position
+      int pos = term + c + len * (p + word * height);
+
+      // get font symbol
+      unsigned char font_symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos] );
 
       // convert data for window programming
-      lcd_data[c] = LCD_ConvertWP(font_symbol & 0x0F);
-      lcd_data[c + len] = LCD_ConvertWP((font_symbol & 0xF0) >> 4);
+      lcd_data[c] = LCD_WP_ConvertData(font_symbol & 0x0F);
+      lcd_data[c + len] = LCD_WP_ConvertData((font_symbol & 0xF0) >> 4);
     }
 
     // send data
-    LCD_SendData(lcd_data, len * 2);
+    LCD_SendData(lcd_data, 2 * len);
   }
+  free(lcd_data);
   LCD_WP_Disable();
-
   return len;
 }
 
@@ -416,10 +432,10 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
   unsigned char height = symbol_pointer[1];
 
   // set frame
-  LCD_WP_SetFrame(row, col, height, len);
+  LCD_WP_SetFrame(row, col, 2 * height, len);
 
   // allocate memory
-  unsigned char *lcd_data = malloc(len * 2);
+  unsigned char *lcd_data = malloc(2 * len);
 
   // pages
   for(unsigned char p = 0; p < height; p++)
@@ -431,12 +447,12 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
       symbol = symbol_pointer[2 + c + len * (p + (any_symbol - offset) * height)];
 
       // convert data for window programming
-      lcd_data[c] = LCD_ConvertWP(symbol & 0x0F);
-      lcd_data[c + len] = LCD_ConvertWP((symbol & 0xF0) >> 4);
+      lcd_data[c] = LCD_WP_ConvertData(symbol & 0x0F);
+      lcd_data[c + len] = LCD_WP_ConvertData((symbol & 0xF0) >> 4);
     }
 
     // send data
-    LCD_SendData(lcd_data, len * 2);
+    LCD_SendData(lcd_data, 2 * len);
   }
   free(lcd_data);
   LCD_WP_Disable();
@@ -483,39 +499,4 @@ void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col)
 {
   if(ps->frame_counter->frame < TC_FPS_HALF){ LCD_FillSpace(row, col, 1, 4); }
   else{ LCD_ClrSpace(row, col, 1, 4); }
-}
-
-
-/*-------------------------------------------------------------------*
- *  sets the frame for window programming
- * ------------------------------------------------------------------*/
-
-void LCD_WP_SetFrame(unsigned char row, unsigned char col, unsigned char height, unsigned char len)
-{ 
-  // page and column address
-  LCD_SetPageAddress(row);
-  LCD_SetColumnAdress(col);
-
-  // set frame
-  LCD_WP_Enable();
-  LCD_WP_Page(row, (row + (height * 2)));
-  LCD_WP_Column(col, (col + len - 1));
-}
-
-
-/*-------------------------------------------------------------------*
- *  converts a nibble to the LED standards of the Display:
- *  each pixel in the H is converted to 2 Bits, 11 px On - 00 px off
- * ------------------------------------------------------------------*/
-
-unsigned char LCD_ConvertWP(unsigned char con)
-{
-  unsigned char convert = 0;
-
-  if(con & 0x01){ convert += 0x03; }
-  if(con & 0x02){ convert += 0x0C; }
-  if(con & 0x04){ convert += 0x30; }
-  if(con & 0x08){ convert += 0xC0; }
-
-  return convert;
 }

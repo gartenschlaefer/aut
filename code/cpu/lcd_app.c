@@ -95,8 +95,11 @@ void LCD_AutoPage(struct PlantState *ps)
     case AutoAirOn: case AutoAirOff: case AutoCircOn: case AutoCircOff: LCD_AirState_Manager(ps); break;
 
     // other
-    default: LCD_Sym_Auto_PageTime_Update(ps, ps->page_state->page_time); break;
+    default: break;
   }
+
+  // page time
+  LCD_Sym_Auto_PageTime_Update(ps, ps->page_state->page_time);
 
   // update save page
   ps->auto_save_page_state->page = ps->page_state->page; 

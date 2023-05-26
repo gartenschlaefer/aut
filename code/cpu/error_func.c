@@ -84,7 +84,6 @@ void Error_Read(struct PlantState *ps)
 
   // max in tank
   //if(MPX_ReadTank(AutoAirOn, _error) == ErrorMPX) ps->error_state->pending_err_code |= E_IT;
-  //return err;
 }
 
 
