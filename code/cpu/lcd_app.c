@@ -722,6 +722,10 @@ void LCD_SetupPage(struct PlantState *ps)
   // check if page changed
   if(save_page != ps->page_state->page) 
   {
+    // reset time
+    ps->page_state->page_time->min = 5;
+    ps->page_state->page_time->sec = 0;
+
     // set new symbols
     LCD_Setup_Symbols(ps);
 
@@ -785,10 +789,6 @@ void LCD_SetupPage(struct PlantState *ps)
 
 void LCD_Setup_Symbols(struct PlantState *ps)
 {
-  // reset time
-  ps->page_state->page_time->min = 5;
-  ps->page_state->page_time->sec = 0;
-
   // set symbols
   switch(ps->page_state->page)
   {
@@ -835,6 +835,9 @@ void LCD_DataPage(struct PlantState *ps)
   // page change
   if(save_page != ps->page_state->page)
   { 
+    // reset time
+    ps->page_state->page_time->min = 5;
+    ps->page_state->page_time->sec = 0;
     //if(ps->page_state->page != DataSonic && ps->page_state->page != DataSonicAuto && ps->page_state->page != DataSonicBootR && ps->page_state->page != DataSonicBootW){ LCD_Data_Symbols(ps); }
     if(ps->page_state->page != DataSonicAuto && ps->page_state->page != DataSonicBootR && ps->page_state->page != DataSonicBootW){ LCD_Data_Symbols(ps); }
   }
@@ -853,9 +856,6 @@ void LCD_DataPage(struct PlantState *ps)
 
 void LCD_Data_Symbols(struct PlantState *ps)
 {
-  ps->page_state->page_time->min = 5;
-  ps->page_state->page_time->sec = 0;
-
   switch(ps->page_state->page)
   {
     case DataMain: LCD_Sym_Data_Page(); break;

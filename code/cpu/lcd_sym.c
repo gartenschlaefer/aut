@@ -373,25 +373,10 @@ void LCD_Sym_Auto_Ph(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            manual symbols
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_Manual_Main(struct PlantState *ps)
-{
-  LCD_Sym_MarkTextButton(TEXT_BUTTON_manual);
-  LCD_Sym_ClrInfoSpace();
-
-  // positive setup symbols
-  LCD_Sym_Manual_AllSymbols();
-  LCD_Sym_Manual_Text(ps);
-}
-
-
-/* ------------------------------------------------------------------*
  *            manual symbol data
  * ------------------------------------------------------------------*/
 
-struct RowColPos LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
+struct RowColPos LCD_Sym_Manual_GetSymbolPosition(t_any_symbol sym)
 {
   struct RowColPos position = { .row = 0, .col = 0 };
 
@@ -420,6 +405,16 @@ struct RowColPos LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
   return position;
 }
 
+/* ------------------------------------------------------------------*
+ *            Mark manual Select
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Manual_Draw(t_any_symbol sym)
+{
+  struct RowColPos position = LCD_Sym_Manual_GetSymbolPosition(sym);
+  LCD_WriteAnySymbol(position.row, position.col, sym);
+}
+
 
 /* ------------------------------------------------------------------*
  *            all manual symbols
@@ -427,24 +422,23 @@ struct RowColPos LCD_Sym_Manual_GetSymbolData(t_any_symbol sym)
 
 void LCD_Sym_Manual_AllSymbols(void)
 {
-  t_any_symbol symbols[9] = {_p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump, _p_valve};
-
-  for(unsigned char i = 0; i < 9; i++)
-  { 
-    struct RowColPos position = LCD_Sym_Manual_GetSymbolData(symbols[i]);
-    LCD_WriteAnySymbol(position.row, position.col, symbols[i]);
-  }
+  t_any_symbol symbols[9] = { _p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump, _p_valve };
+  for(unsigned char i = 0; i < 9; i++){ LCD_Sym_Manual_Draw(symbols[i]); }
 }
 
 
 /* ------------------------------------------------------------------*
- *            Mark manual Select
+ *            manual symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_Draw(t_any_symbol sym)
+void LCD_Sym_Manual_Main(struct PlantState *ps)
 {
-  struct RowColPos position = LCD_Sym_Manual_GetSymbolData(sym);
-  LCD_WriteAnySymbol(position.row, position.col, sym);
+  LCD_Sym_MarkTextButton(TEXT_BUTTON_manual);
+  LCD_Sym_ClrInfoSpace();
+
+  // positive setup symbols
+  LCD_Sym_Manual_AllSymbols();
+  LCD_Sym_Manual_Text(ps);
 }
 
 
@@ -511,6 +505,103 @@ void LCD_Sym_Manual_PumpOff_OkButton_Clr(void){ LCD_ClrSpace(15, 85, 5, 104); }
 
 
 /* ------------------------------------------------------------------*
+ *            manual symbol data
+ * ------------------------------------------------------------------*/
+
+struct RowColPos LCD_Sym_Setup_GetSymbolPosition(t_any_symbol sym)
+{
+  struct RowColPos position = { .row = 0, .col = 0 };
+
+  switch(sym)
+  {
+    case _p_circulate:
+    case _n_circulate: position.row = 3; position.col = 0; break;
+    case _p_air:
+    case _n_air: position.row = 3; position.col = 40; break;
+    case _p_setDown:
+    case _n_setDown: position.row = 3; position.col = 80; break;
+    case _p_pumpOff:
+    case _n_pumpOff: position.row = 2; position.col = 120; break;
+    case _p_mud:
+    case _n_mud: position.row = 8; position.col = 0; break;
+    case _p_compressor:
+    case _n_compressor: position.row = 9; position.col = 40; break;
+    case _p_phosphor:
+    case _n_phosphor: position.row = 9; position.col = 85; break;
+    case _p_inflowPump:
+    case _n_inflowPump: position.row = 8; position.col = 120; break;
+    case _p_cal:
+    case _n_cal: position.row = 15; position.col = 0; break;
+    case _p_alarm:
+    case _n_alarm: position.row = 15; position.col = 40; break;
+    case _p_watch:
+    case _n_watch: position.row = 15; position.col = 80; break;
+    case _p_zone:
+    case _n_zone: position.row = 15; position.col = 120; break;
+    default: break;
+  }
+  return position;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            manual symbol data under sub
+ * ------------------------------------------------------------------*/
+
+struct RowColPos LCD_Sym_Setup_GetSymbolPosition_Sub(t_any_symbol sym)
+{
+  struct RowColPos position = { .row = 3, .col = 0 };
+
+  switch(sym)
+  {
+    case _p_cal: case _n_cal:
+    case _p_mud: case _n_mud:
+    case _p_zone: case _n_zone:
+      position.row = 2; position.col = 0; 
+      break;
+
+    case _p_inflowPump: case _n_inflowPump: 
+      position.row = 1; position.col = 0; 
+      break;
+
+    default: break;
+  }
+  return position;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            draw setup symbol
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Setup_Draw(t_any_symbol sym)
+{
+  struct RowColPos position = LCD_Sym_Setup_GetSymbolPosition(sym);
+  LCD_WriteAnySymbol(position.row, position.col, sym);
+}
+
+/* ------------------------------------------------------------------*
+ *            draw setup symbol
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Setup_Draw_Sub(t_any_symbol sym)
+{
+  struct RowColPos position = LCD_Sym_Setup_GetSymbolPosition_Sub(sym);
+  LCD_WriteAnySymbol(position.row, position.col, sym);
+}
+
+/* ------------------------------------------------------------------*
+ *            all setup symbols
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Setup_AllSymbols(void)
+{
+  t_any_symbol symbols[12] = { _p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump, _p_cal, _p_alarm, _p_watch, _p_zone };
+  for(unsigned char i = 0; i < 12; i++){ LCD_Sym_Setup_Draw(symbols[i]); }
+}
+
+
+/* ------------------------------------------------------------------*
  *            set setup pages
  * ------------------------------------------------------------------*/
 
@@ -528,11 +619,9 @@ void LCD_Sym_Setup_Page(void)
 
 void LCD_Sym_Setup_Circulate(void)
 {
-  LCD_WriteAnySymbol(3, 0, _n_circulate);
   LCD_Sym_ClrInfoSpace();
-
   LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
-  LCD_WriteAnySymbol(3, 0, _n_circulate);
+  LCD_Sym_Setup_Draw_Sub(_n_circulate);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -543,10 +632,8 @@ void LCD_Sym_Setup_Circulate(void)
 
 void LCD_Sym_Setup_Air(void)
 {
-  LCD_WriteAnySymbol(3, 40, _n_air);
   LCD_Sym_ClrInfoSpace();
-
-  LCD_WriteAnySymbol(3, 0, _n_air);
+  LCD_Sym_Setup_Draw_Sub(_n_air);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -557,10 +644,8 @@ void LCD_Sym_Setup_Air(void)
 
 void LCD_Sym_Setup_SetDown(void)
 {
-  LCD_WriteAnySymbol(3, 80, _n_setDown);
   LCD_Sym_ClrInfoSpace();
-
-  LCD_WriteAnySymbol(3, 0, _n_setDown);
+  LCD_Sym_Setup_Draw_Sub(_n_setDown);
   LCD_Sym_WriteCtrlButton();
   LCD_WriteAnyStringFont(f_6x8_p, 10, 0, "Time:");
 }
@@ -572,10 +657,8 @@ void LCD_Sym_Setup_SetDown(void)
 
 void LCD_Sym_Setup_PumpOff(void)
 {
-  LCD_WriteAnySymbol(2, 120, _n_pumpOff);
   LCD_Sym_ClrInfoSpace();
-
-  LCD_WriteAnySymbol(3, 0, _n_pumpOff);
+  LCD_Sym_Setup_Draw_Sub(_n_pumpOff);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -586,10 +669,8 @@ void LCD_Sym_Setup_PumpOff(void)
 
 void LCD_Sym_Setup_Mud(void)
 {
-  LCD_WriteAnySymbol(8, 0, _n_mud);
   LCD_Sym_ClrInfoSpace();
-
-  LCD_WriteAnySymbol(2, 0, _n_mud);
+  LCD_Sym_Setup_Draw_Sub(_n_mud);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -600,11 +681,10 @@ void LCD_Sym_Setup_Mud(void)
 
 void LCD_Sym_Setup_Compressor(void)
 {
-  LCD_WriteAnySymbol(9, 40, _n_compressor);
   LCD_Sym_ClrInfoSpace();
-  LCD_WriteAnyStringFont(f_6x8_p, 11,28, "mbar MIN.");
-  LCD_WriteAnyStringFont(f_6x8_p, 16,28, "mbar MAX.");
-  LCD_WriteAnySymbol(3, 0, _n_compressor);
+  LCD_WriteAnyStringFont(f_6x8_p, 11, 28, "mbar MIN.");
+  LCD_WriteAnyStringFont(f_6x8_p, 16, 28, "mbar MAX.");
+  LCD_Sym_Setup_Draw_Sub(_n_compressor);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -615,9 +695,8 @@ void LCD_Sym_Setup_Compressor(void)
 
 void LCD_Sym_Setup_Phosphor(void)
 {
-  LCD_WriteAnySymbol(9, 85, _n_phosphor);
   LCD_Sym_ClrInfoSpace();
-  LCD_WriteAnySymbol(3, 0, _n_phosphor);
+  LCD_Sym_Setup_Draw_Sub(_n_phosphor);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -628,9 +707,8 @@ void LCD_Sym_Setup_Phosphor(void)
 
 void LCD_Sym_Setup_InflowPump(void)
 {
-  LCD_WriteAnySymbol(8, 120, _n_inflowPump);
   LCD_Sym_ClrInfoSpace();
-  LCD_WriteAnySymbol(1, 0, _n_inflowPump);
+  LCD_Sym_Setup_Draw_Sub(_n_inflowPump);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -685,9 +763,8 @@ void LCD_Sym_Setup_InflowPump_Text(unsigned char select)
 
 void LCD_Sym_Setup_Cal(struct PlantState *ps)
 {
-  LCD_WriteAnySymbol(15, 0, _n_cal);
   LCD_Sym_ClrInfoSpace();
-  LCD_WriteAnySymbol(2, 0, _n_cal);
+  LCD_Sym_Setup_Draw_Sub(_n_cal);
   LCD_WriteAnySymbol(15, 1, _p_level);
   LCD_ControlButtons(_setup_pos_sym_esc);
   LCD_ControlButtons(_setup_pos_sym_ok);
@@ -726,10 +803,9 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
 
 void LCD_Sym_Setup_Alarm(struct PlantState *ps)
 {
-  LCD_WriteAnySymbol(15, 40, _n_alarm);
   LCD_Sym_ClrInfoSpace();
-  LCD_WriteAnySymbol(3, 0, _n_alarm);
-  LCD_WriteAnyStringFont(f_6x8_n, 10,3, "T:");
+  LCD_Sym_Setup_Draw_Sub(_n_alarm);
+  LCD_WriteAnyStringFont(f_6x8_n, 10, 3, "T:");
 
   // degree symbol
   LCD_WriteAnyFont(f_6x8_p, 10, 32, 94);
@@ -751,10 +827,8 @@ void LCD_Sym_Setup_Alarm(struct PlantState *ps)
 
 void LCD_Sym_Setup_Watch(void)
 {
-  LCD_WriteAnySymbol(15, 80, _n_watch);
   LCD_Sym_ClrInfoSpace();
-
-  LCD_WriteAnySymbol(3, 0, _n_watch);
+  LCD_Sym_Setup_Draw_Sub(_n_watch);
   LCD_Sym_WriteCtrlButton2();
 
   LCD_WriteAnyStringFont(f_6x8_p, 11, 10, "hh");
@@ -776,31 +850,9 @@ void LCD_Sym_Setup_Watch(void)
 
 void LCD_Sym_Setup_Zone(void)
 {
-  LCD_WriteAnySymbol(15, 120, _n_zone);
   LCD_Sym_ClrInfoSpace();
-  LCD_WriteAnySymbol(2, 0, _n_zone);
+  LCD_Sym_Setup_Draw_Sub(_n_zone);
   LCD_Sym_WriteCtrlButton();
-}
-
-
-/* ------------------------------------------------------------------*
- *            all setup symbols
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_Setup_AllSymbols(void)
-{
-  LCD_WriteAnySymbol(3, 0, _p_circulate);
-  LCD_WriteAnySymbol(3, 40, _p_air);
-  LCD_WriteAnySymbol(3, 80, _p_setDown);
-  LCD_WriteAnySymbol(2, 120, _p_pumpOff);
-  LCD_WriteAnySymbol(8, 0, _p_mud);
-  LCD_WriteAnySymbol(9, 40, _p_compressor);
-  LCD_WriteAnySymbol(9, 85, _p_phosphor);
-  LCD_WriteAnySymbol(8, 120, _p_inflowPump);
-  LCD_WriteAnySymbol(15, 0, _p_cal);
-  LCD_WriteAnySymbol(15, 40, _p_alarm);
-  LCD_WriteAnySymbol(15, 80, _p_watch);
-  LCD_WriteAnySymbol(15, 120, _p_zone);
 }
 
 

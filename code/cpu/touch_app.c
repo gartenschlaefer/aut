@@ -353,30 +353,53 @@ void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym)
 
 void Touch_Setup_Linker(struct PlantState *ps)
 {
+  if(!ps->touch_state->init)
+  {
+    ps->touch_state->init = true;
+    ps->touch_state->touched = 0;
+
+    // times
+    ps->touch_state->var[0] = NoPage;
+    ps->touch_state->var[1] = _none_symbol;
+  }
+
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
   switch(touch_matrix)
   {
-    case 0x11: ps->page_state->page = SetupCirculate; break;
-    case 0x12: ps->page_state->page = SetupAir; break;
-    case 0x13: ps->page_state->page = SetupSetDown; break;
-    case 0x14: ps->page_state->page = SetupPumpOff; break;
+    case 0x11: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupCirculate; ps->touch_state->var[1] = _n_circulate; } break;
+    case 0x12: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupAir; ps->touch_state->var[1] = _n_air; } break;
+    case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupSetDown; ps->touch_state->var[1] = _n_setDown; } break;
+    case 0x14: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupPumpOff; ps->touch_state->var[1] = _n_pumpOff; } break;
 
-    case 0x21: ps->page_state->page = SetupMud; break;
-    case 0x22: ps->page_state->page = SetupCompressor; break;
-    case 0x23: ps->page_state->page = SetupPhosphor; break;
-    case 0x24: ps->page_state->page = SetupInflowPump; break;
+    case 0x21: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupMud; ps->touch_state->var[1] = _n_mud; } break;
+    case 0x22: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupCompressor; ps->touch_state->var[1] = _n_compressor; } break;
+    case 0x23: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupPhosphor; ps->touch_state->var[1] = _n_phosphor; } break;
+    case 0x24: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupInflowPump; ps->touch_state->var[1] = _n_inflowPump; } break;
 
-    case 0x31: ps->page_state->page = SetupCal; break;
-    case 0x32: ps->page_state->page = SetupAlarm; break;
-    case 0x33: ps->page_state->page = SetupWatch; break;
-    case 0x34: ps->page_state->page = SetupZone; break;
+    case 0x31: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupCal; ps->touch_state->var[1] = _n_cal; } break;
+    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupAlarm; ps->touch_state->var[1] = _n_alarm; } break;
+    case 0x33: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupWatch; ps->touch_state->var[1] = _n_watch; } break;
+    case 0x34: if(!ps->touch_state->touched){ ps->touch_state->touched = 1; ps->touch_state->var[0] = SetupZone; ps->touch_state->var[1] = _n_zone; } break;
 
-    // main linker
-    case 0x41: ps->page_state->page = AutoPage; break;
-    case 0x42: ps->page_state->page = ManualPage; break;
-    case 0x43: ps->page_state->page = SetupPage; break;
-    case 0x44: ps->page_state->page = DataPage; break;
+    case 0x00: 
+      if(ps->touch_state->touched)
+      { 
+        if(ps->touch_state->var[0] != NoPage){ ps->page_state->page = ps->touch_state->var[0]; }
+        ps->touch_state->var[0] = NoPage;
+        ps->touch_state->touched = 0;
+      } 
+      break;
+
     default: break;
+  }
+
+  // matrix main linker
+  Touch_Matrix_MainLinker(ps, touch_matrix);
+
+  // draw symbol
+  if(ps->touch_state->touched)
+  {
+    if(ps->touch_state->var[1] != _none_symbol){ LCD_Sym_Setup_Draw(ps->touch_state->var[1]); ps->touch_state->var[1] = _none_symbol; }
   }
 }
 
@@ -469,7 +492,7 @@ void Touch_Setup_CirculateLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   if(ps->touch_state->touched)
@@ -572,7 +595,7 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   if(ps->touch_state->touched)
@@ -631,7 +654,7 @@ void Touch_Setup_SetDownLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // time config
@@ -695,7 +718,7 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // output
@@ -763,7 +786,7 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // min max
@@ -840,7 +863,7 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // min max
@@ -920,7 +943,7 @@ unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   if(ps->touch_state->var[5] && ps->touch_state->touched){ LCD_Sym_Setup_OnValueNeg(ps->touch_state->var[0]); }
@@ -1054,7 +1077,7 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   switch(ps->touch_state->var[5])
@@ -1197,7 +1220,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // calibration close valves
@@ -1289,7 +1312,7 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   if(ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 10,15, ps->touch_state->var[2]); }
@@ -1384,7 +1407,7 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // write date time
@@ -1518,7 +1541,7 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
     default: break;
   }
 
-  // ps->touch_state->touched matrix main linker
+  // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // circulate and o2
@@ -2089,10 +2112,10 @@ void Touch_Matrix_MainLinker(struct PlantState *ps, unsigned char touch_matrix)
   switch(touch_matrix)
   {
     // main linker
-    case 0x41: ps->touch_state->init = false; ps->page_state->page = AutoPage; break;
-    case 0x42: ps->touch_state->init = false; ps->page_state->page = ManualPage; break;
-    case 0x43: ps->touch_state->init = false; ps->page_state->page = SetupPage; break;
-    case 0x44: ps->touch_state->init = false; ps->page_state->page = DataPage; break;
+    case 0x41: if(!ps->touch_state->touched){ ps->touch_state->init = false; ps->page_state->page = AutoPage; } break;
+    case 0x42: if(!ps->touch_state->touched){ ps->touch_state->init = false; ps->page_state->page = ManualPage; } break;
+    case 0x43: if(!ps->touch_state->touched){ ps->touch_state->init = false; ps->page_state->page = SetupPage; } break;
+    case 0x44: if(!ps->touch_state->touched){ ps->touch_state->init = false; ps->page_state->page = DataPage; } break;
     default: break;
   }
 }

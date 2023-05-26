@@ -50,10 +50,11 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps);
  *            manual
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_Main(struct PlantState *ps);
-struct RowColPos LCD_Sym_Manual_GetSymbolData(t_any_symbol sym);
-void LCD_Sym_Manual_AllSymbols(void);
+struct RowColPos LCD_Sym_Manual_GetSymbolPosition(t_any_symbol sym);
 void LCD_Sym_Manual_Draw(t_any_symbol sym);
+void LCD_Sym_Manual_AllSymbols(void);
+
+void LCD_Sym_Manual_Main(struct PlantState *ps);
 void LCD_Sym_Manual_Text(struct PlantState *ps);
 void LCD_Sym_Manual_PageTime_Min(int min);
 void LCD_Sym_Manual_PageTime_Sec(int sec);
@@ -66,6 +67,12 @@ void LCD_Sym_Manual_PumpOff_OkButton_Clr(void);
 /* ------------------------------------------------------------------*
  *            setup
  * ------------------------------------------------------------------*/
+
+struct RowColPos LCD_Sym_Setup_GetSymbolPosition(t_any_symbol sym);
+struct RowColPos LCD_Sym_Setup_GetSymbolPosition_Sub(t_any_symbol sym);
+void LCD_Sym_Setup_Draw(t_any_symbol sym);
+void LCD_Sym_Setup_Draw_Sub(t_any_symbol sym);
+void LCD_Sym_Setup_AllSymbols(void);
 
 void LCD_Sym_Setup_Page(void);
 void LCD_Sym_Setup_Circulate(void);
@@ -84,7 +91,6 @@ void LCD_Sym_Setup_Watch_Mark(t_DateTime time, unsigned char *p_dT);
 void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value);
 void LCD_Sym_Setup_Watch(void);
 void LCD_Sym_Setup_Zone(void);
-void LCD_Sym_Setup_AllSymbols(void);
 void LCD_Sym_Setup_CircSensor(unsigned char sensor);
 void LCD_Sym_Setup_CircText(unsigned char on, unsigned char *p_var);
 void LCD_Sym_Setup_AirText(unsigned char on, unsigned char *p_var);
