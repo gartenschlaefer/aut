@@ -26,9 +26,9 @@
  *            display refresh
  * ------------------------------------------------------------------*/
 
-void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
+void LCD_DisplayRefresh(struct PlantState *ps)
 {
-  switch(main_page)
+  switch(ps->page_state->page)
   {
     case AutoPage:
 
@@ -53,58 +53,48 @@ void LCD_DisplayRefresh(t_page main_page, struct PlantState *ps)
 
 void LCD_AutoPage(struct PlantState *ps)
 {
-  // specials and symbols
-  switch(ps->page_state->page)
+  // init page
+  if(ps->page_state->page == AutoPage)
   {
-    // entry page
-    case AutoPage:
+    // set auto page
+    LCD_Sym_Auto_Main(ps); 
+    LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time);
 
-      // set auto page
-      LCD_Sym_Auto_Main(ps); 
-      LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time);
+    // get previous state and time
+    if(ps->auto_save_page_state->page != NoPage)
+    { 
+      // get back state and time
+      ps->page_state->page = ps->auto_save_page_state->page; 
+      ps->page_state->page_time->min = ps->auto_save_page_state->page_time->min; 
+      ps->page_state->page_time->sec = ps->auto_save_page_state->page_time->sec;
+    }
+    // start page and time
+    else
+    { 
+      ps->page_state->page = AUTO_START_PAGE;
+      LCD_Auto_SetStateTime(ps);
+    }
 
-      // get previous state and time
-      if(ps->auto_save_page_state->page != NoPage)
-      { 
-        // get back state and time
-        ps->page_state->page = ps->auto_save_page_state->page; 
-        ps->page_state->page_time->min = ps->auto_save_page_state->page_time->min; 
-        ps->page_state->page_time->sec = ps->auto_save_page_state->page_time->sec;
-      }
-      // start page and time
-      else
-      { 
-        ps->page_state->page = AUTO_START_PAGE;
-        LCD_Auto_SetStateTime(ps);
-      }
+    // new state symbols
+    LCD_Sym_Auto_SetManager(ps);
 
-      // new state symbols
-      LCD_Sym_Auto_SetManager(ps);
+    // init
+    LCD_Auto_InflowPump_Init(ps);
+    LCD_Auto_Phosphor_Init(ps);
+    OUT_Valve_Init(ps);
+    ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
 
-      // init
-      LCD_Auto_InflowPump_Init(ps);
-      LCD_Auto_Phosphor_Init(ps);
-      ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
-      OUT_Valve_Init(ps);
-
-      // set state output
-      LCD_Auto_SetStateOutput(ps);
-      break;
-
-    // air states
-    case AutoAirOn: case AutoAirOff: case AutoCircOn: case AutoCircOff: LCD_AirState_Manager(ps); break;
-
-    // other
-    default: break;
+    // set state output
+    LCD_Auto_SetStateOutput(ps);
   }
 
   // page time
-  LCD_Sym_Auto_PageTime_Update(ps, ps->page_state->page_time);
+  LCD_Sym_Auto_PageTime_Update(ps);
 
   // update save page
-  ps->auto_save_page_state->page = ps->page_state->page; 
-  ps->auto_save_page_state->page_time->min = ps->page_state->page_time->min; 
-  ps->auto_save_page_state->page_time->sec = ps->page_state->page_time->sec; 
+  ps->auto_save_page_state->page = ps->page_state->page;
+  ps->auto_save_page_state->page_time->min = ps->page_state->page_time->min;
+  ps->auto_save_page_state->page_time->sec = ps->page_state->page_time->sec;
 
   // error detection
   Error_Detection(ps);
@@ -132,12 +122,13 @@ void LCD_AutoPage(struct PlantState *ps)
 
   // updates
   PORT_Backlight_Update(ps->backlight);
+  LCD_AirState_Update(ps);
   LCD_Auto_InflowPump_Update(ps);
   LCD_Auto_Phosphor_Update(ps);
   MPX_ReadAverage_Update(ps);
 
   // display update
-  LCD_DisplayRefresh(AutoPage, ps);
+  LCD_DisplayRefresh(ps);
 }
 
 
@@ -301,109 +292,131 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
  *            auto air manager
  * ------------------------------------------------------------------*/
 
-void LCD_AirState_Manager(struct PlantState *ps)
+void LCD_AirState_Update(struct PlantState *ps)
 {
-  // handlers
-  struct Tms *air_tms = ps->air_circ_state->air_tms;
-  t_page p = ps->page_state->page;
-
-  // change air state
-  if(!air_tms->min && !air_tms->sec)
-  {
-    switch(p)
-    {
-      // auto air on
-      case AutoAirOn:
-      case AutoCircOn:
-        t_page cPage = p;
-        MPX_ReadTank(ps);
-        LCD_Sym_MPX_LevelPerc(ps);
-        OUT_Clr_Air(ps);
-
-        // change page
-        if(cPage != p)
-        { 
-          // inflow pump reset
-          if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
-        }
-
-        // set ps
-        if(p == AutoAirOn){ ps->page_state->page = AutoAirOff; }
-        else if(p == AutoCircOn){ ps->page_state->page = AutoCircOff; }
-        LCD_Sym_Auto_AirPageSelect(p);
-
-        // inflow pump
-        if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
-
-        LCD_AirState_SetAutoStartTime(ps);
-        break;
-
-      // auto air off
-      case AutoAirOff:
-      case AutoCircOff:
-
-        // inflow pump reset
-        if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
-
-        // set air on
-        OUT_Set_Air(ps);
-
-        // set pages
-        if(p == AutoAirOff){ ps->page_state->page = AutoAirOn; }
-        else if(p == AutoCircOff){ ps->page_state->page = AutoCircOn; }
-        LCD_Sym_Auto_AirPageSelect(p);
-        LCD_AirState_SetAutoStartTime(ps);
-        break;
-
-      // manual air on
-      case ManualCircOn:
-        ps->page_state->page = ManualCircOff;
-        MPX_ReadTank(ps);
-        LCD_Sym_MPX_LevelPerc(ps);
-        OUT_Clr_Air(ps);
-        air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
-        air_tms->sec = 0;
-        break;
-
-      // manual air off
-      case ManualCircOff:
-        if(p == ManualCircOff) ps->page_state->page = ManualCircOn;
-        OUT_Set_Air(ps);
-        air_tms->min = MEM_EEPROM_ReadVar(OFF_circ);
-        air_tms->sec = 0;
-        break;
-
-      default: break;
-    }
-  }
-
-  // countdown
+  // only on update
   if(ps->time_state->tic_sec_update_flag)
   {
+    // handlers
+    struct Tms *air_tms = ps->air_circ_state->air_tms;
+    t_page p = ps->page_state->page;
+
+    // no update
+    if((p != AutoAirOn) && (p != AutoAirOff) && (p != AutoCircOn) && (p != AutoCircOff)){ return; }
+
+    // count down
     if(!air_tms->sec && (p != ErrorTreat))
     {
       air_tms->sec = 60;
       if(air_tms->min){ air_tms->min--; }
     }
     if(air_tms->sec){ air_tms->sec--; }
-  }
 
-  // manual return page
-  if(p == ManualCircOn || p == ManualCircOff){ return; }
-
-  // auto variables
-  LCD_Sym_Auto_PageTime_Update(ps, air_tms);
-
-  // o2 counting
-  if((p == AutoCircOn) || (p == AutoAirOn) || (p == ErrorTreat))
-  {    
-    // o2 min counting
-    if(ps->compressor_state->old_min != air_tms->min)
+    // change air state
+    if(!air_tms->min && !air_tms->sec)
     {
-      ps->compressor_state->old_min = air_tms->min;
-      ps->compressor_state->cycle_o2_min++;
+      switch(p)
+      {
+        // auto air on
+        case AutoAirOn:
+        case AutoCircOn:
+          t_page cPage = p;
+          MPX_ReadTank(ps);
+          LCD_Sym_MPX_LevelPerc(ps);
+          OUT_Clr_Air(ps);
+
+          // change page
+          if(cPage != p)
+          { 
+            // inflow pump reset
+            if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
+          }
+
+          // set ps
+          if(p == AutoAirOn){ ps->page_state->page = AutoAirOff; }
+          else if(p == AutoCircOn){ ps->page_state->page = AutoCircOff; }
+          LCD_Sym_Auto_AirPageSelect(p);
+
+          // inflow pump
+          if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
+
+          LCD_AirState_SetAutoStartTime(ps);
+          break;
+
+        // auto air off
+        case AutoAirOff:
+        case AutoCircOff:
+
+          // inflow pump reset
+          if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
+
+          // set air on
+          OUT_Set_Air(ps);
+
+          // set pages
+          if(p == AutoAirOff){ ps->page_state->page = AutoAirOn; }
+          else if(p == AutoCircOff){ ps->page_state->page = AutoCircOn; }
+          LCD_Sym_Auto_AirPageSelect(p);
+          LCD_AirState_SetAutoStartTime(ps);
+          break;
+
+        // manual air on
+        case ManualCircOn:
+          ps->page_state->page = ManualCircOff;
+          MPX_ReadTank(ps);
+          LCD_Sym_MPX_LevelPerc(ps);
+          OUT_Clr_Air(ps);
+          air_tms->min = MEM_EEPROM_ReadVar(ON_circ);
+          air_tms->sec = 0;
+          break;
+
+        // manual air off
+        case ManualCircOff:
+          if(p == ManualCircOff) ps->page_state->page = ManualCircOn;
+          OUT_Set_Air(ps);
+          air_tms->min = MEM_EEPROM_ReadVar(OFF_circ);
+          air_tms->sec = 0;
+          break;
+
+        default: break;
+      }
+    }
+
+    // manual return page
+    if(p == ManualCircOn || p == ManualCircOff){ return; }
+
+    // auto variables
+    LCD_Sym_Auto_AirTime_Print(air_tms);
+
+    // o2 counting
+    if((p == AutoCircOn) || (p == AutoAirOn) || (p == ErrorTreat))
+    {    
+      // o2 min counting
+      if(ps->compressor_state->old_min != air_tms->min)
+      {
+        ps->compressor_state->old_min = air_tms->min;
+        ps->compressor_state->cycle_o2_min++;
+      }
     }
   }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            StartTime
+ * ------------------------------------------------------------------*/
+
+void LCD_AirState_SetAutoStartTime(struct PlantState *ps)
+{
+  switch(ps->page_state->page)
+  {
+    case AutoCircOn: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_circ); break;
+    case AutoCircOff: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(OFF_circ); break;
+    case AutoAirOn: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_air); break;
+    case AutoAirOff: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(OFF_air); break;
+    default: break;
+  }
+  ps->air_circ_state->air_tms->sec = 0;
 }
 
 
@@ -526,32 +539,39 @@ void LCD_Auto_Phosphor_Update(struct PlantState *ps)
   // phosphor time update
   if(ps->time_state->tic_sec_update_flag)
   {
+    // time update
     if(!ps->phosphor_state->ph_tms->sec)
     {
       ps->phosphor_state->ph_tms->sec = 60;
       if(ps->phosphor_state->ph_tms->min){ ps->phosphor_state->ph_tms->min--; }
-      LCD_WriteAnyValue(f_4x6_p, 2, 13, 135, ps->phosphor_state->ph_tms->min);
+      LCD_Sym_Auto_Ph_Time_Min(ps->phosphor_state->ph_tms->min);
     }
     if(ps->phosphor_state->ph_tms->sec){ ps->phosphor_state->ph_tms->sec--; }
-    LCD_WriteAnyValue(f_4x6_p, 2, 13, 147, ps->phosphor_state->ph_tms->sec);
-  }
+    LCD_Sym_Auto_Ph_Time_Sec(ps->phosphor_state->ph_tms->sec);
 
-  // change to off state
-  if(ps->phosphor_state->ph_state == _ph_on && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
-  {
-    ps->phosphor_state->ph_state = _ph_off;
-    ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(OFF_phosphor); ps->phosphor_state->ph_tms->sec = 0;
-    LCD_WriteAnySymbol(6, 134, _p_phosphor);
-    OUT_Clr_Phosphor();
-  }
+    // change states
+    if(!ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
+    {
+      // change to off state
+      if(ps->phosphor_state->ph_state == _ph_on)
+      {
+        ps->phosphor_state->ph_state = _ph_off;
+        ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(OFF_phosphor);
+        ps->phosphor_state->ph_tms->sec = 0;
+        LCD_Sym_Auto_Ph(ps);
+        OUT_Clr_Phosphor();
+      }
 
-  // change to on state
-  else if(ps->phosphor_state->ph_state == _ph_off && !ps->phosphor_state->ph_tms->min && !ps->phosphor_state->ph_tms->sec)
-  {
-    ps->phosphor_state->ph_state = _ph_on;
-    ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor); ps->phosphor_state->ph_tms->sec = 0;
-    LCD_WriteAnySymbol(6, 134, _n_phosphor);
-    OUT_Set_Phosphor();
+      // change to on state
+      else if(ps->phosphor_state->ph_state == _ph_off)
+      {
+        ps->phosphor_state->ph_state = _ph_on;
+        ps->phosphor_state->ph_tms->min = MEM_EEPROM_ReadVar(ON_phosphor);
+        ps->phosphor_state->ph_tms->sec = 0;
+        LCD_Sym_Auto_Ph(ps);
+        OUT_Set_Phosphor();
+      }
+    }
   }
 }
 
@@ -572,7 +592,7 @@ void LCD_ManualPage(struct PlantState *ps)
   switch(ps->page_state->page)
   {
     case ManualPage: ps->page_state->page = ManualMain; break;
-    case ManualCircOn: case ManualCircOff: LCD_AirState_Manager(ps); break;
+    case ManualCircOn: case ManualCircOff: LCD_AirState_Update(ps); break;
 
     // blinking pump off text
     case ManualPumpOff:
@@ -630,6 +650,7 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualMain: 
       *p_min = 5; *p_sec = 0; 
       LCD_Sym_Manual_Main(ps);
+
       // save manual entry time
       ps->eeprom_state->time_manual_entry.hou = ps->time_state->tic_hou;
       ps->eeprom_state->time_manual_entry.min = ps->time_state->tic_min;
@@ -702,22 +723,14 @@ void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page)
 
 void LCD_SetupPage(struct PlantState *ps)
 {
-  // handlers
-  int *p_min = &ps->page_state->page_time->min;
-  int *p_sec = &ps->page_state->page_time->sec;
-
   // save page to detect changes by touch
   t_page save_page = ps->page_state->page;
 
   // touch
   Touch_SelectLinker(ps);
 
-  // specials
-  switch(ps->page_state->page)
-  {
-    case SetupPage: ps->page_state->page = SetupMain; break;
-    default: break;
-  }
+  // special case
+  if(ps->page_state->page == SetupPage){ ps->page_state->page = SetupMain; }
 
   // check if page changed
   if(save_page != ps->page_state->page) 
@@ -730,7 +743,7 @@ void LCD_SetupPage(struct PlantState *ps)
     LCD_Setup_Symbols(ps);
 
     // special ones in change
-    if(ps->page_state->page == SetupCalPressure){ *p_min = 4; *p_sec = 120; OUT_Set_Air(ps); }
+    if(ps->page_state->page == SetupCalPressure){ ps->page_state->page_time->min = 4; ps->page_state->page_time->sec = 120; OUT_Set_Air(ps); }
   }
 
   // special cases
@@ -742,28 +755,31 @@ void LCD_SetupPage(struct PlantState *ps)
       if(MEM_EEPROM_ReadVar(SONIC_on))
       {
         Sonic_LevelCal(ps);
-        LCD_WriteAnyValue(f_6x8_p, 4, 17, 40, ps->sonic_state->level_cal);
-        LCD_WriteAnySymbol(15, 1, _p_level);
+        LCD_Sym_Setup_Cal_Level_Sonic(ps->sonic_state->level_cal);
+        LCD_Sym_Setup_Cal_Level_Sym(true);
         ps->page_state->page = SetupCal;
       }
 
       // pressure sensor
       else
       {
-        // write countdown
-        LCD_WriteAnyValue(f_6x8_p, 3, 17, 100, *p_sec);
-
-        // stop air and read the preassure sensor
-        if(!*p_sec)
+        if(ps->time_state->tic_sec_update_flag)
         {
-          MPX_LevelCal_New(ps);
-          LCD_Sym_MPX_Setup_WriteLevelCal(ps->sonic_state->level_cal);
-          OUT_Clr_Air(ps);
+          // write countdown
+          LCD_Sym_Setup_Cal_MPXCountDown(ps->page_state->page_time->sec);
 
-          // clear countdown
-          LCD_ClrSpace(17, 100, 2, 20);
-          LCD_WriteAnySymbol(15, 1, _p_level);
-          ps->page_state->page = SetupCal; 
+          // stop air and read the preassure sensor
+          if(!ps->page_state->page_time->sec)
+          {
+            MPX_LevelCal_New(ps);
+            LCD_Sym_Setup_Cal_Level_MPX(ps->sonic_state->level_cal);
+            OUT_Clr_Air(ps);
+
+            // clear countdown
+            LCD_Sym_Setup_Cal_Clr_MPXCountDown();
+            LCD_Sym_Setup_Cal_Level_Sym(true);
+            ps->page_state->page = SetupCal; 
+          }
         }
       }
       break;
@@ -772,9 +788,7 @@ void LCD_SetupPage(struct PlantState *ps)
     default: break;
   }
 
-  //else if(page != SetupCal){ LCD_Setup_Symbols(ps); } 
-
-  // countdown 
+  // countdown
   if(Basic_CountDown(ps))
   { 
     if(ps->page_state->page == SetupCalPressure){ OUT_Valve_Action(ps, CLOSE_All); }
@@ -869,6 +883,163 @@ void LCD_Data_Symbols(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
+ *            auto entry
+ * ------------------------------------------------------------------*/
+
+void LCD_Data_WriteAutoEntryPage(unsigned char page)
+{
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_auto);
+
+  // clear display section
+  LCD_Sym_Clr_DataEntrySpace();
+
+  // page num
+  LCD_Sym_Data_ActualPageNum((int)(page + 1));
+
+  // get right eep
+  unsigned char wep = LCD_Data_EEP_Minus(TEXT_BUTTON_auto, latest.page, (2 * page));
+
+  // write corresponding page
+  if (page >= DATA_PAGE_NUM_AUTO)
+  {
+    // half page
+    LCD_Data_wPage(TEXT_BUTTON_auto, wep, latest.entry, true);
+    LCD_Sym_Data_EndText();
+  }
+  else
+  {
+    // full page
+    LCD_Data_wPage(TEXT_BUTTON_auto, wep, latest.entry, false);
+  }
+}
+
+
+
+/* ------------------------------------------------------------------*
+ *            data manual entry page
+ * ------------------------------------------------------------------*/
+
+void LCD_Data_WriteManualEntryPage(unsigned char page)
+{
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_manual);
+
+  // clear display section
+  LCD_Sym_Clr_DataEntrySpace();
+
+  // page number
+  LCD_Sym_Data_ActualPageNum((int)(page + 1));
+
+  // get right latest page
+  unsigned char wep = LCD_Data_EEP_Minus(TEXT_BUTTON_manual, latest.page, (2 * page));
+
+  // write corresponding page
+  if (page >= DATA_PAGE_NUM_MANUAL)
+  {
+    // half page
+    LCD_Data_wPage(TEXT_BUTTON_manual, wep, latest.entry, true);
+    LCD_Sym_Data_EndText();
+  }
+  else
+  {
+    // full page
+    LCD_Data_wPage(TEXT_BUTTON_manual, wep, latest.entry, false);
+  }
+}
+
+
+
+/* ------------------------------------------------------------------*
+ *            data setup entry page
+ * ------------------------------------------------------------------*/
+
+void LCD_Data_WriteSetupEntryPage(unsigned char page)
+{
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_setup);
+
+  // clear display section
+  LCD_Sym_Clr_DataEntrySpace();
+
+  // page number
+  LCD_Sym_Data_ActualPageNum((int)(page + 1));
+
+  // get right eep
+  unsigned char wep = LCD_Data_EEP_Minus(TEXT_BUTTON_setup, latest.page, (2 * page));
+
+  // write corresponding page
+  if (page >= DATA_PAGE_NUM_MANUAL)
+  {
+    // half page
+    LCD_Data_wPage(TEXT_BUTTON_setup, wep, latest.entry, true);
+    LCD_Sym_Data_EndText();
+  }
+  else
+  {
+    // full page
+    LCD_Data_wPage(TEXT_BUTTON_setup, wep, latest.entry, false);
+  }
+}
+
+
+/*-------------------------------------------------------------------*
+ *            write data entry page
+ * ------------------------------------------------------------------*/
+
+void LCD_Data_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half)
+{
+  //*** debug eep page
+  if (DEBUG){ LCD_WriteAnyValue(f_6x8_p, 2, 0, 0, eep); }
+
+  // get start end page
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
+
+  // write the data page to display
+  for(unsigned char i = 0; i < 8; i++)
+  {
+    // write entry
+    switch(data)
+    {
+      case TEXT_BUTTON_auto: LCD_Sym_Data_WriteAutoEntry(5 + (2 * i), eep, entry); break;
+      case TEXT_BUTTON_manual: LCD_Sym_Data_WriteManualEntry(5 + (2 * i), eep, entry); break;
+      case TEXT_BUTTON_setup: LCD_Sym_Data_WriteSetupEntry(5 + (2 * i), eep, entry); break;
+      default: break;
+    }
+
+    // update
+    if(entry < 1)
+    {
+      entry = 4;
+      eep--;
+      if(eep < msep.start_page){ eep = msep.end_page; }
+    }
+    entry--;
+
+    // return if only half page needed
+    if (i >= 4 && half){ return; }
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            mem pages eep minus
+ * ------------------------------------------------------------------*/
+
+unsigned char LCD_Data_EEP_Minus(t_text_buttons data, unsigned char eep, unsigned char cnt)
+{
+  // get start end page
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
+
+  // get right EEPROM page
+  for(unsigned char i = 0; i < cnt; i++)
+  {
+    eep--;
+    if(eep < msep.start_page){ eep = msep.end_page; }
+  }
+
+  return eep;
+}
+
+
+/* ------------------------------------------------------------------*
  *            pin page init
  * ------------------------------------------------------------------*/
 
@@ -904,217 +1075,6 @@ void LCD_PinPage_Main(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            auto entry clear pages
- * ------------------------------------------------------------------*/
-
-void LCD_Entry_Clr(void)
-{
-  LCD_ClrSpace(4, 1, 24, 135);
-}
-
-
-/* ------------------------------------------------------------------*
- *            auto entry
- * ------------------------------------------------------------------*/
-
-void LCD_WriteAutoEntryPage(unsigned char page)
-{
-  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_auto);
-
-  // clear display section
-  LCD_Entry_Clr();
-
-  // page num
-  LCD_WriteAnyFont(f_4x6_p, 1, 140, (page + 1) / 10);
-  LCD_WriteAnyFont(f_4x6_p, 1, 144, (page + 1) % 10);
-
-  // get right eep
-  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_auto, latest.page, (2 * page));
-
-  // write corresponding page
-  if (page >= DATA_PAGE_NUM_AUTO)
-  {
-    // half page
-    LCD_wPage(TEXT_BUTTON_auto, wep, latest.entry, true);
-    LCD_Sym_Data_EndText();
-  }
-  else
-  {
-    // full page
-    LCD_wPage(TEXT_BUTTON_auto, wep, latest.entry, false);
-  }
-}
-
-
-
-/* ------------------------------------------------------------------*
- *            data manual entry page
- * ------------------------------------------------------------------*/
-
-void LCD_WriteManualEntryPage(unsigned char page)
-{
-  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_manual);
-
-  // clear display section
-  LCD_Entry_Clr();
-
-  // page number
-  LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
-
-  // get right latest page
-  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_manual, latest.page, (2 * page));
-
-  // write corresponding page
-  if (page >= DATA_PAGE_NUM_MANUAL)
-  {
-    // half page
-    LCD_wPage(TEXT_BUTTON_manual, wep, latest.entry, true);
-    LCD_Sym_Data_EndText();
-  }
-  else
-  {
-    // full page
-    LCD_wPage(TEXT_BUTTON_manual, wep, latest.entry, false);
-  }
-}
-
-
-
-/* ------------------------------------------------------------------*
- *            data setup entry page
- * ------------------------------------------------------------------*/
-
-void LCD_WriteSetupEntryPage(unsigned char page)
-{
-  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_setup);
-
-  // clear display section
-  LCD_Entry_Clr();
-
-  // page number
-  LCD_WriteAnyFont(f_4x6_p, 1, 144, page + 1);
-
-  // get right eep
-  unsigned char wep = LCD_eep_minus(TEXT_BUTTON_setup, latest.page, (2 * page));
-
-  // write corresponding page
-  if (page >= DATA_PAGE_NUM_MANUAL)
-  {
-    // half page
-    LCD_wPage(TEXT_BUTTON_setup, wep, latest.entry, true);
-    LCD_Sym_Data_EndText();
-  }
-  else
-  {
-    // full page
-    LCD_wPage(TEXT_BUTTON_setup, wep, latest.entry, false);
-  }
-}
-
-
-/*-------------------------------------------------------------------*
- *  LCD_wPage
- * --------------------------------------------------------------
- *  t_textSymbols data  - Display page Selection
- *  unsigned char eep   - EEPROM-Page
- *  unsigned char entry - entry
- * --------------------------------------------------------------
- *  writes one entry line, call in entryPages
- * ------------------------------------------------------------------*/
-
-void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half)
-{
-  unsigned char i = 0;
-  unsigned char startPa = 0;
-  unsigned char endPa = 0;
-
-  //*** debug eep page
-  if (DEBUG) LCD_WriteAnyValue(f_6x8_p, 2, 0, 0, eep);
-
-  // determine start and end page
-  switch(data)
-  {
-    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
-    default: break;
-  }
-
-  // write the data page to display
-  for(i = 0; i < 8; i++)
-  {
-    // write entry
-    switch(data)
-    {
-      case TEXT_BUTTON_auto: LCD_Sym_Data_WriteAutoEntry(5+(2*i), eep, entry); break;
-      case TEXT_BUTTON_manual: LCD_Sym_Data_WriteManualEntry(5+(2*i), eep, entry); break;
-      case TEXT_BUTTON_setup: LCD_Sym_Data_WriteSetupEntry(5+(2*i), eep, entry); break;
-      default: break;
-    }
-
-    // update
-    if(entry < 1)
-    {
-      entry = 4;
-      eep--;
-      if(eep < startPa) eep = endPa;
-    }
-    entry--;
-
-    // return if only half page needed
-    if (i >= 4 && half){ return; }
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *            mem pages eep minus
- * ------------------------------------------------------------------*/
-
-unsigned char LCD_eep_minus(t_text_buttons data, unsigned char eep, unsigned char cnt)
-{
-  unsigned char startPa = 0;
-  unsigned char endPa = 0;
-
-  // determine start and end page
-  switch(data)
-  {
-    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
-    default: break;
-  }
-
-  // get right EEPROM page
-  for(unsigned char i = 0; i < cnt; i++)
-  {
-    eep--;
-    if(eep < startPa){ eep = endPa; }
-  }
-
-  return eep;
-}
-
-
-/* ------------------------------------------------------------------*
- *            StartTime
- * ------------------------------------------------------------------*/
-
-void LCD_AirState_SetAutoStartTime(struct PlantState *ps)
-{
-  switch(ps->page_state->page)
-  {
-    case AutoCircOn: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_circ); break;
-    case AutoCircOff: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(OFF_circ); break;
-    case AutoAirOn: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(ON_air); break;
-    case AutoAirOff: ps->air_circ_state->air_tms->min = MEM_EEPROM_ReadVar(OFF_air); break;
-    default: break;
-  }
-  ps->air_circ_state->air_tms->sec = 0;
-}
-
-
-/* ------------------------------------------------------------------*
  *            lcd calibration
  * ------------------------------------------------------------------*/
 
@@ -1138,8 +1098,8 @@ void LCD_Calibration(void)
   LCD_WriteAnyStringFont(f_6x8_p, 18, 0, "X-Value-Cal:");
   LCD_WriteAnyStringFont(f_6x8_p, 21, 0, "Y-Value-Cal:");
 
-  LCD_WriteAnyValue(f_6x8_p, 3, 2, 60,  MEM_EEPROM_ReadVar(TOUCH_X_min));
-  LCD_WriteAnyValue(f_6x8_p, 3, 5, 60,  MEM_EEPROM_ReadVar(TOUCH_Y_min));
+  LCD_WriteAnyValue(f_6x8_p, 3, 2, 60, MEM_EEPROM_ReadVar(TOUCH_X_min));
+  LCD_WriteAnyValue(f_6x8_p, 3, 5, 60, MEM_EEPROM_ReadVar(TOUCH_Y_min));
   LCD_WriteAnyValue(f_6x8_p, 3, 2, 100, MEM_EEPROM_ReadVar(TOUCH_X_max));
   LCD_WriteAnyValue(f_6x8_p, 3, 5, 100, MEM_EEPROM_ReadVar(TOUCH_Y_max));
 

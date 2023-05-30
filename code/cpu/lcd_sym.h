@@ -15,20 +15,30 @@
 
 // logo
 void LCD_Sym_Logo(void);
-void LCD_Sym_ClrInfoSpace(void);
+void LCD_Sym_Clr_InfoSpace(void);
+void LCD_Sym_Clr_DataEntrySpace(void);
 
-// auto
+
+/* ------------------------------------------------------------------*
+ *            auto
+ * ------------------------------------------------------------------*/
+
+// set symbols
 void LCD_Sym_Auto_SetManager(struct PlantState *ps);
 
-// symbols
+// time and text
 void LCD_Sym_Auto_PageTime_Print(struct Tms *tms);
-void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps, struct Tms *tms);
+void LCD_Sym_Auto_AirTime_Print(struct Tms *tms);
+void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps);
 void LCD_Sym_Auto_Text(struct PlantState *ps);
 
-// cycle state
+// cycle general
 void LCD_Sym_Auto_Main(struct PlantState *ps);
 void LCD_Sym_Auto_CompressorNeg(void);
 void LCD_Sym_Auto_CompressorPos(void);
+void LCD_Sym_Auto_ClrActualCycleSpace(void);
+
+// main cycles
 void LCD_Sym_Auto_Zone(void);
 void LCD_Sym_Auto_SetDown(void);
 void LCD_Sym_Auto_PumpOff(void);
@@ -39,10 +49,17 @@ void LCD_Sym_Auto_AirOn(void);
 void LCD_Sym_Auto_AirOff(void);
 void LCD_Sym_Auto_AirPageSelect(t_page page);
 
-// other
+// inflow pump
 void LCD_Sym_Auto_Ip_Base(struct PlantState *ps);
 void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms);
+
+// phosphor
 void LCD_Sym_Auto_Ph(struct PlantState *ps);
+void LCD_Sym_Auto_Ph_Time(struct Tms *tms);
+void LCD_Sym_Auto_Ph_Time_Min(int min);
+void LCD_Sym_Auto_Ph_Time_Sec(int sec);
+
+// sonic
 void LCD_Sym_Auto_SonicVal(struct PlantState *ps);
 
 
@@ -76,9 +93,27 @@ void LCD_Sym_Setup_AllSymbols(void);
 
 void LCD_Sym_Setup_Page(void);
 void LCD_Sym_Setup_Circulate(void);
+
+
+void LCD_Sym_Setup_Circulate_OnText(bool positive);
+void LCD_Sym_Setup_Circulate_OnValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_OnTextValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_OffText(bool positive);
+void LCD_Sym_Setup_Circulate_OffValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_OffTextValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_TimeText(bool positive);
+void LCD_Sym_Setup_Circulate_TimeValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_TimeTextValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_Change_Sensor(unsigned char sensor);
+void LCD_Sym_Setup_Circulate_Change_Values(unsigned char on, unsigned char *p_var);
+
+
 void LCD_Sym_Setup_Air(void);
+void LCD_Sym_Setup_Air_Change_Values(unsigned char on, unsigned char *p_var);
 void LCD_Sym_Setup_SetDown(void);
 void LCD_Sym_Setup_PumpOff(void);
+void LCD_Sym_Setup_PumpOff_Compressor(bool positive);
+void LCD_Sym_Setup_PumpOff_Pump(bool positive);
 void LCD_Sym_Setup_Mud(void);
 void LCD_Sym_Setup_Compressor(void);
 void LCD_Sym_Setup_Phosphor(void);
@@ -86,14 +121,16 @@ void LCD_Sym_Setup_InflowPump(void);
 void LCD_Sym_Setup_InflowPump_Values(unsigned char cho, unsigned char *val);
 void LCD_Sym_Setup_InflowPump_Text(unsigned char select);
 void LCD_Sym_Setup_Cal(struct PlantState *ps);
+void LCD_Sym_Setup_Cal_Level_Sym(bool positive);
+void LCD_Sym_Setup_Cal_Level_Sonic(int level_cal);
+void LCD_Sym_Setup_Cal_Level_MPX(int level_cal);
+void LCD_Sym_Setup_Cal_MPXCountDown(int sec);
+void LCD_Sym_Setup_Cal_Clr_MPXCountDown(void);
 void LCD_Sym_Setup_Alarm(struct PlantState *ps);
 void LCD_Sym_Setup_Watch_Mark(t_DateTime time, unsigned char *p_dT);
 void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value);
 void LCD_Sym_Setup_Watch(void);
 void LCD_Sym_Setup_Zone(void);
-void LCD_Sym_Setup_CircSensor(unsigned char sensor);
-void LCD_Sym_Setup_CircText(unsigned char on, unsigned char *p_var);
-void LCD_Sym_Setup_AirText(unsigned char on, unsigned char *p_var);
 void LCD_Sym_Setup_Pump(unsigned char mark);
 
 
@@ -103,6 +140,8 @@ void LCD_Sym_Setup_Pump(unsigned char mark);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Data_Page(void);
+void LCD_Sym_Data_ActualPageNum(int page_num);
+void LCD_Sym_Data_TotalPageNum(int page_num);
 void LCD_Sym_Data_Auto(void);
 void LCD_Sym_Data_Manual(void);
 void LCD_Sym_Data_Setup(void);
@@ -134,7 +173,6 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_MPX_AverageValue(t_page page, int av_value);
-void LCD_Sym_MPX_Setup_WriteLevelCal(int level_cal);
 void LCD_Sym_MPX_Auto_DisabledLevelMeasure(void);
 void LCD_Sym_MPX_Auto_MbarValue(int value);
 void LCD_Sym_MPX_LevelPerc(struct PlantState *ps);
@@ -162,8 +200,8 @@ void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_TextButton(t_text_buttons text, unsigned char pos);
-void LCD_ControlButtons(t_CtrlButtons ctrl);
-void LCD_ControlButtons2(t_CtrlButtons ctrl);
+void LCD_Sym_ControlButtons(t_CtrlButtons ctrl);
+void LCD_Sym_ControlButtons2(t_CtrlButtons ctrl);
 void LCD_Sym_Pin_OkButton(unsigned char on);
 
 
@@ -174,11 +212,6 @@ void LCD_Sym_Pin_OkButton(unsigned char on);
 void LCD_Sym_MarkTextButton(t_text_buttons text);
 void LCD_Sym_WriteCtrlButton(void);
 void LCD_Sym_WriteCtrlButton2(void);
-
-void LCD_Sym_Setup_OnValue(unsigned char value);
-void LCD_Sym_Setup_OffValue(unsigned char value);
-void LCD_Sym_Setup_OnValueNeg(unsigned char value);
-void LCD_Sym_Setup_OffValueNeg(unsigned char value);
 
 
 /* ------------------------------------------------------------------*

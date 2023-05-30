@@ -26,7 +26,7 @@ ISR(USARTF1_RXC_vect)
  *            USART init
  * ------------------------------------------------------------------*
  *  Description:
- *    DetTime-Modem -> 9,22 ms
+ *    DetTime-Modem -> 9.22 ms
  *    115200 8N1  -> 107chars
  *   57600 8N1   ->  54chars
  *   9600 8N1    ->   9chars

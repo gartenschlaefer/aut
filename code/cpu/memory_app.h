@@ -60,4 +60,6 @@ struct MemoryEntryPos MEM_FindNoEntry(t_text_buttons data);
 struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data);
 struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data);
 
+struct MemoryStartEndPage MEM_GetStartEndPage(t_text_buttons data);
+
 #endif

@@ -28,7 +28,7 @@
 
 
 /* ------------------------------------------------------------------*
- *            Basic Commands for EA DOGXL160x-7  LCD
+ *            Basic Commands for EA DOGXL160x-7 LCD
  * ------------------------------------------------------------------*/
 
 #define Set_Com_End_H                 0xF1
@@ -93,6 +93,7 @@ unsigned char LCD_WP_ConvertData(unsigned char con);
 
 void LCD_FillSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, unsigned char len);
+void LCD_FillOrClrSpace(bool fill, unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 void LCD_Clean(void);
 
 unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word);

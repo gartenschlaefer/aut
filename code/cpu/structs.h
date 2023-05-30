@@ -32,6 +32,12 @@ struct MemoryEntryPos
   bool null_flag;
 };
 
+struct MemoryStartEndPage
+{
+  unsigned char start_page;
+  unsigned char end_page;
+};
+
 
 struct TeleNr
 {

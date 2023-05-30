@@ -48,6 +48,7 @@ void Touch_Pin_Linker(struct PlantState *ps);
 void Touch_Pin_Linker_TeleTemp_AddDigit(struct PlantState *ps, unsigned char digit);
 
 void Touch_Setup_CirculateLinker(struct PlantState *ps);
+void Touch_Setup_Matrix_OnOff(struct PlantState *ps, unsigned char touch_matrix);
 void Touch_Setup_AirLinker(struct PlantState *ps);
 void Touch_Setup_WatchLinker(struct PlantState *ps);
 void Touch_Setup_SetDownLinker(struct PlantState *ps);

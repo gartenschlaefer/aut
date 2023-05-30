@@ -30,7 +30,7 @@ void MEM_EEPROM_WriteVarDefault(void)
   MEM_EEPROM_WriteVar(SENSOR_inTank, 0);
   MEM_EEPROM_WriteVar(SENSOR_outTank, 0);
   MEM_EEPROM_WriteVar(TIME_H_circ, 0);
-  MEM_EEPROM_WriteVar(TIME_L_circ,  240);
+  MEM_EEPROM_WriteVar(TIME_L_circ, 240);
   MEM_EEPROM_WriteVar(TIME_H_air, 0);
   MEM_EEPROM_WriteVar(TIME_L_air, 240);
   MEM_EEPROM_WriteVar(MIN_H_druck, 0);
@@ -39,7 +39,7 @@ void MEM_EEPROM_WriteVarDefault(void)
   MEM_EEPROM_WriteVar(MAX_L_druck, 250);
   MEM_EEPROM_WriteVar(ALARM_temp, 60);
   MEM_EEPROM_WriteVar(ALARM_comp, 1);
-  MEM_EEPROM_WriteVar(ALARM_sensor,   1);
+  MEM_EEPROM_WriteVar(ALARM_sensor, 1);
   MEM_EEPROM_WriteVar(CAL_H_druck, 0);
   MEM_EEPROM_WriteVar(CAL_L_druck, 0);
   MEM_EEPROM_WriteVar(SONIC_H_LV, 0);
@@ -110,7 +110,7 @@ void MEM_EEPROM_WriteVarDefault_Short(void)
 
 
 /*-------------------------------------------------------------------*
- *  reads variable from EEPROM  page size: 32bytes
+ *  reads variable from EEPROM page size: 32bytes
  * ------------------------------------------------------------------*/
 
 unsigned char MEM_EEPROM_ReadVar(t_eeprom_var var)
@@ -228,7 +228,7 @@ void MEM_EEPROM_WriteVar(t_eeprom_var var, unsigned char eeData)
 
 
 /*-------------------------------------------------------------------*
- *            reads variable from EEPROM  page size: 32bytes
+ *            reads variable from EEPROM page size: 32bytes
  * ------------------------------------------------------------------*/
 
 unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_data var)
@@ -385,7 +385,7 @@ void MEM_EEPROM_SetZero(void)
  *  8Byte data byte == 1 display output page
  * ------------------------------------------------------------------*/
 
-void MEM_EEPROM_LoadData(unsigned char entry, t_data byte,  unsigned char eeData)
+void MEM_EEPROM_LoadData(unsigned char entry, t_data byte, unsigned char eeData)
 {
   switch(entry)
   {
@@ -455,25 +455,16 @@ void MEM_EEPROM_LoadData(unsigned char entry, t_data byte,  unsigned char eeData
 struct MemoryEntryPos MEM_FindNoEntry(t_text_buttons data)
 {
   struct MemoryEntryPos no_entry_pos = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
-
   unsigned char stop = 0;
-  unsigned char startPa = MEM_AUTO_START_SECTION;
-  unsigned char endPa = MEM_AUTO_END_SECTION;
 
-  // determine start and end page
-  switch(data)
-  {
-    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
-    default: break;
-  }
+  // get start end page
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
 
   // start page
-  no_entry_pos.page = startPa;
+  no_entry_pos.page = msep.start_page;
 
   // pages
-  for(unsigned char eep = startPa; eep <= endPa; eep++)
+  for(unsigned char eep = msep.start_page; eep <= msep.end_page; eep++)
   {
     // update page
     no_entry_pos.page = eep;
@@ -510,29 +501,20 @@ struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data)
 {
   struct MemoryEntryPos old = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
 
-  unsigned char startPa = MEM_AUTO_START_SECTION;
-  unsigned char endPa = MEM_AUTO_END_SECTION;
-
   unsigned char day = 31;
   unsigned char month = 12;
   unsigned char year = 60;
   unsigned char h = 23;
   unsigned char min = 59;
 
-  // determine start and end page
-  switch(data)
-  {
-    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
-    default: break;
-  }
+  // get start end page
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
 
   // start page
-  old.page = startPa;
+  old.page = msep.start_page;
 
   // pages
-  for(unsigned char eep = startPa; eep <= endPa; eep++)
+  for(unsigned char eep = msep.start_page; eep <= msep.end_page; eep++)
   {
     // entries
     for(unsigned char i = 0; i < 4; i++)
@@ -568,29 +550,20 @@ struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data)
 {
   struct MemoryEntryPos latest = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
 
-  unsigned char startPa = MEM_AUTO_START_SECTION;
-  unsigned char endPa = MEM_AUTO_END_SECTION;
-
   unsigned char day = 0;
   unsigned char month = 0;
   unsigned char year = 0;
   unsigned char h = 0;
   unsigned char min = 0;
 
-  // determine start and end page
-  switch(data)
-  {
-    case TEXT_BUTTON_auto: startPa = MEM_AUTO_START_SECTION; endPa = MEM_AUTO_END_SECTION; break;
-    case TEXT_BUTTON_manual: startPa = MEM_MANUAL_START_SECTION; endPa = MEM_MANUAL_END_SECTION; break;
-    case TEXT_BUTTON_setup: startPa = MEM_SETUP_START_SECTION; endPa = MEM_SETUP_END_SECTION; break;
-    default: break;
-  }
+  // get start end page
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
 
   // start page
-  latest.page = startPa;
+  latest.page = msep.start_page;
 
   // pages
-  for(unsigned char eep = startPa; eep <= endPa; eep++)
+  for(unsigned char eep = msep.start_page; eep <= msep.end_page; eep++)
   {
     // entries
     for(unsigned char i = 0; i < 4; i++)
@@ -613,6 +586,25 @@ struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data)
       }
     }
   }
-
   return latest;
+}
+
+
+/* ---------------------------------------------------------------*
+ *          start end page
+ * ---------------------------------------------------------------*/
+
+struct MemoryStartEndPage MEM_GetStartEndPage(t_text_buttons data)
+{
+  struct MemoryStartEndPage msep = { .start_page = 0, .end_page = 0 };
+
+  // determine start and end page
+  switch(data)
+  {
+    case TEXT_BUTTON_auto: msep.start_page = MEM_AUTO_START_SECTION; msep.end_page = MEM_AUTO_END_SECTION; break;
+    case TEXT_BUTTON_manual: msep.start_page = MEM_MANUAL_START_SECTION; msep.end_page = MEM_MANUAL_END_SECTION; break;
+    case TEXT_BUTTON_setup: msep.start_page = MEM_SETUP_START_SECTION; msep.end_page = MEM_SETUP_END_SECTION; break;
+    default: break;
+  }
+  return msep;
 }

@@ -41,7 +41,7 @@ void ADC_Init(void)
 
 
 /* ------------------------------------------------------------------*
- *            ReadCalibrationByte
+ *            read calibration byte
  * ------------------------------------------------------------------*/
 
 unsigned char ReadCalibrationByte(unsigned char index)
@@ -59,10 +59,10 @@ unsigned char ReadCalibrationByte(unsigned char index)
 
 
 /*-------------------------------------------------------------------*
- *  ADC_Touch_Ch - ADC Channel
+ *            ADC Channel
  * --------------------------------------------------------------
- *  Set TOP   and BOTTOM  as Output, TOP=1, BOTTOM=0
- *  Set LEFT  and RIGHT   as input, read at LEFT (ADC0)
+ *  Set TOP and BOTTOM  as Output, TOP=1, BOTTOM=0
+ *  Set LEFT and RIGHT as input, read at LEFT (ADC0)
  *  ADC_Init
  * ------------------------------------------------------------------*/
 
@@ -79,7 +79,7 @@ void ADC_Touch_Ch(void)
 
 
 /*-------------------------------------------------------------------*
- *  ADC_MPX_Ch - ADCB Channel
+ *            ADCB Channel
  * --------------------------------------------------------------
  *  Set up ADC for pressure sensor MPX
  *  MPX -> AD8555 = MPX * Gain -> single-ended PORTB PIN6
@@ -95,7 +95,7 @@ void ADC_MPX_Ch(void)
 
 
 /*-------------------------------------------------------------------*
- *  ADC_USV_CH - ADCA Channel
+ *            ADCA Channel
  * --------------------------------------------------------------
  *  Set up ADC for VoltageSupply and USV check
  *  Input-Pin:  PA7 - ADC7 on ADCA

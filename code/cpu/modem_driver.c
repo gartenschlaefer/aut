@@ -405,7 +405,7 @@ void Modem_Test(struct PlantState *ps)
 {
   // some text
   LCD_WriteAnyStringFont(f_6x8_p, 1, 10, "Modem");
-  LCD_WriteAnyStringFont(f_6x8_p, 4, 30,  "PWR");
+  LCD_WriteAnyStringFont(f_6x8_p, 4, 30, "PWR");
   LCD_WriteAnyStringFont(f_6x8_p, 12, 30, "CTS");
 
   // timers

@@ -236,6 +236,13 @@ void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, un
 
 
 /*-------------------------------------------------------------------*
+ *  fill or clr
+ * ------------------------------------------------------------------*/
+
+void LCD_FillOrClrSpace(bool fill, unsigned char row, unsigned char col, unsigned char height, unsigned char len){ (fill ? LCD_FillSpace(row, col, height, len) : LCD_ClrSpace(row, col, height, len)); }
+
+
+/*-------------------------------------------------------------------*
  *  clean whole screen
  * ------------------------------------------------------------------*/
 

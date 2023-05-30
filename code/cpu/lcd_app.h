@@ -11,31 +11,21 @@
 
 
 /* ------------------------------------------------------------------*
- *            main
+ *            functions
  * ------------------------------------------------------------------*/
 
+void LCD_DisplayRefresh(struct PlantState *ps);
+
+// auto pages
 void LCD_AutoPage(struct PlantState *ps);
-void LCD_ManualPage(struct PlantState *ps);
-void LCD_SetupPage(struct PlantState *ps);
-void LCD_DataPage(struct PlantState *ps);
-
-// pin page
-void LCD_PinPage_Main(struct PlantState *ps);
-void LCD_PinPage_Init(struct PlantState *ps);
-
-
-
-/* ------------------------------------------------------------------*
- *            states and symbols
- * ------------------------------------------------------------------*/
-
 void LCD_Auto_SetStateTime(struct PlantState *ps);
 void LCD_Auto_SetStateOutput(struct PlantState *ps);
 void LCD_Auto_ResetAutoSavePageState(struct PlantState *ps);
 void LCD_Auto_CountDownEndAction(struct PlantState *ps);
 
-// air state (for circulate and air cycle)
-void LCD_AirState_Manager(struct PlantState *ps);
+// air state for manual and auto
+void LCD_AirState_Update(struct PlantState *ps);
+void LCD_AirState_SetAutoStartTime(struct PlantState *ps);
 
 // inflow pump
 void LCD_Auto_InflowPump_Init(struct PlantState *ps);
@@ -45,32 +35,30 @@ void LCD_Auto_InflowPump_Update(struct PlantState *ps);
 void LCD_Auto_Phosphor_Init(struct PlantState *ps);
 void LCD_Auto_Phosphor_Update(struct PlantState *ps);
 
+// manual pages
+void LCD_ManualPage(struct PlantState *ps);
 void LCD_Manual_SetState(struct PlantState *ps);
 void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page);
 
+// setup pages
+void LCD_SetupPage(struct PlantState *ps);
 void LCD_Setup_Symbols(struct PlantState *ps);
+
+// data pages
+void LCD_DataPage(struct PlantState *ps);
 void LCD_Data_Symbols(struct PlantState *ps);
+void LCD_Data_WriteAutoEntryPage(unsigned char page);
+void LCD_Data_WriteManualEntryPage(unsigned char page);
+void LCD_Data_WriteSetupEntryPage(unsigned char page);
 
+void LCD_Data_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half);
+unsigned char LCD_Data_EEP_Minus(t_text_buttons data, unsigned char eep, unsigned char cnt);
 
-/* ------------------------------------------------------------------*
- *            data page write entries
- * ------------------------------------------------------------------*/
+// pin page
+void LCD_PinPage_Main(struct PlantState *ps);
+void LCD_PinPage_Init(struct PlantState *ps);
 
-void LCD_Entry_Clr(void);
-void LCD_WriteAutoEntryPage(unsigned char page);
-void LCD_WriteManualEntryPage(unsigned char page);
-void LCD_WriteSetupEntryPage(unsigned char page);
-
-void LCD_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half);
-unsigned char LCD_eep_minus(t_text_buttons data, unsigned char eep, unsigned char cnt);
-void LCD_Sym_Data_EndText(void);
-
-void LCD_AirState_SetAutoStartTime(struct PlantState *ps);
-
-/* ------------------------------------------------------------------*
- *            calibration init
- * ------------------------------------------------------------------*/
-
+// calibration (only in init)
 void LCD_Calibration(void);
 
 #endif

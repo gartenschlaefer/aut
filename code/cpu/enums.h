@@ -145,8 +145,13 @@ typedef enum
 
 typedef enum
 {
-  _setup_neg_sym_plus, _setup_neg_sym_minus, _setup_neg_sym_esc, _setup_neg_sym_ok,
-  _setup_pos_sym_plus, _setup_pos_sym_minus, _setup_pos_sym_esc, _setup_pos_sym_ok
+  _ctrl_zero,
+  _ctrl_neg_plus, _ctrl_neg_minus, _ctrl_neg_esc, _ctrl_neg_ok,
+  _ctrl_pos_plus, _ctrl_pos_minus, _ctrl_pos_esc, _ctrl_pos_ok,
+  _ctrl_on, _ctrl_off, _ctrl_time, _ctrl_sensor, 
+  _ctrl_open_valve, _ctrl_cal, _ctrl_level, _ctrl_redo,
+  _ctrl_shot, _ctrl_auto, _ctrl_sonic, _ctrl_bootloader,
+  _ctrl_none
 }t_CtrlButtons;
 
 
@@ -320,11 +325,11 @@ typedef enum
   ON_inflowPump = 19, 
   OFF_inflowPump = 20,
   PUMP_inflowPump = 21, 
-  T_IP_off_h = 22, 
-  SENSOR_inTank = 23, 
+  T_IP_off_h = 22,
+  SENSOR_inTank = 23,
   SENSOR_outTank = 24,
-  ALARM_temp = 25, 
-  ALARM_comp = 26,  
+  ALARM_temp = 25,
+  ALARM_comp = 26,
   ALARM_sensor = 27,
   CAL_H_druck = 28, 
   CAL_L_druck = 29, 

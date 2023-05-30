@@ -11,7 +11,7 @@
 
 
 /*-------------------------------------------------------------------*
- *  safes calibration data in EEPROM
+ *            safes calibration data in EEPROM
  * ------------------------------------------------------------------*/
 
 void Touch_Cal_Main(void)
@@ -50,14 +50,14 @@ void Touch_Cal_Main(void)
   MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY >> 4));
 
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2,0,"Touchpanel Calibrated");
-  LCD_WriteAnyStringFont(f_6x8_p, 5,0,"EEPROM written");
+  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touchpanel Calibrated");
+  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "EEPROM written");
   TCD0_Stop();
 }
 
 
 /*-------------------------------------------------------------------*
- *  calibrate x-axis
+ *            calibrate x-axis
  * ------------------------------------------------------------------*/
 
 int Touch_Cal_X_Init(void)
@@ -82,7 +82,7 @@ int Touch_Cal_X_Init(void)
 
 
 /*-------------------------------------------------------------------*
- *  calibrate y-axis
+ *            calibrate y-axis
  * ------------------------------------------------------------------*/
 
 int Touch_Cal_Y_Init(void)
@@ -107,7 +107,7 @@ int Touch_Cal_Y_Init(void)
 
 
 /*-------------------------------------------------------------------*
- *  x-space will be calibrated
+ *            x-space will be calibrated
  * ------------------------------------------------------------------*/
 
 int Touch_Cal_X_Value(float x_space)
@@ -125,7 +125,7 @@ int Touch_Cal_X_Value(float x_space)
 
 
 /*-------------------------------------------------------------------*
- *  y-space will be calibrated
+ *            y-space will be calibrated
  * ------------------------------------------------------------------*/
 
 int Touch_Cal_Y_Value(float y_space)
@@ -143,10 +143,7 @@ int Touch_Cal_Y_Value(float y_space)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Clean
- * --------------------------------------------------------------
- *  Set all Touch Pins Low,
- *  The Voltage of the capacitor will be decharged
+ *  set all Touch Pins Low, the voltage of the capacitor will be discharged
  * ------------------------------------------------------------------*/
 
 void Touch_Clean(void)
@@ -160,10 +157,8 @@ void Touch_Clean(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Y_Measure
- * --------------------------------------------------------------
- *  Set TOP   and BOTTOM  as Output, TOP = 0, BOTTOM=1
- *  Set LEFT  and RIGHT   as Input, read at LEFT (ADC0)
+ *  Set TOP and BOTTOM as Output, TOP = 0, BOTTOM=1
+ *  Set LEFT and RIGHT as Input, read at LEFT (ADC0)
  * ------------------------------------------------------------------*/
 
 void Touch_Y_Measure(void)
@@ -181,10 +176,7 @@ void Touch_Y_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Y_Read
- * --------------------------------------------------------------
- *  Wait until Conversion Complete and return data
- *  read at LEFT (ADC3),  Convert CH0
+ *            read at LEFT (ADC3), convert CH0
  * ------------------------------------------------------------------*/
 
  int Touch_Y_Read(void)
@@ -205,11 +197,8 @@ void Touch_Y_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_Cal_Y_ReadData
- * --------------------------------------------------------------
  *  Set UP Measure through Touch_Y_Measure
- *  read data on LEFT ADC0 through  Touch_Y_Read
- *  Clean Up Measure through Touch_Clean
+ *  read data on LEFT ADC0, clean up measure
  * ------------------------------------------------------------------*/
 
 int Touch_Cal_Y_ReadData(void)
@@ -229,10 +218,8 @@ int Touch_Cal_Y_ReadData(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_X_Measure
- * --------------------------------------------------------------
- *  Set LEFT  and RIGHT   as Output,  LEFT=1, RIGTH = 0
- *  Set TOP   and BOTTOM  as Input,   read at TOP (ADC1)
+ *  Set LEFT and RIGHT as Output, LEFT=1, RIGTH = 0
+ *  Set TOP and BOTTOM as Input, read at TOP (ADC1)
  * ------------------------------------------------------------------*/
 
 void Touch_X_Measure(void)
@@ -250,10 +237,7 @@ void Touch_X_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  Touch_X_Read
- * --------------------------------------------------------------
- *  Wait until Conversion Complete and return data
- *  read at TOP (ADC2), Convert CH1
+ *            read at TOP (ADC2), Convert CH1
  * ------------------------------------------------------------------*/
 
  int Touch_X_Read(void)
@@ -270,7 +254,7 @@ void Touch_X_Measure(void)
 
 
 /*-------------------------------------------------------------------*
- *  set up measure, read data at TOP ADC1, clean
+ *            set up measure, read data at TOP ADC1, clean
  * ------------------------------------------------------------------*/
 
  int Touch_Cal_X_ReadData(void)

@@ -164,7 +164,7 @@ unsigned char FontNumbers_4X6[FontNumbers_4X6_LEN] =
   28, 8, 28, 0,
   31, 20, 28, 0,
   24, 20, 28, 0,
-  0, 28, 4,   0,
+  0, 28, 4, 0,
   31, 4, 28, 0,
 
   // space, %, +, S, ., i, n, x
