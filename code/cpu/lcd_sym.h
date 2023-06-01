@@ -94,45 +94,58 @@ void LCD_Sym_Setup_AllSymbols(void);
 void LCD_Sym_Setup_Page(void);
 void LCD_Sym_Setup_Circulate(void);
 
-
-void LCD_Sym_Setup_Circulate_OnText(bool positive);
-void LCD_Sym_Setup_Circulate_OnValue(bool positive, int value);
-void LCD_Sym_Setup_Circulate_OnTextValue(bool positive, int value);
-void LCD_Sym_Setup_Circulate_OffText(bool positive);
-void LCD_Sym_Setup_Circulate_OffValue(bool positive, int value);
-void LCD_Sym_Setup_Circulate_OffTextValue(bool positive, int value);
-void LCD_Sym_Setup_Circulate_TimeText(bool positive);
-void LCD_Sym_Setup_Circulate_TimeValue(bool positive, int value);
-void LCD_Sym_Setup_Circulate_TimeTextValue(bool positive, int value);
+void LCD_Sym_Setup_Circulate_OnText(bool negative);
+void LCD_Sym_Setup_Circulate_OnValue(bool negative, int value);
+void LCD_Sym_Setup_Circulate_OnTextValue(bool negative, int value);
+void LCD_Sym_Setup_Circulate_OffText(bool negative);
+void LCD_Sym_Setup_Circulate_OffValue(bool negative, int value);
+void LCD_Sym_Setup_Circulate_OffTextValue(bool negative, int value);
+void LCD_Sym_Setup_Circulate_TimeText(bool negative);
+void LCD_Sym_Setup_Circulate_TimeValue(bool negative, int value);
 void LCD_Sym_Setup_Circulate_Change_Sensor(unsigned char sensor);
-void LCD_Sym_Setup_Circulate_Change_Values(unsigned char on, unsigned char *p_var);
-
+void LCD_Sym_Setup_Circulate_Change_Values(unsigned char select, unsigned char *p_var);
 
 void LCD_Sym_Setup_Air(void);
-void LCD_Sym_Setup_Air_Change_Values(unsigned char on, unsigned char *p_var);
+void LCD_Sym_Setup_Air_Change_Values(unsigned char select, unsigned char *p_var);
 void LCD_Sym_Setup_SetDown(void);
+void LCD_Sym_Setup_SetDown_TimeValue(int value);
 void LCD_Sym_Setup_PumpOff(void);
-void LCD_Sym_Setup_PumpOff_Compressor(bool positive);
-void LCD_Sym_Setup_PumpOff_Pump(bool positive);
+void LCD_Sym_Setup_PumpOff_Compressor(bool negative);
+void LCD_Sym_Setup_PumpOff_Pump(bool negative);
 void LCD_Sym_Setup_Mud(void);
+void LCD_Sym_Setup_Mud_Min(bool negative, int value);
+void LCD_Sym_Setup_Mud_Sec(bool negative, int value);
 void LCD_Sym_Setup_Compressor(void);
+void LCD_Sym_Setup_Compressor_MinP(bool negative, int value);
+void LCD_Sym_Setup_Compressor_MaxP(bool negative, int value);
 void LCD_Sym_Setup_Phosphor(void);
 void LCD_Sym_Setup_InflowPump(void);
+void LCD_Sym_Setup_InflowPump_Sensor(bool negative);
 void LCD_Sym_Setup_InflowPump_Values(unsigned char cho, unsigned char *val);
 void LCD_Sym_Setup_InflowPump_Text(unsigned char select);
 void LCD_Sym_Setup_Cal(struct PlantState *ps);
-void LCD_Sym_Setup_Cal_Level_Sym(bool positive);
+void LCD_Sym_Setup_Cal_MPX_Redo(bool negative);
+void LCD_Sym_Setup_Cal_Level_Sym(bool negative);
+void LCD_Sym_Setup_Cal_Button(bool negative);
+void LCD_Sym_Setup_Cal_MPX_Value(int value);
 void LCD_Sym_Setup_Cal_Level_Sonic(int level_cal);
 void LCD_Sym_Setup_Cal_Level_MPX(int level_cal);
 void LCD_Sym_Setup_Cal_MPXCountDown(int sec);
 void LCD_Sym_Setup_Cal_Clr_MPXCountDown(void);
 void LCD_Sym_Setup_Alarm(struct PlantState *ps);
+void LCD_Sym_Setup_Alarm_TempValue(bool negative, int value);
+void LCD_Sym_Setup_Alarm_Compressor(bool negative);
+void LCD_Sym_Setup_Alarm_Sensor(bool negative);
 void LCD_Sym_Setup_Watch_Mark(t_DateTime time, unsigned char *p_dT);
 void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value);
 void LCD_Sym_Setup_Watch(void);
 void LCD_Sym_Setup_Zone(void);
+void LCD_Sym_Setup_Zone_Level_Air(bool negative, int value);
+void LCD_Sym_Setup_Zone_Level_SetDown(bool negative, int value);
+void LCD_Sym_Setup_Zone_Sonic(bool negative);
+void LCD_Sym_Setup_Zone_Air(bool negative);
+void LCD_Sym_Setup_Zone_SetDown(bool negative);
 void LCD_Sym_Setup_Pump(unsigned char mark);
-
 
 
 /* ------------------------------------------------------------------*
@@ -146,7 +159,9 @@ void LCD_Sym_Data_Auto(void);
 void LCD_Sym_Data_Manual(void);
 void LCD_Sym_Data_Setup(void);
 
-void LCD_Sym_DataArrows(void);
+void LCD_Sym_Data_Arrows(void);
+void LCD_Sym_Data_Arrow_Up(bool negative);
+void LCD_Sym_Data_Arrow_Down(bool negative);
 
 void LCD_Sym_Data_Sonic(struct PlantState *ps);
 void LCD_Sym_Data_Sonic_ReadSversion(struct PlantState *ps);
@@ -202,7 +217,7 @@ void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos);
 void LCD_Sym_TextButton(t_text_buttons text, unsigned char pos);
 void LCD_Sym_ControlButtons(t_CtrlButtons ctrl);
 void LCD_Sym_ControlButtons2(t_CtrlButtons ctrl);
-void LCD_Sym_Pin_OkButton(unsigned char on);
+void LCD_Sym_Pin_OkButton(unsigned char select);
 
 
 /* ------------------------------------------------------------------*

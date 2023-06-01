@@ -756,7 +756,7 @@ void LCD_SetupPage(struct PlantState *ps)
       {
         Sonic_LevelCal(ps);
         LCD_Sym_Setup_Cal_Level_Sonic(ps->sonic_state->level_cal);
-        LCD_Sym_Setup_Cal_Level_Sym(true);
+        LCD_Sym_Setup_Cal_Level_Sym(false);
         ps->page_state->page = SetupCal;
       }
 
@@ -777,7 +777,7 @@ void LCD_SetupPage(struct PlantState *ps)
 
             // clear countdown
             LCD_Sym_Setup_Cal_Clr_MPXCountDown();
-            LCD_Sym_Setup_Cal_Level_Sym(true);
+            LCD_Sym_Setup_Cal_Level_Sym(false);
             ps->page_state->page = SetupCal; 
           }
         }

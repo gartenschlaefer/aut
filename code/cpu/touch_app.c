@@ -478,9 +478,9 @@ void Touch_Setup_CirculateLinker(struct PlantState *ps)
   {
     switch(ps->touch_state->var[5])
     {
-      case 0: LCD_Sym_Setup_Circulate_OnValue(false, ps->touch_state->var[0]); break;
-      case 1: LCD_Sym_Setup_Circulate_OffValue(false, ps->touch_state->var[1]); break;
-      case 2: LCD_Sym_Setup_Circulate_TimeValue(false, ps->touch_state->int_var[0]); break;
+      case 0: LCD_Sym_Setup_Circulate_OnValue(true, ps->touch_state->var[0]); break;
+      case 1: LCD_Sym_Setup_Circulate_OffValue(true, ps->touch_state->var[1]); break;
+      case 2: LCD_Sym_Setup_Circulate_TimeValue(true, ps->touch_state->int_var[0]); break;
       default: break;
     }
   }
@@ -559,8 +559,6 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
     ps->touch_state->var[5] = 0;
     ps->touch_state->int_var[0] = ((ps->touch_state->var[3] << 8) | ps->touch_state->var[2]);
     LCD_Sym_Setup_Air_Change_Values(ps->touch_state->var[5], ps->touch_state->var);
-    LCD_ClrSpace(15, 39, 3, 31);
-    LCD_WriteAnyStringFont(f_6x8_p, 16, 40, "Time:");
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -586,10 +584,7 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
       break;
 
     // time
-    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_time; ps->touch_state->var[5] = 2; LCD_Sym_Setup_Air_Change_Values(ps->touch_state->var[5], ps->touch_state->var); }
-      LCD_FillSpace (15, 39, 4, 31);
-      LCD_WriteAnyStringFont(f_6x8_n, 16, 40, "Time:"); 
-      break;
+    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_time; ps->touch_state->var[5] = 2; LCD_Sym_Setup_Air_Change_Values(ps->touch_state->var[5], ps->touch_state->var); } break;
 
     // no ps->touch_state->touched
     case 0x00: if(ps->touch_state->touched){ ps->touch_state->var[2] = (ps->touch_state->int_var[0] & 0x00FF); ps->touch_state->var[3] = ((ps->touch_state->int_var[0] >> 8) & 0x00FF); LCD_Sym_ControlButtons(ps->touch_state->touched); ps->touch_state->touched = _ctrl_zero; } break;
@@ -605,9 +600,9 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
   {
     switch(ps->touch_state->var[5])
     {
-      case 0: LCD_Sym_Setup_Circulate_OnValue(false, ps->touch_state->var[0]); break;
-      case 1: LCD_Sym_Setup_Circulate_OffValue(false, ps->touch_state->var[1]); break;
-      case 2: LCD_Sym_Setup_Circulate_TimeValue(false, ps->touch_state->int_var[0]); break;
+      case 0: LCD_Sym_Setup_Circulate_OnValue(true, ps->touch_state->var[0]); break;
+      case 1: LCD_Sym_Setup_Circulate_OffValue(true, ps->touch_state->var[1]); break;
+      case 2: LCD_Sym_Setup_Circulate_TimeValue(true, ps->touch_state->int_var[0]); break;
       default: break;
     }
   }
@@ -624,7 +619,7 @@ void Touch_Setup_SetDownLinker(struct PlantState *ps)
   {
     ps->touch_state->init = true;
     ps->touch_state->var[0] = MEM_EEPROM_ReadVar(TIME_setDown);
-    LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, ps->touch_state->var[0]);
+    LCD_Sym_Setup_SetDown_TimeValue(ps->touch_state->var[0]);
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -661,7 +656,7 @@ void Touch_Setup_SetDownLinker(struct PlantState *ps)
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // time config
-  if(ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, ps->touch_state->var[0]); }
+  if(ps->touch_state->touched){ LCD_Sym_Setup_SetDown_TimeValue(ps->touch_state->var[0]); }
 }
 
 
@@ -678,11 +673,11 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
     ps->touch_state->var[1] = MEM_EEPROM_ReadVar(PUMP_pumpOff);
 
     // on value
-    LCD_Sym_Setup_Circulate_OnTextValue(false, ps->touch_state->var[0]);
+    LCD_Sym_Setup_Circulate_OnTextValue(true, ps->touch_state->var[0]);
 
     // symbols
-    LCD_Sym_Setup_PumpOff_Compressor((bool)ps->touch_state->var[1]);
-    LCD_Sym_Setup_PumpOff_Pump(!((bool)ps->touch_state->var[1]));
+    LCD_Sym_Setup_PumpOff_Compressor(!(bool)ps->touch_state->var[1]);
+    LCD_Sym_Setup_PumpOff_Pump((bool)ps->touch_state->var[1]);
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -712,10 +707,10 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
       if(ps->touch_state->touched){ ps->touch_state->var[0] = Basic_LimitAdd(ps->touch_state->var[0], 60); } break;
 
     // mammoth pump
-    case 0x31: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[1] = 0; LCD_Sym_Setup_PumpOff_Compressor(false); LCD_Sym_Setup_PumpOff_Pump(true); } break;
+    case 0x31: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[1] = 0; LCD_Sym_Setup_PumpOff_Compressor(true); LCD_Sym_Setup_PumpOff_Pump(false); } break;
 
     // electrical pump
-    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[1] = 1; LCD_Sym_Setup_PumpOff_Compressor(true); LCD_Sym_Setup_PumpOff_Pump(false); } break;
+    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[1] = 1; LCD_Sym_Setup_PumpOff_Compressor(false); LCD_Sym_Setup_PumpOff_Pump(true); } break;
 
     // no ps->touch_state->touched
     case 0x00: if(ps->touch_state->touched){ LCD_Sym_ControlButtons(ps->touch_state->touched); ps->touch_state->touched = _ctrl_zero; } break;
@@ -727,7 +722,7 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // output
-  if(ps->touch_state->touched){ LCD_Sym_Setup_Circulate_OnValue(false, ps->touch_state->var[0]); }
+  if(ps->touch_state->touched){ LCD_Sym_Setup_Circulate_OnValue(true, ps->touch_state->var[0]); }
 }
 
 
@@ -743,11 +738,8 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
     ps->touch_state->var[0] = MEM_EEPROM_ReadVar(ON_MIN_mud);
     ps->touch_state->var[1] = MEM_EEPROM_ReadVar(ON_SEC_mud);
     ps->touch_state->var[5] = 0;
-    LCD_WriteAnyStringFont(f_6x8_p, 11, 7, "ON:");
-    if(!ps->touch_state->var[5]){ LCD_WriteAnyValue(f_6x8_p, 2, 11, 40, ps->touch_state->var[0]); LCD_WriteAnyValue(f_6x8_n, 2, 16, 40, ps->touch_state->var[1]); }
-    else{ LCD_WriteAnyValue(f_6x8_n, 2, 11, 40, ps->touch_state->var[0]); LCD_WriteAnyValue(f_6x8_p, 2, 16, 40, ps->touch_state->var[1]); }
-    LCD_WriteAnyStringFont(f_6x8_p, 11, 55, "min");
-    LCD_WriteAnyStringFont(f_6x8_p, 16, 55, "sec");
+    LCD_Sym_Setup_Mud_Min(!(bool)ps->touch_state->var[5], ps->touch_state->var[0]);
+    LCD_Sym_Setup_Mud_Sec((bool)ps->touch_state->var[5], ps->touch_state->var[1]);
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -782,10 +774,10 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
       break;
 
     // min
-    case 0x22: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 1; LCD_WriteAnyValue(f_6x8_p, 2, 16, 40, ps->touch_state->var[1]); } break;
+    case 0x22: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 0; LCD_Sym_Setup_Mud_Sec(false, ps->touch_state->var[1]); } break;
     
     // sec
-    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 0; LCD_WriteAnyValue(f_6x8_p, 2, 11, 40, ps->touch_state->var[0]); } break;
+    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 1; LCD_Sym_Setup_Mud_Min(false, ps->touch_state->var[0]); } break;
     case 0x00: if(ps->touch_state->touched){ LCD_Sym_ControlButtons(ps->touch_state->touched); ps->touch_state->touched = _ctrl_zero; } break;
 
     default: break;
@@ -795,12 +787,8 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // min max
-  if(ps->touch_state->var[5] && ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 2, 11, 40, ps->touch_state->var[0]); }
-  if(!ps->touch_state->var[5] && ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 2, 16, 40, ps->touch_state->var[1]); }
+  if(ps->touch_state->touched){ (ps->touch_state->var[5] ? LCD_Sym_Setup_Mud_Sec(true, ps->touch_state->var[1]) : LCD_Sym_Setup_Mud_Min(true, ps->touch_state->var[0])); }
 }
-
-
-
 
 
 /* ------------------------------------------------------------------*
@@ -812,13 +800,14 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
   if(!ps->touch_state->init)
   {
     ps->touch_state->init = true;
+    ps->touch_state->touched = _ctrl_zero;
     ps->touch_state->int_var[0] = ((MEM_EEPROM_ReadVar(MIN_H_druck) << 8) | MEM_EEPROM_ReadVar(MIN_L_druck));
     ps->touch_state->int_var[1] = ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | MEM_EEPROM_ReadVar(MAX_L_druck));
     ps->touch_state->var[5] = 0;
 
     // min max
-    if(ps->touch_state->var[5]){ LCD_WriteAnyValue(f_6x8_p, 3, 16, 7, ps->touch_state->int_var[1]); LCD_WriteAnyValue(f_6x8_n, 3, 11, 7, ps->touch_state->int_var[0]); }
-    if(!ps->touch_state->var[5]){ LCD_WriteAnyValue(f_6x8_p, 3, 11, 7, ps->touch_state->int_var[0]); LCD_WriteAnyValue(f_6x8_n, 3 , 16, 7, ps->touch_state->int_var[1]); }
+    LCD_Sym_Setup_Compressor_MinP(!ps->touch_state->var[5], ps->touch_state->int_var[0]);
+    LCD_Sym_Setup_Compressor_MaxP(ps->touch_state->var[5], ps->touch_state->int_var[1]);
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -826,20 +815,29 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
   {
     // esc
     case 0x13: 
-      if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
-      ps->touch_state->init = false; 
-      ps->page_state->page = SetupPage;
+      if(!ps->touch_state->touched)
+      { 
+        ps->touch_state->touched = _ctrl_pos_esc; 
+        LCD_Sym_ControlButtons(_ctrl_neg_esc);
+        ps->touch_state->init = false; 
+        ps->page_state->page = SetupPage;
+      }
       break;
 
     // okay
-    case 0x14: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_ok; LCD_Sym_ControlButtons(_ctrl_neg_ok); }
-      ps->touch_state->init = false;
-      MEM_EEPROM_WriteVar(MAX_L_druck, (ps->touch_state->int_var[1] & 0x00FF));
-      MEM_EEPROM_WriteVar(MAX_H_druck, ((ps->touch_state->int_var[1] >> 8) & 0x00FF));
-      MEM_EEPROM_WriteVar(MIN_L_druck, (ps->touch_state->int_var[0] & 0x00FF));
-      MEM_EEPROM_WriteVar(MIN_H_druck, ((ps->touch_state->int_var[0] >> 8) & 0x00FF));
-      MEM_EEPROM_WriteSetupEntry(ps);
-      ps->page_state->page = SetupPage;
+    case 0x14: 
+      if(!ps->touch_state->touched)
+      { 
+        ps->touch_state->touched = _ctrl_pos_ok;
+        LCD_Sym_ControlButtons(_ctrl_neg_ok);
+        ps->touch_state->init = false;
+        MEM_EEPROM_WriteVar(MAX_L_druck, (ps->touch_state->int_var[1] & 0x00FF));
+        MEM_EEPROM_WriteVar(MAX_H_druck, ((ps->touch_state->int_var[1] >> 8) & 0x00FF));
+        MEM_EEPROM_WriteVar(MIN_L_druck, (ps->touch_state->int_var[0] & 0x00FF));
+        MEM_EEPROM_WriteVar(MIN_H_druck, ((ps->touch_state->int_var[0] >> 8) & 0x00FF));
+        MEM_EEPROM_WriteSetupEntry(ps);
+        ps->page_state->page = SetupPage;
+      }
       break;
 
     // minus
@@ -857,10 +855,10 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
       break;
 
     // min
-    case 0x21: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 1; LCD_WriteAnyValue(f_6x8_p, 3, 16, 7, ps->touch_state->int_var[1]); } break;
+    case 0x21: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 0; LCD_Sym_Setup_Compressor_MaxP(false, ps->touch_state->int_var[1]); } break;
 
     // max
-    case 0x31: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 0; LCD_WriteAnyValue(f_6x8_p, 3, 11, 7, ps->touch_state->int_var[0]); } break;
+    case 0x31: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[5] = 1; LCD_Sym_Setup_Compressor_MinP(false, ps->touch_state->int_var[0]); } break;
 
     // nothing
     case 0x00: if(ps->touch_state->touched){ LCD_Sym_ControlButtons(ps->touch_state->touched); ps->touch_state->touched = _ctrl_zero; } break;
@@ -871,9 +869,8 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
   // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
-  // min max
-  if(ps->touch_state->var[5] && ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 11, 7, ps->touch_state->int_var[0]); }
-  if(!ps->touch_state->var[5] && ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 16, 7, ps->touch_state->int_var[1]); }
+  // min max value update
+  if(ps->touch_state->touched){ (ps->touch_state->var[5] ? LCD_Sym_Setup_Compressor_MaxP(true, ps->touch_state->int_var[1]) : LCD_Sym_Setup_Compressor_MinP(true, ps->touch_state->int_var[0])); }
 }
 
 
@@ -891,13 +888,14 @@ void Touch_Setup_PhosphorLinker(struct PlantState *ps)
     ps->touch_state->var[1] = MEM_EEPROM_ReadVar(OFF_phosphor);
     ps->touch_state->var[5] = 0;
 
-    LCD_Sym_Setup_Circulate_OnTextValue((bool)(!ps->touch_state->var[5]), ps->touch_state->var[0]);
-    LCD_Sym_Setup_Circulate_OnTextValue((bool)ps->touch_state->var[5], ps->touch_state->var[1]);
+    LCD_Sym_Setup_Circulate_OnTextValue(!(bool)ps->touch_state->var[5], ps->touch_state->var[0]);
+    LCD_Sym_Setup_Circulate_OffTextValue((bool)ps->touch_state->var[5], ps->touch_state->var[1]);
   }
 
-unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
+  unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
   switch(touch_matrix)
   {
+    // esc
     case 0x13:
       if(!ps->touch_state->touched)
       { 
@@ -908,6 +906,7 @@ unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
       }
       break;
 
+    // ok
     case 0x14:
       if(!ps->touch_state->touched)
       { 
@@ -923,12 +922,14 @@ unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
       }
       break;
 
+    // minus
     case 0x23:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Sym_ControlButtons(_ctrl_neg_minus); }
       if(ps->touch_state->var[5]){ ps->touch_state->var[0] = Basic_LimitDec(ps->touch_state->var[0], 0); }
       else{ ps->touch_state->var[1] = Basic_LimitDec(ps->touch_state->var[1], 0); }
       break;
 
+    // plus
     case 0x24:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Sym_ControlButtons(_ctrl_neg_plus); }
       if(ps->touch_state->var[5]){ ps->touch_state->var[0] = Basic_LimitAdd(ps->touch_state->var[0], 60); }
@@ -937,12 +938,12 @@ unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
 
     // on
     case 0x21:
-      if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_on; ps->touch_state->var[5] = 1; LCD_Sym_Setup_Circulate_OffTextValue(true, ps->touch_state->var[1]);  }
+      if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_on; ps->touch_state->var[5] = 0; LCD_Sym_Setup_Circulate_OffTextValue(true, ps->touch_state->var[1]);  }
       break;
 
     // off
     case 0x22:
-      if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_off; ps->touch_state->var[5] = 0; LCD_Sym_Setup_Circulate_OnTextValue(true, ps->touch_state->var[0]); }
+      if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_off; ps->touch_state->var[5] = 1; LCD_Sym_Setup_Circulate_OnTextValue(true, ps->touch_state->var[0]); }
       break;
 
     // no ps->touch_state->touched
@@ -955,7 +956,7 @@ unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // off or on value
-  if(ps->touch_state->touched){ (ps->touch_state->var[5] ? LCD_Sym_Setup_Circulate_OnValue(false, ps->touch_state->var[0]) : LCD_Sym_Setup_Circulate_OffValue(false, ps->touch_state->var[1])); }
+  if(ps->touch_state->touched){ (ps->touch_state->var[5] ? LCD_Sym_Setup_Circulate_OffValue(true, ps->touch_state->var[0]) : LCD_Sym_Setup_Circulate_OnValue(true, ps->touch_state->var[1])); }
 }
 
 
@@ -976,8 +977,7 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
     ps->touch_state->var[5] = 4;
 
     LCD_Sym_Setup_Pump(ps->touch_state->var[3]);
-    if(ps->touch_state->var[4]){ LCD_WriteAnySymbol(15, 5, _n_sensor); }
-    else{ LCD_WriteAnySymbol(15, 5, _p_sensor); }
+    LCD_Sym_Setup_InflowPump_Sensor((bool)ps->touch_state->var[4]);
 
     // initialize text and symbols
     LCD_Sym_Setup_InflowPump_Text(0b10110100);
@@ -1069,28 +1069,22 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
     case 0x31:
       if(!ps->touch_state->touched)
       {
-        ps->touch_state->touched = _ctrl_sensor; 
-        if(ps->touch_state->var[4])
-        { 
-          ps->touch_state->var[4] = 0;
-          LCD_WriteAnySymbol(15, 5, _p_sensor);
-        }
-        else
-        { 
-          ps->touch_state->var[4] = 1;
-          LCD_WriteAnySymbol(15, 5, _n_sensor);
-        }
+        ps->touch_state->touched = _ctrl_sensor;
+        // mask and toggle
+        ps->touch_state->var[4] &= (1 << 0);
+        ps->touch_state->var[4] ^= (1 << 0);
+        LCD_Sym_Setup_InflowPump_Sensor((bool)ps->touch_state->var[4]);
       }
       break;
 
     // mammoth pump
-    case 0x32: ps->touch_state->var[3] = 0; LCD_Sym_Setup_Pump(0); break;
+    case 0x32: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[3] = 0; LCD_Sym_Setup_Pump(0); } break;
 
     // electrical pump
-    case 0x33: ps->touch_state->var[3] = 1; LCD_Sym_Setup_Pump(1); break;
+    case 0x33: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[3] = 1; LCD_Sym_Setup_Pump(1); } break;
 
     // two electrical pumps
-    case 0x34: ps->touch_state->var[3] = 2; LCD_Sym_Setup_Pump(2); break;
+    case 0x34: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[3] = 2; LCD_Sym_Setup_Pump(2); } break;
 
     // nothing
     case 0x00: if(ps->touch_state->touched){ LCD_Sym_ControlButtons(ps->touch_state->touched); ps->touch_state->touched = _ctrl_zero; } break;
@@ -1122,6 +1116,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
   if(!ps->touch_state->init)
   {
     ps->touch_state->init = true;
+    ps->touch_state->touched = _ctrl_zero;
     ps->touch_state->var[0] = MEM_EEPROM_ReadVar(CAL_Redo_on);
     ps->touch_state->int_var[0] = ((MEM_EEPROM_ReadVar(CAL_H_druck) << 8) | (MEM_EEPROM_ReadVar(CAL_L_druck)));
 
@@ -1130,20 +1125,16 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
   }
 
   // read mpx
-  int read = MPX_Read();
+  int mpx_value = MPX_Read();
 
   // new value
-  if(read != 0xFF00)
+  if(mpx_value != 0xFF00)
   {
     // print every 10th Time
     if(ps->frame_counter->frame == TC_FPS_HALF)
     {
-      read = read - ps->touch_state->int_var[0];
-
-      // negative / positive pressure
-      if(read < 0){ read = -read; LCD_WriteAnyStringFont(f_6x8_p, 10, 34, "-"); }
-      else{ LCD_ClrSpace(10, 34, 2, 5); }
-      LCD_WriteAnyValue(f_6x8_p, 3, 10, 40, read);
+      mpx_value -= ps->touch_state->int_var[0];
+      LCD_Sym_Setup_Cal_MPX_Value(mpx_value);
     }
   }
 
@@ -1194,7 +1185,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       if(!ps->touch_state->touched && ps->page_state->page == SetupCal)
       { 
         ps->touch_state->touched = _ctrl_cal;
-        LCD_WriteAnySymbol(9, 125, _n_cal);
+        LCD_Sym_Setup_Cal_Button(true);
 
         // calibration try couple of time until it hopefully worked
         ps->touch_state->int_var[0] = 0;
@@ -1218,7 +1209,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       if(!ps->touch_state->touched)
       { 
         ps->touch_state->touched = _ctrl_level;
-        LCD_Sym_Setup_Cal_Level_Sym(false);
+        LCD_Sym_Setup_Cal_Level_Sym(true);
         if(ps->touch_state->var[1]){ ps->touch_state->var[1] = 0; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 1); OUT_Valve_Action(ps, CLOSE_All); } 
         ps->page_state->page = SetupCalPressure; 
       }
@@ -1232,8 +1223,9 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
         ps->touch_state->touched = _ctrl_redo;
         if(!MEM_EEPROM_ReadVar(SONIC_on))
         {
-          if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; LCD_WriteAnySymbol(15, 130, _p_arrow_redo); }
-          else{ ps->touch_state->var[0] = 1; LCD_WriteAnySymbol(15, 130, _n_arrow_redo); }
+          ps->touch_state->var[0] &= (1 << 0);
+          ps->touch_state->var[0] ^= (1 << 0);
+          LCD_Sym_Setup_Cal_MPX_Redo((bool)ps->touch_state->var[0]);
         }
       }
       break;
@@ -1242,7 +1234,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     case 0x00:
       if(ps->touch_state->touched)
       {
-        if(ps->touch_state->touched == _ctrl_cal){ LCD_WriteAnySymbol(9, 125, _p_cal); }
+        if(ps->touch_state->touched == _ctrl_cal){ LCD_Sym_Setup_Cal_Button(false); }
         ps->touch_state->touched = _ctrl_zero;
       }
       break;
@@ -1275,12 +1267,9 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
     ps->touch_state->var[1] = MEM_EEPROM_ReadVar(ALARM_comp);
     ps->touch_state->var[2] = MEM_EEPROM_ReadVar(ALARM_temp);
 
-    LCD_WriteAnyValue(f_6x8_n, 3, 10, 15, ps->touch_state->var[2]);
-
-    if(ps->touch_state->var[1]){ LCD_WriteAnySymbol(15, 40, _n_compressor); }
-    else{ LCD_WriteAnySymbol(15, 40, _p_compressor); }
-    if(ps->touch_state->var[0]){ LCD_WriteAnySymbol(15, 0, _n_sensor); }
-    else{ LCD_WriteAnySymbol(15, 0, _p_sensor); }
+    LCD_Sym_Setup_Alarm_Sensor((bool)ps->touch_state->var[0]);
+    LCD_Sym_Setup_Alarm_Compressor((bool)ps->touch_state->var[1]);
+    LCD_Sym_Setup_Alarm_TempValue(true, ps->touch_state->var[2]);
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -1320,9 +1309,10 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
     case 0x31:
       if(!ps->touch_state->touched)
       {
-        ps->touch_state->touched = _ctrl_pos_minus;
-        if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; LCD_WriteAnySymbol(15, 0, _p_sensor); }
-        else{ ps->touch_state->var[0] = 1; LCD_WriteAnySymbol(15, 0, _n_sensor); }
+        ps->touch_state->touched = _ctrl_sensor;
+        ps->touch_state->var[0] &= (1 << 0);
+        ps->touch_state->var[0] ^= (1 << 0);
+        LCD_Sym_Setup_Alarm_Sensor((bool)ps->touch_state->var[0]);
       }
       break;
 
@@ -1330,9 +1320,10 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
     case 0x32:
       if(!ps->touch_state->touched)
       { 
-        ps->touch_state->touched = _ctrl_pos_minus;
-        if(ps->touch_state->var[1]){ ps->touch_state->var[1] = 0; LCD_WriteAnySymbol(15, 40, _p_compressor); }
-        else{ ps->touch_state->var[1] = 1; LCD_WriteAnySymbol(15, 40, _n_compressor); }
+        ps->touch_state->touched = _ctrl_compressor;
+        ps->touch_state->var[1] &= (1 << 0);
+        ps->touch_state->var[1] ^= (1 << 0);
+        LCD_Sym_Setup_Alarm_Compressor((bool)ps->touch_state->var[1]);
       }
       break;
 
@@ -1345,7 +1336,7 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
   // matrix main linker
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
-  if(ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 10, 15, ps->touch_state->var[2]); }
+  if(ps->touch_state->touched){ LCD_Sym_Setup_Alarm_TempValue(true, ps->touch_state->var[2]); }
 }
 
 
@@ -1378,15 +1369,15 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
     // okay
     case 0x14: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_ok; LCD_Sym_ControlButtons2(_ctrl_neg_ok); }
       ps->touch_state->init = false;
-      unsigned char time = (((ps->touch_state->var[0]/10) << 4) | (ps->touch_state->var[0]%10));
+      unsigned char time = (((ps->touch_state->var[0]/10) << 4) | (ps->touch_state->var[0] % 10));
       MCP7941_WriteByte(TIC_HOUR, time);
-      time = (((ps->touch_state->var[1]/10) << 4) | (ps->touch_state->var[1]%10));
+      time = (((ps->touch_state->var[1]/10) << 4) | (ps->touch_state->var[1] % 10));
       MCP7941_WriteByte(TIC_MIN, time);
-      time = (((ps->touch_state->var[2]/10) << 4) | (ps->touch_state->var[2]%10));
+      time = (((ps->touch_state->var[2]/10) << 4) | (ps->touch_state->var[2] % 10));
       MCP7941_WriteByte(TIC_DATE, time);
-      time = (((ps->touch_state->var[3]/10) << 4) | (ps->touch_state->var[3]%10));
+      time = (((ps->touch_state->var[3]/10) << 4) | (ps->touch_state->var[3] % 10));
       MCP7941_WriteByte(TIC_MONTH, time);
-      time = (((ps->touch_state->var[4]/10) << 4) | (ps->touch_state->var[4]%10));
+      time = (((ps->touch_state->var[4]/10) << 4) | (ps->touch_state->var[4] % 10));
       MCP7941_WriteByte(TIC_YEAR, time);
       MEM_EEPROM_WriteSetupEntry(ps);
       ps->page_state->page = SetupPage;
@@ -1468,30 +1459,14 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
     ps->touch_state->init = true;
     ps->touch_state->var[0] = MEM_EEPROM_ReadVar(SONIC_on);
     ps->touch_state->var[1] = 0;
-    ps->touch_state->int_var[0] = (MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | MEM_EEPROM_ReadVar(TANK_L_O2);
-    ps->touch_state->int_var[1] = (MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | MEM_EEPROM_ReadVar(TANK_L_Circ);
+    ps->touch_state->int_var[0] = (MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | MEM_EEPROM_ReadVar(TANK_L_Circ);
+    ps->touch_state->int_var[1] = (MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | MEM_EEPROM_ReadVar(TANK_L_O2);
 
-    if(ps->touch_state->var[0]){ LCD_WriteAnySymbol(3, 47, _n_sonic); }
-    else{ LCD_WriteAnySymbol(3, 47, _p_sonic); }
-
-    if(!ps->touch_state->var[1])
-    { 
-      LCD_WriteAnyValue(f_6x8_p, 3, 11, 40, ps->touch_state->int_var[1]);
-      LCD_WriteAnyValue(f_6x8_n, 3, 16, 40, ps->touch_state->int_var[0]);
-      LCD_WriteAnySymbol(9, 0, _p_air);
-      LCD_WriteAnySymbol(14, 0, _n_setDown);
-    }
-    else
-    { 
-      LCD_WriteAnyValue(f_6x8_n, 3, 11, 40, ps->touch_state->int_var[1]);
-      LCD_WriteAnyValue(f_6x8_p, 3, 16, 40, ps->touch_state->int_var[0]);
-      LCD_WriteAnySymbol(9, 0, _n_air);
-      LCD_WriteAnySymbol(14, 0, _p_setDown); 
-    }
-
-    // cm
-    LCD_WriteAnyStringFont(f_6x8_p, 11, 60, "cm");
-    LCD_WriteAnyStringFont(f_6x8_p, 16, 60, "cm");
+    LCD_Sym_Setup_Zone_Sonic(ps->touch_state->var[0]);
+    LCD_Sym_Setup_Zone_Level_Air(!(bool)ps->touch_state->var[1], ps->touch_state->int_var[0]);
+    LCD_Sym_Setup_Zone_Level_SetDown((bool)ps->touch_state->var[1], ps->touch_state->int_var[1]);
+    LCD_Sym_Setup_Zone_Air(!(bool)ps->touch_state->var[1]);
+    LCD_Sym_Setup_Zone_SetDown((bool)ps->touch_state->var[1]);
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -1502,69 +1477,82 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
       if(!ps->touch_state->touched)
       { 
         ps->touch_state->touched = _ctrl_sonic;
-        if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; LCD_WriteAnySymbol(3, 47, _p_sonic); }
-        else{ ps->touch_state->var[0] = 1; LCD_WriteAnySymbol(3, 47, _n_sonic); }
+        ps->touch_state->var[0] &= (1 << 0); 
+        ps->touch_state->var[0] ^= (1 << 0); 
+        LCD_Sym_Setup_Zone_Sonic(ps->touch_state->var[0]);
       } break;
 
     // esc
-    case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
-      ps->touch_state->init = false;
-      ps->page_state->page = SetupPage;
+    case 0x13: 
+      if(!ps->touch_state->touched)
+      { 
+        ps->touch_state->touched = _ctrl_pos_esc; 
+        ps->touch_state->init = false;
+        LCD_Sym_ControlButtons(_ctrl_neg_esc);
+        ps->page_state->page = SetupPage;
+      }
       break;
 
     // okay
-    case 0x14: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_ok; LCD_Sym_ControlButtons(_ctrl_neg_ok); }
-      ps->touch_state->init = false; 
-      unsigned char h = (ps->touch_state->int_var[0] & 0x00FF);
-      MEM_EEPROM_WriteVar(TANK_L_O2, h);
-      h = ((ps->touch_state->int_var[0] >> 8) & 0x00FF);
-      MEM_EEPROM_WriteVar(TANK_H_O2, h);
-      h = (ps->touch_state->int_var[1] & 0x00FF);
-      MEM_EEPROM_WriteVar(TANK_L_Circ, h);
-      h = ((ps->touch_state->int_var[1] >> 8) & 0x00FF);
-      MEM_EEPROM_WriteVar(TANK_H_Circ, h);
-      MEM_EEPROM_WriteVar(SONIC_on, ps->touch_state->var[0]);
-      MEM_EEPROM_WriteSetupEntry(ps);
-      ps->page_state->page = SetupPage;
+    case 0x14: 
+      if(!ps->touch_state->touched)
+      { 
+        ps->touch_state->touched = _ctrl_pos_ok; 
+        ps->touch_state->init = false; 
+        LCD_Sym_ControlButtons(_ctrl_neg_ok);
+        unsigned char h = (ps->touch_state->int_var[0] & 0x00FF);
+        MEM_EEPROM_WriteVar(TANK_L_O2, h);
+        h = ((ps->touch_state->int_var[0] >> 8) & 0x00FF);
+        MEM_EEPROM_WriteVar(TANK_H_O2, h);
+        h = (ps->touch_state->int_var[1] & 0x00FF);
+        MEM_EEPROM_WriteVar(TANK_L_Circ, h);
+        h = ((ps->touch_state->int_var[1] >> 8) & 0x00FF);
+        MEM_EEPROM_WriteVar(TANK_H_Circ, h);
+        MEM_EEPROM_WriteVar(SONIC_on, ps->touch_state->var[0]);
+        MEM_EEPROM_WriteSetupEntry(ps);
+        ps->page_state->page = SetupPage;
+      }
       break;
 
     // minus
     case 0x23:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Sym_ControlButtons(_ctrl_neg_minus); }
-      if(ps->touch_state->var[1]) ps->touch_state->int_var[1] = Basic_LimitDec(ps->touch_state->int_var[1], 0);
-      else ps->touch_state->int_var[0] = Basic_LimitDec(ps->touch_state->int_var[0], ps->touch_state->int_var[1]);
+      if(ps->touch_state->var[1]){ ps->touch_state->int_var[1] = Basic_LimitDec(ps->touch_state->int_var[1], 0); }
+      else{ ps->touch_state->int_var[0] = Basic_LimitDec(ps->touch_state->int_var[0], ps->touch_state->int_var[1]); }
       break;
 
     // plus
     case 0x24:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Sym_ControlButtons(_ctrl_neg_plus); }
-      if(ps->touch_state->var[1]) ps->touch_state->int_var[1] = Basic_LimitAdd(ps->touch_state->int_var[1], ps->touch_state->int_var[0]);
-      else ps->touch_state->int_var[0] = Basic_LimitAdd(ps->touch_state->int_var[0], 999);
+      if(ps->touch_state->var[1]){ ps->touch_state->int_var[1] = Basic_LimitAdd(ps->touch_state->int_var[1], ps->touch_state->int_var[0]); }
+      else{ ps->touch_state->int_var[0] = Basic_LimitAdd(ps->touch_state->int_var[0], 999); }
       break;
 
-    // circulate
+    // air level
     case 0x21:
     case 0x22:
       if(!ps->touch_state->touched)
       {
         ps->touch_state->touched = _ctrl_none;
-        ps->touch_state->var[1] = 1;
-        LCD_WriteAnyValue(f_6x8_p, 3, 16, 40, ps->touch_state->int_var[0]);
-        LCD_WriteAnySymbol(9, 0, _n_air);
-        LCD_WriteAnySymbol(14, 0, _p_setDown);
+        ps->touch_state->var[1] = 0;
+        LCD_Sym_Setup_Zone_Level_Air(!(bool)ps->touch_state->var[1], ps->touch_state->int_var[0]);
+        LCD_Sym_Setup_Zone_Level_SetDown((bool)ps->touch_state->var[1], ps->touch_state->int_var[1]);
+        LCD_Sym_Setup_Zone_Air(!(bool)ps->touch_state->var[1]);
+        LCD_Sym_Setup_Zone_SetDown((bool)ps->touch_state->var[1]);
       }
       break;
 
-    // o2
+    // set down level
     case 0x31:
     case 0x32:
       if(!ps->touch_state->touched)
       {
         ps->touch_state->touched = _ctrl_none;
-        ps->touch_state->var[1] = 0;
-        LCD_WriteAnyValue(f_6x8_p, 3, 11, 40, ps->touch_state->int_var[1]);
-        LCD_WriteAnySymbol(9, 0, _p_air);
-        LCD_WriteAnySymbol(14, 0, _n_setDown);
+        ps->touch_state->var[1] = 1;
+        LCD_Sym_Setup_Zone_Level_Air(!(bool)ps->touch_state->var[1], ps->touch_state->int_var[0]);
+        LCD_Sym_Setup_Zone_Level_SetDown((bool)ps->touch_state->var[1], ps->touch_state->int_var[1]);
+        LCD_Sym_Setup_Zone_Air(!(bool)ps->touch_state->var[1]);
+        LCD_Sym_Setup_Zone_SetDown((bool)ps->touch_state->var[1]);
       }
       break;
 
@@ -1578,8 +1566,7 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
   Touch_Matrix_MainLinker(ps, touch_matrix);
 
   // circulate and o2
-  if(ps->touch_state->var[1] && ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 11, 40, ps->touch_state->int_var[1]); }
-  if(!ps->touch_state->var[1] && ps->touch_state->touched){ LCD_WriteAnyValue(f_6x8_n, 3, 16, 40, ps->touch_state->int_var[0]); }
+  if(ps->touch_state->touched){ (ps->touch_state->var[1] ? LCD_Sym_Setup_Zone_Level_SetDown(true, ps->touch_state->int_var[1]) : LCD_Sym_Setup_Zone_Level_Air(true, ps->touch_state->int_var[0])); }
 }
 
 
@@ -1614,7 +1601,7 @@ void Touch_Data_AutoLinker(struct PlantState *ps)
   if(!ps->touch_state->init)
   {
     ps->touch_state->init = true;
-    ps->touch_state->var[0] = 0;
+    ps->touch_state->touched = _ctrl_zero;
     ps->touch_state->var[1] = 0;
   }
 
@@ -1623,39 +1610,40 @@ void Touch_Data_AutoLinker(struct PlantState *ps)
   {
     // arrow up
     case 0x14:
-      if(!ps->touch_state->var[0])
+      if(!ps->touch_state->touched)
       { 
-        ps->touch_state->var[0] = 1; 
+        ps->touch_state->touched = _ctrl_arrow_up;
         if(ps->touch_state->var[1]){ ps->touch_state->var[1]--; }
-        LCD_WriteAnySymbol(3, 140, _n_arrow_up);
+        LCD_Sym_Data_Arrow_Up(true);
       } 
       break;
 
     // arrow down
     case 0x34:
-      if(!ps->touch_state->var[0])
+      if(!ps->touch_state->touched)
       { 
-        ps->touch_state->var[0] = 2; 
+        ps->touch_state->touched = _ctrl_arrow_down;
         if(ps->touch_state->var[1] < DATA_PAGE_NUM_AUTO){ ps->touch_state->var[1]++; }
-        LCD_WriteAnySymbol(14, 140, _n_arrow_down);
+        LCD_Sym_Data_Arrow_Down(true);
       } 
       break;
 
     // nothing
     case 0x00:
-      if(ps->touch_state->var[0] == 1)
-      { 
-        ps->touch_state->var[0] = 0;
-        LCD_WriteAnySymbol(3, 140, _p_arrow_up);
-        LCD_Data_WriteAutoEntryPage(ps->touch_state->var[1]);
-      }
-
-      else if(ps->touch_state->var[0] == 2)
+      if(ps->touch_state->touched)
       {
-        ps->touch_state->var[0] = 0;
-        LCD_WriteAnySymbol(14, 140, _p_arrow_down);
-        LCD_Data_WriteAutoEntryPage(ps->touch_state->var[1]);
-      } 
+        if(ps->touch_state->touched == _ctrl_arrow_up)
+        { 
+          LCD_Sym_Data_Arrow_Up(false);
+          LCD_Data_WriteAutoEntryPage(ps->touch_state->var[1]);
+        }
+        else if(ps->touch_state->touched == _ctrl_arrow_down)
+        {
+          LCD_Sym_Data_Arrow_Down(false);
+          LCD_Data_WriteAutoEntryPage(ps->touch_state->var[1]);
+        } 
+        ps->touch_state->touched = _ctrl_zero;
+      }
       break;
 
     default: break;
@@ -1685,39 +1673,40 @@ void Touch_Data_ManualLinker(struct PlantState *ps)
 
     // arrow up
     case 0x14:
-      if(!ps->touch_state->var[0])
+      if(!ps->touch_state->touched)
       { 
-        ps->touch_state->var[0] = 1; 
+        ps->touch_state->touched = _ctrl_arrow_up; 
         if(ps->touch_state->var[1]){ ps->touch_state->var[1]--; }
-        LCD_WriteAnySymbol(3, 140, _n_arrow_up);
+        LCD_Sym_Data_Arrow_Up(true);
       } 
       break;
 
     // arrow down
     case 0x34:
-      if(!ps->touch_state->var[0])
+      if(!ps->touch_state->touched)
       { 
-        ps->touch_state->var[0] = 2; 
+        ps->touch_state->touched = _ctrl_arrow_down; 
         if(ps->touch_state->var[1] < DATA_PAGE_NUM_MANUAL){ ps->touch_state->var[1]++; }
-        LCD_WriteAnySymbol(14, 140, _n_arrow_down);
+        LCD_Sym_Data_Arrow_Down(true);
       } 
       break;
 
     // nothing
     case 0x00:
-      if(ps->touch_state->var[0] == 1)
+      if(ps->touch_state->touched)
       {
-        ps->touch_state->var[0] = 0;
-        LCD_WriteAnySymbol(3, 140, _p_arrow_up);
-        LCD_Data_WriteManualEntryPage(ps->touch_state->var[1]);
+        if(ps->touch_state->touched == _ctrl_arrow_up)
+        {
+          LCD_Sym_Data_Arrow_Up(false);
+          LCD_Data_WriteManualEntryPage(ps->touch_state->var[1]);
+        }
+        else if(ps->touch_state->touched == _ctrl_arrow_down)
+        { 
+          LCD_Sym_Data_Arrow_Down(false);
+          LCD_Data_WriteManualEntryPage(ps->touch_state->var[1]);
+        }
+        ps->touch_state->touched = _ctrl_zero;
       }
-
-      else if(ps->touch_state->var[0] == 2)
-      { 
-        ps->touch_state->var[0] = 0;
-        LCD_WriteAnySymbol(14, 140, _p_arrow_down);
-        LCD_Data_WriteManualEntryPage(ps->touch_state->var[1]);
-      }   
       break;
 
     default: break;
@@ -1746,38 +1735,40 @@ void Touch_Data_SetupLinker(struct PlantState *ps)
   {
     // arrow up
     case 0x14:
-      if(!ps->touch_state->var[0])
+      if(!ps->touch_state->touched)
       { 
-        ps->touch_state->var[0] = 1; 
+        ps->touch_state->touched = _ctrl_arrow_up; 
         if(ps->touch_state->var[1]){ ps->touch_state->var[1]--; }
-        LCD_WriteAnySymbol(3, 140, _n_arrow_up);
+        LCD_Sym_Data_Arrow_Up(true);
       } 
       break;
 
     // arrow down
     case 0x34:
-      if(!ps->touch_state->var[0])
+      if(!ps->touch_state->touched)
       { 
-        ps->touch_state->var[0] = 2; 
+        ps->touch_state->touched = _ctrl_arrow_down; 
         if(ps->touch_state->var[1] < DATA_PAGE_NUM_SETUP){ ps->touch_state->var[1]++; }
-        LCD_WriteAnySymbol(14, 140, _n_arrow_down);
+        LCD_Sym_Data_Arrow_Down(true);
       } 
       break;
 
     // nothing
     case 0x00:
-      if(ps->touch_state->var[0] == 1)
+      if(ps->touch_state->touched)
       {
-        ps->touch_state->var[0] = 0;
-        LCD_WriteAnySymbol(3, 140, _p_arrow_up);
-        LCD_Data_WriteSetupEntryPage(ps->touch_state->var[1]);
-      }
+        if(ps->touch_state->touched == _ctrl_arrow_up)
+        {
+          LCD_Sym_Data_Arrow_Up(false);
+          LCD_Data_WriteSetupEntryPage(ps->touch_state->var[1]);
+        }
 
-      else if(ps->touch_state->var[0] == 2)
-      {
-        ps->touch_state->var[0] = 0;
-        LCD_WriteAnySymbol(14, 140, _p_arrow_down);
-        LCD_Data_WriteSetupEntryPage(ps->touch_state->var[1]);
+        else if(ps->touch_state->touched == _ctrl_arrow_down)
+        {
+          LCD_Sym_Data_Arrow_Down(false);
+          LCD_Data_WriteSetupEntryPage(ps->touch_state->var[1]);
+        }
+        ps->touch_state->touched = _ctrl_zero;
       }
       break;
 

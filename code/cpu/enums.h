@@ -148,9 +148,10 @@ typedef enum
   _ctrl_zero,
   _ctrl_neg_plus, _ctrl_neg_minus, _ctrl_neg_esc, _ctrl_neg_ok,
   _ctrl_pos_plus, _ctrl_pos_minus, _ctrl_pos_esc, _ctrl_pos_ok,
-  _ctrl_on, _ctrl_off, _ctrl_time, _ctrl_sensor, 
+  _ctrl_on, _ctrl_off, _ctrl_time, _ctrl_sensor, _ctrl_compressor,
   _ctrl_open_valve, _ctrl_cal, _ctrl_level, _ctrl_redo,
   _ctrl_shot, _ctrl_auto, _ctrl_sonic, _ctrl_bootloader,
+  _ctrl_arrow_up, _ctrl_arrow_down,
   _ctrl_none
 }t_CtrlButtons;
 
