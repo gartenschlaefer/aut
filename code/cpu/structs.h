@@ -11,6 +11,12 @@
  *            general structs
  * ------------------------------------------------------------------*/
 
+struct ValueLimit
+{
+  int max_value;
+  int min_value;
+};
+
 struct QueueNode
 {
   struct QueueNode *next;
@@ -262,8 +268,133 @@ struct TouchState
   int y_data[2];
   bool init;
   unsigned char touched;
-  unsigned char var[6];
+  unsigned char select;
+  unsigned char var[5];
   int int_var[3];
+  int *p_value_setting;
+  struct ValueLimit *p_value_limit;
+};
+
+
+struct Settings
+{
+  struct SettingsCirculate *settings_circulate;
+  struct SettingsAir *settings_air;
+  struct SettingsSetDown *settings_set_down;
+  struct SettingsPumpOff *settings_pump_off;
+  struct SettingsMud *settings_mud;
+  struct SettingsCompressor *settings_compressor;
+  struct SettingsPhosphor *settings_phosphor;
+  struct SettingsInflowPump *settings_inflow_pump;
+  struct SettingsCalibration *settings_calibration;
+  struct SettingsAlarm *settings_alarm;
+  struct SettingsZone *settings_zone;
+};
+
+
+struct SettingsCirculate
+{
+  int on_min;
+  int off_min;
+  int time_min;
+  unsigned char sensor_in_tank;
+  struct ValueLimit val_lim_on_min;
+  struct ValueLimit val_lim_off_min;
+  struct ValueLimit val_lim_time_min;
+};
+
+
+struct SettingsAir
+{
+  int on_min;
+  int off_min;
+  int time_min;
+  struct ValueLimit val_lim_on_min;
+  struct ValueLimit val_lim_off_min;
+  struct ValueLimit val_lim_time_min;
+};
+
+
+struct SettingsSetDown
+{
+  int time_min;
+  struct ValueLimit val_lim_time_min;
+};
+
+
+struct SettingsPumpOff
+{
+  int on_min;
+  unsigned char pump;
+  struct ValueLimit val_lim_on_min;
+};
+
+
+struct SettingsMud
+{
+  int on_min;
+  int on_sec;
+  struct ValueLimit val_lim_on_min;
+  struct ValueLimit val_lim_on_sec;
+};
+
+
+struct SettingsCompressor
+{
+  int min_pressure;
+  int max_pressure;
+  struct ValueLimit val_lim_min_pressure;
+  struct ValueLimit val_lim_max_pressure;
+};
+
+
+struct SettingsPhosphor
+{
+  int on_min;
+  int off_min;
+  struct ValueLimit val_lim_on_min;
+  struct ValueLimit val_lim_off_min;
+};
+
+
+struct SettingsInflowPump
+{
+  int on_min;
+  int off_min;
+  int off_hou;
+  unsigned char pump;
+  unsigned char sensor_out_tank;
+  struct ValueLimit val_lim_on_min;
+  struct ValueLimit val_lim_off_min;
+  struct ValueLimit val_lim_off_hou;
+};
+
+
+struct SettingsCalibration
+{
+  unsigned char redo_on;
+  int zero_offset_pressure;
+  int tank_level_min_pressure;
+  int tank_level_min_sonic;
+};
+
+
+struct SettingsAlarm
+{
+  unsigned char sensor;
+  unsigned char compressor;
+  int temp;
+  struct ValueLimit val_lim_temp;
+};
+
+
+struct SettingsZone
+{
+  unsigned char sonic_on;
+  int level_to_air;
+  int level_to_set_down;
+  struct ValueLimit val_lim_level_to_air;
+  struct ValueLimit val_lim_level_to_set_down;
 };
 
 
@@ -289,6 +420,7 @@ struct PlantState
   struct TimeState *time_state;
   struct EEPROMState *eeprom_state;
   struct TouchState *touch_state;
+  struct Settings *settings;
 }; 
 
 #endif

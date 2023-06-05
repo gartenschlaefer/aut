@@ -1,6 +1,7 @@
 // --
 // main
 
+#include <stdlib.h>
 #include "config.h"
 
 #include "lcd_driver.h"
@@ -13,6 +14,7 @@
 #include "tc_func.h"
 #include "can_app.h"
 #include "queue.h"
+#include "settings.h"
 
 
 /* ------------------------------------------------------------------*
@@ -57,10 +59,11 @@ int main(void)
   struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0, .tele_nr1 = &tele_nr1, .tele_nr2 = &tele_nr2, .tele_nr_temp = &tele_nr_temp, .temp_digit_pos = 0 };
   struct TimeState time_state = { .tic_sec_update_flag = false };
   struct EEPROMState eeprom_state = { .time_manual_entry = { .hou = 0, .min = 0} };
-  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .var = { 0 }, .int_var = { 0 }, };
+  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .var = { 0 }, .int_var = { 0 }, .p_value_setting = NULL };
+  struct Settings *settings = Settings_New();
 
   // plant state
-  struct PlantState ps = { .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state, .touch_state = &touch_state };
+  struct PlantState ps = { .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state, .touch_state = &touch_state, .settings = settings};
 
   // init
   Basic_Init(&ps);
@@ -183,4 +186,5 @@ int main(void)
 
   // free stuff
   queue_destroy(port_state.queue_valve_action);
+  Settings_Destroy(settings);
 }

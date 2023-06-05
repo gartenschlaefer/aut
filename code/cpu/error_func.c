@@ -50,7 +50,7 @@ void Error_Read(struct PlantState *ps)
   if(MCP9800_PlusTemp(ps->twi_state) > MEM_EEPROM_ReadVar(ALARM_temp)){ ps->error_state->pending_err_code |= E_T; }
 
   // over-pressure
-  if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_druck) << 8) | (MEM_EEPROM_ReadVar(MAX_L_druck)))){ ps->error_state->pending_err_code |= E_OP; }
+  if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_pressure) << 8) | (MEM_EEPROM_ReadVar(MAX_L_pressure)))){ ps->error_state->pending_err_code |= E_OP; }
 
   // under-pressure check if necessary
   unsigned char check_up_err = 0;
@@ -80,7 +80,7 @@ void Error_Read(struct PlantState *ps)
   }
 
   // under-pressure
-  if(check_up_err && (MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_druck) << 8) | (MEM_EEPROM_ReadVar(MIN_L_druck))))){ ps->error_state->pending_err_code |= E_UP; }
+  if(check_up_err && (MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_pressure) << 8) | (MEM_EEPROM_ReadVar(MIN_L_pressure))))){ ps->error_state->pending_err_code |= E_UP; }
 
   // max in tank
   //if(MPX_ReadTank(AutoAirOn, _error) == ErrorMPX) ps->error_state->pending_err_code |= E_IT;

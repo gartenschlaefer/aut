@@ -20,7 +20,7 @@
 
 void Sonic_Init(struct PlantState *ps)
 {
-  ps->sonic_state->level_cal = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
+  ps->sonic_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_LV_Sonic_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_Sonic_L)));
 }
 
 
@@ -214,9 +214,9 @@ void Sonic_ChangePage(struct PlantState *ps)
   if(ps->sonic_state->d_error) return;
 
   // percentage
-  int zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  int lvCi = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
+  int zero = ((MEM_EEPROM_ReadVar(TANK_LV_Sonic_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_Sonic_L)));
+  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
+  int lvCi = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_L)));
 
   // change page
   switch(ps->page_state->page)

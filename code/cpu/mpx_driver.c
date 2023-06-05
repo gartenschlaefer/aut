@@ -19,7 +19,7 @@
 
 void MPX_Init(struct PlantState *ps)
 {
-  ps->mpx_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+  ps->mpx_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_LV_MinPressure_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_MinPressure_L)));
 }
 
 
@@ -56,7 +56,7 @@ int MPX_ReadCal(void)
   int data = 0;
 
   data = MPX_Read();
-  cal = ((MEM_EEPROM_ReadVar(CAL_H_druck) << 8) | (MEM_EEPROM_ReadVar(CAL_L_druck)));
+  cal = ((MEM_EEPROM_ReadVar(CAL_ZeroOffsetPressure_H) << 8) | (MEM_EEPROM_ReadVar(CAL_ZeroOffsetPressure_L)));
   data = data - cal;
   if(data < 0) data = 0;
   if(data > 999) data = 999;
@@ -104,10 +104,10 @@ int MPX_ReadAverage_UnCal(struct MPXState *mpx_state)
   // average values
   if(mpx_state->mpx_count > 4)
   {
-    int unCal = 0;
+    int mpx_uncalibrated = 0;
     mpx_state->mpx_count = 0;
-    for(unsigned char a = 0; a < 5; a++) unCal += mpx_state->mpx_values[a];
-    return unCal / 5;
+    for(unsigned char a = 0; a < 5; a++){ mpx_uncalibrated += mpx_state->mpx_values[a]; }
+    return mpx_uncalibrated / 5;
   }
 
   // failed return message
@@ -145,8 +145,8 @@ void MPX_LevelCal_New(struct PlantState *ps)
 
 void MPX_LevelCal_SaveToEEPROM(struct PlantState *ps)
 {
-  MEM_EEPROM_WriteVar(TANK_L_MinP, ps->mpx_state->level_cal & 0x00FF);
-  MEM_EEPROM_WriteVar(TANK_H_MinP, ((ps->mpx_state->level_cal >> 8) & 0x00FF));
+  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_L, ps->mpx_state->level_cal & 0x00FF);
+  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_H, ((ps->mpx_state->level_cal >> 8) & 0x00FF));
 }
 
 
@@ -175,9 +175,9 @@ void MPX_ReadTank(struct PlantState *ps)
   }
 
   // read variables
-  int hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  int hCirc = ((MEM_EEPROM_ReadVar(TANK_H_Circ) << 8) | (MEM_EEPROM_ReadVar(TANK_L_Circ)));
-  int minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+  int hO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
+  int hCirc = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_L)));
+  int minP = ((MEM_EEPROM_ReadVar(TANK_LV_MinPressure_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_MinPressure_L)));
 
   // read pressure
   MPX_LevelCal_New(ps);

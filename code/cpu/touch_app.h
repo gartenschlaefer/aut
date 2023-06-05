@@ -42,13 +42,10 @@ void Touch_SelectLinker(struct PlantState *ps);
 void Touch_Auto_Linker(struct PlantState *ps);
 void Touch_Manual_Linker(struct PlantState *ps);
 void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym);
+void Touch_Setup_Matrix_MinusPlus(struct PlantState *ps, unsigned char touch_matrix);
+void Touch_Setup_Matrix_PageButtonLinker(struct PlantState *ps, unsigned char touch_matrix);
 void Touch_Setup_Linker(struct PlantState *ps);
-void Touch_Data_Linker(struct PlantState *ps);
-void Touch_Pin_Linker(struct PlantState *ps);
-void Touch_Pin_Linker_TeleTemp_AddDigit(struct PlantState *ps, unsigned char digit);
-
 void Touch_Setup_CirculateLinker(struct PlantState *ps);
-void Touch_Setup_Matrix_OnOff(struct PlantState *ps, unsigned char touch_matrix);
 void Touch_Setup_AirLinker(struct PlantState *ps);
 void Touch_Setup_WatchLinker(struct PlantState *ps);
 void Touch_Setup_SetDownLinker(struct PlantState *ps);
@@ -61,12 +58,15 @@ void Touch_Setup_CalLinker(struct PlantState *ps);
 void Touch_Setup_AlarmLinker(struct PlantState *ps);
 void Touch_Setup_ZoneLinker(struct PlantState *ps);
 
+void Touch_Data_Matrix_PageButtonLinker(struct PlantState *ps, unsigned char touch_matrix);
+void Touch_Data_Linker(struct PlantState *ps);
 void Touch_Data_AutoLinker(struct PlantState *ps);
 void Touch_Data_ManualLinker(struct PlantState *ps);
 void Touch_Data_SetupLinker(struct PlantState *ps);
 void Touch_Data_SonicLinker(struct PlantState *ps);
 
-void Touch_Matrix_MainLinker(struct PlantState *ps, unsigned char touch_matrix);
-void Touch_Matrix_MainLinker_Data(struct PlantState *ps, unsigned char touch_matrix);
+void Touch_Pin_Linker(struct PlantState *ps);
+void Touch_Pin_Linker_TeleTemp_AddDigit(struct PlantState *ps, unsigned char digit);
+
 
 #endif

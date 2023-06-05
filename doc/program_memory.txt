@@ -46,3 +46,11 @@ Program:   59362 bytes
 Data:       7647 bytes
 (.data + .bss + .noinit)
 
+
+Program:   58806 bytes
+(.text + .data + .bootloader)
+
+Data:       7059 bytes
+(.data + .bss + .noinit)
+
+

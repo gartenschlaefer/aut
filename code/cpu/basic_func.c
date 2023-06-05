@@ -260,6 +260,9 @@ unsigned char Basic_CountDown(struct PlantState *ps)
  *  limit functions
  * ------------------------------------------------------------------*/
 
+void Basic_LimitAdd_VL(int *value, struct ValueLimit *vl){ if(*value < vl->max_value){ *value += 1; } }
+void Basic_LimitDec_VL(int *value, struct ValueLimit *vl){ if(*value > vl->min_value){ *value -= 1; } }
+
 int Basic_LimitAdd(int value, int max)
 {
   if(value < max){ value++; }

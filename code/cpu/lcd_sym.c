@@ -699,19 +699,28 @@ void LCD_Sym_Setup_Circulate_Change_Sensor(unsigned char sensor)
 
 
 /* ------------------------------------------------------------------*
- *            circulate text
+ *            general use on off time
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Circulate_Change_Values(unsigned char select, unsigned char *p_var)
+void LCD_Sym_Setup_General_OnOffTime(unsigned char select, int on_min, int off_min, int time_min)
 {
-  LCD_Sym_Setup_Circulate_OnTextValue((select == 0), (int)p_var[0]);
-  LCD_Sym_Setup_Circulate_OffTextValue((select == 1), (int)p_var[1]);
+  LCD_Sym_Setup_Circulate_OnTextValue((select == 0), on_min);
+  LCD_Sym_Setup_Circulate_OffTextValue((select == 1), off_min);
   // fill for values
   bool time_select = (select == 2);
   LCD_FillOrClrSpace(!(time_select), 15, 70, 4, 2);
   LCD_FillOrClrSpace(!(time_select), 15, 71, 1, 19);
   LCD_FillOrClrSpace(!(time_select), 18, 71, 1, 19);
-  LCD_Sym_Setup_Circulate_TimeValue(time_select, (int)((p_var[3] << 8) | p_var[2]));
+  LCD_Sym_Setup_Circulate_TimeValue(time_select, time_min);
+}
+
+/* ------------------------------------------------------------------*
+ *            circulate change values
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Setup_Circulate_Change_Values(unsigned char select, struct SettingsCirculate *settings_circulate)
+{
+  LCD_Sym_Setup_General_OnOffTime(select, settings_circulate->on_min, settings_circulate->off_min, settings_circulate->time_min);
 }
 
 
@@ -731,9 +740,9 @@ void LCD_Sym_Setup_Air(void)
  *            air text (same as circulate)
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Air_Change_Values(unsigned char select, unsigned char *p_var)
+void LCD_Sym_Setup_Air_Change_Values(unsigned char select, struct SettingsAir *settings_air)
 { 
-  LCD_Sym_Setup_Circulate_Change_Values(select, p_var);
+  LCD_Sym_Setup_General_OnOffTime(select, settings_air->on_min, settings_air->off_min, settings_air->time_min);
   LCD_Sym_Setup_Circulate_TimeText(select == 2);
 }
 
@@ -840,20 +849,27 @@ void LCD_Sym_Setup_InflowPump_Sensor(bool negative){ LCD_WriteAnySymbol(15, 5, (
  *    0000 0000 -> 0 on min h 0 Non Nmin Nh
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_InflowPump_Values(unsigned char select, unsigned char *val)
+void LCD_Sym_Setup_InflowPump_Values(unsigned char select, struct SettingsInflowPump *settings_inflow_pump)
 {
-  // h
-  if(select & (1 << 0)){ LCD_WriteAnyValue(f_6x8_n, 2, 5, 47, val[0]); }
-  if(select & (1 << 4)){ LCD_WriteAnyValue(f_6x8_p, 2, 5, 47, val[0]); }
+  LCD_Sym_Setup_InflowPump_ValuesOnMin((select == 0), settings_inflow_pump->on_min);
+  LCD_Sym_Setup_InflowPump_ValuesOffMin((select == 1), settings_inflow_pump->off_min);
+  LCD_Sym_Setup_InflowPump_ValuesOffHou((select == 2), settings_inflow_pump->off_hou);
+  // // h
+  // if(select & (1 << 0)){ LCD_WriteAnyValue(f_6x8_n, 2, 5, 47, val[0]); }
+  // if(select & (1 << 4)){ LCD_WriteAnyValue(f_6x8_p, 2, 5, 47, val[0]); }
 
-  // min
-  if(select & (1 << 1)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 47, val[1]); }
-  if(select & (1 << 5)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 47, val[1]); }
+  // // min
+  // if(select & (1 << 1)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 47, val[1]); }
+  // if(select & (1 << 5)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 47, val[1]); }
 
-  // on
-  if(select & (1 << 2)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, val[2]); }
-  if(select & (1 << 6)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, val[2]); }
+  // // on
+  // if(select & (1 << 2)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, val[2]); }
+  // if(select & (1 << 6)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, val[2]); }
 }
+
+void LCD_Sym_Setup_InflowPump_ValuesOffHou(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 5, 47, value); }
+void LCD_Sym_Setup_InflowPump_ValuesOffMin(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 47, value); }
+void LCD_Sym_Setup_InflowPump_ValuesOnMin(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 19, value); }
 
 
 /* ------------------------------------------------------------------*
@@ -864,18 +880,27 @@ void LCD_Sym_Setup_InflowPump_Values(unsigned char select, unsigned char *val)
 
 void LCD_Sym_Setup_InflowPump_Text(unsigned char select)
 {
-  if(select & (1 << 0)) LCD_WriteAnyStringFont(f_6x8_n, 5, 59, "h");
-  if(select & (1 << 4)) LCD_WriteAnyStringFont(f_6x8_p, 5, 59, "h");
+  LCD_Sym_Setup_InflowPump_TextOn((select == 0));
+  LCD_Sym_Setup_InflowPump_TextOffMin((select == 1));
+  LCD_Sym_Setup_InflowPump_TextOffHou((select == 2));
+  LCD_Sym_Setup_InflowPump_TextOff((select == 1) | (select == 2));
+  // if(select & (1 << 0)) LCD_WriteAnyStringFont(f_6x8_n, 5, 59, "h");
+  // if(select & (1 << 4)) LCD_WriteAnyStringFont(f_6x8_p, 5, 59, "h");
 
-  if(select & (1 << 1)) LCD_WriteAnyStringFont(f_6x8_n, 10, 59, "min");
-  if(select & (1 << 5)) LCD_WriteAnyStringFont(f_6x8_p, 10, 59, "min");
+  // if(select & (1 << 1)) LCD_WriteAnyStringFont(f_6x8_n, 10, 59, "min");
+  // if(select & (1 << 5)) LCD_WriteAnyStringFont(f_6x8_p, 10, 59, "min");
 
-  if(select & (1 << 2)) LCD_WriteAnyStringFont(f_6x8_n, 10, 1, "ON:");
-  if(select & (1 << 6)) LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "ON:");
+  // if(select & (1 << 2)) LCD_WriteAnyStringFont(f_6x8_n, 10, 1, "On:");
+  // if(select & (1 << 6)) LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "On:");
 
-  if(select & (1 << 3)) LCD_WriteAnyStringFont(f_6x8_n, 1, 47, "OFF");
-  if(select & (1 << 7)) LCD_WriteAnyStringFont(f_6x8_p, 1, 47, "OFF");
+  // if(select & (1 << 3)) LCD_WriteAnyStringFont(f_6x8_n, 1, 47, "Off");
+  // if(select & (1 << 7)) LCD_WriteAnyStringFont(f_6x8_p, 1, 47, "Off");
 }
+
+void LCD_Sym_Setup_InflowPump_TextOffHou(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 5, 59, "h"); }
+void LCD_Sym_Setup_InflowPump_TextOffMin(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 59, "'"); }
+void LCD_Sym_Setup_InflowPump_TextOn(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 1, "On:"); }
+void LCD_Sym_Setup_InflowPump_TextOff(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 1, 47, "Off:"); }
 
 
 /* ------------------------------------------------------------------*
@@ -1639,8 +1664,8 @@ void LCD_Sym_MPX_LevelPerc(struct PlantState *ps)
   if(MEM_EEPROM_ReadVar(SONIC_on)){ return; }
 
   // read variables
-  int hO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
-  int minP = ((MEM_EEPROM_ReadVar(TANK_H_MinP) << 8) | (MEM_EEPROM_ReadVar(TANK_L_MinP)));
+  int hO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
+  int minP = ((MEM_EEPROM_ReadVar(TANK_LV_MinPressure_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_MinPressure_L)));
 
   // calculate percentage
   int perP = ps->mpx_state->level_cal - minP;
@@ -2053,8 +2078,8 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps)
   }
 
   // percentage
-  int zero = ((MEM_EEPROM_ReadVar(SONIC_H_LV) << 8) | (MEM_EEPROM_ReadVar(SONIC_L_LV)));
-  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_H_O2) << 8) | (MEM_EEPROM_ReadVar(TANK_L_O2)));
+  int zero = ((MEM_EEPROM_ReadVar(TANK_LV_Sonic_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_Sonic_L)));
+  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
   
   //water-level-difference
   int per = 0;

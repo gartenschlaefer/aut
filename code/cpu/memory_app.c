@@ -33,28 +33,28 @@ void MEM_EEPROM_WriteVarDefault(void)
   MEM_EEPROM_WriteVar(TIME_L_circ, 240);
   MEM_EEPROM_WriteVar(TIME_H_air, 0);
   MEM_EEPROM_WriteVar(TIME_L_air, 240);
-  MEM_EEPROM_WriteVar(MIN_H_druck, 0);
-  MEM_EEPROM_WriteVar(MIN_L_druck, 35);
-  MEM_EEPROM_WriteVar(MAX_H_druck, 0);
-  MEM_EEPROM_WriteVar(MAX_L_druck, 250);
+  MEM_EEPROM_WriteVar(MIN_H_pressure, 0);
+  MEM_EEPROM_WriteVar(MIN_L_pressure, 35);
+  MEM_EEPROM_WriteVar(MAX_H_pressure, 0);
+  MEM_EEPROM_WriteVar(MAX_L_pressure, 250);
   MEM_EEPROM_WriteVar(ALARM_temp, 60);
   MEM_EEPROM_WriteVar(ALARM_comp, 1);
   MEM_EEPROM_WriteVar(ALARM_sensor, 1);
-  MEM_EEPROM_WriteVar(CAL_H_druck, 0);
-  MEM_EEPROM_WriteVar(CAL_L_druck, 0);
-  MEM_EEPROM_WriteVar(SONIC_H_LV, 0);
-  MEM_EEPROM_WriteVar(SONIC_L_LV, 0);
+  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_H, 0);
+  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_L, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_Sonic_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_Sonic_L, 0);
   MEM_EEPROM_WriteVar(SONIC_on, 0);
 
   MEM_EEPROM_WriteVar(CAL_Redo_on, 0);
   MEM_EEPROM_WriteVar(T_IP_off_h, 0);
 
-  MEM_EEPROM_WriteVar(TANK_H_MinP, 0);
-  MEM_EEPROM_WriteVar(TANK_L_MinP, 120);
-  MEM_EEPROM_WriteVar(TANK_H_Circ, 0);
-  MEM_EEPROM_WriteVar(TANK_L_Circ, 10);
-  MEM_EEPROM_WriteVar(TANK_H_O2, 0);
-  MEM_EEPROM_WriteVar(TANK_L_O2, 15);
+  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_L, 120);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToAir_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToAir_L, 10);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToSetDown_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToSetDown_L, 15);
 }
 
 
@@ -84,28 +84,28 @@ void MEM_EEPROM_WriteVarDefault_Short(void)
   MEM_EEPROM_WriteVar(TIME_L_circ, 5);
   MEM_EEPROM_WriteVar(TIME_H_air, 0);
   MEM_EEPROM_WriteVar(TIME_L_air, 3);
-  MEM_EEPROM_WriteVar(MIN_H_druck, 0);
-  MEM_EEPROM_WriteVar(MIN_L_druck, 20);
-  MEM_EEPROM_WriteVar(MAX_H_druck, 0);
-  MEM_EEPROM_WriteVar(MAX_L_druck, 250);
+  MEM_EEPROM_WriteVar(MIN_H_pressure, 0);
+  MEM_EEPROM_WriteVar(MIN_L_pressure, 20);
+  MEM_EEPROM_WriteVar(MAX_H_pressure, 0);
+  MEM_EEPROM_WriteVar(MAX_L_pressure, 250);
   MEM_EEPROM_WriteVar(ALARM_temp, 60);
   MEM_EEPROM_WriteVar(ALARM_comp, 1);
   MEM_EEPROM_WriteVar(ALARM_sensor, 1);
-  MEM_EEPROM_WriteVar(CAL_H_druck, 0);
-  MEM_EEPROM_WriteVar(CAL_L_druck, 0);
-  MEM_EEPROM_WriteVar(SONIC_H_LV, 0);
-  MEM_EEPROM_WriteVar(SONIC_L_LV, 0);
+  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_H, 0);
+  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_L, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_Sonic_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_Sonic_L, 0);
   MEM_EEPROM_WriteVar(SONIC_on, 0);
 
   MEM_EEPROM_WriteVar(CAL_Redo_on, 0);
   MEM_EEPROM_WriteVar(T_IP_off_h, 0);
 
-  MEM_EEPROM_WriteVar(TANK_H_MinP, 0);
-  MEM_EEPROM_WriteVar(TANK_L_MinP, 120);
-  MEM_EEPROM_WriteVar(TANK_H_Circ, 0);
-  MEM_EEPROM_WriteVar(TANK_L_Circ, 10);
-  MEM_EEPROM_WriteVar(TANK_H_O2, 0);
-  MEM_EEPROM_WriteVar(TANK_L_O2, 15);
+  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_L, 120);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToAir_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToAir_L, 10);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToSetDown_H, 0);
+  MEM_EEPROM_WriteVar(TANK_LV_LevelToSetDown_L, 15);
 }
 
 
@@ -137,29 +137,29 @@ unsigned char MEM_EEPROM_ReadVar(t_eeprom_var var)
     case TIME_L_circ: return (MEM_EEPROM_Read(1, 17)); break;
     case TIME_H_air: return (MEM_EEPROM_Read(1, 18)); break;
     case TIME_L_air: return (MEM_EEPROM_Read(1, 19)); break;
-    case MIN_H_druck: return (MEM_EEPROM_Read(1, 20)); break;
-    case MIN_L_druck: return (MEM_EEPROM_Read(1, 21)); break;
-    case MAX_H_druck: return (MEM_EEPROM_Read(1, 22)); break;
-    case MAX_L_druck: return (MEM_EEPROM_Read(1, 23)); break;
+    case MIN_H_pressure: return (MEM_EEPROM_Read(1, 20)); break;
+    case MIN_L_pressure: return (MEM_EEPROM_Read(1, 21)); break;
+    case MAX_H_pressure: return (MEM_EEPROM_Read(1, 22)); break;
+    case MAX_L_pressure: return (MEM_EEPROM_Read(1, 23)); break;
     case ALARM_temp: return (MEM_EEPROM_Read(1, 24)); break;
     case ALARM_comp: return (MEM_EEPROM_Read(1, 25)); break;
     case ALARM_sensor: return (MEM_EEPROM_Read(1, 26)); break;
-    case CAL_H_druck: return (MEM_EEPROM_Read(1, 27)); break;
-    case CAL_L_druck: return (MEM_EEPROM_Read(1, 28)); break;
-    case SONIC_H_LV: return (MEM_EEPROM_Read(1, 29)); break;
-    case SONIC_L_LV: return (MEM_EEPROM_Read(1, 30)); break;
+    case CAL_ZeroOffsetPressure_H: return (MEM_EEPROM_Read(1, 27)); break;
+    case CAL_ZeroOffsetPressure_L: return (MEM_EEPROM_Read(1, 28)); break;
+    case TANK_LV_Sonic_H: return (MEM_EEPROM_Read(1, 29)); break;
+    case TANK_LV_Sonic_L: return (MEM_EEPROM_Read(1, 30)); break;
     case SONIC_on: return (MEM_EEPROM_Read(1, 31)); break;
 
     case TOUCH_X_max: return (MEM_EEPROM_Read(0, 0)); break;
     case TOUCH_Y_max: return (MEM_EEPROM_Read(0, 1)); break;
     case TOUCH_X_min: return (MEM_EEPROM_Read(0, 2)); break;
     case TOUCH_Y_min: return (MEM_EEPROM_Read(0, 3)); break;
-    case TANK_H_MinP: return (MEM_EEPROM_Read(0, 4)); break;
-    case TANK_L_MinP: return (MEM_EEPROM_Read(0, 5)); break;
-    case TANK_H_Circ: return (MEM_EEPROM_Read(0, 6)); break;
-    case TANK_L_Circ: return (MEM_EEPROM_Read(0, 7)); break;
-    case TANK_H_O2: return (MEM_EEPROM_Read(0, 8)); break;
-    case TANK_L_O2: return (MEM_EEPROM_Read(0, 9)); break;
+    case TANK_LV_MinPressure_H: return (MEM_EEPROM_Read(0, 4)); break;
+    case TANK_LV_MinPressure_L: return (MEM_EEPROM_Read(0, 5)); break;
+    case TANK_LV_LevelToAir_H: return (MEM_EEPROM_Read(0, 6)); break;
+    case TANK_LV_LevelToAir_L: return (MEM_EEPROM_Read(0, 7)); break;
+    case TANK_LV_LevelToSetDown_H: return (MEM_EEPROM_Read(0, 8)); break;
+    case TANK_LV_LevelToSetDown_L: return (MEM_EEPROM_Read(0, 9)); break;
     case CAL_Redo_on: return (MEM_EEPROM_Read(0, 10)); break;
     case T_IP_off_h: return (MEM_EEPROM_Read(0, 11)); break;
 
@@ -197,29 +197,29 @@ void MEM_EEPROM_WriteVar(t_eeprom_var var, unsigned char eeData)
     case TIME_L_circ:   MEM_EEPROM_WriteByte(1, 17, eeData); break;
     case TIME_H_air:    MEM_EEPROM_WriteByte(1, 18, eeData); break;
     case TIME_L_air:    MEM_EEPROM_WriteByte(1, 19, eeData); break;
-    case MIN_H_druck:   MEM_EEPROM_WriteByte(1, 20, eeData); break;
-    case MIN_L_druck:   MEM_EEPROM_WriteByte(1, 21, eeData); break;
-    case MAX_H_druck:   MEM_EEPROM_WriteByte(1, 22, eeData); break;
-    case MAX_L_druck:   MEM_EEPROM_WriteByte(1, 23, eeData); break;
+    case MIN_H_pressure:   MEM_EEPROM_WriteByte(1, 20, eeData); break;
+    case MIN_L_pressure:   MEM_EEPROM_WriteByte(1, 21, eeData); break;
+    case MAX_H_pressure:   MEM_EEPROM_WriteByte(1, 22, eeData); break;
+    case MAX_L_pressure:   MEM_EEPROM_WriteByte(1, 23, eeData); break;
     case ALARM_temp:    MEM_EEPROM_WriteByte(1, 24, eeData); break;
     case ALARM_comp:    MEM_EEPROM_WriteByte(1, 25, eeData); break;
     case ALARM_sensor:  MEM_EEPROM_WriteByte(1, 26, eeData); break;
-    case CAL_H_druck:   MEM_EEPROM_WriteByte(1, 27, eeData); break;
-    case CAL_L_druck:   MEM_EEPROM_WriteByte(1, 28, eeData); break;
-    case SONIC_H_LV:    MEM_EEPROM_WriteByte(1, 29, eeData); break;
-    case SONIC_L_LV:    MEM_EEPROM_WriteByte(1, 30, eeData); break;
+    case CAL_ZeroOffsetPressure_H:   MEM_EEPROM_WriteByte(1, 27, eeData); break;
+    case CAL_ZeroOffsetPressure_L:   MEM_EEPROM_WriteByte(1, 28, eeData); break;
+    case TANK_LV_Sonic_H:    MEM_EEPROM_WriteByte(1, 29, eeData); break;
+    case TANK_LV_Sonic_L:    MEM_EEPROM_WriteByte(1, 30, eeData); break;
     case SONIC_on:      MEM_EEPROM_WriteByte(1, 31, eeData); break;
 
     case TOUCH_X_max:   MEM_EEPROM_WriteByte(0, 0, eeData); break;
     case TOUCH_Y_max:   MEM_EEPROM_WriteByte(0, 1, eeData); break;
     case TOUCH_X_min:   MEM_EEPROM_WriteByte(0, 2, eeData); break;
     case TOUCH_Y_min:   MEM_EEPROM_WriteByte(0, 3, eeData); break;
-    case TANK_H_MinP:   MEM_EEPROM_WriteByte(0, 4, eeData); break;
-    case TANK_L_MinP:   MEM_EEPROM_WriteByte(0, 5, eeData); break;
-    case TANK_H_Circ:   MEM_EEPROM_WriteByte(0, 6, eeData); break;
-    case TANK_L_Circ:   MEM_EEPROM_WriteByte(0, 7, eeData); break;
-    case TANK_H_O2:     MEM_EEPROM_WriteByte(0, 8, eeData); break;
-    case TANK_L_O2:     MEM_EEPROM_WriteByte(0, 9, eeData); break;
+    case TANK_LV_MinPressure_H:   MEM_EEPROM_WriteByte(0, 4, eeData); break;
+    case TANK_LV_MinPressure_L:   MEM_EEPROM_WriteByte(0, 5, eeData); break;
+    case TANK_LV_LevelToAir_H:   MEM_EEPROM_WriteByte(0, 6, eeData); break;
+    case TANK_LV_LevelToAir_L:   MEM_EEPROM_WriteByte(0, 7, eeData); break;
+    case TANK_LV_LevelToSetDown_H:     MEM_EEPROM_WriteByte(0, 8, eeData); break;
+    case TANK_LV_LevelToSetDown_L:     MEM_EEPROM_WriteByte(0, 9, eeData); break;
     case CAL_Redo_on:   MEM_EEPROM_WriteByte(0, 10, eeData); break;
     case T_IP_off_h:    MEM_EEPROM_WriteByte(0, 11, eeData); break;
     default:                                                break;
