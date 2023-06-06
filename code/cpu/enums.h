@@ -74,7 +74,7 @@ typedef enum
 typedef enum
 {
   // 35 x 23 [8]
-  _n_pumpOff, _n_mud, _n_inflowPump, _n_pump2, _p_pumpOff, _p_mud, _p_inflowPump, _p_pump2,
+  _n_pump_off, _n_mud, _n_inflow_pump, _n_pump2, _p_pump_off, _p_mud, _p_inflow_pump, _p_pump2,
 
   // 29 x 17 [20]
   _n_setDown, _n_alarm, _n_air, _n_sensor, _n_watch, _n_compressor, _n_circulate, _n_cal, _n_zone, _n_level,

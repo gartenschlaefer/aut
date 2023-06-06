@@ -59,7 +59,7 @@ int main(void)
   struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0, .tele_nr1 = &tele_nr1, .tele_nr2 = &tele_nr2, .tele_nr_temp = &tele_nr_temp, .temp_digit_pos = 0 };
   struct TimeState time_state = { .tic_sec_update_flag = false };
   struct EEPROMState eeprom_state = { .time_manual_entry = { .hou = 0, .min = 0} };
-  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .var = { 0 }, .int_var = { 0 }, .p_value_setting = NULL };
+  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .select = 0, .var = { 0 }, .int_var = { 0 }, .p_value_setting = NULL, .p_value_limit = NULL };
   struct Settings *settings = Settings_New();
 
   // plant state

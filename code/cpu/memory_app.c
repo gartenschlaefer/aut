@@ -117,51 +117,51 @@ unsigned char MEM_EEPROM_ReadVar(t_eeprom_var var)
 {
   switch(var)
   {
-    case ON_circ: return (MEM_EEPROM_Read(1, 0)); break;
-    case OFF_circ: return (MEM_EEPROM_Read(1, 1)); break;
-    case ON_air: return (MEM_EEPROM_Read(1, 2)); break;
-    case OFF_air: return (MEM_EEPROM_Read(1, 3)); break;
-    case TIME_setDown: return (MEM_EEPROM_Read(1, 4)); break;
-    case ON_pumpOff: return (MEM_EEPROM_Read(1, 5)); break;
-    case PUMP_pumpOff: return (MEM_EEPROM_Read(1, 6)); break;
-    case ON_MIN_mud: return (MEM_EEPROM_Read(1, 7)); break;
-    case ON_SEC_mud: return (MEM_EEPROM_Read(1, 8)); break;
-    case ON_phosphor: return (MEM_EEPROM_Read(1, 9)); break;
-    case OFF_phosphor: return (MEM_EEPROM_Read(1, 10)); break;
-    case ON_inflowPump: return (MEM_EEPROM_Read(1, 11)); break;
-    case OFF_inflowPump: return (MEM_EEPROM_Read(1, 12)); break;
-    case PUMP_inflowPump: return (MEM_EEPROM_Read(1, 13)); break;
-    case SENSOR_inTank: return (MEM_EEPROM_Read(1, 14)); break;
-    case SENSOR_outTank: return (MEM_EEPROM_Read(1, 15)); break;
-    case TIME_H_circ: return (MEM_EEPROM_Read(1, 16)); break;
-    case TIME_L_circ: return (MEM_EEPROM_Read(1, 17)); break;
-    case TIME_H_air: return (MEM_EEPROM_Read(1, 18)); break;
-    case TIME_L_air: return (MEM_EEPROM_Read(1, 19)); break;
-    case MIN_H_pressure: return (MEM_EEPROM_Read(1, 20)); break;
-    case MIN_L_pressure: return (MEM_EEPROM_Read(1, 21)); break;
-    case MAX_H_pressure: return (MEM_EEPROM_Read(1, 22)); break;
-    case MAX_L_pressure: return (MEM_EEPROM_Read(1, 23)); break;
-    case ALARM_temp: return (MEM_EEPROM_Read(1, 24)); break;
-    case ALARM_comp: return (MEM_EEPROM_Read(1, 25)); break;
-    case ALARM_sensor: return (MEM_EEPROM_Read(1, 26)); break;
-    case CAL_ZeroOffsetPressure_H: return (MEM_EEPROM_Read(1, 27)); break;
-    case CAL_ZeroOffsetPressure_L: return (MEM_EEPROM_Read(1, 28)); break;
-    case TANK_LV_Sonic_H: return (MEM_EEPROM_Read(1, 29)); break;
-    case TANK_LV_Sonic_L: return (MEM_EEPROM_Read(1, 30)); break;
-    case SONIC_on: return (MEM_EEPROM_Read(1, 31)); break;
+    case ON_circ: return (MEM_EEPROM_Read(1, 0));
+    case OFF_circ: return (MEM_EEPROM_Read(1, 1));
+    case ON_air: return (MEM_EEPROM_Read(1, 2));
+    case OFF_air: return (MEM_EEPROM_Read(1, 3));
+    case TIME_setDown: return (MEM_EEPROM_Read(1, 4));
+    case ON_pumpOff: return (MEM_EEPROM_Read(1, 5));
+    case PUMP_pumpOff: return (MEM_EEPROM_Read(1, 6));
+    case ON_MIN_mud: return (MEM_EEPROM_Read(1, 7));
+    case ON_SEC_mud: return (MEM_EEPROM_Read(1, 8));
+    case ON_phosphor: return (MEM_EEPROM_Read(1, 9));
+    case OFF_phosphor: return (MEM_EEPROM_Read(1, 10));
+    case ON_inflowPump: return (MEM_EEPROM_Read(1, 11));
+    case OFF_inflowPump: return (MEM_EEPROM_Read(1, 12));
+    case PUMP_inflowPump: return (MEM_EEPROM_Read(1, 13));
+    case SENSOR_inTank: return (MEM_EEPROM_Read(1, 14));
+    case SENSOR_outTank: return (MEM_EEPROM_Read(1, 15));
+    case TIME_H_circ: return (MEM_EEPROM_Read(1, 16));
+    case TIME_L_circ: return (MEM_EEPROM_Read(1, 17));
+    case TIME_H_air: return (MEM_EEPROM_Read(1, 18));
+    case TIME_L_air: return (MEM_EEPROM_Read(1, 19));
+    case MIN_H_pressure: return (MEM_EEPROM_Read(1, 20));
+    case MIN_L_pressure: return (MEM_EEPROM_Read(1, 21));
+    case MAX_H_pressure: return (MEM_EEPROM_Read(1, 22));
+    case MAX_L_pressure: return (MEM_EEPROM_Read(1, 23));
+    case ALARM_temp: return (MEM_EEPROM_Read(1, 24));
+    case ALARM_comp: return (MEM_EEPROM_Read(1, 25));
+    case ALARM_sensor: return (MEM_EEPROM_Read(1, 26));
+    case CAL_ZeroOffsetPressure_H: return (MEM_EEPROM_Read(1, 27));
+    case CAL_ZeroOffsetPressure_L: return (MEM_EEPROM_Read(1, 28));
+    case TANK_LV_Sonic_H: return (MEM_EEPROM_Read(1, 29));
+    case TANK_LV_Sonic_L: return (MEM_EEPROM_Read(1, 30));
+    case SONIC_on: return (MEM_EEPROM_Read(1, 31));
 
-    case TOUCH_X_max: return (MEM_EEPROM_Read(0, 0)); break;
-    case TOUCH_Y_max: return (MEM_EEPROM_Read(0, 1)); break;
-    case TOUCH_X_min: return (MEM_EEPROM_Read(0, 2)); break;
-    case TOUCH_Y_min: return (MEM_EEPROM_Read(0, 3)); break;
-    case TANK_LV_MinPressure_H: return (MEM_EEPROM_Read(0, 4)); break;
-    case TANK_LV_MinPressure_L: return (MEM_EEPROM_Read(0, 5)); break;
-    case TANK_LV_LevelToAir_H: return (MEM_EEPROM_Read(0, 6)); break;
-    case TANK_LV_LevelToAir_L: return (MEM_EEPROM_Read(0, 7)); break;
-    case TANK_LV_LevelToSetDown_H: return (MEM_EEPROM_Read(0, 8)); break;
-    case TANK_LV_LevelToSetDown_L: return (MEM_EEPROM_Read(0, 9)); break;
-    case CAL_Redo_on: return (MEM_EEPROM_Read(0, 10)); break;
-    case T_IP_off_h: return (MEM_EEPROM_Read(0, 11)); break;
+    case TOUCH_X_max: return (MEM_EEPROM_Read(0, 0));
+    case TOUCH_Y_max: return (MEM_EEPROM_Read(0, 1));
+    case TOUCH_X_min: return (MEM_EEPROM_Read(0, 2));
+    case TOUCH_Y_min: return (MEM_EEPROM_Read(0, 3));
+    case TANK_LV_MinPressure_H: return (MEM_EEPROM_Read(0, 4));
+    case TANK_LV_MinPressure_L: return (MEM_EEPROM_Read(0, 5));
+    case TANK_LV_LevelToAir_H: return (MEM_EEPROM_Read(0, 6));
+    case TANK_LV_LevelToAir_L: return (MEM_EEPROM_Read(0, 7));
+    case TANK_LV_LevelToSetDown_H: return (MEM_EEPROM_Read(0, 8));
+    case TANK_LV_LevelToSetDown_L: return (MEM_EEPROM_Read(0, 9));
+    case CAL_Redo_on: return (MEM_EEPROM_Read(0, 10));
+    case T_IP_off_h: return (MEM_EEPROM_Read(0, 11));
 
     default: break;
   }
@@ -356,22 +356,16 @@ void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps)
 
 void MEM_EEPROM_SetZero(void)
 {
-  unsigned char i = 0;
-  unsigned char e = 0;
-  unsigned char eep = 0;
-  unsigned char data[8] = {0x00};
+  unsigned char data[8] = { 0x00 };
 
   // pages
-  for(eep = MEM_DATA_START_SECTION; eep <= MEM_DATA_END_SECTION; eep++)
+  for(unsigned char eep = MEM_DATA_START_SECTION; eep <= MEM_DATA_END_SECTION; eep++)
   {
     // entries
-    for(e = 0; e < 4; e++)
+    for(unsigned char e = 0; e < 4; e++)
     {
       // bytes
-      for(i = 0; i < 8; i++)
-      {
-        MEM_EEPROM_LoadData(e, i, data[i]);
-      }
+      for(unsigned char i = 0; i < 8; i++){ MEM_EEPROM_LoadData(e, i, data[i]); }
     }
     MEM_EEPROM_PageEraseWrite(eep);
   }

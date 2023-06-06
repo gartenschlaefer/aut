@@ -310,31 +310,18 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
  *  write any string fonts with window programming
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char word[])
+void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char *string)
 {
-  unsigned char k = 0;
-  unsigned char a = 0;
   unsigned char len = 0;
-  unsigned char char_offset = 33;
+  const unsigned char char_offset = ((font_type == f_4x6_p || font_type == f_4x6_n) ? 48 : 33);
 
-  // change character offset
-  if(font_type == f_4x6_p || font_type == f_4x6_n) char_offset = 48;
-
-  // write each character of string
-  do
-  {
-    // actual word
-    k = word[a];
-
-    // write font symbol
-    len = LCD_WriteAnyFont(font_type, y, x, (k - char_offset));
-
-    // add length of font
+  // write each character of the string
+  while(*string)
+  {  
+    len = LCD_WriteAnyFont(font_type, y, x, (*string - char_offset));
     x += len;
-    a++;
-    k = word[a];
+    string++;
   }
-  while(k != 0);
 }
 
 
@@ -347,7 +334,7 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
   char v[6] = {0x00};
 
   // safety
-  if(num > 5) return;
+  if(num > 5){ return; }
 
   // extract digits
   for(unsigned char i = 0; i < num; i++)
@@ -376,8 +363,8 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
   switch(any_symbol)
   {
     // 35 x 23 [8]
-    case _n_pumpOff: case _n_mud: case _n_inflowPump: case _n_pump2:
-    case _p_pumpOff: case _p_mud: case _p_inflowPump: case _p_pump2: 
+    case _n_pump_off: case _n_mud: case _n_inflow_pump: case _n_pump2:
+    case _p_pump_off: case _p_mud: case _p_inflow_pump: case _p_pump2: 
       symbol_pointer = Symbols_35x23_bmp;
       offset = 0;
       break;

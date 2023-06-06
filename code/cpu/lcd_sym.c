@@ -253,7 +253,7 @@ void LCD_Sym_Auto_SetDown(void)
 
 void LCD_Sym_Auto_PumpOff(void)
 {
-  LCD_WriteAnySymbol(5, 0, _n_pumpOff);
+  LCD_WriteAnySymbol(5, 0, _n_pump_off);
   if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ LCD_Sym_Auto_CompressorNeg(); }
   else{ LCD_Sym_Auto_CompressorPos(); }
 }
@@ -337,7 +337,7 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
     switch (pump)
     {
       case 0:
-        LCD_WriteAnySymbol(5, 89, _p_inflowPump);
+        LCD_WriteAnySymbol(5, 89, _p_inflow_pump);
         if(p == AutoAirOff || p == AutoCircOff){ LCD_Sym_Auto_CompressorPos(); }
         break;
 
@@ -353,7 +353,7 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
     switch (pump)
     {
       case 0:
-        LCD_WriteAnySymbol(5, 89, _n_inflowPump);
+        LCD_WriteAnySymbol(5, 89, _n_inflow_pump);
         if(p == AutoAirOff || p == AutoCircOff){ LCD_Sym_Auto_CompressorNeg(); }
         break;
 
@@ -433,16 +433,16 @@ struct RowColPos LCD_Sym_Manual_GetSymbolPosition(t_any_symbol sym)
     case _n_air: position.row = 3; position.col = 40; break;
     case _p_setDown:
     case _n_setDown: position.row = 3; position.col = 80; break;
-    case _p_pumpOff:
-    case _n_pumpOff: position.row = 2; position.col = 120; break;
+    case _p_pump_off:
+    case _n_pump_off: position.row = 2; position.col = 120; break;
     case _p_mud:
     case _n_mud: position.row = 8; position.col = 0; break;
     case _p_compressor:
     case _n_compressor: position.row = 9; position.col = 40; break;
     case _p_phosphor:
     case _n_phosphor: position.row = 9; position.col = 85; break;
-    case _p_inflowPump:
-    case _n_inflowPump: position.row = 8; position.col = 120; break;
+    case _p_inflow_pump:
+    case _n_inflow_pump: position.row = 8; position.col = 120; break;
     case _p_valve: 
     case _n_valve: position.row = 15; position.col = 0; break;
     default: break;
@@ -468,7 +468,7 @@ void LCD_Sym_Manual_Draw(t_any_symbol sym)
 
 void LCD_Sym_Manual_AllSymbols(void)
 {
-  t_any_symbol symbols[9] = { _p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump, _p_valve };
+  t_any_symbol symbols[9] = { _p_circulate, _p_air, _p_setDown, _p_pump_off, _p_mud, _p_compressor, _p_phosphor, _p_inflow_pump, _p_valve };
   for(unsigned char i = 0; i < 9; i++){ LCD_Sym_Manual_Draw(symbols[i]); }
 }
 
@@ -566,16 +566,16 @@ struct RowColPos LCD_Sym_Setup_GetSymbolPosition(t_any_symbol sym)
     case _n_air: position.row = 3; position.col = 40; break;
     case _p_setDown:
     case _n_setDown: position.row = 3; position.col = 80; break;
-    case _p_pumpOff:
-    case _n_pumpOff: position.row = 2; position.col = 120; break;
+    case _p_pump_off:
+    case _n_pump_off: position.row = 2; position.col = 120; break;
     case _p_mud:
     case _n_mud: position.row = 8; position.col = 0; break;
     case _p_compressor:
     case _n_compressor: position.row = 9; position.col = 40; break;
     case _p_phosphor:
     case _n_phosphor: position.row = 9; position.col = 85; break;
-    case _p_inflowPump:
-    case _n_inflowPump: position.row = 8; position.col = 120; break;
+    case _p_inflow_pump:
+    case _n_inflow_pump: position.row = 8; position.col = 120; break;
     case _p_cal:
     case _n_cal: position.row = 15; position.col = 0; break;
     case _p_alarm:
@@ -601,13 +601,14 @@ struct RowColPos LCD_Sym_Setup_GetSymbolPosition_Sub(t_any_symbol sym)
   switch(sym)
   {
     case _p_cal: case _n_cal:
-    case _p_mud: case _n_mud:
     case _p_zone: case _n_zone:
-      position.row = 2; position.col = 0; 
+      position.row = 2;
       break;
 
-    case _p_inflowPump: case _n_inflowPump: 
-      position.row = 1; position.col = 0; 
+    case _p_mud: case _n_mud:
+    case _p_pump_off: case _n_pump_off:
+    case _p_inflow_pump: case _n_inflow_pump: 
+      position.row = 1;
       break;
 
     default: break;
@@ -642,7 +643,7 @@ void LCD_Sym_Setup_Draw_Sub(t_any_symbol sym)
 
 void LCD_Sym_Setup_AllSymbols(void)
 {
-  t_any_symbol symbols[12] = { _p_circulate, _p_air, _p_setDown, _p_pumpOff, _p_mud, _p_compressor, _p_phosphor, _p_inflowPump, _p_cal, _p_alarm, _p_watch, _p_zone };
+  t_any_symbol symbols[12] = { _p_circulate, _p_air, _p_setDown, _p_pump_off, _p_mud, _p_compressor, _p_phosphor, _p_inflow_pump, _p_cal, _p_alarm, _p_watch, _p_zone };
   for(unsigned char i = 0; i < 12; i++){ LCD_Sym_Setup_Draw(symbols[i]); }
 }
 
@@ -675,16 +676,16 @@ void LCD_Sym_Setup_Circulate(void)
  *            circulate values and texts
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Circulate_TimeText(bool negative){ LCD_FillOrClrSpace(negative, 15, 39, 4, 31); LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 16, 40, "Time:"); }
-void LCD_Sym_Setup_Circulate_TimeValue(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 16, 72, value); }
+void LCD_Sym_Setup_General_TimeText(bool negative){ LCD_FillOrClrSpace(negative, 15, 39, 4, 31); LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 16, 40, "Time:"); }
+void LCD_Sym_Setup_General_TimeValue(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 16, 72, value); }
 
-void LCD_Sym_Setup_Circulate_OnText(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 1, "On:  '"); }
-void LCD_Sym_Setup_Circulate_OnValue(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 19, value); }
-void LCD_Sym_Setup_Circulate_OnTextValue(bool negative, int value){ LCD_Sym_Setup_Circulate_OnText(negative); LCD_Sym_Setup_Circulate_OnValue(negative, value); }
+void LCD_Sym_Setup_General_OnText(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 1, "On:  '"); }
+void LCD_Sym_Setup_General_OnValue(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 19, value); }
+void LCD_Sym_Setup_General_OnTextValue(bool negative, int value){ LCD_Sym_Setup_General_OnText(negative); LCD_Sym_Setup_General_OnValue(negative, value); }
 
-void LCD_Sym_Setup_Circulate_OffText(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 40, "Off:  '"); }
-void LCD_Sym_Setup_Circulate_OffValue(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 64, value); }
-void LCD_Sym_Setup_Circulate_OffTextValue(bool negative, int value){ LCD_Sym_Setup_Circulate_OffText(negative); LCD_Sym_Setup_Circulate_OffValue(negative, value); }
+void LCD_Sym_Setup_General_OffText(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 40, "Off:  '"); }
+void LCD_Sym_Setup_General_OffValue(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 64, value); }
+void LCD_Sym_Setup_General_OffTextValue(bool negative, int value){ LCD_Sym_Setup_General_OffText(negative); LCD_Sym_Setup_General_OffValue(negative, value); }
 
 
 /* ------------------------------------------------------------------*
@@ -694,7 +695,7 @@ void LCD_Sym_Setup_Circulate_OffTextValue(bool negative, int value){ LCD_Sym_Set
 void LCD_Sym_Setup_Circulate_Change_Sensor(unsigned char sensor)
 {
   LCD_WriteAnySymbol(15, 0, ((bool)sensor ? _n_sensor : _p_sensor));
-  LCD_Sym_Setup_Circulate_TimeText(!(bool)sensor);
+  LCD_Sym_Setup_General_TimeText(!(bool)sensor);
 }
 
 
@@ -704,14 +705,14 @@ void LCD_Sym_Setup_Circulate_Change_Sensor(unsigned char sensor)
 
 void LCD_Sym_Setup_General_OnOffTime(unsigned char select, int on_min, int off_min, int time_min)
 {
-  LCD_Sym_Setup_Circulate_OnTextValue((select == 0), on_min);
-  LCD_Sym_Setup_Circulate_OffTextValue((select == 1), off_min);
+  LCD_Sym_Setup_General_OnTextValue((select == 0), on_min);
+  LCD_Sym_Setup_General_OffTextValue((select == 1), off_min);
   // fill for values
   bool time_select = (select == 2);
-  LCD_FillOrClrSpace(!(time_select), 15, 70, 4, 2);
-  LCD_FillOrClrSpace(!(time_select), 15, 71, 1, 19);
-  LCD_FillOrClrSpace(!(time_select), 18, 71, 1, 19);
-  LCD_Sym_Setup_Circulate_TimeValue(time_select, time_min);
+  LCD_FillOrClrSpace(time_select, 15, 70, 4, 2);
+  LCD_FillOrClrSpace(time_select, 15, 71, 1, 19);
+  LCD_FillOrClrSpace(time_select, 18, 71, 1, 19);
+  LCD_Sym_Setup_General_TimeValue(time_select, time_min);
 }
 
 /* ------------------------------------------------------------------*
@@ -743,7 +744,7 @@ void LCD_Sym_Setup_Air(void)
 void LCD_Sym_Setup_Air_Change_Values(unsigned char select, struct SettingsAir *settings_air)
 { 
   LCD_Sym_Setup_General_OnOffTime(select, settings_air->on_min, settings_air->off_min, settings_air->time_min);
-  LCD_Sym_Setup_Circulate_TimeText(select == 2);
+  LCD_Sym_Setup_General_TimeText(select == 2);
 }
 
 
@@ -756,10 +757,10 @@ void LCD_Sym_Setup_SetDown(void)
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Setup_Draw_Sub(_n_setDown);
   LCD_Sym_WriteCtrlButton();
-  LCD_WriteAnyStringFont(f_6x8_p, 10, 0, "Time:");
+  LCD_WriteAnyStringFont(f_6x8_n, 11, 0, "Time:  '");
 }
 
-void LCD_Sym_Setup_SetDown_TimeValue(int value){ LCD_WriteAnyValue(f_6x8_n, 3, 10, 30, value); }
+void LCD_Sym_Setup_SetDown_TimeValue(int value){ LCD_WriteAnyValue(f_6x8_n, 2, 11, 30, value); }
 
 
 /* ------------------------------------------------------------------*
@@ -769,7 +770,7 @@ void LCD_Sym_Setup_SetDown_TimeValue(int value){ LCD_WriteAnyValue(f_6x8_n, 3, 1
 void LCD_Sym_Setup_PumpOff(void)
 {
   LCD_Sym_Clr_InfoSpace();
-  LCD_Sym_Setup_Draw_Sub(_n_pumpOff);
+  LCD_Sym_Setup_Draw_Sub(_n_pump_off);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -786,13 +787,15 @@ void LCD_Sym_Setup_Mud(void)
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Setup_Draw_Sub(_n_mud);
   LCD_Sym_WriteCtrlButton();
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 7, "On:");
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 55, "'");
-  LCD_WriteAnyStringFont(f_6x8_p, 16, 55, "''");
+  LCD_WriteAnyStringFont(f_6x8_n, 10, 1, "On:");
+  LCD_Sym_Setup_Mud_MinText(true);
+  LCD_Sym_Setup_Mud_SecText(false);
 }
 
-void LCD_Sym_Setup_Mud_Min(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 11, 40, value); }
-void LCD_Sym_Setup_Mud_Sec(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 16, 40, value); }
+void LCD_Sym_Setup_Mud_Min(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 19, value); }
+void LCD_Sym_Setup_Mud_Sec(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 10, 40, value); }
+void LCD_Sym_Setup_Mud_MinText(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 31, "'"); }
+void LCD_Sym_Setup_Mud_SecText(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 52, "''"); }
 
 
 /* ------------------------------------------------------------------*
@@ -802,8 +805,8 @@ void LCD_Sym_Setup_Mud_Sec(bool negative, int value){ LCD_WriteAnyValue((negativ
 void LCD_Sym_Setup_Compressor(void)
 {
   LCD_Sym_Clr_InfoSpace();
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 28, "mbar MIN.");
-  LCD_WriteAnyStringFont(f_6x8_p, 16, 28, "mbar MAX.");
+  LCD_WriteAnyStringFont(f_6x8_p, 11, 28, "mbar min.");
+  LCD_WriteAnyStringFont(f_6x8_p, 16, 28, "mbar max.");
   LCD_Sym_Setup_Draw_Sub(_n_compressor);
   LCD_Sym_WriteCtrlButton();
 }
@@ -831,7 +834,7 @@ void LCD_Sym_Setup_Phosphor(void)
 void LCD_Sym_Setup_InflowPump(void)
 {
   LCD_Sym_Clr_InfoSpace();
-  LCD_Sym_Setup_Draw_Sub(_n_inflowPump);
+  LCD_Sym_Setup_Draw_Sub(_n_inflow_pump);
   LCD_Sym_WriteCtrlButton();
 }
 
@@ -845,8 +848,6 @@ void LCD_Sym_Setup_InflowPump_Sensor(bool negative){ LCD_WriteAnySymbol(15, 5, (
 
 /* ------------------------------------------------------------------*
  *            inflow pump - values
- * -------------------------------------------------------------------
- *    0000 0000 -> 0 on min h 0 Non Nmin Nh
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Setup_InflowPump_Values(unsigned char select, struct SettingsInflowPump *settings_inflow_pump)
@@ -854,17 +855,6 @@ void LCD_Sym_Setup_InflowPump_Values(unsigned char select, struct SettingsInflow
   LCD_Sym_Setup_InflowPump_ValuesOnMin((select == 0), settings_inflow_pump->on_min);
   LCD_Sym_Setup_InflowPump_ValuesOffMin((select == 1), settings_inflow_pump->off_min);
   LCD_Sym_Setup_InflowPump_ValuesOffHou((select == 2), settings_inflow_pump->off_hou);
-  // // h
-  // if(select & (1 << 0)){ LCD_WriteAnyValue(f_6x8_n, 2, 5, 47, val[0]); }
-  // if(select & (1 << 4)){ LCD_WriteAnyValue(f_6x8_p, 2, 5, 47, val[0]); }
-
-  // // min
-  // if(select & (1 << 1)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 47, val[1]); }
-  // if(select & (1 << 5)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 47, val[1]); }
-
-  // // on
-  // if(select & (1 << 2)){ LCD_WriteAnyValue(f_6x8_n, 2, 10, 19, val[2]); }
-  // if(select & (1 << 6)){ LCD_WriteAnyValue(f_6x8_p, 2, 10, 19, val[2]); }
 }
 
 void LCD_Sym_Setup_InflowPump_ValuesOffHou(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 2, 5, 47, value); }
@@ -873,31 +863,20 @@ void LCD_Sym_Setup_InflowPump_ValuesOnMin(bool negative, int value){ LCD_WriteAn
 
 
 /* ------------------------------------------------------------------*
- *            inflow pump - values - text select
- * -------------------------------------------------------------------
- *    0000 0000 -> off on min h Noff Non Nmin Nh
+ *            inflow pump - text
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Setup_InflowPump_Text(unsigned char select)
 {
   LCD_Sym_Setup_InflowPump_TextOn((select == 0));
+  LCD_Sym_Setup_InflowPump_TextOnMin((select == 0));
   LCD_Sym_Setup_InflowPump_TextOffMin((select == 1));
   LCD_Sym_Setup_InflowPump_TextOffHou((select == 2));
   LCD_Sym_Setup_InflowPump_TextOff((select == 1) | (select == 2));
-  // if(select & (1 << 0)) LCD_WriteAnyStringFont(f_6x8_n, 5, 59, "h");
-  // if(select & (1 << 4)) LCD_WriteAnyStringFont(f_6x8_p, 5, 59, "h");
-
-  // if(select & (1 << 1)) LCD_WriteAnyStringFont(f_6x8_n, 10, 59, "min");
-  // if(select & (1 << 5)) LCD_WriteAnyStringFont(f_6x8_p, 10, 59, "min");
-
-  // if(select & (1 << 2)) LCD_WriteAnyStringFont(f_6x8_n, 10, 1, "On:");
-  // if(select & (1 << 6)) LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "On:");
-
-  // if(select & (1 << 3)) LCD_WriteAnyStringFont(f_6x8_n, 1, 47, "Off");
-  // if(select & (1 << 7)) LCD_WriteAnyStringFont(f_6x8_p, 1, 47, "Off");
 }
 
 void LCD_Sym_Setup_InflowPump_TextOffHou(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 5, 59, "h"); }
+void LCD_Sym_Setup_InflowPump_TextOnMin(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 31, "'"); }
 void LCD_Sym_Setup_InflowPump_TextOffMin(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 59, "'"); }
 void LCD_Sym_Setup_InflowPump_TextOn(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 10, 1, "On:"); }
 void LCD_Sym_Setup_InflowPump_TextOff(bool negative){ LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), 1, 47, "Off:"); }
@@ -1054,8 +1033,8 @@ void LCD_Sym_Setup_Zone(void)
  *            zone symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Zone_Level_Air(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 11, 40, value); }
-void LCD_Sym_Setup_Zone_Level_SetDown(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 16, 40, value); }
+void LCD_Sym_Setup_Zone_LevelToAir_Value(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 11, 40, value); }
+void LCD_Sym_Setup_Zone_LevelToSetDown_Value(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 16, 40, value); }
 void LCD_Sym_Setup_Zone_Sonic(bool negative){ LCD_WriteAnySymbol(3, 47, (negative ? _n_sonic : _p_sonic)); }
 void LCD_Sym_Setup_Zone_Air(bool negative){ LCD_WriteAnySymbol(9, 0, (negative ? _n_air : _p_air)); }
 void LCD_Sym_Setup_Zone_SetDown(bool negative){ LCD_WriteAnySymbol(14, 0, (negative ? _n_setDown : _p_setDown)); }
@@ -2200,9 +2179,9 @@ t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
 {
   switch(sym)
   {
-    case _n_pumpOff: return _p_pumpOff;
+    case _n_pump_off: return _p_pump_off;
     case _n_mud: return _p_mud;
-    case _n_inflowPump: return _p_inflowPump;
+    case _n_inflow_pump: return _p_inflow_pump;
     case _n_pump2: return _p_pump2;
     case _n_setDown: return _p_setDown; 
     case _n_alarm: return _p_alarm; 
@@ -2231,9 +2210,9 @@ t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
     case _n_text_frame: return _p_text_frame;
     case _n_valve: return _p_valve;
 
-    case _p_pumpOff: return _n_pumpOff;
+    case _p_pump_off: return _n_pump_off;
     case _p_mud: return _n_mud;
-    case _p_inflowPump: return _n_inflowPump;
+    case _p_inflow_pump: return _n_inflow_pump;
     case _p_pump2: return _n_pump2;
     case _p_setDown: return _n_setDown; 
     case _p_alarm: return _n_alarm; 

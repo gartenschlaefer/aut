@@ -97,7 +97,7 @@ void LCD_FillOrClrSpace(bool fill, unsigned char row, unsigned char col, unsigne
 void LCD_Clean(void);
 
 unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word);
-void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char word[]);
+void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char *string);
 void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value);
 
 void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol);

@@ -65,7 +65,7 @@ void MEM_EEPROM_PageErase(unsigned char page)
 
 void MEM_EEPROM_PageWrite(unsigned char page)
 {
-  NVM.CMD = NVM_CMD_WRITE_EEPROM_PAGE_gc; //CMD Load
+  NVM.CMD = NVM_CMD_WRITE_EEPROM_PAGE_gc;
   NVM.ADDR0 = ((page << 5) & 0xE0);
   NVM.ADDR1 = (page >> 3);
   MEM_EEPROM_ExecuteCMD();
@@ -130,7 +130,7 @@ unsigned char MEM_EEPROM_Read(unsigned char page, unsigned char byte)
 void MEM_EEPROM_WriteByte(unsigned char page, unsigned char byte, unsigned char eeData)
 {
   // buffer loaded -> erase
-  if(NVM.STATUS & NVM_EELOAD_bm) MEM_EEPROM_ErasePageBuffer();
+  if(NVM.STATUS & NVM_EELOAD_bm){ MEM_EEPROM_ErasePageBuffer(); }
 
   // load new data | write
   MEM_EEPROM_LoadPageBuffer(byte, eeData);
@@ -144,13 +144,8 @@ void MEM_EEPROM_WriteByte(unsigned char page, unsigned char byte, unsigned char 
 
 void MEM_EEPROM_EntPageErase(unsigned char page)
 {
-  unsigned char i = 0;
-
   // dummy bytes
-  for(i = 0; i < 32; i++)
-  {
-    MEM_EEPROM_LoadPageBuffer(i, 0xFF);
-  }
+  for(unsigned char i = 0; i < 32; i++){ MEM_EEPROM_LoadPageBuffer(i, 0xFF); }
   MEM_EEPROM_PageErase(page);
 }
 
@@ -161,13 +156,7 @@ void MEM_EEPROM_EntPageErase(unsigned char page)
 
 void MEM_EEPROM_EntErase(void)
 {
-  unsigned char i = 0;
-
   // dummy bytes
-  for(i = 0; i < 32; i++)
-  {
-    MEM_EEPROM_LoadPageBuffer(i, 0xFF);
-  }
-
+  for(unsigned char i = 0; i < 32; i++){ MEM_EEPROM_LoadPageBuffer(i, 0xFF); }
   MEM_EEPROM_Erase();
 }

@@ -23,6 +23,7 @@
 #include "can_app.h"
 #include "memory_app.h"
 #include "mpx_driver.h"
+#include "settings.h"
 
 
 /* ------------------------------------------------------------------*
@@ -50,6 +51,9 @@ void Basic_Init(struct PlantState *ps)
 
   // Memory init
   if(MEM_INIT){ Basic_Init_Mem(); }
+
+  // init settings
+  Settings_Init(ps->settings);
 
   // watchdog
   Basic_Watchdog_Init();

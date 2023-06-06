@@ -41,7 +41,7 @@ bool queue_empty(struct Queue *queue)
 
 struct Queue *queue_new(void)
 {
-  struct Queue *queue = malloc(sizeof(*queue));
+  struct Queue *queue = malloc(sizeof(struct Queue));
   if(queue == NULL) { return NULL; }
   queue->front = queue->back = NULL;
   return queue;
@@ -75,7 +75,7 @@ void *queue_dequeue(struct Queue *queue)
 int queue_enqueue(struct Queue *queue, void *data)
 {
   if(queue == NULL){ return ERR_INVAL; }
-  struct QueueNode *node = malloc(sizeof(*node));
+  struct QueueNode *node = malloc(sizeof(struct QueueNode));
   if(node == NULL){ return ERR_NOMEM; }
 
   // get pointers

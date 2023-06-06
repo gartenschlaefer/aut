@@ -13,21 +13,21 @@
 struct Settings *Settings_New(void)
 {
   // init main settings
-  struct Settings *settings = malloc(sizeof(*settings));
+  struct Settings *settings = malloc(sizeof(struct Settings));
   if(settings == NULL) { return NULL; }
 
   // create sub settings
-  settings->settings_circulate = malloc(sizeof(settings->settings_circulate));
-  settings->settings_air = malloc(sizeof(settings->settings_air));
-  settings->settings_set_down = malloc(sizeof(settings->settings_set_down));
-  settings->settings_pump_off = malloc(sizeof(settings->settings_pump_off));
-  settings->settings_mud = malloc(sizeof(settings->settings_mud));
-  settings->settings_compressor = malloc(sizeof(settings->settings_compressor));
-  settings->settings_phosphor = malloc(sizeof(settings->settings_phosphor));
-  settings->settings_inflow_pump = malloc(sizeof(settings->settings_inflow_pump));
-  settings->settings_calibration = malloc(sizeof(settings->settings_calibration));
-  settings->settings_alarm = malloc(sizeof(settings->settings_alarm));
-  settings->settings_zone = malloc(sizeof(settings->settings_zone));
+  settings->settings_circulate = malloc(sizeof(struct SettingsCirculate));
+  settings->settings_air = malloc(sizeof(struct SettingsAir));
+  settings->settings_set_down = malloc(sizeof(struct SettingsSetDown));
+  settings->settings_pump_off = malloc(sizeof(struct SettingsPumpOff));
+  settings->settings_mud = malloc(sizeof(struct SettingsMud));
+  settings->settings_compressor = malloc(sizeof(struct SettingsCompressor));
+  settings->settings_phosphor = malloc(sizeof(struct SettingsPhosphor));
+  settings->settings_inflow_pump = malloc(sizeof(struct SettingsInflowPump));
+  settings->settings_calibration = malloc(sizeof(struct SettingsCalibration));
+  settings->settings_alarm = malloc(sizeof(struct SettingsAlarm));
+  settings->settings_zone = malloc(sizeof(struct SettingsZone));
 
   return settings;
 }

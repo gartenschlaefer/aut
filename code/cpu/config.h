@@ -20,16 +20,16 @@
 #define COMPANY 1
 
 // memory init set to zero
-#define MEM_INIT 0
+#define MEM_INIT false
 
 // use new relay connections (old ones are only for special cases)
 #define USE_NEW_RELAY_CONNECTIONS 1
 
 // SMS usage
-#define SMS_ON 1
+#define SMS_ON true
 
 // spring valve
-#define SPRING_VALVE_ON 1
+#define SPRING_VALVE_ON true
 
 // debug: set to zero for no debugging with buzzer off, modem off, port valve, data entry
 #define DEBUG     0
