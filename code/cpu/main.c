@@ -44,7 +44,7 @@ int main(void)
   struct Backlight backlight = { .state = _bl_off, .count = 0 };
   struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = DataPage, .page_time = &page_time };
-  struct PageState auto_save_page_state = { .page = NoPage, .page_time = &auto_save_page_time };
+  struct PageState auto_save_page_state = { .page = NonePage, .page_time = &auto_save_page_time };
   struct PortState port_state = { .buzzer_on = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle, .queue_valve_action = queue_new(), .valve_init = false };
   struct CompressorState compressor_state = { .operation_hours = 0, .cycle_o2_min = 0, .old_min = 0 };
   struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = false, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
@@ -59,7 +59,7 @@ int main(void)
   struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0, .tele_nr1 = &tele_nr1, .tele_nr2 = &tele_nr2, .tele_nr_temp = &tele_nr_temp, .temp_digit_pos = 0 };
   struct TimeState time_state = { .tic_sec_update_flag = false };
   struct EEPROMState eeprom_state = { .time_manual_entry = { .hou = 0, .min = 0} };
-  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .select = 0, .var = { 0 }, .int_var = { 0 }, .p_value_setting = NULL, .p_value_limit = NULL };
+  struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .select = 0, .var = { 0 }, .pin_touch = 0, .p_value_setting = NULL, .p_value_limit = NULL };
   struct Settings *settings = Settings_New();
 
   // plant state

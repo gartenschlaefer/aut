@@ -136,6 +136,7 @@ void LCD_Sym_Setup_InflowPump_TextOn(bool negative);
 void LCD_Sym_Setup_InflowPump_TextOff(bool negative);
 void LCD_Sym_Setup_Cal(struct PlantState *ps);
 void LCD_Sym_Setup_Cal_MPX_Redo(bool negative);
+void LCD_Sym_Setup_Cal_OpenValveButton(bool negative);
 void LCD_Sym_Setup_Cal_Level_Sym(bool negative);
 void LCD_Sym_Setup_Cal_Button(bool negative);
 void LCD_Sym_Setup_Cal_MPX_Value(int value);

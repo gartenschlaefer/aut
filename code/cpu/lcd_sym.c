@@ -893,7 +893,7 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
   LCD_Sym_Setup_Cal_Level_Sym(false);
   LCD_Sym_ControlButtons(_ctrl_pos_esc);
   LCD_Sym_ControlButtons(_ctrl_pos_ok);
-  LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 1);
+  LCD_Sym_Setup_Cal_OpenValveButton(false);
   LCD_WriteAnySymbol(9, 125, _p_cal);
   LCD_Sym_Setup_Cal_Button(false);
   LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "mbar:");
@@ -917,16 +917,11 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            cal redo for pressure sensor
+ *            cal symbols
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Setup_Cal_MPX_Redo(bool negative){ LCD_WriteAnySymbol(15, 130, (negative ? _n_arrow_redo : _p_arrow_redo)); }
-
-
-/* ------------------------------------------------------------------*
- *            set setup calibration level measures and cal sym
- * ------------------------------------------------------------------*/
-
+void LCD_Sym_Setup_Cal_OpenValveButton(bool negative){ LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_valve, (negative ? 0 : 1));  }
 void LCD_Sym_Setup_Cal_Level_Sym(bool negative){ LCD_WriteAnySymbol(15, 1, (negative ? _n_level : _p_level)); }
 void LCD_Sym_Setup_Cal_Button(bool negative){ LCD_WriteAnySymbol(9, 125, (negative ? _n_cal : _p_cal)); }
 

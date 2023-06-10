@@ -459,11 +459,10 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
 
 void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, unsigned char pos)
 {
-  char t[7] = "";
+  char *t = malloc(7 * sizeof(char));
 
   // write frame
-  if(pos){ LCD_WriteAnySymbol(row, col, _p_text_frame); }
-  else{ LCD_WriteAnySymbol(row, col, _n_text_frame); }
+  LCD_WriteAnySymbol(row, col, (pos ? _p_text_frame : _n_text_frame));
 
   switch(text)
   {
@@ -473,15 +472,15 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons t
     case TEXT_BUTTON_data: row += 1; col += 8; strcat(t, "Data");  break;
     case TEXT_BUTTON_sonic: row += 1; col += 5; strcat(t, "Sonic"); break;
     case TEXT_BUTTON_shot: row += 1; col += 8; strcat(t, "Shot");  break;
-    case TEXT_BUTTON_open_ventil: row += 1; col += 5; strcat(t, "OpenV"); break;
+    case TEXT_BUTTON_open_valve: row += 1; col += 5; strcat(t, "OpenV"); break;
     case TEXT_BUTTON_boot: row += 1; col += 8; strcat(t, "Boot");  break;
     case TEXT_BUTTON_read: row += 1; col += 8; strcat(t, "Read");  break;
     case TEXT_BUTTON_write: row += 1; col += 5; strcat(t, "Write"); break;
   }
 
   // write text
-  if(pos){ LCD_WriteAnyStringFont(f_6x8_p, row, col, t); }
-  else{ LCD_WriteAnyStringFont(f_6x8_n, row, col, t); }
+  LCD_WriteAnyStringFont((pos ? f_6x8_p : f_6x8_n), row, col, t);
+  free(t);
 }
 
 

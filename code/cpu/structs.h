@@ -270,7 +270,7 @@ struct TouchState
   unsigned char touched;
   unsigned char select;
   unsigned char var[5];
-  int int_var[3];
+  int pin_touch;
   int *p_value_setting;
   struct ValueLimit *p_value_limit;
 };

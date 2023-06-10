@@ -415,7 +415,7 @@ void Touch_Setup_Linker(struct PlantState *ps)
     ps->touch_state->touched = _ctrl_zero;
 
     // times
-    ps->touch_state->var[0] = NoPage;
+    ps->touch_state->var[0] = NonePage;
     ps->touch_state->var[1] = _none_symbol;
   }
 
@@ -440,8 +440,8 @@ void Touch_Setup_Linker(struct PlantState *ps)
     case 0x00: 
       if(ps->touch_state->touched)
       { 
-        if(ps->touch_state->var[0] != NoPage){ ps->page_state->page = ps->touch_state->var[0]; }
-        ps->touch_state->var[0] = NoPage;
+        if(ps->touch_state->var[0] != NonePage){ ps->page_state->page = ps->touch_state->var[0]; }
+        ps->touch_state->var[0] = NonePage;
         ps->touch_state->touched = _ctrl_zero;
         ps->touch_state->init = false;
       } 
@@ -1198,6 +1198,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
 
     // open ventil
     ps->touch_state->var[0] = 0;
+    ps->touch_state->var[1] = ZeroPage;
   }
 
   // read mpx
@@ -1206,7 +1207,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
   // new value
   if(mpx_value != 0xFF00)
   {
-    // print every 10th Time
+    // print every second
     if(ps->frame_counter->frame == TC_FPS_HALF)
     {
       mpx_value -= ps->settings->settings_calibration->zero_offset_pressure;
@@ -1225,7 +1226,8 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
         if(ps->page_state->page == SetupCalPressure){ OUT_Clr_Air(ps); }
         ps->touch_state->init = false;
-        ps->page_state->page = SetupPage;
+        ps->touch_state->var[1] = SetupPage;
+        //ps->page_state->page = SetupPage;
       }
       break;
 
@@ -1238,7 +1240,8 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
         Settings_Save_Calibration(ps->settings->settings_calibration);
         MEM_EEPROM_WriteSetupEntry(ps);
         ps->touch_state->init = false;
-        ps->page_state->page = SetupPage;
+        ps->touch_state->var[1] = SetupPage;
+        //ps->page_state->page = SetupPage;
       }
       break;
 
@@ -1247,7 +1250,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       if(!ps->touch_state->touched && ps->page_state->page == SetupCal)
       { 
         ps->touch_state->touched = _ctrl_open_valve;
-        if(!ps->touch_state->var[0]){ ps->touch_state->var[0] = 1; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 0); OUT_Valve_Action(ps, OPEN_All); }
+        if(!ps->touch_state->var[0]){ ps->touch_state->var[0] = 1; LCD_Sym_Setup_Cal_OpenValveButton(true); OUT_Valve_Action(ps, OPEN_All); }
       }
       break;
 
@@ -1282,7 +1285,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       { 
         ps->touch_state->touched = _ctrl_level;
         LCD_Sym_Setup_Cal_Level_Sym(true);
-        if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_ventil, 1); OUT_Valve_Action(ps, CLOSE_All); } 
+        if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; LCD_Sym_Setup_Cal_OpenValveButton(false); OUT_Valve_Action(ps, CLOSE_All); } 
         ps->page_state->page = SetupCalPressure; 
       }
       break;
@@ -1317,11 +1320,44 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
   Touch_Setup_Matrix_MinusPlus(ps, touch_matrix);
   Touch_Setup_Matrix_PageButtonLinker(ps, touch_matrix);
 
+  // leave setup page request
+  if(ps->touch_state->var[1])
+  { 
+    // valves are open
+    if(ps->touch_state->var[0])
+    {
+      // request closing
+      OUT_Valve_Action(ps, CLOSE_All);
+      ps->touch_state->var[0] = 0;
+    }
+
+    // still closing
+    if(ps->port_state->valve_action_flag)
+    { 
+      // blink valve button
+      if(ps->frame_counter->frame % 29)
+      {
+        LCD_Sym_Setup_Cal_OpenValveButton((ps->frame_counter->frame < TC_FPS_HALF ? true : false));
+      }
+    }
+    // change page
+    else
+    { 
+      ps->page_state->page = ps->touch_state->var[1];
+      ps->touch_state->var[1] = ZeroPage;
+      LCD_Sym_Setup_Cal_OpenValveButton(false);
+    }
+  }
+
   // calibration close valves
   if(ps->page_state->page != SetupCal && ps->page_state->page != SetupCalPressure)
   {
     ps->touch_state->init = 0;
-    if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; OUT_Valve_Action(ps, CLOSE_All); }
+    if(ps->touch_state->var[0])
+    { 
+      ps->touch_state->var[0] = 0;
+      OUT_Valve_Action(ps, CLOSE_All);
+    }
   }
 }
 
@@ -1955,9 +1991,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
   {
     // 1
     case 0x11: 
-      if(!(ps->touch_state->int_var[0] & (1 << 1)))
+      if(!(ps->touch_state->pin_touch & (1 << 1)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 1);
+        ps->touch_state->pin_touch |= (1 << 1);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 1); }
         else{ LCD_Sym_Pin_WriteDigit(1, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 1; ps->touch_state->var[4]++; }
       }
@@ -1965,27 +2001,27 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 2
     case 0x12: 
-      if(!(ps->touch_state->int_var[0] & (1 << 2)))
+      if(!(ps->touch_state->pin_touch & (1 << 2)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 2);
+        ps->touch_state->pin_touch |= (1 << 2);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 2); }
         else{ LCD_Sym_Pin_WriteDigit(2, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 2; ps->touch_state->var[4]++; }
       } break;
 
     // 3
     case 0x13: 
-      if(!(ps->touch_state->int_var[0] & (1 << 3)))
+      if(!(ps->touch_state->pin_touch & (1 << 3)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 3);
+        ps->touch_state->pin_touch |= (1 << 3);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 3); }
         else{ LCD_Sym_Pin_WriteDigit(3, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 3; ps->touch_state->var[4]++; }
       } break;
 
     // 4
     case 0x21: 
-      if(!(ps->touch_state->int_var[0] & (1 << 4)))
+      if(!(ps->touch_state->pin_touch & (1 << 4)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 4);
+        ps->touch_state->pin_touch |= (1 << 4);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 4); }
         else{ LCD_Sym_Pin_WriteDigit(4, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 4; ps->touch_state->var[4]++; }
       }
@@ -1993,9 +2029,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 5
     case 0x22: 
-      if(!(ps->touch_state->int_var[0] & (1 << 5)))
+      if(!(ps->touch_state->pin_touch & (1 << 5)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 5);
+        ps->touch_state->pin_touch |= (1 << 5);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 5); }
         else{ LCD_Sym_Pin_WriteDigit(5, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 5; ps->touch_state->var[4]++; }
       }
@@ -2003,9 +2039,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 6
     case 0x23: 
-      if(!(ps->touch_state->int_var[0] & (1 << 6)))
+      if(!(ps->touch_state->pin_touch & (1 << 6)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 6);
+        ps->touch_state->pin_touch |= (1 << 6);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 6); }
         else{ LCD_Sym_Pin_WriteDigit(6, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 6; ps->touch_state->var[4]++; }
       }
@@ -2013,9 +2049,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 7
     case 0x31: 
-      if(!(ps->touch_state->int_var[0] & (1 << 7)))
+      if(!(ps->touch_state->pin_touch & (1 << 7)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 7);
+        ps->touch_state->pin_touch |= (1 << 7);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 7); }
         else{ LCD_Sym_Pin_WriteDigit(7, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 7; ps->touch_state->var[4]++; }
       } 
@@ -2023,9 +2059,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 8
     case 0x32: 
-      if(!(ps->touch_state->int_var[0] & (1 << 8)))
+      if(!(ps->touch_state->pin_touch & (1 << 8)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 8);
+        ps->touch_state->pin_touch |= (1 << 8);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 8); }
         else{ LCD_Sym_Pin_WriteDigit(8, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 8; ps->touch_state->var[4]++; }
       }
@@ -2033,9 +2069,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 9
     case 0x33: 
-      if(!(ps->touch_state->int_var[0] & (1 << 9)))
+      if(!(ps->touch_state->pin_touch & (1 << 9)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 9);
+        ps->touch_state->pin_touch |= (1 << 9);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 9); }
         else{ LCD_Sym_Pin_WriteDigit(9, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 9; ps->touch_state->var[4]++; }
       }
@@ -2043,9 +2079,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // 0
     case 0x42:
-      if(!(ps->touch_state->int_var[0] & (1 << 0)))
+      if(!(ps->touch_state->pin_touch & (1 << 0)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 0);
+        ps->touch_state->pin_touch |= (1 << 0);
         if(ps->modem->tele_nr_temp->id){ Touch_Pin_Linker_TeleTemp_AddDigit(ps, 0); }
         else{ LCD_Sym_Pin_WriteDigit(0, ps->touch_state->var[4]); ps->touch_state->var[ps->touch_state->var[4]] = 0; ps->touch_state->var[4]++; }
       }
@@ -2053,9 +2089,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // del
     case 0x43:
-      if(!(ps->touch_state->int_var[0] & (1 << 10)))
+      if(!(ps->touch_state->pin_touch & (1 << 10)))
       { 
-        ps->touch_state->int_var[0] |= (1 << 10);
+        ps->touch_state->pin_touch |= (1 << 10);
         LCD_nPinButtons(10);
         LCD_Sym_Pin_DelDigits();
         ps->touch_state->var[4] = 0;
@@ -2071,9 +2107,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // esc
     case 0x41: 
-      if(!(ps->touch_state->int_var[0] & (1 << 11)))
+      if(!(ps->touch_state->pin_touch & (1 << 11)))
       {
-        ps->touch_state->int_var[0] |= (1 << 11);
+        ps->touch_state->pin_touch |= (1 << 11);
         LCD_nPinButtons(11);
         ps->touch_state->var[4] = 0;
         ps->modem->tele_nr_temp->id = 0; 
@@ -2086,9 +2122,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
 
     // okay tel
     case 0x44:
-      if(!(ps->touch_state->int_var[0] & (1 << 12)) && ps->modem->tele_nr_temp->id)
+      if(!(ps->touch_state->pin_touch & (1 << 12)) && ps->modem->tele_nr_temp->id)
       {
-        ps->touch_state->int_var[0] |= (1 << 12);
+        ps->touch_state->pin_touch |= (1 << 12);
         LCD_Sym_Pin_OkButton(1);
         AT24C_TeleNr_Write(ps->modem->tele_nr_temp);
         AT24C_TeleNr_ReadToModem(ps);
@@ -2108,9 +2144,9 @@ void Touch_Pin_Linker(struct PlantState *ps)
     case 0x00:
 
       // unmark and reset
-      for(unsigned char i = 0; i < 12; i++){ if(ps->touch_state->int_var[0] & (1 << i)){ LCD_pPinButtons(i); } }
-      if(ps->touch_state->int_var[0] & (1 << 12)){ LCD_Sym_Pin_ClearPinCode(); }
-      ps->touch_state->int_var[0] = 0;
+      for(unsigned char i = 0; i < 12; i++){ if(ps->touch_state->pin_touch & (1 << i)){ LCD_pPinButtons(i); } }
+      if(ps->touch_state->pin_touch & (1 << 12)){ LCD_Sym_Pin_ClearPinCode(); }
+      ps->touch_state->pin_touch = 0;
       break;
 
     default: break;

@@ -61,7 +61,7 @@ void LCD_AutoPage(struct PlantState *ps)
     LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time);
 
     // get previous state and time
-    if(ps->auto_save_page_state->page != NoPage)
+    if(ps->auto_save_page_state->page != NonePage)
     { 
       // get back state and time
       ps->page_state->page = ps->auto_save_page_state->page; 

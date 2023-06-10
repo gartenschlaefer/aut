@@ -117,7 +117,7 @@ typedef enum
   TEXT_BUTTON_data,
   TEXT_BUTTON_sonic,
   TEXT_BUTTON_shot,
-  TEXT_BUTTON_open_ventil,
+  TEXT_BUTTON_open_valve,
   TEXT_BUTTON_boot,
   TEXT_BUTTON_read,
   TEXT_BUTTON_write
@@ -289,12 +289,12 @@ typedef enum
 
 typedef enum
 { 
-  AutoPage, ManualPage, SetupPage, DataPage, PinManual, PinSetup, PinModem, AutoZone, AutoSetDown, AutoMud,
+  ZeroPage, AutoPage, ManualPage, SetupPage, DataPage, PinManual, PinSetup, PinModem, AutoZone, AutoSetDown, AutoMud,
   AutoCircOn, AutoCircOff, AutoPumpOff, AutoAirOn, AutoAirOff, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff,
   SetupMud, SetupCompressor, SetupPhosphor, SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone, ManualMain,
   ManualPumpOff_On, ManualCircOn, ManualCircOff, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump, ManualValveTest,
   DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto, DataSonicBoot, DataSonicBootR, DataSonicBootW, ErrorMPX,
-  ErrorTreat, NoPage
+  ErrorTreat, NonePage
 }t_page;
 
 
