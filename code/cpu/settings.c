@@ -235,8 +235,8 @@ void Settings_Read_Calibration(struct SettingsCalibration *settings_calibration)
 void Settings_Save_Calibration(struct SettingsCalibration *settings_calibration)
 {
   MEM_EEPROM_WriteVar(CAL_Redo_on, settings_calibration->redo_on);
-  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_L, (unsigned char)(settings_calibration->tank_level_min_pressure & 0x00FF));
-  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_H, (unsigned char)((settings_calibration->tank_level_min_pressure & 0xFF00) >> 8));
+  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_L, (unsigned char)(settings_calibration->zero_offset_pressure & 0x00FF));
+  MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_H, (unsigned char)((settings_calibration->zero_offset_pressure & 0xFF00) >> 8));
   MEM_EEPROM_WriteVar(TANK_LV_MinPressure_L, (unsigned char)(settings_calibration->tank_level_min_pressure & 0x00FF));
   MEM_EEPROM_WriteVar(TANK_LV_MinPressure_H, (unsigned char)((settings_calibration->tank_level_min_pressure & 0xFF00) >> 8));
   MEM_EEPROM_WriteVar(TANK_LV_Sonic_L, (unsigned char)(settings_calibration->tank_level_min_sonic & 0x00FF));

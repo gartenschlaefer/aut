@@ -19,7 +19,21 @@
 
 void MPX_Init(struct PlantState *ps)
 {
-  ps->mpx_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_LV_MinPressure_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_MinPressure_L)));
+  ;
+}
+
+
+/*-------------------------------------------------------------------*
+ *            update function
+ * ------------------------------------------------------------------*/
+
+void MPX_Update(struct PlantState *ps)
+{
+  // read average
+  MPX_ReadAverage_Update(ps);
+
+  // symbols
+  if(ps->frame_counter->frame % 20){ LCD_Sym_MPX_AverageValue(ps->page_state->page, ps->mpx_state->actual_mpx_av); }
 }
 
 
@@ -50,17 +64,10 @@ int MPX_Read(void)
  *            MPX - read calibrated
  * ------------------------------------------------------------------*/
 
-int MPX_ReadCal(void)
+int MPX_ReadCal(struct SettingsCalibration *settings_calibration)
 {
-  int cal = 0;
-  int data = 0;
-
-  data = MPX_Read();
-  cal = ((MEM_EEPROM_ReadVar(CAL_ZeroOffsetPressure_H) << 8) | (MEM_EEPROM_ReadVar(CAL_ZeroOffsetPressure_L)));
-  data = data - cal;
-  if(data < 0) data = 0;
-  if(data > 999) data = 999;
-
+  int data = MPX_Read();
+  data -= settings_calibration->zero_offset_pressure;
   return data;
 }
 
@@ -72,19 +79,19 @@ int MPX_ReadCal(void)
 int MPX_ReadAverage_Update(struct PlantState *ps)
 {
   // read preassure
-  ps->mpx_state->mpx_values[ps->mpx_state->mpx_count] = MPX_ReadCal();
-  ps->mpx_state->mpx_count++;
+  ps->mpx_state->mpx_values[ps->mpx_state->mpx_idx] = MPX_ReadCal(ps->settings->settings_calibration);
+  ps->mpx_state->mpx_idx++;
 
   // print
-  if(ps->mpx_state->mpx_count > 9)
+  if(ps->mpx_state->mpx_idx > 9)
   {
-    ps->mpx_state->mpx_count = 0;
+    ps->mpx_state->mpx_idx = 0;
     int mpx_sum = 0;
     for(unsigned char a = 0; a < 10; a++){ mpx_sum += ps->mpx_state->mpx_values[a]; }
     int mpx_av = f_round_int(mpx_sum / 10.0);
 
-    // symbols
-    LCD_Sym_MPX_AverageValue(ps->page_state->page, mpx_av);
+    // update actual value
+    ps->mpx_state->actual_mpx_av = mpx_av;
     return mpx_av;
   }
   return 0xFF00;
@@ -92,26 +99,21 @@ int MPX_ReadAverage_Update(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            average not calibrated
+ *            uncalibrated average value (for zero calibration)
  * ------------------------------------------------------------------*/
 
-int MPX_ReadAverage_UnCal(struct MPXState *mpx_state)
+int MPX_UnCal_Average_New(struct MPXState *mpx_state)
 {
-  // collect pressure values
-  mpx_state->mpx_values[mpx_state->mpx_count] = MPX_Read();
-  mpx_state->mpx_count++;
+  int mpx_uncal_av = 0;
+  unsigned char num_samples = 4;
 
-  // average values
-  if(mpx_state->mpx_count > 4)
+  for(unsigned char i = 0; i < num_samples; i++)
   {
-    int mpx_uncalibrated = 0;
-    mpx_state->mpx_count = 0;
-    for(unsigned char a = 0; a < 5; a++){ mpx_uncalibrated += mpx_state->mpx_values[a]; }
-    return mpx_uncalibrated / 5;
+    mpx_uncal_av += MPX_Read();
+    TCC0_wait_ms(100);
   }
-
-  // failed return message
-  return 0xFF00;
+  mpx_uncal_av /= num_samples;
+  return mpx_uncal_av;
 }
 
 
@@ -122,7 +124,7 @@ int MPX_ReadAverage_UnCal(struct MPXState *mpx_state)
 void MPX_LevelCal_New(struct PlantState *ps)
 {
   // clean data
-  ps->mpx_state->mpx_count = 0;
+  ps->mpx_state->mpx_idx = 0;
   for(unsigned char a = 0; a < 10; a++){ ps->mpx_state->mpx_values[a] = 0x00; }
 
   // collect values
@@ -131,22 +133,13 @@ void MPX_LevelCal_New(struct PlantState *ps)
     int av = MPX_ReadAverage_Update(ps);
     if(!(av == 0xFF00))
     {
-      ps->mpx_state->level_cal = av;
+      if(av < 0){ av = 0; }
+      else if(av > 999){ av = 999; }
+      ps->settings->settings_calibration->tank_level_min_pressure = av;
       break;
     }
     TCC0_wait_ms(100);
   }
-}
-
-
-/* ------------------------------------------------------------------*
- *            save to eeprom
- * ------------------------------------------------------------------*/
-
-void MPX_LevelCal_SaveToEEPROM(struct PlantState *ps)
-{
-  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_L, ps->mpx_state->level_cal & 0x00FF);
-  MEM_EEPROM_WriteVar(TANK_LV_MinPressure_H, ((ps->mpx_state->level_cal >> 8) & 0x00FF));
 }
 
 
@@ -156,14 +149,14 @@ void MPX_LevelCal_SaveToEEPROM(struct PlantState *ps)
 
 void MPX_ReadTank(struct PlantState *ps)
 {
-  // return if Ultrasonic
-  if(MEM_EEPROM_ReadVar(SONIC_on)){ return; }
+  // return if sonic is enabled
+  if(ps->settings->settings_zone->sonic_on){ return; }
 
   // handles
   t_page p = ps->page_state->page;
 
   // disabled read tank (also not use it in pump off and mud cycle)
-  if(!(MEM_EEPROM_ReadVar(SENSOR_inTank)) || p == AutoPumpOff || p == AutoMud)
+  if(!ps->settings->settings_circulate->sensor_in_tank || p == AutoPumpOff || p == AutoMud)
   {
     // manual
     if(p == ManualCircOn || p == ManualCircOff || p == ManualAir){ return; }
@@ -174,45 +167,26 @@ void MPX_ReadTank(struct PlantState *ps)
     return;
   }
 
-  // read variables
-  int hO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
-  int hCirc = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_L)));
-  int minP = ((MEM_EEPROM_ReadVar(TANK_LV_MinPressure_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_MinPressure_L)));
-
-  // read pressure
-  MPX_LevelCal_New(ps);
   if(p == ManualCircOn){ return; }
-  LCD_Sym_MPX_Auto_MbarValue(ps->mpx_state->level_cal);
-
-  // error
-  if(ps->mpx_state->level_cal >= (hO2 + minP))
-  {
-    ps->mpx_state->error_counter++;
-    if(ps->mpx_state->error_counter >= 2){ ps->error_state->pending_err_code |= E_IT; ps->mpx_state->error_counter = 0; }
-  }
+  LCD_Sym_MPX_Auto_MbarValue(ps->mpx_state->actual_mpx_av);
 
   // circulate
   if(p == AutoCircOn)
   {
-    if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
+    if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_air + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoAirOn; }
   }
 
   // air
   else if(p == AutoAirOn)
   {
-    if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
+    if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_set_down + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoSetDown; }
   }
 
   // zone
   else if(p == AutoZone)
   {
-    // save calibration
-    MPX_LevelCal_SaveToEEPROM(ps);
-
-    // difference, todo: check this
-    if((ps->mpx_state->level_cal < (minP - 5)) || (ps->mpx_state->level_cal > (minP + 5))) { ps->page_state->page = AutoCircOn; }
-    if(ps->mpx_state->level_cal >= (hO2 + minP)){ ps->page_state->page = AutoSetDown; }
-    if(ps->mpx_state->level_cal >= (hCirc + minP)){ ps->page_state->page = AutoAirOn; }
+    if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_set_down + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoSetDown; }
+    else if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_air + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoAirOn; }
     else { ps->page_state->page = AutoCircOn; }
   }
 }

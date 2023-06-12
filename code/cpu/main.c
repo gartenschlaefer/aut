@@ -15,6 +15,7 @@
 #include "can_app.h"
 #include "queue.h"
 #include "settings.h"
+#include "mpx_driver.h"
 
 
 /* ------------------------------------------------------------------*
@@ -48,13 +49,13 @@ int main(void)
   struct PortState port_state = { .buzzer_on = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle, .queue_valve_action = queue_new(), .valve_init = false };
   struct CompressorState compressor_state = { .operation_hours = 0, .cycle_o2_min = 0, .old_min = 0 };
   struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = false, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
-  struct MPXState mpx_state = { .mpx_count = 0, .mpx_values = { 0x00 }, .error_counter = 0, .level_cal = 0 };
+  struct MPXState mpx_state = { .mpx_idx = 0, .mpx_values = { 0x00 }, .actual_mpx_av = 0 };
   struct PhosphorState phosphor_state = { .ph_tms = &ph_tms, .ph_state = _ph_off, .init_flag = false };
   struct InflowPumpState inflow_pump_state = { .ip_thms = &ip_thms, .ip_state = _ip_off, .ip_active_pump_id = 0, .init_flag = false };
   struct AirCircState air_circ_state = { .air_tms = &air_tms };
   struct CANState can_state = { .mcp2525_ok_flag = true, .rxb0_buffer = { 0x00 }, .rxb0_data_av = 0 };
   struct TWIState twi_state = { .twid_rx_buffer = { 0x00, 0xFF } };
-  struct SonicState sonic_state = { .app_type = SONIC_APP_none, .software_version = 0, .no_us_error_counter = 0, .no_us_flag = false, .level_cal = 0, .d_mm = 0, .d_mm_prev = 0, .d_mm_max = 0, .d_mm_min = 10000, .temp = 0, .temp_max = 0, .temp_min = 10000, .d_error = 0, .read_tank_state = SONIC_TANK_timer_init, .query_state = _usWait, .query_error_count = 0, .record_position = 5, .record_error_update = 0 };
+  struct SonicState sonic_state = { .app_type = SONIC_APP_none, .software_version = 0, .no_us_error_counter = 0, .no_us_flag = false, .d_mm = 0, .d_mm_prev = 0, .d_mm_max = 0, .d_mm_min = 10000, .temp = 0, .temp_max = 0, .temp_min = 10000, .d_error = 0, .read_tank_state = SONIC_TANK_timer_init, .query_state = _usWait, .query_error_count = 0, .record_position = 5, .record_error_update = 0 };
   struct InputHandler input_handler = { .float_sw_alarm = 0 };
   struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0, .tele_nr1 = &tele_nr1, .tele_nr2 = &tele_nr2, .tele_nr_temp = &tele_nr_temp, .temp_digit_pos = 0 };
   struct TimeState time_state = { .tic_sec_update_flag = false };
@@ -93,6 +94,9 @@ int main(void)
 
     // valve update
     OUT_Valve_Update(&ps);
+
+    // mpx update
+    MPX_Update(&ps);
 
     //*** debug port and lcd page
     if(DEBUG)

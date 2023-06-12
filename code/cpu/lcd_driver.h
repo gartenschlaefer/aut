@@ -101,7 +101,7 @@ void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned cha
 void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value);
 
 void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol);
-void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, unsigned char pos);
+void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, bool negative);
 void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col);
 
 #endif

@@ -1197,22 +1197,8 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     Settings_Read_Calibration(ps->settings->settings_calibration);
 
     // open ventil
-    ps->touch_state->var[0] = 0;
+    ps->touch_state->var[0] = false;
     ps->touch_state->var[1] = ZeroPage;
-  }
-
-  // read mpx
-  int mpx_value = MPX_Read();
-
-  // new value
-  if(mpx_value != 0xFF00)
-  {
-    // print every second
-    if(ps->frame_counter->frame == TC_FPS_HALF)
-    {
-      mpx_value -= ps->settings->settings_calibration->zero_offset_pressure;
-      LCD_Sym_Setup_Cal_MPX_Value(mpx_value);
-    }
   }
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
@@ -1220,28 +1206,23 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
   {
     // esc
     case 0x13: 
-      if(!ps->touch_state->touched)
+      if(!ps->touch_state->touched && !ps->touch_state->var[1])
       { 
         ps->touch_state->touched = _ctrl_pos_esc;
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
-        if(ps->page_state->page == SetupCalPressure){ OUT_Clr_Air(ps); }
-        ps->touch_state->init = false;
         ps->touch_state->var[1] = SetupPage;
-        //ps->page_state->page = SetupPage;
       }
       break;
 
     // okay
     case 0x14: 
-      if(!ps->touch_state->touched && ps->page_state->page == SetupCal)
+      if(!ps->touch_state->touched && ps->page_state->page == SetupCal && !ps->touch_state->var[1])
       { 
         ps->touch_state->touched = _ctrl_pos_ok;
         LCD_Sym_ControlButtons(_ctrl_neg_ok);
         Settings_Save_Calibration(ps->settings->settings_calibration);
         MEM_EEPROM_WriteSetupEntry(ps);
-        ps->touch_state->init = false;
         ps->touch_state->var[1] = SetupPage;
-        //ps->page_state->page = SetupPage;
       }
       break;
 
@@ -1250,50 +1231,52 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
       if(!ps->touch_state->touched && ps->page_state->page == SetupCal)
       { 
         ps->touch_state->touched = _ctrl_open_valve;
-        if(!ps->touch_state->var[0]){ ps->touch_state->var[0] = 1; LCD_Sym_Setup_Cal_OpenValveButton(true); OUT_Valve_Action(ps, OPEN_All); }
+        // toggle valve
+        ps->touch_state->var[0] = f_toogle_bool(ps->touch_state->var[0]);
+        LCD_Sym_Setup_Cal_OpenValveButton(ps->touch_state->var[0]);
+        OUT_Valve_Action(ps, (ps->touch_state->var[0] ? OPEN_All : CLOSE_All));
       }
       break;
 
     // cal
     // calibration for setting pressure to zero level
     case 0x24: 
-      if(!ps->touch_state->touched && ps->page_state->page == SetupCal)
+      if(!ps->touch_state->touched && ps->page_state->page == SetupCal && !ps->touch_state->var[1])
       { 
         ps->touch_state->touched = _ctrl_cal;
         LCD_Sym_Setup_Cal_Button(true);
 
-        // calibration try couple of time until it hopefully worked
-        ps->settings->settings_calibration->zero_offset_pressure = 0;
-        for(unsigned char i = 0; i < 10; i++)
-        {
-          // new calibration
-          ps->settings->settings_calibration->zero_offset_pressure = MPX_ReadAverage_UnCal(ps->mpx_state);
-          if(!(ps->settings->settings_calibration->zero_offset_pressure == 0xFF00)){ break; }
-          // wait for next cal
-          TCC0_wait_ms(100);
-        }
-
-        // write to memory
-        // MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_L, (ps->settings->settings_calibration->zero_offset_pressure & 0x00FF));
-        // MEM_EEPROM_WriteVar(CAL_ZeroOffsetPressure_H, ((ps->settings->settings_calibration->zero_offset_pressure >> 8) & 0x00FF));
+        // new calibration
+        ps->settings->settings_calibration->zero_offset_pressure = MPX_UnCal_Average_New(ps->mpx_state);
       }
       break;
 
     // level measure
     case 0x31: 
-      if(!ps->touch_state->touched)
+      if(!ps->touch_state->touched && ps->page_state->page != SetupCalPressure)
       { 
         ps->touch_state->touched = _ctrl_level;
         LCD_Sym_Setup_Cal_Level_Sym(true);
-        if(ps->touch_state->var[0]){ ps->touch_state->var[0] = 0; LCD_Sym_Setup_Cal_OpenValveButton(false); OUT_Valve_Action(ps, CLOSE_All); } 
-        ps->page_state->page = SetupCalPressure; 
+
+        // only if no movement of valves
+        if(!ps->port_state->valve_action_flag)
+        {
+          // reset open valves
+          if(ps->touch_state->var[0])
+          {
+            ps->touch_state->var[0] = 0;
+            LCD_Sym_Setup_Cal_OpenValveButton(false);
+            OUT_Valve_Action(ps, CLOSE_All);
+          }
+          ps->page_state->page = SetupCalPressure;
+        }
       }
       break;
 
     // redo
     // calibration redo with pressure -> auto zone page
     case 0x34: 
-      if(!ps->touch_state->touched)
+      if(!ps->touch_state->touched && !ps->touch_state->var[1])
       { 
         ps->touch_state->touched = _ctrl_redo;
         if(!ps->settings->settings_zone->sonic_on)
@@ -1308,19 +1291,26 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     case 0x00:
       if(ps->touch_state->touched)
       {
-        if(ps->touch_state->touched == _ctrl_cal){ LCD_Sym_Setup_Cal_Button(false); }
+        switch(ps->touch_state->touched)
+        {
+          case _ctrl_cal: LCD_Sym_Setup_Cal_Button(false); break;
+          case _ctrl_level: if(ps->page_state->page != SetupCalPressure){ LCD_Sym_Setup_Cal_Level_Sym(false); } break;
+          default: break;
+        }
         ps->touch_state->touched = _ctrl_zero;
       }
       break;
 
+    // main linker
+    case 0x41: if(!ps->touch_state->touched){ LCD_Sym_MarkTextButton(TEXT_BUTTON_auto); ps->touch_state->var[1] = AutoPage; } break;
+    case 0x42: if(!ps->touch_state->touched){ LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); ps->touch_state->var[1] = ManualPage; } break;
+    case 0x43: if(!ps->touch_state->touched){ LCD_Sym_MarkTextButton(TEXT_BUTTON_setup); ps->touch_state->var[1] = SetupPage; } break;
+    case 0x44: if(!ps->touch_state->touched){ LCD_Sym_MarkTextButton(TEXT_BUTTON_data); ps->touch_state->var[1] = DataPage; } break;
+
     default: break;
   }
 
-  // matrix main linker
-  Touch_Setup_Matrix_MinusPlus(ps, touch_matrix);
-  Touch_Setup_Matrix_PageButtonLinker(ps, touch_matrix);
-
-  // leave setup page request
+  // leave setup page request through esc, ok, or main buttons
   if(ps->touch_state->var[1])
   { 
     // valves are open
@@ -1328,35 +1318,32 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     {
       // request closing
       OUT_Valve_Action(ps, CLOSE_All);
-      ps->touch_state->var[0] = 0;
+      LCD_Sym_Setup_Cal_OpenValveButton(false);
+      ps->touch_state->var[0] = false;
+    }
+
+    // calibration of pressure
+    if(ps->page_state->page == SetupCalPressure)
+    { 
+      ps->page_state->page = SetupCal;
+      OUT_Clr_Air(ps);
     }
 
     // still closing
     if(ps->port_state->valve_action_flag)
     { 
       // blink valve button
-      if(ps->frame_counter->frame % 29)
+      if(ps->frame_counter->frame % 10)
       {
-        LCD_Sym_Setup_Cal_OpenValveButton((ps->frame_counter->frame < TC_FPS_HALF ? true : false));
+        LCD_Sym_Setup_Cal_OpenValveButton((ps->frame_counter->frame < (TC_FPS_HALF - 1) ? true : false));
       }
     }
     // change page
     else
     { 
+      ps->touch_state->init = false;
       ps->page_state->page = ps->touch_state->var[1];
       ps->touch_state->var[1] = ZeroPage;
-      LCD_Sym_Setup_Cal_OpenValveButton(false);
-    }
-  }
-
-  // calibration close valves
-  if(ps->page_state->page != SetupCal && ps->page_state->page != SetupCalPressure)
-  {
-    ps->touch_state->init = 0;
-    if(ps->touch_state->var[0])
-    { 
-      ps->touch_state->var[0] = 0;
-      OUT_Valve_Action(ps, CLOSE_All);
     }
   }
 }
@@ -1678,10 +1665,10 @@ void Touch_Data_Linker(struct PlantState *ps)
   switch(touch_matrix)
   {
     // auto
-    case 0x21: LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, 0); ps->page_state->page = DataAuto; break;
-    case 0x22: LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, 0); ps->page_state->page = DataManual; break;
-    case 0x23: LCD_Write_TextButton(9, 80, TEXT_BUTTON_setup, 0); ps->page_state->page = DataSetup; break;
-    case 0x24: LCD_Write_TextButton(9, 120, TEXT_BUTTON_sonic, 0); ps->page_state->page = DataSonic; break;
+    case 0x21: LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, true); ps->page_state->page = DataAuto; break;
+    case 0x22: LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, true); ps->page_state->page = DataManual; break;
+    case 0x23: LCD_Write_TextButton(9, 80, TEXT_BUTTON_setup, true); ps->page_state->page = DataSetup; break;
+    case 0x24: LCD_Write_TextButton(9, 120, TEXT_BUTTON_sonic, true); ps->page_state->page = DataSonic; break;
     default: break;
   }
 
@@ -1895,7 +1882,7 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
       { 
         ps->touch_state->touched = _ctrl_shot;
         if(ps->page_state->page != DataSonic){ LCD_Sym_Data_Sonic_ClearRecording(ps); }
-        LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, 0);
+        LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, true);
         Sonic_Data_Shot(ps);
         ps->page_state->page = DataSonic;
       }
@@ -1919,13 +1906,13 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
       { 
         ps->touch_state->touched = _ctrl_bootloader;
         LCD_Sym_Data_Sonic_ClearRecording(ps);
-        LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, 0);
-        LCD_Write_TextButton(4, 120, TEXT_BUTTON_read, 1);
-        LCD_Write_TextButton(10, 120, TEXT_BUTTON_write, 1);
+        LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, true);
+        LCD_Write_TextButton(4, 120, TEXT_BUTTON_read, false);
+        LCD_Write_TextButton(10, 120, TEXT_BUTTON_write, false);
 
         if(ps->page_state->page == DataSonicBoot)
         {
-          LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, 1);
+          LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, false);
           LCD_Sym_Data_Sonic_ClearRecording(ps);
           Sonic_Data_Boot_Off(ps);
           ps->page_state->page = DataSonic; 
@@ -1938,19 +1925,19 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
       break;
 
     case 0x14:
-      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Write_TextButton(4, 120, TEXT_BUTTON_read, 0); ps->page_state->page = DataSonicBootR; }
+      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Write_TextButton(4, 120, TEXT_BUTTON_read, true); ps->page_state->page = DataSonicBootR; }
       break;
 
     case 0x24:
-      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Write_TextButton(10, 120, TEXT_BUTTON_write, 0); ps->page_state->page = DataSonicBootW; }
+      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Write_TextButton(10, 120, TEXT_BUTTON_write, true); ps->page_state->page = DataSonicBootW; }
       break;
 
     // reset buttons
     case 0x00:
       if(ps->touch_state->touched)
       {
-        if(ps->touch_state->touched == _ctrl_shot){  LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, 1); }
-        else if(ps->touch_state->touched == _ctrl_auto){ LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, 1); }
+        if(ps->touch_state->touched == _ctrl_shot){  LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, false); }
+        else if(ps->touch_state->touched == _ctrl_auto){ LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, false); }
         ps->touch_state->touched = _ctrl_zero;
       }
       break;

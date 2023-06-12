@@ -129,10 +129,11 @@ void PORT_Ventilator(struct PlantState *ps)
 {
   // temperature
   unsigned char temp = MCP9800_PlusTemp(ps->twi_state);
+  unsigned char alarm_temp = ps->settings->settings_alarm->temp;
 
   // hysteresis
-  unsigned char hystOn = (MEM_EEPROM_ReadVar(ALARM_temp) - 15);
-  unsigned char hystOff = (MEM_EEPROM_ReadVar(ALARM_temp) - 20);
+  unsigned char hystOn = (alarm_temp - 15);
+  unsigned char hystOff = (alarm_temp - 20);
 
   if(!(temp & 0x80))
   {
@@ -172,7 +173,7 @@ void PORT_Auto_RunTime(struct PlantState *ps)
     // Floating switch alarm
     if(IN_FLOAT_S3 && !ps->input_handler->float_sw_alarm)
     {
-      if(MEM_EEPROM_ReadVar(ALARM_sensor))
+      if(ps->settings->settings_alarm->sensor)
       {
         Modem_Alert(ps, "Error: floating switch");
         Error_On(ps);
@@ -181,7 +182,7 @@ void PORT_Auto_RunTime(struct PlantState *ps)
     }
     else if(!IN_FLOAT_S3 && ps->input_handler->float_sw_alarm)
     {
-      if(MEM_EEPROM_ReadVar(ALARM_sensor))
+      if(ps->settings->settings_alarm->sensor)
       {
         Error_Off(ps);
       }

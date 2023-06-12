@@ -20,7 +20,7 @@
 
 void Sonic_Init(struct PlantState *ps)
 {
-  ps->sonic_state->level_cal = ((MEM_EEPROM_ReadVar(TANK_LV_Sonic_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_Sonic_L)));
+  ;
 }
 
 
@@ -119,8 +119,8 @@ void Sonic_Data_Auto(struct PlantState *ps)
 
 void Sonic_ReadTank(struct PlantState *ps)
 {
-  // deactivated sonic
-  if(!MEM_EEPROM_ReadVar(SONIC_on)){ return; }
+  // return if sonic is disabled
+  if(!ps->settings->settings_zone->sonic_on){ return; }
 
   // read
   if(ps->sonic_state->read_tank_state == SONIC_TANK_listen)
@@ -211,29 +211,27 @@ void Sonic_ChangePage(struct PlantState *ps)
     ps->sonic_state->d_error = 0;
     ps->sonic_state->d_mm_prev = sonic;
   }
-  if(ps->sonic_state->d_error) return;
+  if(ps->sonic_state->d_error){ return; }
 
-  // percentage
-  int zero = ((MEM_EEPROM_ReadVar(TANK_LV_Sonic_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_Sonic_L)));
-  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
-  int lvCi = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToAir_L)));
+  // zero
+  int zero = ps->settings->settings_calibration->tank_level_min_sonic;
 
   // change page
   switch(ps->page_state->page)
   {
     case AutoZone:
-      if(sonic < (zero - (lvO2 * 10))){ ps->page_state->page = AutoSetDown; }
+      if(sonic < (zero - (ps->settings->settings_zone->level_to_set_down * 10))){ ps->page_state->page = AutoSetDown; }
       else{ ps->page_state->page = AutoCircOn; }
       break;
 
     case AutoCircOn:
     case AutoCircOff:
-      if(sonic < (zero - (lvCi * 10))){ ps->page_state->page = AutoAirOn; }
+      if(sonic < (zero - (ps->settings->settings_zone->level_to_air * 10))){ ps->page_state->page = AutoAirOn; }
       break;
 
     case AutoAirOn:
     case AutoAirOff:
-      if(sonic < (zero - (lvO2 * 10))){ ps->page_state->page = AutoSetDown; }
+      if(sonic < (zero - (ps->settings->settings_zone->level_to_set_down * 10))){ ps->page_state->page = AutoSetDown; }
       break;
 
     default: break;
@@ -262,14 +260,14 @@ void Sonic_LevelCal(struct PlantState *ps)
     if(ps->sonic_state->query_state >= _usErrTimeout1)
     {
       LCD_Sym_Sonic_NoUS_Message(ps);
-      ps->sonic_state->level_cal = 0;
+      ps->settings->settings_calibration->tank_level_min_sonic = 0;
       run = 0;
     }
 
     // ok
     else if(ps->sonic_state->query_state == _usDistSuccess)
     {
-      ps->sonic_state->level_cal = ps->sonic_state->d_mm;
+      ps->settings->settings_calibration->tank_level_min_sonic = ps->sonic_state->d_mm;
       LCD_Sym_Sonic_NoUS_Clear(ps);
       ps->sonic_state->no_us_flag = false;
       run = 0;

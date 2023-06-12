@@ -135,6 +135,7 @@ void LCD_Sym_Setup_InflowPump_TextOffMin(bool negative);
 void LCD_Sym_Setup_InflowPump_TextOn(bool negative);
 void LCD_Sym_Setup_InflowPump_TextOff(bool negative);
 void LCD_Sym_Setup_Cal(struct PlantState *ps);
+void LCD_Sym_Setup_Cal_Sonic_Sym(bool negative);
 void LCD_Sym_Setup_Cal_MPX_Redo(bool negative);
 void LCD_Sym_Setup_Cal_OpenValveButton(bool negative);
 void LCD_Sym_Setup_Cal_Level_Sym(bool negative);
@@ -226,7 +227,7 @@ void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos);
  *            control
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_TextButton(t_text_buttons text, unsigned char pos);
+void LCD_Sym_TextButton(t_text_buttons text, bool negative);
 void LCD_Sym_ControlButtons(t_CtrlButtons ctrl);
 void LCD_Sym_ControlButtons2(t_CtrlButtons ctrl);
 void LCD_Sym_Pin_OkButton(unsigned char select);

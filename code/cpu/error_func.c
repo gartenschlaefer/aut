@@ -43,14 +43,14 @@ void Error_Off(struct PlantState *ps)
 
 void Error_Read(struct PlantState *ps)
 {
-  // set pending to zero, todo: improve this
+  // set pending to zero
   ps->error_state->pending_err_code = 0;
 
   // temp
-  if(MCP9800_PlusTemp(ps->twi_state) > MEM_EEPROM_ReadVar(ALARM_temp)){ ps->error_state->pending_err_code |= E_T; }
+  if(MCP9800_PlusTemp(ps->twi_state) > ps->settings->settings_alarm->temp){ ps->error_state->pending_err_code |= E_T; }
 
   // over-pressure
-  if(MPX_ReadCal() > ((MEM_EEPROM_ReadVar(MAX_H_pressure) << 8) | (MEM_EEPROM_ReadVar(MAX_L_pressure)))){ ps->error_state->pending_err_code |= E_OP; }
+  if(ps->mpx_state->actual_mpx_av > ps->settings->settings_compressor->max_pressure){ ps->error_state->pending_err_code |= E_OP; }
 
   // under-pressure check if necessary
   unsigned char check_up_err = 0;
@@ -62,14 +62,14 @@ void Error_Read(struct PlantState *ps)
       if(ps->inflow_pump_state->ip_state == _ip_on)
       {
         // mammoth pump
-        if(!(MEM_EEPROM_ReadVar(PUMP_inflowPump))){ check_up_err = 1; }
+        if(!ps->settings->settings_inflow_pump->pump){ check_up_err = 1; }
       }
       break;
 
     case AutoPumpOff:
 
       // mammoth pump
-      if(!(MEM_EEPROM_ReadVar(PUMP_pumpOff))){ check_up_err = 1; }
+      if(!ps->settings->settings_pump_off->pump){ check_up_err = 1; }
       break;
 
     case AutoZone: case AutoMud: case AutoCircOn: case AutoAirOn:
@@ -80,10 +80,10 @@ void Error_Read(struct PlantState *ps)
   }
 
   // under-pressure
-  if(check_up_err && (MPX_ReadCal() < ((MEM_EEPROM_ReadVar(MIN_H_pressure) << 8) | (MEM_EEPROM_ReadVar(MIN_L_pressure))))){ ps->error_state->pending_err_code |= E_UP; }
+  if(check_up_err && (ps->mpx_state->actual_mpx_av < ps->settings->settings_compressor->min_pressure)){ ps->error_state->pending_err_code |= E_UP; }
 
   // max in tank
-  //if(MPX_ReadTank(AutoAirOn, _error) == ErrorMPX) ps->error_state->pending_err_code |= E_IT;
+  if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_set_down + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->error_state->pending_err_code |= E_IT; }
 }
 
 
@@ -217,7 +217,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
       switch(ps->page_state->page)
       {
         // pump off: mammoth pump
-        case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ OUT_Valve_Action(ps, CLOSE_ClearWater); } break;
+        case AutoPumpOff: if(!ps->settings->settings_pump_off->pump){ OUT_Valve_Action(ps, CLOSE_ClearWater); } break;
 
         // mud
         case AutoMud: OUT_Valve_Action(ps, CLOSE_MudPump); break;
@@ -225,7 +225,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
         // air off
         case AutoAirOff:
         case AutoCircOff:
-          if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)){ OUT_Valve_Action(ps, CLOSE_Reserve); }
+          if((ps->inflow_pump_state->ip_state == _ip_on) && !ps->settings->settings_inflow_pump->pump){ OUT_Valve_Action(ps, CLOSE_Reserve); }
           break;
 
         // air on
@@ -251,7 +251,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
     switch(ps->page_state->page)
     {
       // pump off (mammoth pump)
-      case AutoPumpOff: if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ OUT_Valve_Action(ps, OPEN_ClearWater); } break;
+      case AutoPumpOff: if(!ps->settings->settings_pump_off->pump){ OUT_Valve_Action(ps, OPEN_ClearWater); } break;
 
       // mud
       case AutoMud: OUT_Valve_Action(ps, OPEN_MudPump); break;
@@ -259,7 +259,7 @@ unsigned char Error_Action_OP_Air(struct PlantState *ps)
       // air off
       case AutoAirOff:
       case AutoCircOff:
-        if((ps->inflow_pump_state->ip_state == _ip_on) && !MEM_EEPROM_ReadVar(PUMP_inflowPump)){ OUT_Valve_Action(ps, OPEN_Reserve); }
+        if((ps->inflow_pump_state->ip_state == _ip_on) && ps->settings->settings_inflow_pump->pump){ OUT_Valve_Action(ps, OPEN_Reserve); }
         break;
 
       // air on
@@ -308,7 +308,7 @@ unsigned char Error_Action_UP_Air(struct PlantState *ps)
   {
     case AutoAirOff:
     case AutoCircOff:
-      if((ps->inflow_pump_state->ip_state == _ip_on) && (!MEM_EEPROM_ReadVar(PUMP_inflowPump)))
+      if((ps->inflow_pump_state->ip_state == _ip_on) && !ps->settings->settings_inflow_pump->pump)
       {
         Error_Action_UP_SetError(ps);
         OUT_Set_Compressor();
@@ -355,7 +355,7 @@ void Error_Action_OP_SetError(struct PlantState *ps)
   ps->error_state->error_counter[ERROR_ID_OP]++;
   if(ps->error_state->error_counter[ERROR_ID_OP] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_comp)){ Error_On(ps); }
+    if(ps->settings->settings_alarm->compressor){ Error_On(ps); }
     ps->error_state->cycle_error_code_record |= E_OP;
     Error_ModemAction(ps, E_OP);
   }
@@ -373,7 +373,7 @@ void Error_Action_UP_SetError(struct PlantState *ps)
   ps->error_state->error_counter[ERROR_ID_UP]++;
   if(ps->error_state->error_counter[ERROR_ID_UP] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_comp)){ Error_On(ps); }
+    if(ps->settings->settings_alarm->compressor){ Error_On(ps); }
     ps->error_state->cycle_error_code_record |= E_UP;
     Error_ModemAction(ps, E_UP);
   }
@@ -391,7 +391,7 @@ void Error_Action_IT_SetError(struct PlantState *ps)
   ps->error_state->error_counter[ERROR_ID_IT]++;
   if(ps->error_state->error_counter[ERROR_ID_IT] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_sensor)){ Error_On(ps); }
+    if(ps->settings->settings_alarm->sensor){ Error_On(ps); }
     ps->error_state->cycle_error_code_record |= E_IT;
     Error_ModemAction(ps, E_IT);
   }
@@ -409,7 +409,7 @@ void Error_Action_OT_SetError(struct PlantState *ps)
   ps->error_state->error_counter[ERROR_ID_OT]++;
   if(ps->error_state->error_counter[ERROR_ID_OT] == 2)
   {
-    if(MEM_EEPROM_ReadVar(ALARM_sensor)){ Error_On(ps); }
+    if(ps->settings->settings_alarm->sensor){ Error_On(ps); }
     ps->error_state->cycle_error_code_record |= E_OT;
     Error_ModemAction(ps, E_OT);
   }

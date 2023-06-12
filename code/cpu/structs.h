@@ -17,17 +17,17 @@ struct ValueLimit
   int min_value;
 };
 
-struct QueueNode
+struct Node
 {
-  struct QueueNode *next;
+  struct Node *next;
   void *data;
 };
 
 
 struct Queue 
 {
-  struct QueueNode *front;
-  struct QueueNode *back;
+  struct Node *front;
+  struct Node *back;
 };
 
 
@@ -165,10 +165,9 @@ struct FrameCounter
 
 struct MPXState
 {
-  unsigned char mpx_count;
+  unsigned char mpx_idx;
   int mpx_values[10];
-  unsigned char error_counter;
-  int level_cal;
+  int actual_mpx_av;
 };
 
 
@@ -222,7 +221,6 @@ struct SonicState
   unsigned char software_version;
   unsigned char no_us_error_counter;
   bool no_us_flag;
-  int level_cal;
   int d_mm;
   int d_mm_prev;
   int d_mm_max;

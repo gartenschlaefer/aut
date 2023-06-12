@@ -457,12 +457,12 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
  *            text button
  * ------------------------------------------------------------------*/
 
-void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, unsigned char pos)
+void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, bool negative)
 {
-  char *t = malloc(7 * sizeof(char));
+  char t[7] = "";
 
   // write frame
-  LCD_WriteAnySymbol(row, col, (pos ? _p_text_frame : _n_text_frame));
+  LCD_WriteAnySymbol(row, col, (negative ? _n_text_frame : _p_text_frame));
 
   switch(text)
   {
@@ -479,8 +479,7 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons t
   }
 
   // write text
-  LCD_WriteAnyStringFont((pos ? f_6x8_p : f_6x8_n), row, col, t);
-  free(t);
+  LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), row, col, t);
 }
 
 

@@ -113,7 +113,7 @@ void OUT_Clr_Phosphor(void)
 
 void OUT_Set_InflowPump(struct PlantState *ps)
 {
-  switch(MEM_EEPROM_ReadVar(PUMP_inflowPump))
+  switch(ps->settings->settings_inflow_pump->pump)
   {
     // mammoth pump
     case 0: OUT_Valve_Action(ps, OPEN_Reserve); break;
@@ -136,7 +136,7 @@ void OUT_Clr_InflowPump(struct PlantState *ps)
   PORT_RelaisClr(R_INFLOW1);
   PORT_RelaisClr(R_INFLOW2);
 
-  if(!MEM_EEPROM_ReadVar(PUMP_inflowPump)){ OUT_Valve_Action(ps, CLOSE_Reserve); }
+  if(!ps->settings->settings_inflow_pump->pump){ OUT_Valve_Action(ps, CLOSE_Reserve); }
 }
 
 

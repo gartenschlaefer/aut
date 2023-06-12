@@ -15,7 +15,7 @@ int queue_destroy(struct Queue *queue)
   if(queue == NULL) { return ERR_INVAL; }
   while(queue->front != NULL) 
   {
-    struct QueueNode *node = queue->front;
+    struct Node *node = queue->front;
     queue->front = node->next;
     free(node);
   }
@@ -56,7 +56,7 @@ void *queue_dequeue(struct Queue *queue)
 { 
   // no element
   if(queue == NULL || queue->front == NULL){ return NULL; }
-  struct QueueNode *node = queue->front;
+  struct Node *node = queue->front;
   void *data = node->data;
   queue->front = node->next;
   if(queue->front == NULL)
@@ -75,7 +75,7 @@ void *queue_dequeue(struct Queue *queue)
 int queue_enqueue(struct Queue *queue, void *data)
 {
   if(queue == NULL){ return ERR_INVAL; }
-  struct QueueNode *node = malloc(sizeof(struct QueueNode));
+  struct Node *node = malloc(sizeof(struct Node));
   if(node == NULL){ return ERR_NOMEM; }
 
   // get pointers
@@ -106,7 +106,7 @@ int queue_len(struct Queue *queue)
   int len = 0;
   if(queue == NULL){ return len; }
   if(queue->front == NULL){ return len; }
-  struct QueueNode *node = queue->front;
+  struct Node *node = queue->front;
   do{ node = node->next; len++; } while(node->next != NULL);
   return len;
 }

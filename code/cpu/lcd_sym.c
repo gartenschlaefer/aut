@@ -191,7 +191,7 @@ void LCD_Sym_Auto_Text(struct PlantState *ps)
   LCD_WriteAnyValue(f_4x6_p, 5, 15, 43, MCP7941_Read_Comp_OpHours(ps->twi_state));
 
   // ip sensor
-  if(MEM_EEPROM_ReadVar(SENSOR_outTank)){ LCD_WriteAnySymbol(16, 90, _p_sensor); }
+  if(ps->settings->settings_inflow_pump->sensor_out_tank){ LCD_WriteAnySymbol(16, 90, _p_sensor); }
 }
 
 
@@ -327,14 +327,13 @@ void LCD_Sym_Auto_AirPageSelect(t_page page)
 void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
 {
   // handlers
-  unsigned char pump =  MEM_EEPROM_ReadVar(PUMP_inflowPump);
   t_page p = ps->page_state->page;
   t_inflow_pump_states ip_state = ps->inflow_pump_state->ip_state;
 
   // off or disabled ip
   if(ip_state == _ip_off || ip_state == _ip_disabled)
   {
-    switch (pump)
+    switch(ps->settings->settings_inflow_pump->pump)
     {
       case 0:
         LCD_WriteAnySymbol(5, 89, _p_inflow_pump);
@@ -350,7 +349,7 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
   // ip on state
   else if(ip_state == _ip_on)
   {
-    switch (pump)
+    switch(ps->settings->settings_inflow_pump->pump)
     {
       case 0:
         LCD_WriteAnySymbol(5, 89, _n_inflow_pump);
@@ -894,25 +893,18 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
   LCD_Sym_ControlButtons(_ctrl_pos_esc);
   LCD_Sym_ControlButtons(_ctrl_pos_ok);
   LCD_Sym_Setup_Cal_OpenValveButton(false);
-  LCD_WriteAnySymbol(9, 125, _p_cal);
   LCD_Sym_Setup_Cal_Button(false);
   LCD_WriteAnyStringFont(f_6x8_p, 10, 1, "mbar:");
 
-  // sonic
-  unsigned char sonic = MEM_EEPROM_ReadVar(SONIC_on);
-  if(sonic)
-  { 
-    LCD_WriteAnySymbol(2, 40, _n_sonic);
-    LCD_Sym_Setup_Cal_Level_Sonic(ps->sonic_state->level_cal);
-  }
-  else
-  { 
-    LCD_WriteAnySymbol(2, 40, _p_sonic);
-    LCD_Sym_Setup_Cal_Level_MPX(ps->mpx_state->level_cal);
-  }
+  bool sonic_flag = (bool)ps->settings->settings_zone->sonic_on;
+  LCD_Sym_Setup_Cal_Sonic_Sym(sonic_flag);
 
-  // calibration redo with pressure -> auto zone page
-  if(!MEM_EEPROM_ReadVar(SONIC_on)){ LCD_Sym_Setup_Cal_MPX_Redo((bool)MEM_EEPROM_ReadVar(CAL_Redo_on)); }
+  if(sonic_flag){ LCD_Sym_Setup_Cal_Level_Sonic(ps->settings->settings_calibration->tank_level_min_sonic); }
+  else
+  {
+    LCD_Sym_Setup_Cal_Level_MPX(ps->settings->settings_calibration->tank_level_min_pressure);
+    LCD_Sym_Setup_Cal_MPX_Redo((bool)ps->settings->settings_calibration->redo_on);
+  }
 }
 
 
@@ -920,8 +912,9 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
  *            cal symbols
  * ------------------------------------------------------------------*/
 
+void LCD_Sym_Setup_Cal_Sonic_Sym(bool negative){ LCD_WriteAnySymbol(2, 40, (negative ? _n_sonic : _p_sonic)); }
 void LCD_Sym_Setup_Cal_MPX_Redo(bool negative){ LCD_WriteAnySymbol(15, 130, (negative ? _n_arrow_redo : _p_arrow_redo)); }
-void LCD_Sym_Setup_Cal_OpenValveButton(bool negative){ LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_valve, (negative ? 0 : 1));  }
+void LCD_Sym_Setup_Cal_OpenValveButton(bool negative){ LCD_Write_TextButton(9, 80, TEXT_BUTTON_open_valve, negative);  }
 void LCD_Sym_Setup_Cal_Level_Sym(bool negative){ LCD_WriteAnySymbol(15, 1, (negative ? _n_level : _p_level)); }
 void LCD_Sym_Setup_Cal_Button(bool negative){ LCD_WriteAnySymbol(9, 125, (negative ? _n_cal : _p_cal)); }
 
@@ -955,8 +948,8 @@ void LCD_Sym_Setup_Cal_Level_MPX(int level_cal)
   LCD_WriteAnyStringFont(f_6x8_p, 17, 60, "mbar");
 }
 
-void LCD_Sym_Setup_Cal_MPXCountDown(int sec){ LCD_WriteAnyValue(f_6x8_p, 3, 17, 100, sec); }
-void LCD_Sym_Setup_Cal_Clr_MPXCountDown(void){ LCD_ClrSpace(17, 100, 2, 18); }
+void LCD_Sym_Setup_Cal_MPXCountDown(int sec){ LCD_WriteAnyValue(f_6x8_p, 2, 17, 100, sec); }
+void LCD_Sym_Setup_Cal_Clr_MPXCountDown(void){ LCD_ClrSpace(17, 100, 2, 12); }
 
 
 /* ------------------------------------------------------------------*
@@ -970,8 +963,8 @@ void LCD_Sym_Setup_Alarm(struct PlantState *ps)
   LCD_WriteAnyStringFont(f_6x8_n, 10, 3, "T:");
 
   // degree symbol
-  LCD_WriteAnyFont(f_6x8_p, 10, 32, 94);
-  LCD_WriteAnyStringFont(f_6x8_p, 10, 38, "C");
+  LCD_WriteAnyFont(f_6x8_n, 10, 32, 94);
+  LCD_WriteAnyStringFont(f_6x8_n, 10, 38, "C");
 
   // temp
   MCP9800_WriteTemp(ps->twi_state);
@@ -1116,10 +1109,10 @@ void LCD_Sym_Data_Page(void)
 
   LCD_WriteAnyStringFont(f_6x8_p, 6, 0, "choose data:");
 
-  LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, 1);
-  LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, 1);
-  LCD_Write_TextButton(9, 80, TEXT_BUTTON_setup, 1);
-  LCD_Write_TextButton(9, 120, TEXT_BUTTON_sonic, 1);
+  LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, false);
+  LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, false);
+  LCD_Write_TextButton(9, 80, TEXT_BUTTON_setup, false);
+  LCD_Write_TextButton(9, 120, TEXT_BUTTON_sonic, false);
 }
 
 
@@ -1148,7 +1141,7 @@ void LCD_Sym_Data_Auto(void)
   LCD_WriteAnyStringFont(f_6x8_n, 1, 103, "|");
   LCD_WriteAnyStringFont(f_6x8_n, 1, 113, "Err");
 
-  LCD_Write_TextButton(22, 0, TEXT_BUTTON_auto, 0);
+  LCD_Write_TextButton(22, 0, TEXT_BUTTON_auto, true);
   LCD_Sym_Data_Arrows();
 
   LCD_Sym_Data_ActualPageNum(1);
@@ -1173,7 +1166,7 @@ void LCD_Sym_Data_Manual(void)
   LCD_WriteAnyStringFont(f_6x8_n, 1, 77, "|");
   LCD_WriteAnyStringFont(f_6x8_n, 1, 88, "End");
 
-  LCD_Write_TextButton(22, 40, TEXT_BUTTON_manual, 0);
+  LCD_Write_TextButton(22, 40, TEXT_BUTTON_manual, true);
   LCD_Sym_Data_Arrows();
 
   LCD_Sym_Data_ActualPageNum(1);
@@ -1195,7 +1188,7 @@ void LCD_Sym_Data_Setup(void)
   LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
   LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
 
-  LCD_Write_TextButton(22, 80, TEXT_BUTTON_setup, 0);
+  LCD_Write_TextButton(22, 80, TEXT_BUTTON_setup, true);
   LCD_Sym_Data_Arrows();
 
   LCD_Sym_Data_ActualPageNum(1);
@@ -1232,9 +1225,9 @@ void LCD_Sym_Data_Sonic(struct PlantState *ps)
   // degree symbol
   LCD_WriteAnyFont(f_6x8_p, 1, 97, 94);
   LCD_WriteAnyStringFont(f_6x8_p, 1, 124, "[mm]");
-  LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, 1);
-  LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, 1);
-  LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, 1);
+  LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, false);
+  LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, false);
+  LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, false);
 
   LCD_WriteAnySymbol(3, 50, _p_sonic);
 }
@@ -1399,7 +1392,7 @@ void LCD_Sym_Data_Sonic_SequentialTemp(struct PlantState *ps)
 
 void LCD_Sym_Data_Sonic_AutoText(void)
 {
-  LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, 0);
+  LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, true);
 
   // max
   LCD_WriteAnyFont(f_4x6_p, 9, 113, 13); //m
@@ -1583,16 +1576,28 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
 
 void LCD_Sym_MPX_AverageValue(t_page page, int av_value)
 {
+  // limit
+  if(page != SetupCal && page != SetupCalPressure)
+  {
+    if(av_value < 0){ av_value = 0; }
+    else if(av_value > 999){ av_value = 999; }
+  }
+
   // page action
   switch(page)
   {
     case AutoZone: case AutoSetDown: case AutoMud: case AutoCircOn: case AutoCircOff: case AutoPumpOff: case AutoAirOn: case AutoAirOff:
+      // limits
       LCD_WriteAnyValue(f_4x6_p, 3, 13, 43, av_value);
       break;
 
     case ManualMain: case ManualPumpOff_On: case ManualCircOn: case ManualCircOff: case ManualAir: case ManualSetDown: case ManualPumpOff:
-    case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump:
+    case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump: 
       LCD_WriteAnyValue(f_6x8_p, 3, 17, 42, av_value);
+      break;
+
+    case SetupCal: case SetupCalPressure:
+      LCD_Sym_Setup_Cal_MPX_Value(av_value);
       break;
     default: break;
   }
@@ -1635,16 +1640,12 @@ void LCD_Sym_MPX_Auto_MbarValue(int value)
 void LCD_Sym_MPX_LevelPerc(struct PlantState *ps)
 {
   // return if Ultrasonic
-  if(MEM_EEPROM_ReadVar(SONIC_on)){ return; }
-
-  // read variables
-  int hO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
-  int minP = ((MEM_EEPROM_ReadVar(TANK_LV_MinPressure_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_MinPressure_L)));
+  if(ps->settings->settings_zone->sonic_on){ return; }
 
   // calculate percentage
-  int perP = ps->mpx_state->level_cal - minP;
+  int perP = ps->mpx_state->actual_mpx_av - ps->settings->settings_calibration->tank_level_min_pressure;
   if(perP <= 0){ perP = 0; }
-  perP = ((perP * 100) / hO2);
+  perP = ((perP * 100) / ps->settings->settings_zone->level_to_set_down);
 
   // write value
   if(ps->page_state->page == ManualCircOn || ps->page_state->page == ManualCircOff)
@@ -1859,29 +1860,15 @@ void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos)
  *            text buttons
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_TextButton(t_text_buttons text, unsigned char pos)
+void LCD_Sym_TextButton(t_text_buttons text, bool negative)
 {
-  if(pos)
+  switch(text)
   {
-    switch(text)
-    {
-      case TEXT_BUTTON_auto: LCD_Write_TextButton(22, 0, TEXT_BUTTON_auto, 1); break;
-      case TEXT_BUTTON_manual: LCD_Write_TextButton(22, 40, TEXT_BUTTON_manual, 1); break;
-      case TEXT_BUTTON_setup: LCD_Write_TextButton(22, 80, TEXT_BUTTON_setup, 1); break;
-      case TEXT_BUTTON_data: LCD_Write_TextButton(22, 120, TEXT_BUTTON_data, 1); break;
-      default: break;
-    }
-  }
-  else
-  {
-    switch(text)
-    {
-      case TEXT_BUTTON_auto: LCD_Write_TextButton(22, 0, TEXT_BUTTON_auto, 0); break;
-      case TEXT_BUTTON_manual: LCD_Write_TextButton(22, 40, TEXT_BUTTON_manual, 0); break;
-      case TEXT_BUTTON_setup: LCD_Write_TextButton(22, 80, TEXT_BUTTON_setup, 0); break;
-      case TEXT_BUTTON_data: LCD_Write_TextButton(22, 120, TEXT_BUTTON_data, 0); break;
-      default: break;
-    }
+    case TEXT_BUTTON_auto: LCD_Write_TextButton(22, 0, TEXT_BUTTON_auto, negative); break;
+    case TEXT_BUTTON_manual: LCD_Write_TextButton(22, 40, TEXT_BUTTON_manual, negative); break;
+    case TEXT_BUTTON_setup: LCD_Write_TextButton(22, 80, TEXT_BUTTON_setup, negative); break;
+    case TEXT_BUTTON_data: LCD_Write_TextButton(22, 120, TEXT_BUTTON_data, negative); break;
+    default: break;
   }
 }
 
@@ -1954,11 +1941,7 @@ void LCD_Sym_WriteCtrlButton2(void){ for(unsigned char i = _ctrl_pos_plus; i <= 
  *            Mark Text Button
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_MarkTextButton(t_text_buttons text)
-{
-  for(unsigned char i = 0; i < 4; i++){ if(i != text){ LCD_Sym_TextButton(i, 1); } }
-  LCD_Sym_TextButton(text, 0);
-}
+void LCD_Sym_MarkTextButton(t_text_buttons text){ for(unsigned char i = 0; i < 4; i++){ LCD_Sym_TextButton(i, (i == text ? true : false)); } }
 
 
 /* ------------------------------------------------------------------*
@@ -2034,7 +2017,7 @@ void LCD_Sym_Sonic_NoUS_Message(struct PlantState *ps)
 void LCD_Sym_Auto_SonicVal(struct PlantState *ps)
 {
   // deactivated sonic
-  if(!MEM_EEPROM_ReadVar(SONIC_on) || ps->sonic_state->no_us_flag){ return; }
+  if(!ps->settings->settings_zone->sonic_on || ps->sonic_state->no_us_flag){ return; }
 
   // value
   switch(ps->page_state->page)
@@ -2052,15 +2035,12 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps)
   }
 
   // percentage
-  int zero = ((MEM_EEPROM_ReadVar(TANK_LV_Sonic_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_Sonic_L)));
-  int lvO2 = ((MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_H) << 8) | (MEM_EEPROM_ReadVar(TANK_LV_LevelToSetDown_L)));
+  int zero = ps->settings->settings_calibration->tank_level_min_sonic;
+  int lv_to_set_down = ps->settings->settings_zone->level_to_set_down * 10;
   
   //water-level-difference
-  int per = 0;
-  int dif = lvO2 * 10;
-  int cal = ps->sonic_state->d_mm - (zero - (lvO2 * 10));
-  if(ps->sonic_state->d_mm > zero){ per = 0; }
-  else{ per = 100 - ((cal * 10) / dif) * 10; }
+  int cal = ps->sonic_state->d_mm - (zero - (lv_to_set_down));
+  int per = (ps->sonic_state->d_mm > zero ? 0 : 100 - ((cal * 10) / lv_to_set_down) * 10);
   if(!ps->sonic_state->d_mm){ per = 0; }
 
   // page dependend action
@@ -2110,14 +2090,14 @@ void LCD_Sym_Error(unsigned char err)
   if(err & E_IT)
   {
     LCD_WriteAnySymbol(17, 1, _n_alarm);
-    LCD_Sym_TextButton(TEXT_BUTTON_auto, 1);
+    LCD_Sym_TextButton(TEXT_BUTTON_auto, true);
   }
 
   // max out tank
   if(err & E_OT)
   {
     LCD_WriteAnySymbol(17, 90, _n_alarm);
-    LCD_Sym_TextButton(TEXT_BUTTON_setup, 0);
+    LCD_Sym_TextButton(TEXT_BUTTON_setup, false);
   }
 }
 
