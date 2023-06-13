@@ -29,6 +29,9 @@ void LCD_Sym_Auto_SetManager(struct PlantState *ps);
 // time and text
 void LCD_Sym_Auto_PageTime_Print(struct Tms *tms);
 void LCD_Sym_Auto_AirTime_Print(struct Tms *tms);
+void LCD_Sym_Auto_Tank_LevelPerc(bool enabled, int level_perc);
+void LCD_Sym_Auto_Tank_SonicDmm(int value);
+void LCD_Sym_Auto_MPX_AverageValue(int value);
 void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps);
 void LCD_Sym_Auto_Text(struct PlantState *ps);
 
@@ -51,10 +54,14 @@ void LCD_Sym_Auto_AirPageSelect(t_page page);
 
 // inflow pump
 void LCD_Sym_Auto_Ip_Base(struct PlantState *ps);
+void LCD_Sym_Auto_InflowPump_Symbol(bool negative);
+void LCD_Sym_Auto_InflowPump_Pump1(bool negative);
+void LCD_Sym_Auto_InflowPump_Pump2(bool negative);
 void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms);
 
 // phosphor
 void LCD_Sym_Auto_Ph(struct PlantState *ps);
+void LCD_Sym_Auto_Phosphor_Symbol(bool negative);
 void LCD_Sym_Auto_Ph_Time(struct Tms *tms);
 void LCD_Sym_Auto_Ph_Time_Min(int min);
 void LCD_Sym_Auto_Ph_Time_Sec(int sec);
@@ -140,7 +147,7 @@ void LCD_Sym_Setup_Cal_MPX_Redo(bool negative);
 void LCD_Sym_Setup_Cal_OpenValveButton(bool negative);
 void LCD_Sym_Setup_Cal_Level_Sym(bool negative);
 void LCD_Sym_Setup_Cal_Button(bool negative);
-void LCD_Sym_Setup_Cal_MPX_Value(int value);
+void LCD_Sym_Setup_Cal_MPX_AverageValue(int value);
 void LCD_Sym_Setup_Cal_Level_Sonic(int level_cal);
 void LCD_Sym_Setup_Cal_Level_MPX(int level_cal);
 void LCD_Sym_Setup_Cal_MPXCountDown(int sec);
@@ -165,7 +172,7 @@ void LCD_Sym_Setup_Pump(unsigned char mark);
  *            data
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Data_Page(void);
+void LCD_Sym_Data_Page(struct PlantState *ps);
 void LCD_Sym_Data_ActualPageNum(int page_num);
 void LCD_Sym_Data_TotalPageNum(int page_num);
 void LCD_Sym_Data_Auto(void);
@@ -200,10 +207,7 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
  *            MPX
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_MPX_AverageValue(t_page page, int av_value);
-void LCD_Sym_MPX_Auto_DisabledLevelMeasure(void);
-void LCD_Sym_MPX_Auto_MbarValue(int value);
-void LCD_Sym_MPX_LevelPerc(struct PlantState *ps);
+void LCD_Sym_Manual_MPX_AverageValue(int value);
 
 
 /* ------------------------------------------------------------------*
@@ -278,6 +282,8 @@ void LCD_Sym_Auto_Date(struct PlantState *ps);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Data_EndText(void);
+void LCD_Sym_Modem_Data_SLED(bool show);
+void LCD_Sym_Modem_Pin_SLED(bool show);
 t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym);
 
 #endif

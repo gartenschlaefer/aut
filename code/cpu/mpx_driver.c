@@ -29,11 +29,46 @@ void MPX_Init(struct PlantState *ps)
 
 void MPX_Update(struct PlantState *ps)
 {
-  // read average
-  MPX_ReadAverage_Update(ps);
+  // check each third frame
+  if(ps->frame_counter->frame % 3)
+  {
+    // read average
+    int av = MPX_ReadAverage_Update(ps);
 
-  // symbols
-  if(ps->frame_counter->frame % 20){ LCD_Sym_MPX_AverageValue(ps->page_state->page, ps->mpx_state->actual_mpx_av); }
+    // new mpx value
+    if(!(av == 0xFF00))
+    {
+      t_page p = ps->page_state->page;
+
+      // limit
+      if(p != SetupCal && p != SetupCalPressure)
+      {
+        if(av < 0){ av = 0; }
+        else if(av > 999){ av = 999; }
+      }
+
+      // page dependent handling
+      switch(p)
+      {
+        case AutoSetDown: case AutoMud: case AutoPumpOff:
+        case AutoCircOn: case AutoAirOn: case AutoZone: case AutoCircOff: case AutoAirOff:
+          LCD_Sym_Auto_MPX_AverageValue(av);
+          // read tank
+          if(p == AutoCircOn || p == AutoAirOn || p == AutoZone){ MPX_ReadTank(ps); }
+          // level perc
+          if(!ps->settings->settings_zone->sonic_on){ LCD_Sym_Auto_Tank_LevelPerc((bool)(p != AutoPumpOff && p != AutoMud), ps->mpx_state->actual_level_perc); }
+          break;
+
+        case ManualMain: case ManualPumpOff_On: case ManualCircOn: case ManualCircOff: case ManualAir: case ManualSetDown: case ManualPumpOff:
+        case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump: 
+          LCD_Sym_Manual_MPX_AverageValue(av);
+          break;
+
+        case SetupCal: case SetupCalPressure: LCD_Sym_Setup_Cal_MPX_AverageValue(av); break;
+        default: break;  
+      }
+    }
+  }
 }
 
 
@@ -149,44 +184,43 @@ void MPX_LevelCal_New(struct PlantState *ps)
 
 void MPX_ReadTank(struct PlantState *ps)
 {
-  // return if sonic is enabled
-  if(ps->settings->settings_zone->sonic_on){ return; }
-
   // handles
   t_page p = ps->page_state->page;
 
-  // disabled read tank (also not use it in pump off and mud cycle)
-  if(!ps->settings->settings_circulate->sensor_in_tank || p == AutoPumpOff || p == AutoMud)
+  // // disabled read tank (also not use it in pump off and mud cycle)
+  if(!ps->settings->settings_circulate->sensor_in_tank)
   {
-    // manual
-    if(p == ManualCircOn || p == ManualCircOff || p == ManualAir){ return; }
-
     // auto zone
-    else if(p == AutoZone){ ps->page_state->page = AutoCircOn; }
-    LCD_Sym_MPX_Auto_DisabledLevelMeasure();
+    if(p == AutoZone){ ps->page_state->page = AutoCircOn; }
     return;
   }
 
-  if(p == ManualCircOn){ return; }
-  LCD_Sym_MPX_Auto_MbarValue(ps->mpx_state->actual_mpx_av);
+  // shortcuts
+  int zero = ps->settings->settings_calibration->tank_level_min_pressure;
+
+  // calculate level percentage
+  int level_perc = ps->mpx_state->actual_mpx_av - zero;
+  if(level_perc <= 0){ level_perc = 0; }
+  level_perc = ((level_perc * 100) / ps->settings->settings_zone->level_to_set_down);
+  ps->mpx_state->actual_level_perc = level_perc;
 
   // circulate
   if(p == AutoCircOn)
   {
-    if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_air + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoAirOn; }
+    if(ps->mpx_state->actual_mpx_av >= (zero + ps->settings->settings_zone->level_to_air)){ ps->page_state->page = AutoAirOn; }
   }
 
   // air
   else if(p == AutoAirOn)
   {
-    if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_set_down + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoSetDown; }
+    if(ps->mpx_state->actual_mpx_av >= (zero + ps->settings->settings_zone->level_to_set_down)){ ps->page_state->page = AutoSetDown; }
   }
 
   // zone
   else if(p == AutoZone)
   {
-    if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_set_down + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoSetDown; }
-    else if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_air + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->page_state->page = AutoAirOn; }
-    else { ps->page_state->page = AutoCircOn; }
+    if(ps->mpx_state->actual_mpx_av >= (zero + ps->settings->settings_zone->level_to_set_down)){ ps->page_state->page = AutoSetDown; }
+    else if(ps->mpx_state->actual_mpx_av >= (zero + ps->settings->settings_zone->level_to_air)){ ps->page_state->page = AutoAirOn; }
+    else{ ps->page_state->page = AutoCircOn; }
   }
 }

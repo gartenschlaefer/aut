@@ -103,7 +103,7 @@ void LCD_Sym_Auto_PageTime_Print(struct Tms *tms)
 void LCD_Sym_Auto_AirTime_Print(struct Tms *tms)
 {
   unsigned char col = 12;
-  unsigned char row = 15;
+  unsigned char row = 11;
   LCD_WriteAnyValue(f_4x6_p, 2, row, col, tms->min);
   col += 8;
   LCD_WriteAnyFont(f_4x6_p, row, col, 10);
@@ -111,6 +111,38 @@ void LCD_Sym_Auto_AirTime_Print(struct Tms *tms)
   LCD_WriteAnyValue(f_4x6_p, 2, row, col, tms->sec);
 }
 
+
+/* ------------------------------------------------------------------*
+ *            tank
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_Tank_LevelPerc(bool enabled, int level_perc)
+{
+  unsigned char row = 15;
+  unsigned char col = 0;
+  if(enabled){ LCD_WriteAnyValue(f_4x6_p, 3, row, col, level_perc); }
+  else{ for(unsigned char i = col; i < (col + 12); i += 4){ LCD_WriteAnyFont(f_4x6_p, row, i, 11); } }
+  col += 12;
+  LCD_WriteAnyFont(f_4x6_p, row, col, 19);
+}
+
+void LCD_Sym_Auto_Tank_SonicDmm(int value)
+{
+  unsigned char row = 17;
+  unsigned char col = 0;
+  LCD_WriteAnyValue(f_4x6_p, 4, row, col, value);
+  col += 16;
+  LCD_WriteAnyFont(f_4x6_p, row, col, 13);
+  col += 4;
+  LCD_WriteAnyFont(f_4x6_p, row, col, 13);
+}
+
+
+/* ------------------------------------------------------------------*
+ *            mpx
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Auto_MPX_AverageValue(int value){ LCD_WriteAnyValue(f_4x6_p, 3, 13, 43, value); }
 
 
 /* ------------------------------------------------------------------*
@@ -184,7 +216,7 @@ void LCD_Sym_Auto_Text(struct PlantState *ps)
   LCD_Sym_Auto_Date(ps);
 
   // read water level
-  LCD_Sym_MPX_LevelPerc(ps);
+  LCD_Sym_Auto_Tank_LevelPerc(false, 0);
   LCD_Sym_Auto_SonicVal(ps);
 
   // compressor hours
@@ -204,7 +236,7 @@ void LCD_Sym_Auto_Main(struct PlantState *ps)
   LCD_Sym_MarkTextButton(TEXT_BUTTON_auto);
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Logo();
-  LCD_Sym_Auto_WorldTime(ps);
+  //LCD_Sym_Auto_WorldTime(ps);
 }
 
 
@@ -212,8 +244,7 @@ void LCD_Sym_Auto_Main(struct PlantState *ps)
  *            auto compressor symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_CompressorNeg(void){ LCD_WriteAnySymbol(6, 45, _n_compressor); }
-void LCD_Sym_Auto_CompressorPos(void){ LCD_WriteAnySymbol(6, 45, _p_compressor); }
+void LCD_Sym_Auto_Compressor(bool negative){ LCD_WriteAnySymbol(6, 45, (negative ? _n_compressor : _p_compressor)); }
 
 
 /* ------------------------------------------------------------------*
@@ -230,7 +261,7 @@ void LCD_Sym_Auto_Zone(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _n_circulate);
-  LCD_Sym_Auto_CompressorNeg();
+  LCD_Sym_Auto_Compressor(true);
   LCD_WriteAnyStringFont(f_6x8_n, 8, 1, "z");
 }
 
@@ -243,7 +274,7 @@ void LCD_Sym_Auto_SetDown(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _n_setDown);
-  LCD_Sym_Auto_CompressorPos();
+  LCD_Sym_Auto_Compressor(false);
 }
 
 
@@ -254,8 +285,7 @@ void LCD_Sym_Auto_SetDown(void)
 void LCD_Sym_Auto_PumpOff(void)
 {
   LCD_WriteAnySymbol(5, 0, _n_pump_off);
-  if(!MEM_EEPROM_ReadVar(PUMP_pumpOff)){ LCD_Sym_Auto_CompressorNeg(); }
-  else{ LCD_Sym_Auto_CompressorPos(); }
+  LCD_Sym_Auto_Compressor((bool)!MEM_EEPROM_ReadVar(PUMP_pumpOff));
 }
 
 
@@ -266,7 +296,7 @@ void LCD_Sym_Auto_PumpOff(void)
 void LCD_Sym_Auto_Mud(void)
 {
   LCD_WriteAnySymbol(5, 0, _n_mud);
-  LCD_Sym_Auto_CompressorNeg();
+  LCD_Sym_Auto_Compressor(true);
 }
 
 
@@ -278,28 +308,28 @@ void LCD_Sym_Auto_CircOn(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _n_circulate);
-  LCD_Sym_Auto_CompressorNeg();
+  LCD_Sym_Auto_Compressor(true);
 }
 
 void LCD_Sym_Auto_CircOff(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _p_circulate);
-  LCD_Sym_Auto_CompressorPos();
+  LCD_Sym_Auto_Compressor(false);
 }
 
 void LCD_Sym_Auto_AirOn(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _n_air);
-  LCD_Sym_Auto_CompressorNeg();
+  LCD_Sym_Auto_Compressor(true);
 }
 
 void LCD_Sym_Auto_AirOff(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _p_air);
-  LCD_Sym_Auto_CompressorPos();
+  LCD_Sym_Auto_Compressor(false);
 }
 
 
@@ -330,41 +360,21 @@ void LCD_Sym_Auto_Ip_Base(struct PlantState *ps)
   t_page p = ps->page_state->page;
   t_inflow_pump_states ip_state = ps->inflow_pump_state->ip_state;
 
-  // off or disabled ip
-  if(ip_state == _ip_off || ip_state == _ip_disabled)
+  switch(ps->settings->settings_inflow_pump->pump)
   {
-    switch(ps->settings->settings_inflow_pump->pump)
-    {
-      case 0:
-        LCD_WriteAnySymbol(5, 89, _p_inflow_pump);
-        if(p == AutoAirOff || p == AutoCircOff){ LCD_Sym_Auto_CompressorPos(); }
-        break;
-
-      case 1: LCD_WriteAnySymbol(5, 90, _p_pump); break;
-      case 2: LCD_WriteAnySymbol(5, 90, _p_pump2); break;
-      default: break;
-    }
-  }
-
-  // ip on state
-  else if(ip_state == _ip_on)
-  {
-    switch(ps->settings->settings_inflow_pump->pump)
-    {
-      case 0:
-        LCD_WriteAnySymbol(5, 89, _n_inflow_pump);
-        if(p == AutoAirOff || p == AutoCircOff){ LCD_Sym_Auto_CompressorNeg(); }
-        break;
-
-      case 1: LCD_WriteAnySymbol(5, 90, _n_pump); break;
-      case 2: LCD_WriteAnySymbol(5, 90, _n_pump2); break;
-      default: break;
-    }
+    case 0: LCD_Sym_Auto_InflowPump_Symbol(ip_state == _ip_on); LCD_Sym_Auto_Compressor((ip_state == _ip_on && (p == AutoAirOff || p == AutoCircOff))); break;
+    case 1: LCD_Sym_Auto_InflowPump_Pump1(ip_state == _ip_on); break;
+    case 2: LCD_Sym_Auto_InflowPump_Pump2(ip_state == _ip_on); break;
+    default: break;
   }
 
   // time
   LCD_Sym_Auto_Ip_Time(0x07, ps->inflow_pump_state->ip_thms);
 }
+
+void LCD_Sym_Auto_InflowPump_Symbol(bool negative){ LCD_WriteAnySymbol(5, 89, (negative ? _n_inflow_pump : _p_inflow_pump)); }
+void LCD_Sym_Auto_InflowPump_Pump1(bool negative){ LCD_WriteAnySymbol(5, 90, (negative ? _n_pump : _p_pump)); }
+void LCD_Sym_Auto_InflowPump_Pump2(bool negative){ LCD_WriteAnySymbol(5, 90, (negative ? _n_pump2 : _p_pump2)); }
 
 
 /* ------------------------------------------------------------------*
@@ -388,18 +398,11 @@ void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms)
 
 void LCD_Sym_Auto_Ph(struct PlantState *ps)
 {
-  // ph symbol
-  switch(ps->phosphor_state->ph_state)
-  {
-    case _ph_on: LCD_WriteAnySymbol(6, 134, _n_phosphor); break;
-    case _ph_disabled:
-    case _ph_off: LCD_WriteAnySymbol(6, 134, _p_phosphor); break;
-    default: break;
-  }
-
-  // time
+  LCD_Sym_Auto_Phosphor_Symbol(ps->phosphor_state->ph_state == _ph_on);
   LCD_Sym_Auto_Ph_Time(ps->phosphor_state->ph_tms);
 }
+
+void LCD_Sym_Auto_Phosphor_Symbol(bool negative){ LCD_WriteAnySymbol(6, 134, (negative ? _n_phosphor : _p_phosphor));  }
 
 
 /* ------------------------------------------------------------------*
@@ -496,7 +499,6 @@ void LCD_Sym_Manual_Text(struct PlantState *ps)
   LCD_Sym_Manual_PageTime_Print(ps);
   LCD_WriteAnyStringFont(f_6x8_p, 17, 136, ":");
   LCD_WriteAnyStringFont(f_6x8_p, 17, 61, "mbar");
-  LCD_Sym_MPX_LevelPerc(ps);
 }
 
 
@@ -923,7 +925,7 @@ void LCD_Sym_Setup_Cal_Button(bool negative){ LCD_WriteAnySymbol(9, 125, (negati
  *            set setup calibration level measures
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Cal_MPX_Value(int value)
+void LCD_Sym_Setup_Cal_MPX_AverageValue(int value)
 {
   // negative / positive pressure
   if(value < 0){ value = -value; LCD_WriteAnyStringFont(f_6x8_p, 10, 34, "-"); }
@@ -1093,7 +1095,7 @@ void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value)
  *            set data pages
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Data_Page(void)
+void LCD_Sym_Data_Page(struct PlantState *ps)
 {
   LCD_Sym_MarkTextButton(TEXT_BUTTON_data);
   LCD_Sym_Clr_InfoSpace();
@@ -1106,6 +1108,10 @@ void LCD_Sym_Data_Page(void)
   LCD_WriteAnyFont(f_4x6_p, 1, 4, 22);
   LCD_WriteAnyFont(f_4x6_p, 1, 12, 22);
   LCD_WriteAnyFont(f_4x6_p, 1, 20, 22);
+
+  // time and date
+  LCD_Sym_Auto_WorldTime(ps);
+  LCD_Sym_Auto_Date(ps);
 
   LCD_WriteAnyStringFont(f_6x8_p, 6, 0, "choose data:");
 
@@ -1129,7 +1135,7 @@ void LCD_Sym_Data_TotalPageNum(int page_num){ LCD_WriteAnyFont(f_4x6_p, 1, 148, 
 
 void LCD_Sym_Data_Auto(void)
 {
-  LCD_ClrSpace(4, 0, 9, 160);
+  LCD_Sym_Clr_InfoSpace();
 
   // header
   LCD_FillSpace(0, 0, 4, 137);
@@ -1156,7 +1162,7 @@ void LCD_Sym_Data_Auto(void)
 
 void LCD_Sym_Data_Manual(void)
 {
-  LCD_ClrSpace(4, 0, 9, 160);
+  LCD_Sym_Clr_InfoSpace();
   
   // header
   LCD_FillSpace(0, 0, 4, 137);
@@ -1181,7 +1187,7 @@ void LCD_Sym_Data_Manual(void)
 
 void LCD_Sym_Data_Setup(void)
 {
-  LCD_ClrSpace(4, 0, 9, 160);
+  LCD_Sym_Clr_InfoSpace();
 
   LCD_FillSpace(0, 0, 4, 137);
   LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
@@ -1218,7 +1224,7 @@ void LCD_Sym_Data_Arrow_Down(bool negative){ LCD_WriteAnySymbol(14, 140, (negati
 
 void LCD_Sym_Data_Sonic(struct PlantState *ps)
 {
-  LCD_ClrSpace(1, 0, 12, 160);
+  LCD_Sym_Clr_InfoSpace();
   Sonic_Data_Boot_Off(ps);
   LCD_WriteAnyStringFont(f_6x8_p, 1, 91, "[ C]");
 
@@ -1574,94 +1580,8 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
  *            MPX average value
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_MPX_AverageValue(t_page page, int av_value)
-{
-  // limit
-  if(page != SetupCal && page != SetupCalPressure)
-  {
-    if(av_value < 0){ av_value = 0; }
-    else if(av_value > 999){ av_value = 999; }
-  }
 
-  // page action
-  switch(page)
-  {
-    case AutoZone: case AutoSetDown: case AutoMud: case AutoCircOn: case AutoCircOff: case AutoPumpOff: case AutoAirOn: case AutoAirOff:
-      // limits
-      LCD_WriteAnyValue(f_4x6_p, 3, 13, 43, av_value);
-      break;
-
-    case ManualMain: case ManualPumpOff_On: case ManualCircOn: case ManualCircOff: case ManualAir: case ManualSetDown: case ManualPumpOff:
-    case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump: 
-      LCD_WriteAnyValue(f_6x8_p, 3, 17, 42, av_value);
-      break;
-
-    case SetupCal: case SetupCalPressure:
-      LCD_Sym_Setup_Cal_MPX_Value(av_value);
-      break;
-    default: break;
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *            MPX no level measure
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_MPX_Auto_DisabledLevelMeasure(void)
-{
-  // ---%
-  LCD_WriteAnyFont(f_4x6_p, 15, 5, 11);
-  LCD_WriteAnyFont(f_4x6_p, 15, 9, 11);
-  LCD_WriteAnyFont(f_4x6_p, 15, 13, 11);
-  LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
-}
-
-
-/* ------------------------------------------------------------------*
- *            MPX mbar value in auto
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_MPX_Auto_MbarValue(int value)
-{
-  // value and mbar
-  LCD_WriteAnyValue(f_4x6_p, 3, 17, 43, value);
-  LCD_WriteAnyFont(f_4x6_p, 17, 57, 13);
-  LCD_WriteAnyFont(f_4x6_p, 17, 61, 14);
-  LCD_WriteAnyFont(f_4x6_p, 17, 65, 15);
-  LCD_WriteAnyFont(f_4x6_p, 17, 69, 16);
-}
-
-
-/* ------------------------------------------------------------------*
- *            level perc
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_MPX_LevelPerc(struct PlantState *ps)
-{
-  // return if Ultrasonic
-  if(ps->settings->settings_zone->sonic_on){ return; }
-
-  // calculate percentage
-  int perP = ps->mpx_state->actual_mpx_av - ps->settings->settings_calibration->tank_level_min_pressure;
-  if(perP <= 0){ perP = 0; }
-  perP = ((perP * 100) / ps->settings->settings_zone->level_to_set_down);
-
-  // write value
-  if(ps->page_state->page == ManualCircOn || ps->page_state->page == ManualCircOff)
-  { 
-    LCD_WriteAnyValue(f_4x6_p, 3, 17, 2, perP);
-    LCD_WriteAnyFont(f_4x6_p, 17, 17, 19);
-  }
-  else
-  { 
-    unsigned char row = 17;
-    unsigned char col = 0;
-    LCD_WriteAnyValue(f_4x6_p, 3, row, col, perP);
-    col += 12;
-    LCD_WriteAnyFont(f_4x6_p, row, col, 19);
-  }
-}
+void LCD_Sym_Manual_MPX_AverageValue(int value){ LCD_WriteAnyValue(f_6x8_p, 3, 17, 42, value); }
 
 
 /* ------------------------------------------------------------------*
@@ -2025,10 +1945,7 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps)
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCircOn:    case AutoCircOff:
     case AutoAirOn:   case AutoAirOff:  case AutoPage:
-      // value and mm
-      LCD_WriteAnyValue(f_4x6_p, 4, 17, 5, ps->sonic_state->d_mm);
-      LCD_WriteAnyFont(f_4x6_p, 17, 22, 13);
-      LCD_WriteAnyFont(f_4x6_p, 17, 26, 13);
+      LCD_Sym_Auto_Tank_SonicDmm(ps->sonic_state->d_mm);
       break;
 
     default: break;
@@ -2040,8 +1957,8 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps)
   
   //water-level-difference
   int cal = ps->sonic_state->d_mm - (zero - (lv_to_set_down));
-  int per = (ps->sonic_state->d_mm > zero ? 0 : 100 - ((cal * 10) / lv_to_set_down) * 10);
-  if(!ps->sonic_state->d_mm){ per = 0; }
+  int level_perc = (ps->sonic_state->d_mm > zero ? 0 : 100 - ((cal * 10) / lv_to_set_down) * 10);
+  if(!ps->sonic_state->d_mm){ level_perc = 0; }
 
   // page dependend action
   switch(ps->page_state->page)
@@ -2049,16 +1966,14 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps)
     case AutoZone:  case AutoSetDown: case AutoPumpOff:
     case AutoMud:   case AutoCircOn:    case AutoCircOff:
     case AutoAirOn:   case AutoAirOff:  case AutoPage:
-      // xxx%
-      LCD_WriteAnyValue(f_4x6_p, 3, 15, 5, per);
-      LCD_WriteAnyFont(f_4x6_p, 15, 18, 19);
+      LCD_Sym_Auto_Tank_LevelPerc(true, level_perc);
       break;
 
     case ManualMain:  case ManualCircOn:  case ManualCircOff:
     case ManualAir:   case ManualSetDown: case ManualPumpOff:
     case ManualPumpOff_On:  case ManualMud: case ManualCompressor:
     case ManualPhosphor:  case ManualInflowPump:
-      LCD_WriteAnyValue(f_6x8_p, 3, 17, 2, per);
+      LCD_WriteAnyValue(f_6x8_p, 3, 17, 2, level_perc);
       LCD_WriteAnyStringFont(f_6x8_p, 17, 22, "%");
       break;
 
@@ -2144,6 +2059,14 @@ void LCD_Sym_Auto_Date(struct PlantState *ps)
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Data_EndText(void){ LCD_WriteAnyStringFont(f_6x8_p, 15, 1, "End"); }
+
+
+/* ------------------------------------------------------------------*
+ *            modem sym
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Modem_Data_SLED(bool show){ (show ? LCD_WriteAnyFont(f_4x6_p, 0, 105, 26) : LCD_ClrSpace(0, 105, 2, 4));  }
+void LCD_Sym_Modem_Pin_SLED(bool show){ (show ? LCD_WriteAnyFont(f_4x6_p, 18, 137, 26) : LCD_ClrSpace(18, 137, 2, 4));  }
 
 
 /* ------------------------------------------------------------------*

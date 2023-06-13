@@ -25,9 +25,9 @@ void MCP2515_Init(void)
   MCP2515_SWReset();
   TCC0_wait_ms(10);
 
-  MCP2515_WriteReg(CNF1, 0x04);   //BRP-16Mhz/(4+1)*2, SJW=1
-  MCP2515_WriteReg(CNF2, 0xDE);   //PRSEG=6+1 PHSEG1=3+1 BTLMode 3xSample
-  MCP2515_WriteReg(CNF3, 0x03);   //PHSEG2=3+1
+  MCP2515_WriteReg(CNF1, 0x04);   // BRP - 16Mhz / (4 + 1) *2, SJW = 1
+  MCP2515_WriteReg(CNF2, 0xDE);   // PRSEG = 6 + 1 PHSEG1 = 3 + 1 BTLMode 3xSample
+  MCP2515_WriteReg(CNF3, 0x03);   // PHSEG2 = 3 + 1
 }
 
 

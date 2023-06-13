@@ -61,7 +61,7 @@ unsigned char ReadCalibrationByte(unsigned char index)
 /*-------------------------------------------------------------------*
  *            ADC Channel
  * --------------------------------------------------------------
- *  Set TOP and BOTTOM  as Output, TOP=1, BOTTOM=0
+ *  Set TOP and BOTTOM  as Output, TOP = 1, BOTTOM = 0
  *  Set LEFT and RIGHT as input, read at LEFT (ADC0)
  *  ADC_Init
  * ------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ void ADC_MPX_Ch(void)
 {
   // MPX channel
   ADCB.CH0.CTRL = ADC_CH_INPUTMODE_SINGLEENDED_gc | ADC_CH_GAIN_1X_gc;
-  ADCB.CH0.MUXCTRL= ADC_CH_MUXPOS_PIN6_gc;
+  ADCB.CH0.MUXCTRL = ADC_CH_MUXPOS_PIN6_gc;
 }
 
 

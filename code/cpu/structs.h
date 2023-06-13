@@ -168,6 +168,7 @@ struct MPXState
   unsigned char mpx_idx;
   int mpx_values[10];
   int actual_mpx_av;
+  int actual_level_perc;
 };
 
 

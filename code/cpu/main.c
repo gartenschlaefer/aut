@@ -49,7 +49,7 @@ int main(void)
   struct PortState port_state = { .buzzer_on = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle, .queue_valve_action = queue_new(), .valve_init = false };
   struct CompressorState compressor_state = { .operation_hours = 0, .cycle_o2_min = 0, .old_min = 0 };
   struct ErrorState error_state = { .page = ErrorTreat, .error_code = 0, .error_reset_flag = false, .op_state = _error_op_close_start, .error_counter = { 0 }, .cycle_error_code_record = 0 };
-  struct MPXState mpx_state = { .mpx_idx = 0, .mpx_values = { 0x00 }, .actual_mpx_av = 0 };
+  struct MPXState mpx_state = { .mpx_idx = 0, .mpx_values = { 0x00 }, .actual_mpx_av = 0, .actual_level_perc = 0 };
   struct PhosphorState phosphor_state = { .ph_tms = &ph_tms, .ph_state = _ph_off, .init_flag = false };
   struct InflowPumpState inflow_pump_state = { .ip_thms = &ip_thms, .ip_state = _ip_off, .ip_active_pump_id = 0, .init_flag = false };
   struct AirCircState air_circ_state = { .air_tms = &air_tms };
@@ -94,9 +94,6 @@ int main(void)
 
     // valve update
     OUT_Valve_Update(&ps);
-
-    // mpx update
-    MPX_Update(&ps);
 
     //*** debug port and lcd page
     if(DEBUG)

@@ -21,15 +21,15 @@ void PORT_Init(void)
   P_OPTO.DIRCLR = PIN3_bm | OC1 | OC2 | OC3 | OC4;
 
   // outputs
-  P_VALVE.DIR =  0xFF;
-  P_RELAIS.DIR =  0xFF;
+  P_VALVE.DIR = 0xFF;
+  P_RELAIS.DIR = 0xFF;
 
   // Pins PULL UP
   PORTCFG.MPCMASK = 0xFF;
   P_OPTO.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
 
   // FirmwareUpdate PullUp
-  PORTD.PIN5CTRL= PORT_OPC_WIREDANDPULL_gc;
+  PORTD.PIN5CTRL = PORT_OPC_WIREDANDPULL_gc;
 
   // buzzer output
   BUZZER_DIR;

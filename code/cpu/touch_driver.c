@@ -157,7 +157,7 @@ void Touch_Clean(void)
 
 
 /*-------------------------------------------------------------------*
- *  Set TOP and BOTTOM as Output, TOP = 0, BOTTOM=1
+ *  Set TOP and BOTTOM as Output, TOP = 0, BOTTOM = 1
  *  Set LEFT and RIGHT as Input, read at LEFT (ADC0)
  * ------------------------------------------------------------------*/
 
@@ -218,7 +218,7 @@ int Touch_Cal_Y_ReadData(void)
 
 
 /*-------------------------------------------------------------------*
- *  Set LEFT and RIGHT as Output, LEFT=1, RIGTH = 0
+ *  Set LEFT and RIGHT as Output, LEFT = 1, RIGTH = 0
  *  Set TOP and BOTTOM as Input, read at TOP (ADC1)
  * ------------------------------------------------------------------*/
 

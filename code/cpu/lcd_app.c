@@ -105,8 +105,9 @@ void LCD_AutoPage(struct PlantState *ps)
   // touch linker
   Touch_Auto_Linker(ps);
 
-  // sonic
-  Sonic_ReadTank(ps);
+  // updates
+  MPX_Update(ps);
+  Sonic_Update(ps);
 
   // change page through countdown, touch, or sonic
   if(ps->auto_save_page_state->page != ps->page_state->page)
@@ -127,7 +128,7 @@ void LCD_AutoPage(struct PlantState *ps)
   LCD_Auto_Phosphor_Update(ps);
 
   // display update
-  LCD_DisplayRefresh(ps);
+  //LCD_DisplayRefresh(ps);
 }
 
 
@@ -258,11 +259,7 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
 {
   switch(ps->page_state->page)
   {
-    case AutoZone: 
-      MPX_ReadTank(ps); 
-      ps->page_state->page = AutoCircOn; 
-      break;
-
+    case AutoZone: ps->page_state->page = AutoCircOn; break;
     case AutoSetDown: ps->page_state->page = AutoPumpOff; break;
     case AutoPumpOff: ps->page_state->page = AutoMud; break;
     
@@ -320,50 +317,27 @@ void LCD_AirState_Update(struct PlantState *ps)
         case AutoAirOn:
         case AutoCircOn:
           t_page cPage = p;
-          MPX_ReadTank(ps);
-          LCD_Sym_MPX_LevelPerc(ps);
           OUT_Clr_Air(ps);
-
-          // change page
           if(cPage != p)
           { 
             // inflow pump reset
             if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
           }
-
-          // set ps
-          if(p == AutoAirOn){ ps->page_state->page = AutoAirOff; }
-          else if(p == AutoCircOn){ ps->page_state->page = AutoCircOff; }
-          LCD_Sym_Auto_AirPageSelect(p);
-
-          // inflow pump
+          ps->page_state->page = (p == AutoAirOn ? AutoAirOff : AutoCircOff);
           if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Set_InflowPump(ps); }
-
-          LCD_AirState_SetAutoStartTime(ps);
           break;
 
         // auto air off
         case AutoAirOff:
         case AutoCircOff:
-
-          // inflow pump reset
           if(ps->inflow_pump_state->ip_state == _ip_on){ LCD_Sym_Auto_Ip_Base(ps); OUT_Clr_InflowPump(ps); }
-
-          // set air on
           OUT_Set_Air(ps);
-
-          // set pages
-          if(p == AutoAirOff){ ps->page_state->page = AutoAirOn; }
-          else if(p == AutoCircOff){ ps->page_state->page = AutoCircOn; }
-          LCD_Sym_Auto_AirPageSelect(p);
-          LCD_AirState_SetAutoStartTime(ps);
+          ps->page_state->page = (p == AutoAirOff ? AutoAirOn : AutoCircOn);
           break;
 
         // manual air on
         case ManualCircOn:
           ps->page_state->page = ManualCircOff;
-          MPX_ReadTank(ps);
-          LCD_Sym_MPX_LevelPerc(ps);
           OUT_Clr_Air(ps);
           air_tms->min = ps->settings->settings_circulate->on_min;
           air_tms->sec = 0;
@@ -379,6 +353,10 @@ void LCD_AirState_Update(struct PlantState *ps)
 
         default: break;
       }
+
+      // start time and symbols
+      LCD_AirState_SetAutoStartTime(ps);
+      LCD_Sym_Auto_AirPageSelect(p);
     }
 
     // manual return page
@@ -413,7 +391,7 @@ void LCD_AirState_SetAutoStartTime(struct PlantState *ps)
     case AutoCircOff: ps->air_circ_state->air_tms->min = ps->settings->settings_circulate->off_min; break;
     case AutoAirOn: ps->air_circ_state->air_tms->min = ps->settings->settings_air->on_min; break;
     case AutoAirOff: ps->air_circ_state->air_tms->min = ps->settings->settings_air->off_min; break;
-    default: break;
+    default: return;
   }
   ps->air_circ_state->air_tms->sec = 0;
 }
@@ -602,6 +580,10 @@ void LCD_ManualPage(struct PlantState *ps)
     default: break;
   }
 
+  // updates
+  MPX_Update(ps);
+  Sonic_Update(ps);
+
   // count down
   if(Basic_CountDown(ps)){ MEM_EEPROM_WriteManualEntry(ps); ps->page_state->page = AutoPage; }
 
@@ -623,7 +605,6 @@ void LCD_ManualPage(struct PlantState *ps)
   if(ps->page_state->page != ManualPumpOff)
   {
     LCD_Sym_Manual_PageTime_Update(ps);
-    Sonic_ReadTank(ps);
   }
 
   // lcd refresh
@@ -747,6 +728,9 @@ void LCD_SetupPage(struct PlantState *ps)
   // page dependent updates
   if((ps->page_state->page == SetupCal) | (ps->page_state->page == SetupCalPressure) )
   {
+    // mpx update
+    MPX_Update(ps);
+    
     if(ps->page_state->page == SetupCalPressure)
     {
       // sonic
@@ -831,6 +815,7 @@ void LCD_DataPage(struct PlantState *ps)
   switch(ps->page_state->page)
   {
     case DataPage: ps->page_state->page = DataMain; break;
+    case DataMain: if(ps->time_state->tic_sec_update_flag){ LCD_Sym_Auto_WorldTime(ps); } break;
     case DataSonicAuto: Sonic_Data_Auto(ps); break;
     case DataSonicBootR: Sonic_Data_BootRead(ps); ps->page_state->page = DataSonic; break;
     case DataSonicBootW: Sonic_Data_BootWrite(ps); ps->page_state->page = DataSonic; break;
@@ -863,7 +848,7 @@ void LCD_Data_Symbols(struct PlantState *ps)
 {
   switch(ps->page_state->page)
   {
-    case DataMain: LCD_Sym_Data_Page(); break;
+    case DataMain: LCD_Sym_Data_Page(ps); break;
     case DataAuto: LCD_Sym_Data_Auto(); break;
     case DataManual: LCD_Sym_Data_Manual(); break;
     case DataSetup: LCD_Sym_Data_Setup(); break;

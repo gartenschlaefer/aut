@@ -175,7 +175,7 @@ void OUT_Valve_Action(struct PlantState *ps, t_valve_action valve_action)
 {
   // check length of queue
   int len = queue_len(ps->port_state->queue_valve_action);
-  if(len > 2){ ps->port_state->valve_action_flag = true; return; }
+  if(len > 4){ ps->port_state->valve_action_flag = true; return; }
 
   // new data element
   unsigned char *new_action = malloc(1);

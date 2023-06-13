@@ -31,9 +31,9 @@ ISR(USARTF1_RXC_vect)
  *   57600 8N1   ->  54chars
  *   9600 8N1    ->   9chars
  *    8N1 ->  8DataBits, noParityBit, 1StopBit
- *    9600bps   Bscale=3    Bsel=12
- *    57600bps  Bscale=-3   Bsel=131
- *    115200bps Bscale=-4   Bsel=123
+ *    9600bps   Bscale = 3    Bsel = 12
+ *    57600bps  Bscale = -3   Bsel = 131
+ *    115200bps Bscale = -4   Bsel = 123
  * ------------------------------------------------------------------*/
 
 void USART_Init(void)
@@ -65,16 +65,16 @@ void USART_Init(void)
                   USART_CHSIZE_8BIT_gc;
 
   //*------------------------------------------*
-  USARTF1.BAUDCTRLA = 123;                //115200 - Bsel=123
-  USARTF1.BAUDCTRLB = ((1<<7) | (4<<4));  //115200 - Bscale=-4
+  USARTF1.BAUDCTRLA = 123;                //115200 - Bsel = 123
+  USARTF1.BAUDCTRLB = ((1<<7) | (4<<4));  //115200 - Bscale = -4
   //------------------------------------------*/
   /*------------------------------------------*
-  USARTF1.BAUDCTRLA = 131;                //57600 - Bsel=131
-  USARTF1.BAUDCTRLB = ((1<<7) | (3<<4));  //57600 - Bscale=-3
+  USARTF1.BAUDCTRLA = 131;                //57600 - Bsel = 131
+  USARTF1.BAUDCTRLB = ((1<<7) | (3<<4));  //57600 - Bscale = -3
   //------------------------------------------*/
   /*------------------------------------------/
-  USARTF1.BAUDCTRLA = 12;                 //9600 - Bsel=12
-  USARTF1.BAUDCTRLB = (3<<4);             //9600 - Bscale=3
+  USARTF1.BAUDCTRLA = 12;                 //9600 - Bsel = 12
+  USARTF1.BAUDCTRLB = (3<<4);             //9600 - Bscale = 3
   //------------------------------------------*/
 
   // global interrupts enable
@@ -92,7 +92,7 @@ int USART_ReadByte(void)
   if(USARTF1.STATUS & USART_RXCIF_bm)
   {
     // read data
-    unsigned char read= USARTF1.DATA;
+    unsigned char read = USARTF1.DATA;
 
     // reset flag
     USARTF1.STATUS |= USART_RXCIF_bm;

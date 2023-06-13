@@ -26,6 +26,7 @@
  * ------------------------------------------------------------------*/
 
 void Sonic_Init(struct PlantState *ps);
+void Sonic_Update(struct PlantState *ps);
 void Sonic_Data_Shot(struct PlantState *ps);
 void Sonic_Data_Auto(struct PlantState *ps);
 void Sonic_Data_Boot_On(struct PlantState *ps);

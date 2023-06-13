@@ -144,74 +144,39 @@ void Touch_Auto_Linker(struct PlantState *ps)
   {
     ps->touch_state->init = true;
     ps->touch_state->touched = _ctrl_zero;
+
+    // bug
     ps->touch_state->var[0] = 0;
   }
-
-  // handlers
-  unsigned char *bug = &ps->touch_state->var[0];
 
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
   switch(touch_matrix)
   {
-    // backlight
-    case 0x11: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x12: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x13: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x14: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-
-    // secret code
-    case 0x21:
-      if(!ps->touch_state->touched)
-      { 
-        ps->touch_state->touched = _ctrl_none;
-        if(*bug == 0){ *bug = 1; }
-        else if(*bug == 1){ *bug = 2; }
-        else{ *bug = 0; }
-        PORT_Backlight_On(ps->backlight);
-      }
-      break;
-
-    case 0x22: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x23: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-
-    // secret code
-    case 0x24:
-      if(!ps->touch_state->touched)
-      { 
-        ps->touch_state->touched = _ctrl_none;
-        if(*bug == 2){ *bug = 3; }
-        else if(*bug == 3){ *bug = 4; }
-        else{ *bug = 0; }
-        PORT_Backlight_On(ps->backlight);
-      }
-      break;
-
-    case 0x31: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x32: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x33: PORT_Backlight_On(ps->backlight); *bug = 0; break;
-    case 0x34: PORT_Backlight_On(ps->backlight); *bug = 0; break;
 
     // auto
-    case 0x41: 
-      if(!ps->port_state->valve_action_flag)
+    case 0x41:
+      if(!ps->touch_state->touched)
       {
         PORT_Backlight_On(ps->backlight);
         Error_Off(ps);
-        if(*bug == 4){ *bug = 5; }
-        else{ *bug = 0; }
+        ps->touch_state->var[0]++;
       }
       break;
 
     // manual
-    case 0x42: 
-      if(!ps->port_state->valve_action_flag)
+    case 0x42:
+      if(!ps->touch_state->touched)
       {
-        ps->touch_state->init = false;
-        PORT_Backlight_On(ps->backlight);
-        Error_Off(ps);
-        *bug = 0;
-        LCD_Sym_MarkTextButton(TEXT_BUTTON_manual);
-        ps->page_state->page = PinManual; LCD_PinPage_Init(ps);
+        if(!ps->port_state->valve_action_flag)
+        {
+          ps->touch_state->init = false;
+          PORT_Backlight_On(ps->backlight);
+          Error_Off(ps);
+          ps->touch_state->var[0] = 0;
+          LCD_Sym_MarkTextButton(TEXT_BUTTON_manual);
+          ps->page_state->page = PinManual;
+          LCD_PinPage_Init(ps);
+        }
       }
       break;
 
@@ -222,9 +187,10 @@ void Touch_Auto_Linker(struct PlantState *ps)
         ps->touch_state->init = false;
         PORT_Backlight_On(ps->backlight);
         Error_Off(ps);
-        *bug = 0;
+        ps->touch_state->var[0] = 0;
         LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
-        ps->page_state->page = PinSetup; LCD_PinPage_Init(ps);
+        ps->page_state->page = PinSetup;
+        LCD_PinPage_Init(ps);
       }
       break;
 
@@ -235,7 +201,7 @@ void Touch_Auto_Linker(struct PlantState *ps)
         ps->touch_state->init = false;
         PORT_Backlight_On(ps->backlight);
         Error_Off(ps);
-        *bug = 0;
+        ps->touch_state->var[0] = 0;
         LCD_Sym_MarkTextButton(TEXT_BUTTON_data);
         ps->page_state->page = DataPage;
       }
@@ -245,16 +211,16 @@ void Touch_Auto_Linker(struct PlantState *ps)
       if(ps->touch_state->touched){ ps->touch_state->touched = _ctrl_zero; }
       break;
 
-    default: break;
+    default: PORT_Backlight_On(ps->backlight); if(touch_matrix == 0x55){ ps->touch_state->var[0] = 0; } break;
   }
 
-  // bug correct
-  if(*bug == 5)
+  // bug code entered
+  if(ps->touch_state->var[0] >= 5)
   {
     ps->page_state->page_time->min = 0;
-    ps->page_state->page_time->sec = 5;
+    ps->page_state->page_time->sec = 1;
     LCD_Sym_Auto_PageTime_Print(ps->page_state->page_time);
-    *bug = 0;
+    ps->touch_state->var[0] = 0;
   }
 }
 

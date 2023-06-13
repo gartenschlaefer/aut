@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "lcd_driver.h"
+#include "lcd_sym.h"
 #include "usart_func.h"
 #include "tc_func.h"
 #include "at24c_app.h"
@@ -139,12 +140,14 @@ unsigned char Modem_TurnOn(struct Modem *mo)
 
 void Modem_TurnOff(void)
 {
-  if(!(PORTF.IN & PIN2_bm))         //PWR-On?
+  // power on
+  if(!(PORTF.IN & PIN2_bm))
   {
-    PORTF.OUTSET= PIN0_bm;          //TurnOff Modem
-    while(!(PORTF.IN & PIN2_bm));   //Wait until turned off
+    // turn off modem
+    PORTF.OUTSET = PIN0_bm;
+    while(!(PORTF.IN & PIN2_bm));
     TCC0_wait_sec(1);
-    PORTF.OUTCLR= PIN0_bm;          //ClrOn Signal
+    PORTF.OUTCLR = PIN0_bm;
   }
 }
 
@@ -153,17 +156,7 @@ void Modem_TurnOff(void)
  *            modem ReadPWR-Monitor
  * ------------------------------------------------------------------*/
 
-void Modem_ReadPWR(void)
-{
-  if(PORTF.IN & PIN2_bm)
-  {
-    LCD_FillSpace(4, 10, 2, 8);
-  }
-  else
-  {
-    LCD_ClrSpace(4, 10, 2, 8);
-  }
-}
+void Modem_ReadPWR(void){ LCD_FillOrClrSpace((bool)(PORTF.IN & PIN2_bm), 4, 10, 2, 8); }
 
 
 /* ------------------------------------------------------------------*
@@ -172,30 +165,12 @@ void Modem_ReadPWR(void)
 
 void Modem_ReadSLED(t_page page)
 {
-  if(page == DataMain)
+  switch(page)
   {
-    if(!(PORTF.IN & PIN3_bm))
-    {
-      LCD_WriteAnyFont(f_4x6_p, 1, 152, 26);
-    }
-    else
-    {
-      LCD_ClrSpace(1, 152, 2, 4);
-    }
+    case DataMain: LCD_Sym_Modem_Data_SLED((bool)!(PORTF.IN & PIN3_bm)); break;
+    case PinModem: LCD_Sym_Modem_Pin_SLED((bool)!(PORTF.IN & PIN3_bm)); break;
+    default: break;
   }
-
-  else if(page == PinModem)
-  {
-    if(!(PORTF.IN & PIN3_bm))
-    {
-      LCD_WriteAnyFont(f_4x6_p, 18, 137, 26);
-    }
-    else
-    {
-      LCD_ClrSpace(18, 137, 2, 4);
-    }
-  }
-
 }
 
 
@@ -206,25 +181,12 @@ void Modem_ReadSLED(t_page page)
 unsigned char Modem_CTS_ready(void)
 {
   // sending data to modem is allowed
-  if(!(PORTF.IN & PIN5_bm))
-  {
-    return 1;
-  }
+  if(!(PORTF.IN & PIN5_bm)){ return 1; }
   return 0;
 }
 
 
-void Modem_ReadCTS(void)
-{
-  if(Modem_CTS_ready())
-  {
-    LCD_FillSpace(12, 10, 2, 8);
-  }
-  else
-  {
-    LCD_ClrSpace(12, 10, 2, 8);
-  }
-}
+void Modem_ReadCTS(void){ LCD_FillOrClrSpace(Modem_CTS_ready(), 12, 10, 2, 8); }
 
 
 /* ------------------------------------------------------------------*
