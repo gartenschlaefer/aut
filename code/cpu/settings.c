@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "settings.h"
 #include "memory_app.h"
+#include "tank.h"
 
 
 /* ------------------------------------------------------------------*
@@ -143,6 +144,7 @@ void Settings_Read_Mud(struct SettingsMud *settings_mud)
 {
   settings_mud->on_min = MEM_EEPROM_ReadVar(ON_MIN_mud);
   settings_mud->on_sec = MEM_EEPROM_ReadVar(ON_SEC_mud);
+  settings_mud->disabled = (!settings_mud->on_min && !settings_mud->on_sec);
   settings_mud->val_lim_on_min = (struct ValueLimit){ .max_value = 20, .min_value = 0 };
   settings_mud->val_lim_on_sec = (struct ValueLimit){ .max_value = 59, .min_value = 0 };
 }
@@ -151,6 +153,7 @@ void Settings_Save_Mud(struct SettingsMud *settings_mud)
 {
   MEM_EEPROM_WriteVar(ON_MIN_mud, settings_mud->on_min);
   MEM_EEPROM_WriteVar(ON_SEC_mud, settings_mud->on_sec);
+  settings_mud->disabled = (!settings_mud->on_min && !settings_mud->on_sec);
 }
 
 
@@ -277,13 +280,17 @@ void Settings_Read_Zone(struct SettingsZone *settings_zone)
   settings_zone->val_lim_level_to_set_down = (struct ValueLimit){ .max_value = 999, .min_value = 0 };
 }
 
-void Settings_Save_Zone(struct SettingsZone *settings_zone)
+void Settings_Save_Zone(struct PlantState *ps)
 {
+  struct SettingsZone *settings_zone = ps->settings->settings_zone;
   MEM_EEPROM_WriteVar(SONIC_on, settings_zone->sonic_on);
   MEM_EEPROM_WriteVar(TANK_LV_LevelToAir_L, (unsigned char)(settings_zone->level_to_air & 0x00FF));
   MEM_EEPROM_WriteVar(TANK_LV_LevelToAir_H, (unsigned char)((settings_zone->level_to_air & 0xFF00) >> 8));
   MEM_EEPROM_WriteVar(TANK_LV_LevelToSetDown_L, (unsigned char)(settings_zone->level_to_set_down & 0x00FF));
   MEM_EEPROM_WriteVar(TANK_LV_LevelToSetDown_H, (unsigned char)((settings_zone->level_to_set_down & 0xFF00) >> 8));
+
+  // reinit tank (dependent on sonic)
+  Tank_Init(ps);
 }
 
 

@@ -21,7 +21,7 @@
 
 void Sonic_Init(struct PlantState *ps)
 {
-  ;
+  ps->sonic_state->no_us_flag = false;
 }
 
 
@@ -31,7 +31,51 @@ void Sonic_Init(struct PlantState *ps)
 
 void Sonic_Update(struct PlantState *ps)
 {
-  Sonic_ReadTank(ps);
+  // return if sonic is disabled
+  if(!ps->settings->settings_zone->sonic_on){ return; }
+
+  // listen for distance measure
+  if(ps->sonic_state->read_tank_state == SONIC_TANK_listen)
+  {
+    // update query
+    Sonic_Query_Dist_Update(ps);
+
+    // error
+    if(ps->sonic_state->query_state >= _usErrTimeout1)
+    {
+      Sonic_Query_Dist_Init(ps);
+      ps->sonic_state->no_us_error_counter++;
+      if(ps->sonic_state->no_us_error_counter >= 10)
+      {
+        ps->sonic_state->no_us_flag = true;
+        LCD_Sym_Sonic_NoUS_Message(ps);
+      }
+    }
+
+    // distance
+    else if(ps->sonic_state->query_state == _usDistSuccess)
+    {
+      LCD_Sym_Auto_SonicVal(ps);
+      //Sonic_ChangePage(ps);
+      LCD_Sym_Sonic_NoUS_Clear(ps);
+      ps->sonic_state->no_us_flag = false;
+      ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
+    }
+  }
+
+  // tc init
+  else if(ps->sonic_state->read_tank_state >= SONIC_TANK_timer_init)
+  {
+    // second update
+    if(ps->time_state->tic_sec_update_flag){ ps->sonic_state->read_tank_state++; }
+
+    // new distance request
+    if(ps->sonic_state->read_tank_state > Sonic_GetRepeatTime(ps->page_state->page))
+    {
+      Sonic_Query_Dist_Init(ps);
+      ps->sonic_state->read_tank_state = SONIC_TANK_listen;
+    }
+  }
 }
 
 
@@ -125,60 +169,6 @@ void Sonic_Data_Auto(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            sonic - ReadTank
- * ------------------------------------------------------------------*/
-
-void Sonic_ReadTank(struct PlantState *ps)
-{
-  // return if sonic is disabled
-  if(!ps->settings->settings_zone->sonic_on){ return; }
-
-  // read
-  if(ps->sonic_state->read_tank_state == SONIC_TANK_listen)
-  {
-    // update query
-    Sonic_Query_Dist_Update(ps);
-
-    // error
-    if(ps->sonic_state->query_state >= _usErrTimeout1)
-    {
-      Sonic_Query_Dist_Init(ps);
-      ps->sonic_state->no_us_error_counter++;
-      if(ps->sonic_state->no_us_error_counter >= 10)
-      {
-        ps->sonic_state->no_us_flag = true;
-        LCD_Sym_Sonic_NoUS_Message(ps);
-      }
-    }
-
-    // distance
-    else if(ps->sonic_state->query_state == _usDistSuccess)
-    {
-      LCD_Sym_Auto_SonicVal(ps);
-      Sonic_ChangePage(ps);
-      LCD_Sym_Sonic_NoUS_Clear(ps);
-      ps->sonic_state->no_us_flag = false;
-      ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
-    }
-  }
-
-  // tc init
-  else if(ps->sonic_state->read_tank_state >= SONIC_TANK_timer_init)
-  {
-    // second update
-    if(ps->time_state->tic_sec_update_flag){ ps->sonic_state->read_tank_state++; }
-
-    // new distance request
-    if(ps->sonic_state->read_tank_state > Sonic_GetRepeatTime(ps->page_state->page))
-    {
-      Sonic_Query_Dist_Init(ps);
-      ps->sonic_state->read_tank_state = SONIC_TANK_listen;
-    }
-  }
-}
-
-
-/* ------------------------------------------------------------------*
  *            sonic - Repeat Time
  * ------------------------------------------------------------------*/
 
@@ -189,64 +179,11 @@ unsigned char Sonic_GetRepeatTime(t_page page)
   // different repeat times
   switch(page)
   {
-      case AutoPumpOff: repeat_time = 20; break;
-      case AutoAirOff: 
-      case AutoCircOff: repeat_time = 30; break;
-      default: break;
+    case AutoPumpOff: repeat_time = 20; break;
+    default: break;
   }
   if(DEBUG){ repeat_time = 10; }
   return repeat_time;
-}
-
-
-/* ------------------------------------------------------------------*
- *            sonic - ReadTank - ChangePages
- * ------------------------------------------------------------------*/
-
-void Sonic_ChangePage(struct PlantState *ps)
-{
-  // sonic handle
-  int sonic = ps->sonic_state->d_mm;
-
-  //--------------------------------------------------checkOldValue
-  // init
-  if(!ps->sonic_state->d_mm_prev){ ps->sonic_state->d_mm_prev = sonic; }
-
-  // limits
-  if((sonic > (ps->sonic_state->d_mm_prev + D_LIM)) || (sonic < (ps->sonic_state->d_mm_prev - D_LIM))){ ps->sonic_state->d_error++; }
-  else{ ps->sonic_state->d_error = 0; ps->sonic_state->d_mm_prev = sonic; }
-
-  // tries to accept the new distance
-  if(ps->sonic_state->d_error > 4)
-  {
-    ps->sonic_state->d_error = 0;
-    ps->sonic_state->d_mm_prev = sonic;
-  }
-  if(ps->sonic_state->d_error){ return; }
-
-  // zero
-  int zero = ps->settings->settings_calibration->tank_level_min_sonic;
-
-  // change page
-  switch(ps->page_state->page)
-  {
-    case AutoZone:
-      if(sonic < (zero - (ps->settings->settings_zone->level_to_set_down * 10))){ ps->page_state->page = AutoSetDown; }
-      else{ ps->page_state->page = AutoCircOn; }
-      break;
-
-    case AutoCircOn:
-    case AutoCircOff:
-      if(sonic < (zero - (ps->settings->settings_zone->level_to_air * 10))){ ps->page_state->page = AutoAirOn; }
-      break;
-
-    case AutoAirOn:
-    case AutoAirOff:
-      if(sonic < (zero - (ps->settings->settings_zone->level_to_set_down * 10))){ ps->page_state->page = AutoSetDown; }
-      break;
-
-    default: break;
-  }
 }
 
 
@@ -545,6 +482,9 @@ void Sonic_Query_Temp_Update(struct PlantState *ps)
 
 void Sonic_Query_Dist_Update(struct PlantState *ps)
 {
+  // new distance
+  ps->sonic_state->new_distance_flag = false;
+
   // request temp
   if(ps->sonic_state->query_state == _usDistReq)
   {
@@ -626,6 +566,7 @@ void Sonic_Query_Dist_Update(struct PlantState *ps)
       {
         ps->sonic_state->d_mm = (ps->can_state->rxb0_buffer[3] << 8) | ps->can_state->rxb0_buffer[4];
         ps->sonic_state->query_state = _usDistSuccess;
+        ps->sonic_state->new_distance_flag = true;
         CAN_RxB0_Clear(ps->can_state);
       }
     }
@@ -753,7 +694,8 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
       //--------------------------------------------Write1EEPage
       for(int byte8 = 0; byte8 < 128; byte8 += 8)
       {
-        // TODO (chris#1#): check File
+        // todo:
+        // check file
         int adr = (((AT24C_BOOT_PAGE_OS + page) << 8) | byte8);
         unsigned char *p_data = AT24C_Read8Byte(ps->twi_state, adr);
         for(unsigned char i = 0; i < 8; i++)

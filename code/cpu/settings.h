@@ -36,7 +36,7 @@ void Settings_Save_Calibration(struct SettingsCalibration *settings_calibration)
 void Settings_Read_Alarm(struct SettingsAlarm *settings_alarm);
 void Settings_Save_Alarm(struct SettingsAlarm *settings_alarm);
 void Settings_Read_Zone(struct SettingsZone *settings_zone);
-void Settings_Save_Zone(struct SettingsZone *settings_zone);
+void Settings_Save_Zone(struct PlantState *ps);
 void Settings_Destroy(struct Settings *settings);
 
 

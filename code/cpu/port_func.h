@@ -122,7 +122,10 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void PORT_Init(void);
+void PORT_Init(struct PlantState *ps);
+void PORT_Update(struct PlantState *ps);
+void PORT_ChangePage(struct PlantState *ps, t_page new_page);
+void PORT_Nope(struct PlantState *ps);
 void PORT_Bootloader(void);
 
 void PORT_Buzzer_Update(struct PlantState *ps);
@@ -130,9 +133,9 @@ void PORT_Buzzer_Update(struct PlantState *ps);
 void PORT_Backlight_On(struct Backlight *backlight);
 void PORT_Backlight_Off(struct Backlight *backlight);
 void PORT_Backlight_Error(struct Backlight *backlight);
-void PORT_Backlight_Update(struct Backlight *backlight);
+void PORT_Backlight_Update(struct PlantState *ps);
 
-void PORT_Ventilator(struct PlantState *ps);
+void PORT_Ventilator_Update(struct PlantState *ps);
 void PORT_Auto_RunTime(struct PlantState *ps);
 
 void PORT_RelaisSet(unsigned char relais);

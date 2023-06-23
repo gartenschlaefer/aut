@@ -51,7 +51,7 @@ void MCP7941_InitDefault(void)
 void MCP7941_WriteString(unsigned char *send, unsigned char i)
 {
   // control byte | data bytes | count of bytes
-  TWI_D_Master_WriteString(WRITE_RTC_RAM, send, i );
+  TWI_D_Master_WriteString(WRITE_RTC_RAM, send, i);
 }
 
 
@@ -97,11 +97,8 @@ unsigned char MCP7941_ReadByte(struct TWIState *twi_state, unsigned char addr)
 
 void MCP7941_Write_Comp_OpHours(int hours)
 {
-  unsigned char l = (hours & 0x00FF);
-  unsigned char h = ((hours >> 8) & 0x00FF);
-
-  MCP7941_WriteByte(RAM_OP_ADDR_H, h);
-  MCP7941_WriteByte(RAM_OP_ADDR_L, l);
+  MCP7941_WriteByte(RAM_OP_ADDR_L, (unsigned char)(hours & 0x00FF));
+  MCP7941_WriteByte(RAM_OP_ADDR_H, (unsigned char)((hours >> 8) & 0x00FF));
 }
 
 

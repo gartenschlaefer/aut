@@ -32,13 +32,13 @@ void LCD_Sym_Auto_AirTime_Print(struct Tms *tms);
 void LCD_Sym_Auto_Tank_LevelPerc(bool enabled, int level_perc);
 void LCD_Sym_Auto_Tank_SonicDmm(int value);
 void LCD_Sym_Auto_MPX_AverageValue(int value);
+void LCD_Sym_Auto_MPX_AverageValue_Mbar(void);
 void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps);
-void LCD_Sym_Auto_Text(struct PlantState *ps);
 
 // cycle general
 void LCD_Sym_Auto_Main(struct PlantState *ps);
-void LCD_Sym_Auto_CompressorNeg(void);
-void LCD_Sym_Auto_CompressorPos(void);
+void LCD_Sym_Auto_Compressor(bool negative);
+void LCD_Sym_Auto_Compressor_OpHours(int value);
 void LCD_Sym_Auto_ClrActualCycleSpace(void);
 
 // main cycles
@@ -50,17 +50,16 @@ void LCD_Sym_Auto_CircOn(void);
 void LCD_Sym_Auto_CircOff(void);
 void LCD_Sym_Auto_AirOn(void);
 void LCD_Sym_Auto_AirOff(void);
-void LCD_Sym_Auto_AirPageSelect(t_page page);
 
 // inflow pump
-void LCD_Sym_Auto_Ip_Base(struct PlantState *ps);
-void LCD_Sym_Auto_InflowPump_Symbol(bool negative);
+void LCD_Sym_Auto_InflowPump_Symbols(struct PlantState *ps);
+void LCD_Sym_Auto_InflowPump_Comp(bool negative);
 void LCD_Sym_Auto_InflowPump_Pump1(bool negative);
 void LCD_Sym_Auto_InflowPump_Pump2(bool negative);
 void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms);
 
 // phosphor
-void LCD_Sym_Auto_Ph(struct PlantState *ps);
+void LCD_Sym_Auto_Phosphor_Symbols(struct PlantState *ps);
 void LCD_Sym_Auto_Phosphor_Symbol(bool negative);
 void LCD_Sym_Auto_Ph_Time(struct Tms *tms);
 void LCD_Sym_Auto_Ph_Time_Min(int min);
@@ -86,6 +85,8 @@ void LCD_Sym_Manual_PageTime_Print(struct PlantState *ps);
 void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps);
 void LCD_Sym_Manual_PumpOff_OkButton(bool p_sym);
 void LCD_Sym_Manual_PumpOff_OkButton_Clr(void);
+void LCD_Sym_Manual_MPX_AverageValue(int value);
+void LCD_Sym_Manual_Tank_LevelPerc(int value);
 
 
 /* ------------------------------------------------------------------*
@@ -204,13 +205,6 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
 
 
 /* ------------------------------------------------------------------*
- *            MPX
- * ------------------------------------------------------------------*/
-
-void LCD_Sym_Manual_MPX_AverageValue(int value);
-
-
-/* ------------------------------------------------------------------*
  *            pin
  * ------------------------------------------------------------------*/
 
@@ -219,11 +213,10 @@ void LCD_Sym_Pin_RightMessage(void);
 void LCD_Sym_Pin_WrongMessage(void);
 void LCD_Sym_Pin_OpHoursMessage(void);
 void LCD_Sym_Pin_ClearPinCode(void);
+void LCD_Sym_Pin_DelDigits(void);
 void LCD_Sym_Pin_PrintWholeTelNumber(struct TeleNr *tele_nr);
 void LCD_Sym_Pin_PrintOneTelNumberDigit(unsigned char digit, unsigned char pos);
-void LCD_pPinButtons(unsigned char pPin);
-void LCD_nPinButtons(unsigned char nPin);
-void LCD_Sym_Pin_DelDigits(void);
+void LCD_PinButtons(bool negative, unsigned char pin);
 void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos);
 
 
@@ -266,14 +259,14 @@ void LCD_Sym_Sonic_NoUS_Message(struct PlantState *ps);
  *            error
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Error(unsigned char err);
+void LCD_Sym_Error(unsigned char error_id);
 
 
 /* ------------------------------------------------------------------*
  *            timer ic
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_WorldTime(struct PlantState *ps);
+void LCD_Sym_Auto_WorldTime_Print(struct PlantState *ps);
 void LCD_Sym_Auto_Date(struct PlantState *ps);
 
 

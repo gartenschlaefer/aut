@@ -23,6 +23,5 @@ int MPX_ReadAverage_Value(void);
 
 int MPX_UnCal_Average_New(struct MPXState *mpx_state);
 void MPX_LevelCal_New(struct PlantState *ps);
-void MPX_ReadTank(struct PlantState *ps);
 
 #endif

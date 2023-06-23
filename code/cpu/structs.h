@@ -7,6 +7,14 @@
 
 #include <stdbool.h>
 
+
+/* ------------------------------------------------------------------*
+ *            forward declarations
+ * ------------------------------------------------------------------*/
+
+struct PlantState;
+
+
 /* ------------------------------------------------------------------*
  *            general structs
  * ------------------------------------------------------------------*/
@@ -89,6 +97,7 @@ struct PageState
 {
   t_page page;
   struct Tms *page_time;
+  bool change_page_flag;
 };
 
 
@@ -114,34 +123,33 @@ struct Modem
 struct PortState
 {
   bool buzzer_on;
+  bool ventilator_on_flag;
   unsigned char valve_state;
   t_valve_action valve_action;
   bool valve_action_flag;
   t_valve_handling valve_handling;
   struct Queue *queue_valve_action;
   bool valve_init;
+  void (*f_backlight_update)(struct PlantState *ps);
 };
 
 
 struct CompressorState
 {
-  int operation_hours;
+  bool is_on_flag;
+  struct Thms *operation_time;
   int cycle_o2_min;
-  int old_min;
-  unsigned char operation_sixty_min_count;
 };
 
 
 struct ErrorState
 {
-  t_page page;
   unsigned char error_code;
   unsigned char pending_err_code;
-  bool error_reset_flag;
-  t_error_op_state op_state;
-  unsigned char error_counter[5];
   unsigned char cycle_error_code_record;
-  unsigned char error_on_counter;
+  unsigned char error_counter[5];
+  unsigned char error_on_counter[5];
+  unsigned char reset_error_indicator;
 };
 
 
@@ -169,6 +177,18 @@ struct MPXState
   int mpx_values[10];
   int actual_mpx_av;
   int actual_level_perc;
+  bool new_mpx_av_flag;
+};
+
+
+struct TankState
+{
+  int level_mm;
+  int level_abs_zero_mm;
+  int level_perc;
+  bool new_level_flag;
+  bool change_page_flag;
+  void (*f_tank_level_measure)(struct PlantState *ps);
 };
 
 
@@ -192,6 +212,7 @@ struct InflowPumpState
 struct AirCircState
 {
   struct Tms *air_tms;
+  t_air_circ_states ac_state;
 };
 
 
@@ -216,12 +237,19 @@ struct USARTState
 };
 
 
+struct TempSensor
+{
+  char actual_temp;
+};
+
+
 struct SonicState
 {
   t_sonic_app app_type;
   unsigned char software_version;
   unsigned char no_us_error_counter;
   bool no_us_flag;
+  bool new_distance_flag;
   int d_mm;
   int d_mm_prev;
   int d_mm_max;
@@ -335,6 +363,7 @@ struct SettingsMud
   int on_sec;
   struct ValueLimit val_lim_on_min;
   struct ValueLimit val_lim_on_sec;
+  bool disabled;
 };
 
 
@@ -407,12 +436,14 @@ struct PlantState
   struct FrameCounter *frame_counter;
   struct ErrorState *error_state;
   struct MPXState *mpx_state;
+  struct TankState *tank_state;
   struct PhosphorState *phosphor_state;
   struct InflowPumpState *inflow_pump_state;
   struct AirCircState *air_circ_state;
   struct CANState *can_state;
   struct TWIState *twi_state;
   struct USARTState *usart_state;
+  struct TempSensor *temp_sensor;
   struct SonicState *sonic_state;
   struct InputHandler *input_handler;
   struct Modem *modem;
@@ -420,6 +451,16 @@ struct PlantState
   struct EEPROMState *eeprom_state;
   struct TouchState *touch_state;
   struct Settings *settings;
-}; 
+};
+
+
+/* ------------------------------------------------------------------*
+ *            view structures
+ * ------------------------------------------------------------------*/
+
+struct View
+{
+  void (*f_main_page_view_update)(struct PlantState *ps);
+};
 
 #endif

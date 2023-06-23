@@ -30,7 +30,7 @@ int queue_destroy(struct Queue *queue)
 
 bool queue_empty(struct Queue *queue)
 {
-  if(queue == NULL || queue->front == NULL) { return true; } 
+  if(queue == NULL || queue->front == NULL){ return true; } 
   else{ return false; }
 }
 
@@ -42,7 +42,7 @@ bool queue_empty(struct Queue *queue)
 struct Queue *queue_new(void)
 {
   struct Queue *queue = malloc(sizeof(struct Queue));
-  if(queue == NULL) { return NULL; }
+  if(queue == NULL){ return NULL; }
   queue->front = queue->back = NULL;
   return queue;
 }

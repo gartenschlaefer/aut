@@ -47,6 +47,14 @@ typedef enum
 
 
 /* ------------------------------------------------------------------*
+ *            air circ states
+ * ------------------------------------------------------------------*/
+typedef enum
+{ _ac_off, _ac_on
+}t_air_circ_states;
+
+
+/* ------------------------------------------------------------------*
  *            touch states
  * ------------------------------------------------------------------*/
 
@@ -146,11 +154,12 @@ typedef enum
 typedef enum
 {
   _ctrl_zero,
+  _ctrl_auto, _ctrl_manual, _ctrl_setup, _ctrl_data,
   _ctrl_neg_plus, _ctrl_neg_minus, _ctrl_neg_esc, _ctrl_neg_ok,
   _ctrl_pos_plus, _ctrl_pos_minus, _ctrl_pos_esc, _ctrl_pos_ok,
   _ctrl_on, _ctrl_off, _ctrl_time, _ctrl_sensor, _ctrl_compressor,
   _ctrl_open_valve, _ctrl_cal, _ctrl_level, _ctrl_redo,
-  _ctrl_shot, _ctrl_auto, _ctrl_sonic, _ctrl_bootloader,
+  _ctrl_shot, _ctrl_sonic_auto, _ctrl_sonic, _ctrl_bootloader,
   _ctrl_arrow_up, _ctrl_arrow_down,
   _ctrl_none
 }t_CtrlButtons;
@@ -290,11 +299,11 @@ typedef enum
 typedef enum
 { 
   ZeroPage, AutoPage, ManualPage, SetupPage, DataPage, PinManual, PinSetup, PinModem, AutoZone, AutoSetDown, AutoMud,
-  AutoCircOn, AutoCircOff, AutoPumpOff, AutoAirOn, AutoAirOff, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff,
+  AutoCirc, AutoPumpOff, AutoAir, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff,
   SetupMud, SetupCompressor, SetupPhosphor, SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone, ManualMain,
-  ManualPumpOff_On, ManualCircOn, ManualCircOff, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump, ManualValveTest,
+  ManualPumpOff_On, ManualCirc, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump, ManualValveTest,
   DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto, DataSonicBoot, DataSonicBootR, DataSonicBootW, ErrorMPX,
-  ErrorTreat, NonePage
+  NonePage
 }t_page;
 
 
@@ -367,9 +376,9 @@ typedef enum
 
 typedef enum
 { 
-  OPEN_Reserve, CLOSE_Reserve, OPEN_MudPump, CLOSE_MudPump,
+  _va_zero, OPEN_Reserve, CLOSE_Reserve, OPEN_MudPump, CLOSE_MudPump,
   OPEN_Air, CLOSE_Air, OPEN_ClearWater, CLOSE_ClearWater,
-  CLOSE_All, OPEN_All, VALVE_Idle
+  CLOSE_All, OPEN_All, VALVE_Idle, _va_none
 }t_valve_action;
 
 typedef enum

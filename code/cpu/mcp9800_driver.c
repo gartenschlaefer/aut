@@ -7,13 +7,14 @@
 
 #include "lcd_driver.h"
 #include "twi_func.h"
+#include "error_func.h"
 
 
 /*-------------------------------------------------------------------*
  *            init
  * ------------------------------------------------------------------*/
 
-void MCP9800_Init(void)
+void MCP9800_Init(struct PlantState *ps)
 {
   unsigned char init = ( MCP_ONESHOT_OFF | MCP_RES | MCP_FAULTQ | MCP_ALERTPOL | MCP_COMP_INT | MCP_SHUTDOWN_OFF);
 
@@ -22,13 +23,34 @@ void MCP9800_Init(void)
 
   // alert as input
   MCP_PORT.DIRCLR = MCP_ALERT;
+
+  // read temperature
+  ps->temp_sensor->actual_temp = MCP9800_ReceiveByte(ps->twi_state, 0x00);
 }
 
 
 /*-------------------------------------------------------------------*
- *  one shot
+ *            init
+ * ------------------------------------------------------------------*/
+
+void MCP9800_Temp_Update(struct PlantState *ps)
+{
+  if(ps->frame_counter->sixty_sec_counter % TEMP_UPDATE_SEC_MOD)
+  {
+    char temp = (char)MCP9800_ReceiveByte(ps->twi_state, 0x00);
+    ps->temp_sensor->actual_temp = temp;
+
+    // error check
+    if(temp > (char)ps->settings->settings_alarm->temp){ ps->error_state->pending_err_code |= E_T; }
+    else{ ps->error_state->pending_err_code &= ~E_T; }
+  }
+}
+
+
+/*-------------------------------------------------------------------*
+ *            one shot
  * --------------------------------------------------------------
- *  One Conversion in Shutdown Mode, remain in Shutdown Mode, go back to init
+ *  one conversion in Shutdown Mode, remain in Shutdown Mode, go back to init
  * ------------------------------------------------------------------*/
 
 void MCP9800_OneShot(void)
@@ -47,9 +69,9 @@ void MCP9800_OneShot(void)
  *            receive byte
  * ------------------------------------------------------------------*/
 
-unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char pointer)
+unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char byte)
 {
-  unsigned char send[] = {pointer};
+  unsigned char send[] = { byte };
   unsigned char *rec;
   unsigned char rData;
 
@@ -65,28 +87,10 @@ unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char poin
  *            send byte
  * ------------------------------------------------------------------*/
 
-void MCP9800_SendByte(unsigned char pointer, unsigned char sData)
+void MCP9800_SendByte(unsigned char byte, unsigned char sData)
 {
-  unsigned char send[] = {pointer, sData};
+  unsigned char send[] = {byte, sData};
   TWI_D_Master_WriteString(MCP_ADDR, send, 2);
-}
-
-
-/*-------------------------------------------------------------------*
- *            read temperature
- * ------------------------------------------------------------------*/
-
-unsigned char MCP9800_PlusTemp(struct TWIState *twi_state)
-{
-  unsigned char temp = 0;
-
-  // read temperature
-  temp = MCP9800_ReceiveByte(twi_state, 0x00);
-
-  // minus sign
-  if(temp & 0x80) temp = 0;
-
-  return (temp & 0x7F);
 }
 
 

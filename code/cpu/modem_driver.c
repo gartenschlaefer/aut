@@ -12,6 +12,7 @@
 #include "tc_func.h"
 #include "at24c_app.h"
 #include "basic_func.h"
+#include "page_state.h"
 
 
 /* ------------------------------------------------------------------*
@@ -336,7 +337,7 @@ void Modem_SendTest(void)
   // data allowed from modem
   PORTF.OUTCLR = PIN4_bm;
 
-  if (!call_done)
+  if(!call_done)
   {
       // dial number
       //Modem_DialNumber();
@@ -375,7 +376,7 @@ void Modem_Test(struct PlantState *ps)
   TCC0_WaitSec_Init(3);
 
   // test page
-  ps->page_state->page = PinModem;
+  page_state_change_page(ps->page_state, PinModem);
 
   // RTS off
   PORTF.OUTCLR = PIN4_bm;
@@ -403,11 +404,11 @@ void Modem_Test(struct PlantState *ps)
       wait_var++;
 
       // wait for ready modem
-      if (Modem_CTS_ready())
+      if(Modem_CTS_ready())
       {
 
         // send
-        if (wait_var == 5)
+        if(wait_var == 5)
         {
           // send something
           LCD_WriteAnyStringFont(f_6x8_p, 15, 30, "sent");
@@ -433,8 +434,8 @@ void Modem_Test(struct PlantState *ps)
             p_rec++;
             len--;
             i++;
-            if (i > 11){ i = 0; j++; }
-            if (j > 2){ j = 0; }
+            if(i > 11){ i = 0; j++; }
+            if(j > 2){ j = 0; }
           }
 
           // clear buffer

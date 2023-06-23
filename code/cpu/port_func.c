@@ -15,7 +15,7 @@
  *            init
  * ------------------------------------------------------------------*/
 
-void PORT_Init(void)
+void PORT_Init(struct PlantState *ps)
 {
   // inputs
   P_OPTO.DIRCLR = PIN3_bm | OC1 | OC2 | OC3 | OC4;
@@ -31,10 +31,60 @@ void PORT_Init(void)
   // FirmwareUpdate PullUp
   PORTD.PIN5CTRL = PORT_OPC_WIREDANDPULL_gc;
 
-  // buzzer output
+  // buzzer
   BUZZER_DIR;
+  BUZZER_OFF;
+  ps->port_state->buzzer_on = false;
+
+  // ventilator off
+  PORT_RelaisClr(R_VENTILATOR);
+  ps->port_state->ventilator_on_flag = false;
+
+  // backlight
   BACKLIGHT_DIR;
+  ps->port_state->f_backlight_update = &PORT_Nope;
+  PORT_Backlight_On(ps->backlight);
 }
+
+
+/* ------------------------------------------------------------------*
+ *            update
+ * ------------------------------------------------------------------*/
+
+void PORT_Update(struct PlantState *ps)
+{
+  PORT_Buzzer_Update(ps);
+  ps->port_state->f_backlight_update(ps);
+  PORT_Bootloader();
+}
+
+
+/* ------------------------------------------------------------------*
+ *            change page
+ * ------------------------------------------------------------------*/
+
+void PORT_ChangePage(struct PlantState *ps, t_page new_page)
+{
+  //***LightAlwaysOn-Debug
+  if(DEBUG){ ps->port_state->f_backlight_update = &PORT_Nope; return; }
+
+  // page dependent handling
+  switch(new_page)
+  {
+    // auto pages
+    case AutoSetDown: case AutoMud: case AutoPumpOff: case AutoZone: case AutoCirc: case AutoAir: 
+
+    // manual pages
+    case ManualMain: case ManualPumpOff_On: case ManualCirc: case ManualAir: case ManualSetDown: case ManualPumpOff:
+    case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump: 
+      ps->port_state->f_backlight_update = &PORT_Backlight_Update;
+      break;
+
+    default: ps->port_state->f_backlight_update = &PORT_Nope; break;  
+  }
+}
+
+void PORT_Nope(struct PlantState *ps){ ; }
 
 
 /* ------------------------------------------------------------------*
@@ -46,7 +96,7 @@ void PORT_Bootloader(void)
   if(!(PORTD.IN & PIN5_bm))
   {
     LCD_Clean();
-    LCD_WriteAnyStringFont(f_6x8_p, 1, 1, "Bootloader-Modus");
+    LCD_WriteAnyStringFont(f_6x8_p, 1, 1, "Bootloader-Mode");
     asm volatile("jmp 0x20000");
   }
 }
@@ -61,12 +111,9 @@ void PORT_Buzzer_Update(struct PlantState *ps)
   // error sound
   if(ps->port_state->buzzer_on)
   {
-    if(ps->frame_counter->sixty_sec_counter % 3){ BUZZER_ON; }
+    if(ps->frame_counter->sixty_sec_counter & 3){ BUZZER_ON; }
     else{ BUZZER_OFF; }
   }
-
-  // off state
-  else{ BUZZER_OFF; }
 }
 
 
@@ -99,24 +146,23 @@ void PORT_Backlight_Error(struct Backlight *backlight)
  *  LCD backlight update
  * ------------------------------------------------------------------*/
 
-void PORT_Backlight_Update(struct Backlight *b)
+void PORT_Backlight_Update(struct PlantState *ps)
 {
-  //***LightAlwaysOn-Debug
-  if(DEBUG){ return; }
-
   // light is on
-  if(b->state == _bl_on)
+  if(ps->backlight->state == _bl_on)
   {
-    b->count++;
-    if(b->count > BACKLIGHT_TON_FRAMES){ PORT_Backlight_Off(b); }
+    ps->backlight->count++;
+    if(ps->backlight->count > BACKLIGHT_TON_FRAMES){ PORT_Backlight_Off(ps->backlight); }
   }
 
   // error
-  else if(b->state == _bl_error)
+  else if(ps->backlight->state == _bl_error)
   {
-    b->count++;
-    if(b->count > BACKLIGHT_ERROR_ON_FRAMES){ BACKLIGHT_OFF; }
-    if(b->count > BACKLIGHT_ERROR_OFF_FRAMES){ b->count = 0; BACKLIGHT_ON; }
+    if(ps->frame_counter->sixty_sec_counter & 3){ BACKLIGHT_OFF; }
+    else{ BACKLIGHT_ON; }
+    // b->count++;
+    // if(b->count > BACKLIGHT_ERROR_ON_FRAMES){ BACKLIGHT_OFF; }
+    // if(b->count > BACKLIGHT_ERROR_OFF_FRAMES){ b->count = 0; BACKLIGHT_ON; }
   }
 }
 
@@ -125,22 +171,32 @@ void PORT_Backlight_Update(struct Backlight *b)
  *            ventilator
  * ------------------------------------------------------------------*/
 
-void PORT_Ventilator(struct PlantState *ps)
+void PORT_Ventilator_Update(struct PlantState *ps)
 {
   // temperature
-  unsigned char temp = MCP9800_PlusTemp(ps->twi_state);
-  unsigned char alarm_temp = ps->settings->settings_alarm->temp;
+  char temp = ps->temp_sensor->actual_temp;
+  char alarm_temp = (char)ps->settings->settings_alarm->temp;
 
-  // hysteresis
-  unsigned char hystOn = (alarm_temp - 15);
-  unsigned char hystOff = (alarm_temp - 20);
-
-  if(!(temp & 0x80))
+  // ventilator
+  if(ps->port_state->ventilator_on_flag)
   {
-    if(temp > hystOn){ PORT_RelaisSet(R_VENTILATOR); }
-    if(temp < hystOff){ PORT_RelaisClr(R_VENTILATOR); }
+    char hyst_off = (alarm_temp - 20);
+    if(temp < hyst_off)
+    { 
+      PORT_RelaisClr(R_VENTILATOR);
+      ps->port_state->ventilator_on_flag = false;
+    }
   }
-  else{ PORT_RelaisClr(R_VENTILATOR); }
+  else
+  {
+    char hyst_on = (alarm_temp - 15);
+    if(temp > hyst_on)
+    { 
+      PORT_RelaisSet(R_VENTILATOR);
+      ps->port_state->ventilator_on_flag = true;
+    }
+  }
+
 }
 
 
@@ -148,15 +204,8 @@ void PORT_Ventilator(struct PlantState *ps)
  *            relais
  * ------------------------------------------------------------------*/
 
-void PORT_RelaisSet(unsigned char relais)
-{
-  P_RELAIS.OUTSET = relais;
-}
-
-void PORT_RelaisClr(unsigned char relais)
-{
-  P_RELAIS.OUTCLR = relais;
-}
+void PORT_RelaisSet(unsigned char relais){ P_RELAIS.OUTSET = relais; }
+void PORT_RelaisClr(unsigned char relais){ P_RELAIS.OUTCLR = relais; }
 
 
 /* ------------------------------------------------------------------*
@@ -168,7 +217,7 @@ void PORT_Auto_RunTime(struct PlantState *ps)
   // once per minute check
   if(ps->frame_counter->sixty_sec_counter == 20)
   {
-    PORT_Ventilator(ps);
+    PORT_Ventilator_Update(ps);
 
     // Floating switch alarm
     if(IN_FLOAT_S3 && !ps->input_handler->float_sw_alarm)

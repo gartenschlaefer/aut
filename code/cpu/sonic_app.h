@@ -34,9 +34,7 @@ void Sonic_Data_Boot_Off(struct PlantState *ps);
 void Sonic_Data_BootRead(struct PlantState *ps);
 void Sonic_Data_BootWrite(struct PlantState *ps);
 
-void Sonic_ReadTank(struct PlantState *ps);
 unsigned char Sonic_GetRepeatTime(t_page page);
-void Sonic_ChangePage(struct PlantState *ps);
 void Sonic_LevelCal(struct PlantState *ps);
 
 void Sonic_ReadVersion(struct PlantState *ps);

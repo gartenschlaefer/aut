@@ -32,11 +32,11 @@
 #define SPRING_VALVE_ON true
 
 // debug: set to zero for no debugging with buzzer off, modem off, port valve, data entry
-#define DEBUG     0
-#define DEB_BUZ   0
-#define DEB_MODEM 0
-#define DEB_PORT  0
-#define DEB_ENTRY 0
+#define DEBUG     false
+#define DEB_BUZ   false
+#define DEB_MODEM false
+#define DEB_PORT  false
+#define DEB_ENTRY false
 
 // software version x.x.x
 // 1.3.0 - SMS support

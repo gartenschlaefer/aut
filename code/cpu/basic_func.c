@@ -24,6 +24,10 @@
 #include "memory_app.h"
 #include "mpx_driver.h"
 #include "settings.h"
+#include "compressor_info.h"
+#include "time_state.h"
+#include "mcp9800_driver.h"
+#include "tank.h"
 
 
 /* ------------------------------------------------------------------*
@@ -34,7 +38,7 @@ void Basic_Init(struct PlantState *ps)
 {
   // ports init
   Basic_Clock_Init();
-  PORT_Init();
+  PORT_Init(ps);
   ADC_Init();
 
   // communication init
@@ -62,6 +66,7 @@ void Basic_Init(struct PlantState *ps)
   MCP7941_Init();
   AD8555_Init();
   CAN_Init();
+  MCP9800_Init(ps);
   TCC0_wait_ms(200);
 
   // sonic jump to app version
@@ -75,20 +80,23 @@ void Basic_Init(struct PlantState *ps)
   CAN_RxB0_Clear(ps->can_state);
   TCE1_Stop();
 
+  // compressor info init
+  Compressor_Info_Init(ps);
+
   // mpx init
   MPX_Init(ps);
 
   // sonic init
   Sonic_Init(ps);
 
+  // tank init
+  Tank_Init(ps);
+
   // timer ic variables init
-  Basic_TimeState_Init(ps);
+  TimeState_Init(ps);
 
   // modem init
   Modem_Init(ps);
-
-  // backlight on
-  PORT_Backlight_On(ps->backlight);
 }
 
 
@@ -148,70 +156,6 @@ void Basic_Watchdog_Init(void)
 
   // watchdog init
   WDT.CTRL =  WDT_CEN_bm | WDT_PER_8KCLK_gc | WDT_ENABLE_bm;
-}
-
-
-/* ------------------------------------------------------------------*
- *            timer update
- * ------------------------------------------------------------------*/
-
-void Basic_TimeState_Init(struct PlantState *ps)
-{
-  // read timer ic vars
-  ps->time_state->tic_sec = MCP7941_ReadTime(ps->twi_state, TIC_SEC);
-  ps->time_state->tic_min = MCP7941_ReadTime(ps->twi_state, TIC_MIN);
-  ps->time_state->tic_hou = MCP7941_ReadTime(ps->twi_state, TIC_HOUR);
-  ps->time_state->tic_dat = MCP7941_ReadTime(ps->twi_state, TIC_DATE);
-  ps->time_state->tic_mon = MCP7941_ReadTime(ps->twi_state, TIC_MONTH);
-  ps->time_state->tic_yea = MCP7941_ReadTime(ps->twi_state, TIC_YEAR);
-}
-
-
-/* ------------------------------------------------------------------*
- *            timer update
- * ------------------------------------------------------------------*/
-
-void Basic_TimeState_Update(struct PlantState *ps)
-{
-  // read seconds from timer ic
-  unsigned char act_sec = MCP7941_ReadTime(ps->twi_state, TIC_SEC);
-
-  // second change
-  if(act_sec != ps->time_state->tic_sec)
-  {
-    // second update
-    ps->time_state->tic_sec = act_sec;
-    ps->time_state->tic_sec_update_flag = true;
-
-    // minute change
-    if(!act_sec)
-    {
-      // minute update
-      ps->time_state->tic_min = MCP7941_ReadTime(ps->twi_state, TIC_MIN);
-
-      // hour change
-      if(!ps->time_state->tic_min)
-      {
-        // hour update
-        ps->time_state->tic_hou = MCP7941_ReadTime(ps->twi_state, TIC_HOUR);
-
-        // day change
-        if(!ps->time_state->tic_hou)
-        {
-          // other updates
-          ps->time_state->tic_dat = MCP7941_ReadTime(ps->twi_state, TIC_DATE);
-          ps->time_state->tic_mon = MCP7941_ReadTime(ps->twi_state, TIC_MONTH);
-          ps->time_state->tic_yea = MCP7941_ReadTime(ps->twi_state, TIC_YEAR);
-        }
-      }
-    }
-  }
-
-  // no second change
-  else
-  {
-    ps->time_state->tic_sec_update_flag = false;
-  }
 }
 
 

@@ -13,6 +13,8 @@
  *            defines
  * ------------------------------------------------------------------*/
 
+#define TEMP_UPDATE_SEC_MOD (5)
+
 // PORTC, TWI PC0 and PC1
 #define MCP_PORT  (PORTC)
 #define MCP_ALERT (1 << 2)
@@ -62,13 +64,11 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void MCP9800_Init(void);
+void MCP9800_Init(struct PlantState *ps);
+void MCP9800_Temp_Update(struct PlantState *ps);
 void MCP9800_OneShot(void);
-
-unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char pointer);
-void MCP9800_SendByte(unsigned char pointer, unsigned char sData);
-
-unsigned char MCP9800_PlusTemp(struct TWIState *twi_state);
+unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char byte);
+void MCP9800_SendByte(unsigned char byte, unsigned char sData);
 void MCP9800_WriteTemp(struct TWIState *twi_state);
 
 #endif

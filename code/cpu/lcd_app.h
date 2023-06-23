@@ -24,8 +24,8 @@ void LCD_Auto_ResetAutoSavePageState(struct PlantState *ps);
 void LCD_Auto_CountDownEndAction(struct PlantState *ps);
 
 // air state for manual and auto
+void LCD_AirState_Init(struct PlantState *ps);
 void LCD_AirState_Update(struct PlantState *ps);
-void LCD_AirState_SetAutoStartTime(struct PlantState *ps);
 
 // inflow pump
 void LCD_Auto_InflowPump_Init(struct PlantState *ps);

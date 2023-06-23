@@ -25,8 +25,6 @@ void Basic_Init(struct PlantState *ps);
 void Basic_Init_Mem(void);
 void Basic_Clock_Init(void);
 void Basic_Watchdog_Init(void);
-void Basic_TimeState_Init(struct PlantState *ps);
-void Basic_TimeState_Update(struct PlantState *ps);
 unsigned char Basic_CountDown(struct PlantState *ps);
 
 void Basic_LimitAdd_VL(int *value, struct ValueLimit *vl);
