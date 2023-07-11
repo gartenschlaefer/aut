@@ -298,13 +298,32 @@ typedef enum
 
 typedef enum
 { 
-  ZeroPage, AutoPage, ManualPage, SetupPage, DataPage, PinManual, PinSetup, PinModem, AutoZone, AutoSetDown, AutoMud,
-  AutoCirc, AutoPumpOff, AutoAir, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff,
-  SetupMud, SetupCompressor, SetupPhosphor, SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone, ManualMain,
-  ManualPumpOff_On, ManualCirc, ManualAir, ManualSetDown, ManualPumpOff, ManualMud, ManualCompressor, ManualPhosphor, ManualInflowPump, ManualValveTest,
-  DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto, DataSonicBoot, DataSonicBootR, DataSonicBootW, ErrorMPX,
+  ZeroPage, 
+  // auto pages
+  AutoPage, AutoZone, AutoSetDown, AutoMud, AutoPumpOff, AutoCirc,  AutoAir,
+  // manual pages
+  ManualPage, ManualMain, ManualCirc, ManualAir, ManualSetDown, ManualPumpOff, ManualPumpOff_On, ManualMud, 
+  ManualCompressor, ManualPhosphor, ManualInflowPump, ManualValveTest,
+  // setup pages
+  SetupPage, SetupMain, SetupCirculate, SetupAir, SetupSetDown, SetupPumpOff, SetupMud, SetupCompressor, 
+  SetupPhosphor, SetupInflowPump, SetupCal, SetupCalPressure, SetupAlarm, SetupWatch, SetupZone,
+  // data pages
+  DataPage, DataMain, DataAuto, DataManual, DataSetup, DataSonic, DataSonicAuto, DataSonicBoot, DataSonicBootR, DataSonicBootW,
+  // pin pages
+  PinManual, PinSetup, PinModem,
+  // other
   NonePage
 }t_page;
+
+// for easier segmenting
+#define AUTO_PAGE_START (AutoPage)
+#define AUTO_PAGE_END (AutoAir)
+#define MANUAL_PAGE_START (ManualPage)
+#define MANUAL_PAGE_END (ManualValveTest)
+#define SETUP_PAGE_START (SetupPage)
+#define SETUP_PAGE_END (SetupZone)
+#define DATA_PAGE_START (DataPage)
+#define DATA_PAGE_END (DataSonicBootW)
 
 
 /* ------------------------------------------------------------------*

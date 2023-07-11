@@ -17,7 +17,7 @@ void page_state_update(struct PlantState *ps, struct View *view)
   if(ps->page_state->change_page_flag)
   {
     t_page new_page = ps->page_state->page;
-    View_ChangePage(view, new_page);
+    View_ChangePage(ps, view, new_page);
     PORT_ChangePage(ps, new_page);
     Error_ChangePage(ps);
     ps->page_state->change_page_flag = false;

@@ -42,11 +42,9 @@ void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page);
 
 // setup pages
 void LCD_SetupPage(struct PlantState *ps);
-void LCD_Setup_Symbols(struct PlantState *ps);
 
 // data pages
 void LCD_DataPage(struct PlantState *ps);
-void LCD_Data_Symbols(struct PlantState *ps);
 void LCD_Data_WriteAutoEntryPage(unsigned char page);
 void LCD_Data_WriteManualEntryPage(unsigned char page);
 void LCD_Data_WriteSetupEntryPage(unsigned char page);

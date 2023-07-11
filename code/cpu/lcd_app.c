@@ -59,7 +59,7 @@ void LCD_AutoPage(struct PlantState *ps)
   if(ps->page_state->page == AutoPage)
   {
     // set auto page
-    LCD_Sym_Auto_Main(ps);
+    LCD_Sym_Auto_Main();
 
     // get previous state and time
     if(ps->auto_save_page_state->page != NonePage)
@@ -74,9 +74,6 @@ void LCD_AutoPage(struct PlantState *ps)
       LCD_Auto_SetStateTime(ps);
       LCD_Auto_SetStateOutput(ps);
     }
-
-    // new state symbols
-    LCD_Sym_Auto_SetManager(ps);
 
     // init
     LCD_Auto_InflowPump_Init(ps);
@@ -115,7 +112,6 @@ void LCD_AutoPage(struct PlantState *ps)
     LCD_Auto_ResetAutoSavePageState(ps);
 
     // set new page
-    LCD_Sym_Auto_SetManager(ps);
     LCD_Auto_SetStateTime(ps);
     LCD_Auto_SetStateOutput(ps);
   }
@@ -559,8 +555,6 @@ void LCD_Manual_SetState(struct PlantState *ps)
   {
     case ManualMain: 
       *p_min = 5; *p_sec = 0; 
-      LCD_Sym_Manual_Main(ps);
-
       // save manual entry time
       ps->eeprom_state->time_manual_entry.hou = ps->time_state->tic_hou;
       ps->eeprom_state->time_manual_entry.min = ps->time_state->tic_min;
@@ -583,18 +577,14 @@ void LCD_Manual_SetState(struct PlantState *ps)
     case ManualSetDown: *p_min = 60; *p_sec = 0; break;
 
     case ManualPumpOff:
-      LCD_Sym_Manual_PumpOff_OkButton(true);
       *p_min = 30;
       *p_sec = 0;
-      LCD_Sym_Manual_PageTime_Print(ps);
       break;
 
     case ManualPumpOff_On:
       OUT_Set_PumpOff(ps);
-      LCD_Sym_Manual_PumpOff_OkButton_Clr();
       *p_min = 29;
       *p_sec = 59;
-      LCD_Sym_Manual_Text(ps);
       break;
 
     case ManualMud: OUT_Set_Mud(ps); *p_min = 5; *p_sec = 0; break;
@@ -648,9 +638,6 @@ void LCD_SetupPage(struct PlantState *ps)
     ps->page_state->page_time->min = 4;
     ps->page_state->page_time->sec = 60;
 
-    // set new symbols
-    LCD_Setup_Symbols(ps);
-
     // special ones in change
     if(ps->page_state->page == SetupCalPressure && !ps->settings->settings_zone->sonic_on){ OUT_Set_Air(ps); }
   }
@@ -703,33 +690,6 @@ void LCD_SetupPage(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            setup symbols
- * ------------------------------------------------------------------*/
-
-void LCD_Setup_Symbols(struct PlantState *ps)
-{
-  // set symbols
-  switch(ps->page_state->page)
-  {
-    case SetupMain: LCD_Sym_Setup_Page(); break;
-    case SetupCirculate: LCD_Sym_Setup_Circulate(); break;
-    case SetupAir: LCD_Sym_Setup_Air(); break;
-    case SetupSetDown: LCD_Sym_Setup_SetDown(); break;
-    case SetupPumpOff: LCD_Sym_Setup_PumpOff(); break;
-    case SetupMud: LCD_Sym_Setup_Mud(); break;
-    case SetupCompressor: LCD_Sym_Setup_Compressor(); break;
-    case SetupPhosphor: LCD_Sym_Setup_Phosphor(); break;
-    case SetupInflowPump: LCD_Sym_Setup_InflowPump(); break;
-    case SetupCal: LCD_Sym_Setup_Cal(ps); break;
-    case SetupAlarm: LCD_Sym_Setup_Alarm(ps); break;
-    case SetupWatch: LCD_Sym_Setup_Watch(); break;
-    case SetupZone: LCD_Sym_Setup_Zone(); break;
-    default: break;
-  }
-}
-
-
-/* ------------------------------------------------------------------*
  *            data page
  * ------------------------------------------------------------------*/
 
@@ -758,8 +718,6 @@ void LCD_DataPage(struct PlantState *ps)
     // reset time
     ps->page_state->page_time->min = 5;
     ps->page_state->page_time->sec = 0;
-    //if(ps->page_state->page != DataSonic && ps->page_state->page != DataSonicAuto && ps->page_state->page != DataSonicBootR && ps->page_state->page != DataSonicBootW){ LCD_Data_Symbols(ps); }
-    if(ps->page_state->page != DataSonicAuto && ps->page_state->page != DataSonicBootR && ps->page_state->page != DataSonicBootW){ LCD_Data_Symbols(ps); }
   }
 
   // watchdog and wait
@@ -767,24 +725,6 @@ void LCD_DataPage(struct PlantState *ps)
 
   // timeout -> auto page
   if(Basic_CountDown(ps)){ page_state_change_page(ps->page_state, AutoPage); }
-}
-
-
-/* ------------------------------------------------------------------*
- *            data set pages
- * ------------------------------------------------------------------*/
-
-void LCD_Data_Symbols(struct PlantState *ps)
-{
-  switch(ps->page_state->page)
-  {
-    case DataMain: LCD_Sym_Data_Page(ps); break;
-    case DataAuto: LCD_Sym_Data_Auto(); break;
-    case DataManual: LCD_Sym_Data_Manual(); break;
-    case DataSetup: LCD_Sym_Data_Setup(); break;
-    case DataSonic: LCD_Sym_Data_Sonic(ps); break;
-    default: break;
-  }
 }
 
 

@@ -36,7 +36,7 @@ void LCD_Sym_Auto_MPX_AverageValue_Mbar(void);
 void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps);
 
 // cycle general
-void LCD_Sym_Auto_Main(struct PlantState *ps);
+void LCD_Sym_Auto_Main(void);
 void LCD_Sym_Auto_Compressor(bool negative);
 void LCD_Sym_Auto_Compressor_OpHours(int value);
 void LCD_Sym_Auto_ClrActualCycleSpace(void);

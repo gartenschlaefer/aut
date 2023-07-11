@@ -59,28 +59,90 @@ void View_Update(struct View *view, struct PlantState *ps)
  *            change page
  * ------------------------------------------------------------------*/
 
-void View_ChangePage(struct View *view, t_page new_page)
+void View_ChangePage(struct PlantState *ps, struct View *view, t_page new_page)
 {
-  // page dependent handling
-  switch(new_page)
+  // segment pages
+  // auto pages
+  if(new_page >= AUTO_PAGE_START && new_page <= AUTO_PAGE_END)
   {
-    // auto pages
-    case AutoSetDown: case AutoMud: case AutoPumpOff: case AutoZone: case AutoCirc: case AutoAir: 
-      view->f_main_page_view_update = &View_AutoPages; 
-      break;
+    // set symbols
+    LCD_Sym_Auto_SetManager(ps);
 
-    // manual pages
-    case ManualMain: case ManualPumpOff_On: case ManualCirc: case ManualAir: case ManualSetDown: case ManualPumpOff:
-    case ManualMud: case ManualCompressor: case ManualPhosphor: case ManualInflowPump: 
-      view->f_main_page_view_update = &View_ManualPages;
-      break;
+    // update view
+    view->f_main_page_view_update = &View_AutoPages; 
+  }
 
-    // setup pages
-    case SetupCal: case SetupCalPressure: 
-      view->f_main_page_view_update = &View_SetupPages;
-      break;
+  // manual pages
+  else if(new_page >= MANUAL_PAGE_START && new_page <= MANUAL_PAGE_END)
+  {
+    switch(new_page)
+    {
+      case ManualMain: LCD_Sym_Manual_Main(ps); break;
 
-    default: break;  
+      case ManualPumpOff:
+        LCD_Sym_Manual_PumpOff_OkButton(true);
+        LCD_Sym_Manual_PageTime_Print(ps);
+        break;
+
+      case ManualPumpOff_On:
+        LCD_Sym_Manual_PumpOff_OkButton_Clr();
+        LCD_Sym_Manual_Text(ps);
+        break;
+      default: break;
+    }
+
+    // update
+    view->f_main_page_view_update = &View_ManualPages;
+  }
+
+  // setup pages
+  else if(new_page >= SETUP_PAGE_START && new_page <= SETUP_PAGE_END)
+  {
+    // update
+    view->f_main_page_view_update = &View_SetupPages;
+
+    // page dependent handling
+    switch(new_page)
+    {
+      case SetupMain: LCD_Sym_Setup_Page(); break;
+      case SetupCirculate: LCD_Sym_Setup_Circulate(); break;
+      case SetupAir: LCD_Sym_Setup_Air(); break;
+      case SetupSetDown: LCD_Sym_Setup_SetDown(); break;
+      case SetupPumpOff: LCD_Sym_Setup_PumpOff(); break;
+      case SetupMud: LCD_Sym_Setup_Mud(); break;
+      case SetupCompressor: LCD_Sym_Setup_Compressor(); break;
+      case SetupPhosphor: LCD_Sym_Setup_Phosphor(); break;
+      case SetupInflowPump: LCD_Sym_Setup_InflowPump(); break;
+      case SetupAlarm: LCD_Sym_Setup_Alarm(ps); break;
+      case SetupWatch: LCD_Sym_Setup_Watch(); break;
+      case SetupZone: LCD_Sym_Setup_Zone(); break;
+
+      // calibration
+      case SetupCal: LCD_Sym_Setup_Cal(ps);
+      case SetupCalPressure: view->f_main_page_view_update = &View_SetupPagesCal; break;
+
+      default: break;
+    }
+  }
+
+  // data pages
+  else if(new_page >= DATA_PAGE_START && new_page <= DATA_PAGE_END)
+  {
+    switch(new_page)
+    {
+      case DataMain: LCD_Sym_Data_Page(ps); break;
+      case DataAuto: LCD_Sym_Data_Auto(); break;
+      case DataManual: LCD_Sym_Data_Manual(); break;
+      case DataSetup: LCD_Sym_Data_Setup(); break;
+      case DataSonic: LCD_Sym_Data_Sonic(ps); break;
+      default: break;
+    }
+    view->f_main_page_view_update = &View_DataPages;
+  }
+
+  else
+  {
+    view->f_main_page_view_update = &View_DataPages;
   }
 }
 
@@ -116,7 +178,9 @@ void View_ManualPages(struct PlantState *ps)
  *            view setup pages
  * ------------------------------------------------------------------*/
 
-void View_SetupPages(struct PlantState *ps)
+void View_SetupPages(struct PlantState *ps){ ; }
+
+void View_SetupPagesCal(struct PlantState *ps)
 {
   // mpx value
   if(ps->mpx_state->new_mpx_av_flag){ LCD_Sym_Setup_Cal_MPX_AverageValue(ps->mpx_state->actual_mpx_av); } 
@@ -127,7 +191,4 @@ void View_SetupPages(struct PlantState *ps)
  *            view data pages
  * ------------------------------------------------------------------*/
 
-void View_DataPages(struct PlantState *ps)
-{
-  ;
-}
+void View_DataPages(struct PlantState *ps){ ; }

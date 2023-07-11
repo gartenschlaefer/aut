@@ -46,7 +46,7 @@ void LCD_Sym_Auto_SetManager(struct PlantState *ps)
   // page dependend symbols
   switch(ps->page_state->page)
   {
-    case AutoPage: LCD_Sym_Auto_Main(ps); break;
+    case AutoPage: LCD_Sym_Auto_Main(); break;
     case AutoZone: LCD_Sym_Auto_Zone(); break;
     case AutoSetDown: LCD_Sym_Auto_SetDown(); break;
     case AutoPumpOff: LCD_Sym_Auto_PumpOff(); break;
@@ -186,7 +186,7 @@ void LCD_Sym_Auto_PageTime_Update(struct PlantState *ps)
  *            set auto page
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_Main(struct PlantState *ps)
+void LCD_Sym_Auto_Main(void)
 {
   LCD_Sym_MarkTextButton(TEXT_BUTTON_auto);
   LCD_Sym_Clr_InfoSpace();
@@ -501,7 +501,7 @@ void LCD_Sym_Manual_MPX_AverageValue(int value)
   unsigned char col = 42;
   // negative / positive pressure
   if(value < 0){ value = -value; LCD_WriteAnyStringFont(f_6x8_p, row, col - 6, "-"); }
-  else{ LCD_ClrSpace(row, col - 6, 2, 4); }
+  else{ LCD_ClrSpace(row, col - 6, 2, 6); }
   LCD_WriteAnyValue(f_6x8_p, 3, row, col, value);
 }
 
