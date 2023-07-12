@@ -240,6 +240,7 @@ struct USARTState
 struct TempSensor
 {
   char actual_temp;
+  bool new_temp_flag;
 };
 
 
@@ -455,12 +456,18 @@ struct PlantState
 
 
 /* ------------------------------------------------------------------*
- *            view structures
+ *            pattern mvc
  * ------------------------------------------------------------------*/
 
 struct View
 {
   void (*f_main_page_view_update)(struct PlantState *ps);
+};
+
+
+struct Controller
+{
+  void (*f_controller_update)(struct PlantState *ps);
 };
 
 #endif

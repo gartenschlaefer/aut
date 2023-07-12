@@ -39,11 +39,14 @@ void MCP9800_Temp_Update(struct PlantState *ps)
   {
     char temp = (char)MCP9800_ReceiveByte(ps->twi_state, 0x00);
     ps->temp_sensor->actual_temp = temp;
+    ps->temp_sensor->new_temp_flag = true;
+
 
     // error check
     if(temp > (char)ps->settings->settings_alarm->temp){ ps->error_state->pending_err_code |= E_T; }
     else{ ps->error_state->pending_err_code &= ~E_T; }
   }
+  else{ ps->temp_sensor->new_temp_flag = false; }
 }
 
 

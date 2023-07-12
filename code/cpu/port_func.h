@@ -136,7 +136,6 @@ void PORT_Backlight_Error(struct Backlight *backlight);
 void PORT_Backlight_Update(struct PlantState *ps);
 
 void PORT_Ventilator_Update(struct PlantState *ps);
-void PORT_Auto_RunTime(struct PlantState *ps);
 
 void PORT_RelaisSet(unsigned char relais);
 void PORT_RelaisClr(unsigned char relais);

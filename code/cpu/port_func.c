@@ -56,6 +56,36 @@ void PORT_Update(struct PlantState *ps)
   PORT_Buzzer_Update(ps);
   ps->port_state->f_backlight_update(ps);
   PORT_Bootloader();
+  PORT_Ventilator_Update(ps);
+
+  // once per minute check
+  if(ps->frame_counter->sixty_sec_counter == 20)
+  {
+    // Floating switch alarm
+    if(IN_FLOAT_S3 && !ps->input_handler->float_sw_alarm)
+    {
+      if(ps->settings->settings_alarm->sensor)
+      {
+        Modem_Alert(ps, "Error: floating switch");
+        Error_On(ps);
+      }
+      ps->input_handler->float_sw_alarm = 1;
+    }
+    else if(!IN_FLOAT_S3 && ps->input_handler->float_sw_alarm)
+    {
+      if(ps->settings->settings_alarm->sensor)
+      {
+        Error_Off(ps);
+      }
+      ps->input_handler->float_sw_alarm = 0;
+    }
+
+    //*** debug USVCheckVoltageSupply
+    if(!DEBUG)
+    {
+      ADC_USV_Check(ps);
+    }
+  }
 }
 
 
@@ -173,6 +203,9 @@ void PORT_Backlight_Update(struct PlantState *ps)
 
 void PORT_Ventilator_Update(struct PlantState *ps)
 {
+  // no new temp
+  if(!ps->temp_sensor->new_temp_flag){ return; }
+
   // temperature
   char temp = ps->temp_sensor->actual_temp;
   char alarm_temp = (char)ps->settings->settings_alarm->temp;
@@ -206,45 +239,6 @@ void PORT_Ventilator_Update(struct PlantState *ps)
 
 void PORT_RelaisSet(unsigned char relais){ P_RELAIS.OUTSET = relais; }
 void PORT_RelaisClr(unsigned char relais){ P_RELAIS.OUTCLR = relais; }
-
-
-/* ------------------------------------------------------------------*
- *            run time functions
- * ------------------------------------------------------------------*/
-
-void PORT_Auto_RunTime(struct PlantState *ps)
-{ 
-  // once per minute check
-  if(ps->frame_counter->sixty_sec_counter == 20)
-  {
-    PORT_Ventilator_Update(ps);
-
-    // Floating switch alarm
-    if(IN_FLOAT_S3 && !ps->input_handler->float_sw_alarm)
-    {
-      if(ps->settings->settings_alarm->sensor)
-      {
-        Modem_Alert(ps, "Error: floating switch");
-        Error_On(ps);
-      }
-      ps->input_handler->float_sw_alarm = 1;
-    }
-    else if(!IN_FLOAT_S3 && ps->input_handler->float_sw_alarm)
-    {
-      if(ps->settings->settings_alarm->sensor)
-      {
-        Error_Off(ps);
-      }
-      ps->input_handler->float_sw_alarm = 0;
-    }
-
-    //*** debug USVCheckVoltageSupply
-    if(!DEBUG)
-    {
-      ADC_USV_Check(ps);
-    }
-  }
-}
 
 
 /* ------------------------------------------------------------------*

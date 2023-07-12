@@ -13,7 +13,10 @@
 
 //*-* configuration
 
-// start page for automatic mode
+// start page for control
+#define CONTROL_START_PAGE DataPage
+
+// start page for automatic mode (can also be AutoZone for instance)
 #define AUTO_START_PAGE AutoSetDown
 
 // company id: 0 = Purator; 1 = HECS
@@ -41,7 +44,7 @@
 // software version x.x.x
 // 1.3.0 - SMS support
 #define SV1 1
-#define SV2 3
+#define SV2 4
 #define SV3 11
 
 // default time: release time

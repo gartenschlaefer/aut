@@ -5,20 +5,22 @@
 #include "view.h"
 #include "error_func.h"
 #include "port_func.h"
+#include "controller.h"
 
 
 /* ------------------------------------------------------------------*
  *            change page
  * ------------------------------------------------------------------*/
 
-void page_state_update(struct PlantState *ps, struct View *view)
+void page_state_update(struct PlantState *ps, struct View *view, struct Controller *controller)
 {
   // change of page
   if(ps->page_state->change_page_flag)
   {
     t_page new_page = ps->page_state->page;
-    View_ChangePage(ps, view, new_page);
+    Controller_ChangePage(controller, new_page);
     PORT_ChangePage(ps, new_page);
+    View_ChangePage(ps, view, new_page);
     Error_ChangePage(ps);
     ps->page_state->change_page_flag = false;
   }

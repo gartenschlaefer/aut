@@ -1,5 +1,7 @@
 // --
 // main
+// author: Christian Walter
+// uC: ATxmega128A1
 
 #include <stdlib.h>
 #include "config.h"
@@ -19,9 +21,12 @@
 #include "compressor_info.h"
 #include "time_state.h"
 #include "mcp9800_driver.h"
-#include "view.h"
 #include "page_state.h"
 #include "tank.h"
+
+// main pattern
+#include "view.h"
+#include "controller.h"
 
 
 /* ------------------------------------------------------------------*
@@ -51,7 +56,7 @@ int main(void)
   // datatypes and states
   struct Backlight backlight = { .state = _bl_on, .count = 0 };
   struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
-  struct PageState page_state = { .page = DataPage, .page_time = &page_time, .change_page_flag = false };
+  struct PageState page_state = { .page = CONTROL_START_PAGE, .page_time = &page_time, .change_page_flag = false };
   struct PageState auto_save_page_state = { .page = NonePage, .page_time = &auto_save_page_time, .change_page_flag = false };
   struct PortState port_state = { .buzzer_on = false, .ventilator_on_flag = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle, .queue_valve_action = queue_new(), .valve_init = false, .f_backlight_update = &PORT_Nope };
   struct CompressorState compressor_state = { .operation_time = &comp_thms, .cycle_o2_min = 0 };
@@ -63,7 +68,7 @@ int main(void)
   struct AirCircState air_circ_state = { .air_tms = &air_tms };
   struct CANState can_state = { .mcp2525_ok_flag = true, .rxb0_buffer = { 0x00 }, .rxb0_data_av = 0 };
   struct TWIState twi_state = { .twid_rx_buffer = { 0x00, 0xFF } };
-  struct TempSensor temp_sensor = { .actual_temp = 0 };
+  struct TempSensor temp_sensor = { .actual_temp = 0, .new_temp_flag = false };
   struct SonicState sonic_state = { .app_type = SONIC_APP_none, .software_version = 0, .no_us_error_counter = 0, .no_us_flag = false, .new_distance_flag = false, .d_mm = 0, .d_mm_prev = 0, .d_mm_max = 0, .d_mm_min = 10000, .temp = 0, .temp_max = 0, .temp_min = 10000, .d_error = 0, .read_tank_state = SONIC_TANK_timer_init, .query_state = _usWait, .query_error_count = 0, .record_position = 5, .record_error_update = 0 };
   struct InputHandler input_handler = { .float_sw_alarm = 0 };
   struct Modem modem = { .turned_on = 0, .turn_on_state = 0, .turn_on_error = 0, .startup_delay = 0, .tele_nr1 = &tele_nr1, .tele_nr2 = &tele_nr2, .tele_nr_temp = &tele_nr_temp, .temp_digit_pos = 0 };
@@ -75,6 +80,7 @@ int main(void)
   // main states
   struct PlantState plant_state = { .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .tank_state = &tank_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .temp_sensor = &temp_sensor, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state, .touch_state = &touch_state, .settings = settings};
   struct View *view = View_New();
+  struct Controller *controller = Controller_New();
 
   // pointer to states
   struct PlantState *ps = &plant_state;
@@ -117,9 +123,6 @@ int main(void)
     // temp update
     MCP9800_Temp_Update(ps);
 
-    // view update
-    View_Update(view, ps);
-
     //*** debug port and lcd page
     if(DEBUG)
     {
@@ -130,81 +133,14 @@ int main(void)
       LCD_WriteAnyValue(f_4x6_p, 3, 18, 0, (int)ps->frame_counter->fps);
     }
 
-    // reset flag
-    page_state_update(ps, view);
+    // handles page changes
+    page_state_update(ps, view, controller);
 
-    // GreatLinker
-    switch(ps->page_state->page)
-    {
-      // main pages
-      case AutoPage: LCD_AutoPage(ps); break;
-      case ManualPage: LCD_ManualPage(ps); break;
-      case SetupPage: LCD_SetupPage(ps); break;
-      case DataPage: LCD_DataPage(ps); break;
+    // controller update
+    Controller_Update(controller, ps);
 
-      // pin-pages
-      case PinManual: LCD_PinPage_Main(ps); break;
-      case PinSetup: LCD_PinPage_Main(ps); break;
-
-      // auto pages
-      case AutoZone:
-      case AutoSetDown:
-      case AutoPumpOff:
-      case AutoMud:
-      case AutoCirc:
-      case AutoAir:
-        LCD_AutoPage(ps);
-        PORT_Auto_RunTime(ps);
-        break;
-
-      // manual pages
-      case ManualMain:
-      case ManualCirc:
-      case ManualAir:
-      case ManualSetDown:
-      case ManualPumpOff:
-      case ManualPumpOff_On:
-      case ManualMud:
-      case ManualCompressor:
-      case ManualPhosphor:
-      case ManualInflowPump:
-      case ManualValveTest:
-        LCD_ManualPage(ps);
-        break;
-
-      // setup pages
-      case SetupMain:
-      case SetupCirculate:
-      case SetupAir:
-      case SetupSetDown:
-      case SetupPumpOff:
-      case SetupMud:
-      case SetupCompressor:
-      case SetupPhosphor:
-      case SetupInflowPump:
-      case SetupCal:
-      case SetupCalPressure:
-      case SetupAlarm:
-      case SetupWatch:
-      case SetupZone:
-        LCD_SetupPage(ps);
-        break;
-
-      // data pages
-      case DataMain:
-      case DataAuto:
-      case DataManual:
-      case DataSetup:
-      case DataSonic:
-      case DataSonicAuto:
-      case DataSonicBoot:
-      case DataSonicBootR:
-      case DataSonicBootW:
-        LCD_DataPage(ps);
-        break;
-
-      default: ps->page_state->page = AutoPage; break;
-    }
+    // view update
+    View_Update(view, ps);
 
     // frame timer wait
     TCF1_FrameTimer_WaitUntilFrameEnded(ps->frame_counter);
@@ -214,4 +150,5 @@ int main(void)
   queue_destroy(port_state.queue_valve_action);
   Settings_Destroy(settings);
   View_Destroy(view);
+  Controller_Destroy(controller);
 }

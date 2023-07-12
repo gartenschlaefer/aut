@@ -12,7 +12,7 @@
  *            function header
  * ------------------------------------------------------------------*/
 
-void page_state_update(struct PlantState *ps, struct View *view);
+void page_state_update(struct PlantState *ps, struct View *view, struct Controller *controller);
 void page_state_change_page(struct PageState *page_state, t_page new_page);
 void page_state_copy(struct PageState *page_state, struct PageState *new_page_state);
 
