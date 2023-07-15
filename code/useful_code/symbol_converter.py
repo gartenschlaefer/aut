@@ -176,18 +176,52 @@ def bmp_to_symbols(cfg):
   # bitmaps to vertical binary format
   bmp_files = sorted(glob(cfg["dirs"]["in_pgm"] + '*.pbm'))
 
+  print(bmp_files)
+
+  # get symbol names
+  symbol_names = np.unique([re.split(r'-[0-9]+\.pbm', Path(f).name)[0] for f in bmp_files])
+
+  # symbol dict
+  symbols_dict = {s: [f for f in bmp_files if s == re.split(r'-[0-9]+\.pbm', Path(f).name)[0]] for s in symbol_names} 
+
+  # out text
+  out_text = ''
+
   # go through each file
-  for bmp_file in bmp_files:
-    print("\nfile: ", bmp_file)
+  for symbol_name, symbol_files in symbols_dict.items():
+    print("\nsymbol name: ", symbol_name)
+    symbol_text = '\nunsigned char {}[{}_LEN] =\n{{'.format(symbol_name, symbol_name)
 
-    # extract symbol name from file
-    symbol_name = Path(bmp_file).stem
-    print(symbol_name)
+    for symbol_file in symbol_files:
+      print("file: ", symbol_file)
+      symbol_text += '\n\n\t// {}'.format(Path(symbol_file).name)
 
-    # get image
-    bin_img = convert_bmp_to_vertical_binary(cv2.imread(bmp_file, cv2.IMREAD_GRAYSCALE))
+      # read image
+      img = cv2.imread(symbol_file, cv2.IMREAD_GRAYSCALE)
 
-    print(bin_img)
+      # get dimensions
+      dim = img.shape
+
+      # get image
+      bin_img = convert_bmp_to_vertical_binary(img)
+      print(bin_img)
+      print(dim)
+
+      # symbol data
+      for row_data in bin_img:
+        symbol_text += '\n\t'
+        for d in row_data:
+          symbol_text += '{}, '.format(d)
+
+    # add end and add to overall text
+    symbol_text += '\n};\n'
+    out_text += symbol_text
+
+  print(out_text)
+
+  # write file
+  with open(cfg["output_file"], 'w') as f:
+    f.write(out_text)
 
 
 if __name__ == '__main__':
@@ -204,7 +238,7 @@ if __name__ == '__main__':
   create_folder(cfg['dirs'])
 
   # symbols to bitmaps
-  symbols_to_bmp(cfg)
+  #symbols_to_bmp(cfg)
 
   # bitmaps to symbols
   bmp_to_symbols(cfg)
