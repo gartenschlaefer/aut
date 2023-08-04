@@ -7,7 +7,7 @@
 
 #include "config.h"
 #include "mcp7941_driver.h"
-#include "basic_func.h"
+#include "utils.h"
 
 
 /* ==================================================================*

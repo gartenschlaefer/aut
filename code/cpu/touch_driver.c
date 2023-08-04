@@ -7,7 +7,7 @@
 #include "adc_func.h"
 #include "tc_func.h"
 #include "memory_app.h"
-#include "basic_func.h"
+#include "utils.h"
 
 
 /*-------------------------------------------------------------------*
@@ -32,7 +32,7 @@ void Touch_Cal_Main(void)
   while(!(TCD0_Wait_Query()));
 
   // watchdog restart
-  BASIC_WDT_RESET;
+  WDT_RESET;
 
   //-----------------------------------------------TouchValue-----
   LCD_Clean();
@@ -40,11 +40,11 @@ void Touch_Cal_Main(void)
   while(!(TCD0_Wait_Query()));
 
   // x, y calibration
-  BASIC_WDT_RESET;
+  WDT_RESET;
   calX = Touch_Cal_X_Init();
-  BASIC_WDT_RESET;
+  WDT_RESET;
   calY = Touch_Cal_Y_Init();
-  BASIC_WDT_RESET;
+  WDT_RESET;
 
   MEM_EEPROM_WriteVar(TOUCH_X_max, (calX >> 4));
   MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY >> 4));

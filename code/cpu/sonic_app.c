@@ -12,7 +12,7 @@
 #include "memory_app.h"
 #include "output_app.h"
 #include "at24c_driver.h"
-#include "basic_func.h"
+#include "utils.h"
 
 
 /* ------------------------------------------------------------------*
@@ -640,7 +640,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
       }
 
       // watchdog restart
-      BASIC_WDT_RESET;
+      WDT_RESET;
 
       // set page address and write
       int adr = ((AT24C_BOOT_PAGE_OS + page) << 8);
@@ -689,7 +689,7 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
   {
     for(int page = 0; page < 32; page++)  //32Pages = 4kB
     {
-      BASIC_WDT_RESET;
+      WDT_RESET;
       LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
       //--------------------------------------------Write1EEPage
       for(int byte8 = 0; byte8 < 128; byte8 += 8)

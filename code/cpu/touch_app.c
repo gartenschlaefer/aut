@@ -18,7 +18,7 @@
 #include "error_func.h"
 #include "sonic_app.h"
 #include "can_app.h"
-#include "basic_func.h"
+#include "utils.h"
 #include "at24c_app.h"
 #include "settings.h"
 #include "compressor_info.h"
@@ -349,7 +349,7 @@ void Touch_Setup_Matrix_MinusPlus(struct PlantState *ps, unsigned char touch_mat
         ps->touch_state->touched = _ctrl_pos_minus; 
         LCD_Sym_ControlButtons(_ctrl_neg_minus); 
       }
-      Basic_LimitDec_VL(ps->touch_state->p_value_setting, ps->touch_state->p_value_limit);
+      f_limit_dec_vl(ps->touch_state->p_value_setting, ps->touch_state->p_value_limit);
       break;
 
     // plus
@@ -359,7 +359,7 @@ void Touch_Setup_Matrix_MinusPlus(struct PlantState *ps, unsigned char touch_mat
         ps->touch_state->touched = _ctrl_pos_plus;
         LCD_Sym_ControlButtons(_ctrl_neg_plus);
       }
-      Basic_LimitAdd_VL(ps->touch_state->p_value_setting, ps->touch_state->p_value_limit);
+      f_limit_add_vl(ps->touch_state->p_value_setting, ps->touch_state->p_value_limit);
       break;
       
     default: break;
@@ -1437,15 +1437,15 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
     // okay
     case 0x14: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_ok; LCD_Sym_ControlButtons2(_ctrl_neg_ok); }
       ps->touch_state->init = false;
-      unsigned char time = (((ps->touch_state->var[0]/10) << 4) | (ps->touch_state->var[0] % 10));
+      unsigned char time = (((ps->touch_state->var[0] / 10) << 4) | (ps->touch_state->var[0] % 10));
       MCP7941_WriteByte(TIC_HOUR, time);
-      time = (((ps->touch_state->var[1]/10) << 4) | (ps->touch_state->var[1] % 10));
+      time = (((ps->touch_state->var[1] / 10) << 4) | (ps->touch_state->var[1] % 10));
       MCP7941_WriteByte(TIC_MIN, time);
-      time = (((ps->touch_state->var[2]/10) << 4) | (ps->touch_state->var[2] % 10));
+      time = (((ps->touch_state->var[2] / 10) << 4) | (ps->touch_state->var[2] % 10));
       MCP7941_WriteByte(TIC_DATE, time);
-      time = (((ps->touch_state->var[3]/10) << 4) | (ps->touch_state->var[3] % 10));
+      time = (((ps->touch_state->var[3] / 10) << 4) | (ps->touch_state->var[3] % 10));
       MCP7941_WriteByte(TIC_MONTH, time);
-      time = (((ps->touch_state->var[4]/10) << 4) | (ps->touch_state->var[4] % 10));
+      time = (((ps->touch_state->var[4] / 10) << 4) | (ps->touch_state->var[4] % 10));
       MCP7941_WriteByte(TIC_YEAR, time);
       MEM_EEPROM_WriteSetupEntry(ps);
       page_state_change_page(ps->page_state, SetupPage);
@@ -1455,11 +1455,11 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
     case 0x24: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Sym_ControlButtons2(_ctrl_neg_plus); }
       switch(ps->touch_state->select)
       {
-        case 0: ps->touch_state->var[0] = Basic_LimitAdd(ps->touch_state->var[0], 23); break;
-        case 1: ps->touch_state->var[1] = Basic_LimitAdd(ps->touch_state->var[1], 59); break;
-        case 2: ps->touch_state->var[2] = Basic_LimitAdd(ps->touch_state->var[2], 31); break;
-        case 3: ps->touch_state->var[3] = Basic_LimitAdd(ps->touch_state->var[3], 12); break;
-        case 4: ps->touch_state->var[4] = Basic_LimitAdd(ps->touch_state->var[4], 99); break;
+        case 0: ps->touch_state->var[0] = f_limit_add(ps->touch_state->var[0], 23); break;
+        case 1: ps->touch_state->var[1] = f_limit_add(ps->touch_state->var[1], 59); break;
+        case 2: ps->touch_state->var[2] = f_limit_add(ps->touch_state->var[2], 31); break;
+        case 3: ps->touch_state->var[3] = f_limit_add(ps->touch_state->var[3], 12); break;
+        case 4: ps->touch_state->var[4] = f_limit_add(ps->touch_state->var[4], 99); break;
         default: break;
       } break;
 
@@ -1467,11 +1467,11 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
     case 0x34: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Sym_ControlButtons2(_ctrl_neg_minus); }
       switch(ps->touch_state->select)
       {
-        case 0: ps->touch_state->var[0] = Basic_LimitDec(ps->touch_state->var[0], 0); break;
-        case 1: ps->touch_state->var[1] = Basic_LimitDec(ps->touch_state->var[1], 0); break;
-        case 2: ps->touch_state->var[2] = Basic_LimitDec(ps->touch_state->var[2], 1); break;
-        case 3: ps->touch_state->var[3] = Basic_LimitDec(ps->touch_state->var[3], 1); break;
-        case 4: ps->touch_state->var[4] = Basic_LimitDec(ps->touch_state->var[4], 0); break;
+        case 0: ps->touch_state->var[0] = f_limit_dec(ps->touch_state->var[0], 0); break;
+        case 1: ps->touch_state->var[1] = f_limit_dec(ps->touch_state->var[1], 0); break;
+        case 2: ps->touch_state->var[2] = f_limit_dec(ps->touch_state->var[2], 1); break;
+        case 3: ps->touch_state->var[3] = f_limit_dec(ps->touch_state->var[3], 1); break;
+        case 4: ps->touch_state->var[4] = f_limit_dec(ps->touch_state->var[4], 0); break;
         default: break;
       } break;
 

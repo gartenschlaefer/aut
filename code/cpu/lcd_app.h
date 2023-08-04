@@ -15,6 +15,7 @@
  * ------------------------------------------------------------------*/
 
 void LCD_DisplayRefresh(struct PlantState *ps);
+unsigned char LCD_PageCountDown(struct PlantState *ps);
 
 // auto pages
 void LCD_AutoPage(struct PlantState *ps);

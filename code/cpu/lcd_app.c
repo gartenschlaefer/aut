@@ -17,7 +17,7 @@
 #include "error_func.h"
 #include "tc_func.h"
 #include "sonic_app.h"
-#include "basic_func.h"
+#include "utils.h"
 #include "output_app.h"
 #include "port_func.h"
 #include "compressor_info.h"
@@ -46,6 +46,43 @@ void LCD_DisplayRefresh(struct PlantState *ps)
 
   // update frame counter
   ps->frame_counter->lcd_reset++;
+}
+
+
+/* ------------------------------------------------------------------*
+ *            page countdown
+ * ------------------------------------------------------------------*/
+
+unsigned char LCD_PageCountDown(struct PlantState *ps)
+{
+  // countdown update
+  if(ps->time_state->tic_sec_update_flag)
+  {
+    // no countdown when there is a valve action
+    if(ps->port_state->valve_action_flag){ return 0; }
+
+    // safety for seconds
+    if(ps->page_state->page_time->sec < 0 || ps->page_state->page_time->sec > 61){ ps->page_state->page_time->sec = 0; }
+
+    // minute update
+    if(!ps->page_state->page_time->sec && ps->page_state->page_time->min)
+    {
+      ps->page_state->page_time->sec = 60;
+      ps->page_state->page_time->min--;
+    }
+
+    // second update
+    if(ps->page_state->page_time->sec){ ps->page_state->page_time->sec--; }
+
+    // end of page time
+    if(!ps->page_state->page_time->sec && !ps->page_state->page_time->min)
+    {
+      ps->page_state->page_time->min = 0;
+      ps->page_state->page_time->sec = 5;
+      return 1;
+    }
+  }
+  return 0;
 }
 
 
@@ -92,7 +129,7 @@ void LCD_AutoPage(struct PlantState *ps)
   page_state_copy(ps->auto_save_page_state, ps->page_state);
 
   // countdown end handling
-  if((Basic_CountDown(ps)) && !ps->error_state->error_code){ LCD_Auto_CountDownEndAction(ps); }
+  if((LCD_PageCountDown(ps)) && !ps->error_state->error_code){ LCD_Auto_CountDownEndAction(ps); }
 
   // touch linker
   Touch_Auto_Linker(ps);
@@ -513,7 +550,7 @@ void LCD_ManualPage(struct PlantState *ps)
   Sonic_Update(ps);
 
   // count down
-  if(Basic_CountDown(ps)){ MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps->page_state, AutoPage); }
+  if(LCD_PageCountDown(ps)){ MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps->page_state, AutoPage); }
 
   // check if page changed
   if(save_page != ps->page_state->page) 
@@ -685,7 +722,7 @@ void LCD_SetupPage(struct PlantState *ps)
   else if((ps->page_state->page == SetupAlarm)){ MCP9800_WriteTemp(ps->twi_state); }
 
   // countdown
-  if(Basic_CountDown(ps)){ page_state_change_page(ps->page_state, AutoPage); }
+  if(LCD_PageCountDown(ps)){ page_state_change_page(ps->page_state, AutoPage); }
 }
 
 
@@ -721,10 +758,10 @@ void LCD_DataPage(struct PlantState *ps)
   }
 
   // watchdog and wait
-  BASIC_WDT_RESET;
+  WDT_RESET;
 
   // timeout -> auto page
-  if(Basic_CountDown(ps)){ page_state_change_page(ps->page_state, AutoPage); }
+  if(LCD_PageCountDown(ps)){ page_state_change_page(ps->page_state, AutoPage); }
 }
 
 
@@ -907,7 +944,7 @@ void LCD_PinPage_Main(struct PlantState *ps)
   t_page save_page = ps->page_state->page;
 
   // wdt and break
-  BASIC_WDT_RESET;
+  WDT_RESET;
 
   // touch
   Touch_Pin_Linker(ps);
@@ -916,7 +953,7 @@ void LCD_PinPage_Main(struct PlantState *ps)
   if(save_page != ps->page_state->page){ LCD_Clean(); }
 
   // end condition on countdown
-  if(Basic_CountDown(ps)){ LCD_Clean(); page_state_change_page(ps->page_state, AutoPage); ps->touch_state->init = false; }
+  if(LCD_PageCountDown(ps)){ LCD_Clean(); page_state_change_page(ps->page_state, AutoPage); ps->touch_state->init = false; }
 }
 
 
@@ -951,7 +988,7 @@ void LCD_Calibration(void)
 
   while(1)
   {
-    BASIC_WDT_RESET;
+    WDT_RESET;
 
     xRead = (Touch_Cal_X_ReadData() >> 4);
     yRead = (Touch_Cal_Y_ReadData() >> 4);

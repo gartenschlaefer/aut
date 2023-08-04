@@ -10,7 +10,7 @@
 #include "memory_app.h"
 #include "tc_func.h"
 #include "error_func.h"
-#include "basic_func.h"
+#include "utils.h"
 
 
 /*-------------------------------------------------------------------*

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "output_app.h"
 #include "config.h"
-#include "basic_func.h"
+#include "utils.h"
 #include "port_func.h"
 #include "memory_app.h"
 #include "tc_func.h"

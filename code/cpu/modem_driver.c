@@ -11,7 +11,7 @@
 #include "usart_func.h"
 #include "tc_func.h"
 #include "at24c_app.h"
-#include "basic_func.h"
+#include "utils.h"
 #include "page_state.h"
 
 
@@ -224,7 +224,7 @@ void Modem_Call(struct PlantState *ps, unsigned char id)
   unsigned char point_pos = 0;
   for(unsigned char i = 0; i < MO_HANG_UP_TIME; i++)
   {
-    BASIC_WDT_RESET;
+    WDT_RESET;
 
     // clear ... field
     if(point_pos > 5){ point_pos = 0; LCD_ClrSpace(16, 119, 2, 41); }
@@ -260,7 +260,7 @@ void Modem_SMS(struct PlantState *ps, unsigned char id, char msg[])
   if(tele_nr->nr[0] == 11){ return; }
 
   // watchdog
-  BASIC_WDT_RESET;
+  WDT_RESET;
 
   // text mode
   USART_WriteString("AT+CMGF=1");
@@ -280,7 +280,7 @@ void Modem_SMS(struct PlantState *ps, unsigned char id, char msg[])
 
   USART_WriteByte(0x22);
   USART_WriteByte(CHAR_CR);
-  BASIC_WDT_RESET;
+  WDT_RESET;
   TCC0_wait_ms(500);
 
   // message here
@@ -343,19 +343,19 @@ void Modem_SendTest(void)
       //Modem_DialNumber();
 
       // sms
-      BASIC_WDT_RESET;
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 30");
       TCC0_wait_sec(3);
 
-      BASIC_WDT_RESET;
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 31");
       TCC0_wait_sec(3);
 
-      BASIC_WDT_RESET;
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 32");
       TCC0_wait_sec(3);
 
-      BASIC_WDT_RESET;
+      WDT_RESET;
       Modem_WriteSMS_Test("msg 33");
       TCC0_wait_sec(3);
 
@@ -388,7 +388,7 @@ void Modem_Test(struct PlantState *ps)
   while(1)
   {
     // watchdog
-    BASIC_WDT_RESET;
+    WDT_RESET;
 
     // check modem status -> turn on
     Modem_Update(ps);

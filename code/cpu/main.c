@@ -12,7 +12,7 @@
 #include "modem_driver.h"
 #include "port_func.h"
 #include "output_app.h"
-#include "basic_func.h"
+#include "utils.h"
 #include "tc_func.h"
 #include "can_app.h"
 #include "queue.h"
@@ -85,11 +85,11 @@ int main(void)
   // pointer to states
   struct PlantState *ps = &plant_state;
 
-  // view
-  View_Init(view);
+  // controller init
+  Controller_Init(controller, ps);
 
-  // init
-  Basic_Init(ps);
+  // view init
+  View_Init(view);
 
   //*-* modem test loop
   //Modem_Test(ps);
@@ -100,28 +100,10 @@ int main(void)
   while(1)
   {
     // watchdog
-    BASIC_WDT_RESET;
-
-    // time update
-    TimeState_Update(ps);
-
-    // bootloader
-    PORT_Update(ps);
-
-    // modem
-    Modem_Update(ps);
-
-    // CAN update
-    CAN_Update(ps->can_state);
-
-    // valve update
-    OUT_Valve_Update(ps);
+    WDT_RESET;
 
     // compressor info
     Compressor_Info_Update(ps);
-
-    // temp update
-    MCP9800_Temp_Update(ps);
 
     //*** debug port and lcd page
     if(DEBUG)
