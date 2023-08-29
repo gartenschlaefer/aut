@@ -16,5 +16,7 @@
 void TimeState_Init(struct PlantState *ps);
 void TimeState_Update(struct PlantState *ps);
 
+void TimeState_TicSecUpdate(struct PlantState *ps);
+
 
 #endif

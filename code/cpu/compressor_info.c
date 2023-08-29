@@ -32,39 +32,35 @@ void Compressor_Info_Reset_OpHours(struct PlantState *ps){ MCP7941_Write_Comp_Op
  *            update
  * ------------------------------------------------------------------*/
 
-void Compressor_Info_Update(struct PlantState *ps)
+void Compressor_Info_TicSecUpdate(struct PlantState *ps)
 {
-  // sec change
-  if(ps->time_state->tic_sec_update_flag)
+  // no update rules
+  if(!ps->compressor_state->is_on_flag){ return; }
+
+  struct Thms *op_time = ps->compressor_state->operation_time;
+
+  // update second
+  op_time->sec++;
+
+  // min update
+  if(op_time->sec >= 60)
   {
-    // no update rules
-    if(!ps->compressor_state->is_on_flag){ return; }
+    op_time->sec = 0;
+    op_time->min++;
 
-    struct Thms *op_time = ps->compressor_state->operation_time;
+    // o2 counting
+    t_page p = ps->page_state->page;
+    if(p == AutoCirc || p == AutoAir){ ps->compressor_state->cycle_o2_min++; }
+  }
 
-    // update second
-    op_time->sec++;
+  // hour update
+  if(op_time->min >= 60)
+  {
+    op_time->min = 0;
+    op_time->hou++;
 
-    // min update
-    if(op_time->sec >= 60)
-    {
-      op_time->sec = 0;
-      op_time->min++;
-
-      // o2 counting
-      t_page p = ps->page_state->page;
-      if(p == AutoCirc || p == AutoAir){ ps->compressor_state->cycle_o2_min++; }
-    }
-
-    // hour update
-    if(op_time->min >= 60)
-    {
-      op_time->min = 0;
-      op_time->hou++;
-
-      // update compressor hours in memory
-      MCP7941_Write_Comp_OpHours(op_time->hou);
-      LCD_Sym_Auto_Compressor_OpHours(op_time->hou);
-    }
+    // update compressor hours in memory
+    MCP7941_Write_Comp_OpHours(op_time->hou);
+    LCD_Sym_Auto_Compressor_OpHours(op_time->hou);
   }
 }

@@ -376,7 +376,7 @@ void Modem_Test(struct PlantState *ps)
   TCC0_WaitSec_Init(3);
 
   // test page
-  page_state_change_page(ps->page_state, PinModem);
+  page_state_change_page(ps, PinModem);
 
   // RTS off
   PORTF.OUTCLR = PIN4_bm;

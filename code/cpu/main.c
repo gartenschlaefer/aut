@@ -54,12 +54,12 @@ int main(void)
   struct TeleNr tele_nr_temp = { .id = 0, .nr = { 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 } };
 
   // datatypes and states
-  struct Backlight backlight = { .state = _bl_on, .count = 0 };
-  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct PageState page_state = { .page = CONTROL_START_PAGE, .page_time = &page_time, .change_page_flag = false };
   struct PageState auto_save_page_state = { .page = NonePage, .page_time = &auto_save_page_time, .change_page_flag = false };
   struct PortState port_state = { .buzzer_on = false, .ventilator_on_flag = false, .valve_state = 0, .valve_action = VALVE_Idle, .valve_action_flag = false, .valve_handling = _valveHandling_idle, .queue_valve_action = queue_new(), .valve_init = false, .f_backlight_update = &PORT_Nope };
   struct CompressorState compressor_state = { .operation_time = &comp_thms, .cycle_o2_min = 0 };
+  struct Backlight backlight = { .state = _bl_on, .count = 0 };
+  struct FrameCounter frame_counter = { .usv = 0, .lcd_reset = 0, .frame = 0, .sixty_sec_counter = 0, .fps = 0.0, .delta_t = 0 };
   struct ErrorState error_state = { .error_code = 0, .pending_err_code = 0, .cycle_error_code_record = 0, .error_counter = { 0 }, .error_on_counter = { 0 }, .reset_error_indicator = 0 };
   struct MPXState mpx_state = { .mpx_idx = 0, .mpx_values = { 0x00 }, .actual_mpx_av = 0, .actual_level_perc = 0, .new_mpx_av_flag = false };
   struct TankState tank_state = { .level_mm = 0, .level_abs_zero_mm = 0, .level_perc = 0, .new_level_flag = false, .change_page_flag = false, .f_tank_level_measure = &Tank_Level_Measure_MPX };
@@ -76,9 +76,10 @@ int main(void)
   struct EEPROMState eeprom_state = { .time_manual_entry = { .hou = 0, .min = 0} };
   struct TouchState touch_state = { .state = _touch_clean, .x = 0, .y = 0, .chunk = 0, .x_data = { 0, 0 }, .y_data = { 0, 0 }, .init = false, .touched = 0, .select = 0, .var = { 0 }, .pin_touch = 0, .p_value_setting = NULL, .p_value_limit = NULL };
   struct Settings *settings = Settings_New();
+  struct StateMemory state_memory = { .previous_page = NonePage, .auto_save_page_state = &auto_save_page_state };
 
   // main states
-  struct PlantState plant_state = { .page_state = &page_state, .auto_save_page_state = &auto_save_page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .tank_state = &tank_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .temp_sensor = &temp_sensor, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state, .touch_state = &touch_state, .settings = settings};
+  struct PlantState plant_state = { .page_state = &page_state, .port_state = &port_state, .compressor_state = &compressor_state, .backlight = &backlight, .frame_counter = &frame_counter, .error_state = &error_state, .mpx_state = &mpx_state, .tank_state = &tank_state, .phosphor_state = &phosphor_state, .inflow_pump_state = &inflow_pump_state, .air_circ_state = &air_circ_state, .can_state = &can_state, .twi_state = &twi_state, .usart_state = &global_usart_state, .temp_sensor = &temp_sensor, .sonic_state = &sonic_state, .input_handler = &input_handler, .modem = &modem, .time_state = &time_state, .eeprom_state = &eeprom_state, .touch_state = &touch_state, .settings = settings, .state_memory = &state_memory};
   struct View *view = View_New();
   struct Controller *controller = Controller_New();
 
@@ -101,9 +102,6 @@ int main(void)
   {
     // watchdog
     WDT_RESET;
-
-    // compressor info
-    Compressor_Info_Update(ps);
 
     //*** debug port and lcd page
     if(DEBUG)

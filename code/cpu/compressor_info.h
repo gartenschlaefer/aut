@@ -15,6 +15,6 @@
 void Compressor_Info_Init(struct PlantState *ps);
 void Compressor_Info_Reset_CycleO2(struct PlantState *ps);
 void Compressor_Info_Reset_OpHours(struct PlantState *ps);
-void Compressor_Info_Update(struct PlantState *ps);
+void Compressor_Info_TicSecUpdate(struct PlantState *ps);
 
 #endif

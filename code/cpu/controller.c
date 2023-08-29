@@ -10,6 +10,7 @@
 #include "config.h"
 #include "lcd_driver.h"
 #include "lcd_app.h"
+#include "lcd_sym.h"
 #include "ad8555_driver.h"
 #include "at24c_driver.h"
 #include "mcp7941_driver.h"
@@ -29,6 +30,7 @@
 #include "time_state.h"
 #include "mcp9800_driver.h"
 #include "tank.h"
+#include "page_state.h"
 #include "output_app.h"
 
 
@@ -125,7 +127,7 @@ void Controller_Init(struct Controller *controller, struct PlantState *ps)
   Modem_Init(ps);
 
   // start page settings
-  Controller_ChangePage(controller, CONTROL_START_PAGE);
+  Controller_ChangePage(controller, ps, CONTROL_START_PAGE);
 }
 
 
@@ -162,19 +164,37 @@ void Controller_Update(struct Controller *controller, struct PlantState *ps)
  *            change page
  * ------------------------------------------------------------------*/
 
-void Controller_ChangePage(struct Controller *controller, t_page new_page)
+void Controller_ChangePage(struct Controller *controller, struct PlantState *ps, t_page new_page)
 {
-  // GreatLinker
+  // for backlight purposes
+  PORT_ChangePage(ps, new_page);
+
+  // reset previous output state (valves)
+  page_state_reset_output(ps, ps->state_memory->previous_page);
+
+  // set new state (valves)
+  page_state_set_output(ps, new_page);
+
+  // new page time
+  page_state_set_page_time(ps, new_page);
+
+  // GreatLinker of page state functions
   switch(new_page)
   {
+    // auto page init
+    case AutoPage: LCD_AutoPage_Init(ps); controller->f_controller_update = &LCD_AutoPage; break;
+
     // auto pages
-    case AutoPage: case AutoZone: case AutoSetDown: case AutoPumpOff: case AutoMud: case AutoCirc: case AutoAir:
+    case AutoZone: case AutoSetDown: case AutoPumpOff: case AutoMud: case AutoCirc: case AutoAir:
       controller->f_controller_update = &LCD_AutoPage; 
       break;
 
     // manual pages
-    case ManualPage: case ManualMain: case ManualCirc: case ManualAir: case ManualSetDown: case ManualPumpOff: case ManualPumpOff_On: case ManualMud:
+    case ManualPage: page_state_change_page(ps, ManualMain); controller->f_controller_update = &LCD_ManualPage; break;
+
+    case ManualMain: case ManualCirc: case ManualAir: case ManualSetDown: case ManualPumpOff: case ManualPumpOff_On: case ManualMud:
     case ManualCompressor: case ManualPhosphor: case ManualInflowPump: case ManualValveTest:
+      LCD_Sym_Manual_PageTime_Print(ps);
       controller->f_controller_update = &LCD_ManualPage;
       break;
 
@@ -190,9 +210,7 @@ void Controller_ChangePage(struct Controller *controller, t_page new_page)
       break;
 
     // pin-pages
-    case PinManual: case PinSetup: 
-      controller->f_controller_update = &LCD_PinPage_Main; 
-      break;
+    case PinManual: case PinSetup: LCD_PinPage_Init(ps); controller->f_controller_update = &LCD_PinPage_Main; break;
 
     default: controller->f_controller_update = &LCD_AutoPage; break;
   }

@@ -22,6 +22,7 @@
 void Sonic_Init(struct PlantState *ps)
 {
   ps->sonic_state->no_us_flag = false;
+  ps->sonic_state->read_tank_state = SONIC_TANK_timer_init;
 }
 
 

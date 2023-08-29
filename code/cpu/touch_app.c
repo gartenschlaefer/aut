@@ -174,8 +174,7 @@ void Touch_Auto_Linker(struct PlantState *ps)
           ps->touch_state->init = false;
           ps->touch_state->var[0] = 0;
           LCD_Sym_MarkTextButton(TEXT_BUTTON_manual);
-          page_state_change_page(ps->page_state, PinManual);
-          LCD_PinPage_Init(ps);
+          page_state_change_page(ps, PinManual);
         }
       }
       break;
@@ -190,8 +189,7 @@ void Touch_Auto_Linker(struct PlantState *ps)
           ps->touch_state->init = false;
           ps->touch_state->var[0] = 0;
           LCD_Sym_MarkTextButton(TEXT_BUTTON_setup);
-          page_state_change_page(ps->page_state, PinSetup);
-          LCD_PinPage_Init(ps);
+          page_state_change_page(ps, PinSetup);
         }
       }
       break;
@@ -206,7 +204,7 @@ void Touch_Auto_Linker(struct PlantState *ps)
           ps->touch_state->init = false;
           ps->touch_state->var[0] = 0;
           LCD_Sym_MarkTextButton(TEXT_BUTTON_data);
-          page_state_change_page(ps->page_state, DataPage);
+          page_state_change_page(ps, DataPage);
         }
       }
       break;
@@ -274,16 +272,16 @@ void Touch_Manual_Linker(struct PlantState *ps)
     case 0x24: if(ps->page_state->page != ManualInflowPump){ Touch_Manual_Linker_Select(ps, _n_inflow_pump); } break;
 
     case 0x31: if(ps->page_state->page != ManualValveTest){ Touch_Manual_Linker_Select(ps, _n_valve); } break;
-    case 0x33: if(ps->page_state->page == ManualPumpOff){ LCD_Sym_Manual_PumpOff_OkButton(false); page_state_change_page(ps->page_state, ManualPumpOff_On); } break;
+    case 0x33: if(ps->page_state->page == ManualPumpOff){ LCD_Sym_Manual_PumpOff_OkButton(false); page_state_change_page(ps, ManualPumpOff_On); } break;
 
     // no touch
     case 0x00: if(ps->touch_state->var[2] != _none_symbol){ LCD_Sym_Manual_Draw(ps->touch_state->var[2]); ps->touch_state->var[2] = _none_symbol; } break;
 
     // main linker
-    case 0x41: if(!ps->port_state->valve_action_flag){ ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_auto); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps->page_state, AutoPage); } break;
-    case 0x42: if(!ps->port_state->valve_action_flag){ PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps->page_state, ManualPage); } break;
-    case 0x43: if(!ps->port_state->valve_action_flag){ ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_setup); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps->page_state, SetupPage); } break;
-    case 0x44: if(!ps->port_state->valve_action_flag){ ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_data); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps->page_state, DataPage); } break;
+    case 0x41: if(!ps->port_state->valve_action_flag){ ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_auto); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps, AutoPage); } break;
+    case 0x42: if(!ps->port_state->valve_action_flag){ PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_manual); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps, ManualPage); } break;
+    case 0x43: if(!ps->port_state->valve_action_flag){ ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_setup); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps, SetupPage); } break;
+    case 0x44: if(!ps->port_state->valve_action_flag){ ps->touch_state->init = false; PORT_Backlight_On(ps->backlight); LCD_Sym_MarkTextButton(TEXT_BUTTON_data); MEM_EEPROM_WriteManualEntry(ps); page_state_change_page(ps, DataPage); } break;
 
     default: break;
   }
@@ -312,15 +310,15 @@ void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym)
     LCD_Sym_Manual_Draw(LCD_Sym_GetAntiSymbol(ps->touch_state->var[1]));
     switch(sym)
     {
-      case _n_circulate: page_state_change_page(ps->page_state, ManualCirc); break;
-      case _n_air: page_state_change_page(ps->page_state, ManualAir); break;
-      case _n_setDown: page_state_change_page(ps->page_state, ManualSetDown); break;
-      case _n_pump_off: page_state_change_page(ps->page_state, ManualPumpOff); break;
-      case _n_mud: page_state_change_page(ps->page_state, ManualMud); break;
-      case _n_compressor: page_state_change_page(ps->page_state, ManualCompressor); break;
-      case _n_phosphor: page_state_change_page(ps->page_state, ManualPhosphor); break;
-      case _n_inflow_pump: page_state_change_page(ps->page_state, ManualInflowPump); break;
-      case _n_valve: page_state_change_page(ps->page_state, ManualValveTest); break;
+      case _n_circulate: page_state_change_page(ps, ManualCirc); break;
+      case _n_air: page_state_change_page(ps, ManualAir); break;
+      case _n_setDown: page_state_change_page(ps, ManualSetDown); break;
+      case _n_pump_off: page_state_change_page(ps, ManualPumpOff); break;
+      case _n_mud: page_state_change_page(ps, ManualMud); break;
+      case _n_compressor: page_state_change_page(ps, ManualCompressor); break;
+      case _n_phosphor: page_state_change_page(ps, ManualPhosphor); break;
+      case _n_inflow_pump: page_state_change_page(ps, ManualInflowPump); break;
+      case _n_valve: page_state_change_page(ps, ManualValveTest); break;
       default: break;  
     }
     // keep old symbol
@@ -377,10 +375,10 @@ void Touch_Setup_Matrix_PageButtonLinker(struct PlantState *ps, unsigned char to
   switch(touch_matrix)
   {
     // main linker
-    case 0x41: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps->page_state, AutoPage); } break;
-    case 0x42: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps->page_state, ManualPage); } break;
-    case 0x43: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps->page_state, SetupPage); } break;
-    case 0x44: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps->page_state, DataPage); } break;
+    case 0x41: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps, AutoPage); } break;
+    case 0x42: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps, ManualPage); } break;
+    case 0x43: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps, SetupPage); } break;
+    case 0x44: if(!ps->touch_state->touched){ ps->touch_state->init = false; page_state_change_page(ps, DataPage); } break;
     default: break;
   }
 }
@@ -424,7 +422,7 @@ void Touch_Setup_Linker(struct PlantState *ps)
     case 0x00: 
       if(ps->touch_state->touched)
       { 
-        if(ps->touch_state->var[0] != NonePage){ page_state_change_page(ps->page_state, ps->touch_state->var[0]); }
+        if(ps->touch_state->var[0] != NonePage){ page_state_change_page(ps, ps->touch_state->var[0]); }
         ps->touch_state->var[0] = NonePage;
         ps->touch_state->touched = _ctrl_zero;
         ps->touch_state->init = false;
@@ -472,7 +470,7 @@ void Touch_Setup_CirculateLinker(struct PlantState *ps)
         ps->touch_state->touched = _ctrl_pos_esc;
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
         ps->touch_state->init = false;
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -487,7 +485,7 @@ void Touch_Setup_CirculateLinker(struct PlantState *ps)
         Settings_Save_Circulate(ps->settings->settings_circulate);
         MEM_EEPROM_WriteSetupEntry(ps);
         ps->touch_state->init = false;
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -588,7 +586,7 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
     case 0x13:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
       ps->touch_state->init = false; 
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // okay
@@ -597,7 +595,7 @@ void Touch_Setup_AirLinker(struct PlantState *ps)
       ps->touch_state->init = false;
       Settings_Save_Air(ps->settings->settings_air);
       MEM_EEPROM_WriteSetupEntry(ps);
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // on
@@ -683,7 +681,7 @@ void Touch_Setup_SetDownLinker(struct PlantState *ps)
     // esc
     case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
       ps->touch_state->init = false; 
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // okay
@@ -691,7 +689,7 @@ void Touch_Setup_SetDownLinker(struct PlantState *ps)
       ps->touch_state->init = false;
       Settings_Save_SetDown(ps->settings->settings_set_down);
       MEM_EEPROM_WriteSetupEntry(ps);
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     case 0x00: if(ps->touch_state->touched){ LCD_Sym_ControlButtons(ps->touch_state->touched); ps->touch_state->touched = _ctrl_zero; } break;
@@ -738,7 +736,7 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
     // esc
     case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
       ps->touch_state->init = false; 
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // okay
@@ -746,7 +744,7 @@ void Touch_Setup_PumpOffLinker(struct PlantState *ps)
       Settings_Save_PumpOff(ps->settings->settings_pump_off);
       MEM_EEPROM_WriteSetupEntry(ps);
       ps->touch_state->init = false;
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // mammoth pump
@@ -799,7 +797,7 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
     case 0x13:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
       ps->touch_state->init = false;
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     case 0x14:
@@ -807,7 +805,7 @@ void Touch_Setup_MudLinker(struct PlantState *ps)
       ps->touch_state->init = false;
       Settings_Save_Mud(ps->settings->settings_mud);
       MEM_EEPROM_WriteSetupEntry(ps);
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // min
@@ -884,7 +882,7 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
         ps->touch_state->touched = _ctrl_pos_esc; 
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
         ps->touch_state->init = false; 
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -897,7 +895,7 @@ void Touch_Setup_CompressorLinker(struct PlantState *ps)
         Settings_Save_Compressor(ps->settings->settings_compressor);
         MEM_EEPROM_WriteSetupEntry(ps);
         ps->touch_state->init = false;
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -974,7 +972,7 @@ void Touch_Setup_PhosphorLinker(struct PlantState *ps)
         ps->touch_state->touched = _ctrl_pos_esc; 
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
         ps->touch_state->init = false;
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -989,7 +987,7 @@ void Touch_Setup_PhosphorLinker(struct PlantState *ps)
         ps->phosphor_state->init_flag = false;
         LCD_Auto_Phosphor_Init(ps);
         ps->touch_state->init = false;
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -1082,7 +1080,7 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
         ps->touch_state->touched = _ctrl_pos_esc;
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
         ps->touch_state->init = false; 
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -1097,7 +1095,7 @@ void Touch_Setup_InflowPumpLinker(struct PlantState *ps)
         ps->inflow_pump_state->init_flag = false;
         LCD_Auto_InflowPump_Init(ps);
         ps->touch_state->init = false; 
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -1252,7 +1250,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
             LCD_Sym_Setup_Cal_OpenValveButton(false);
             OUT_Valve_Action(ps, CLOSE_All);
           }
-          page_state_change_page(ps->page_state, SetupCalPressure);
+          page_state_change_page(ps, SetupCalPressure);
         }
       }
       break;
@@ -1309,7 +1307,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     // calibration of pressure
     if(ps->page_state->page == SetupCalPressure)
     { 
-      page_state_change_page(ps->page_state, SetupCal);
+      page_state_change_page(ps, SetupCal);
       OUT_Clr_Air(ps);
     }
 
@@ -1326,7 +1324,7 @@ void Touch_Setup_CalLinker(struct PlantState *ps)
     else
     { 
       ps->touch_state->init = false;
-      page_state_change_page(ps->page_state, ps->touch_state->var[1]);
+      page_state_change_page(ps, ps->touch_state->var[1]);
       ps->touch_state->var[1] = ZeroPage;
     }
   }
@@ -1361,7 +1359,7 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
     case 0x13:
       if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons(_ctrl_neg_esc); }
       ps->touch_state->init = false;
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // okay
@@ -1370,7 +1368,7 @@ void Touch_Setup_AlarmLinker(struct PlantState *ps)
       ps->touch_state->init = false;
       Settings_Save_Alarm(ps->settings->settings_alarm);
       MEM_EEPROM_WriteSetupEntry(ps);
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // sensor
@@ -1431,7 +1429,7 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
   {
     // esc
     case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_pos_esc; LCD_Sym_ControlButtons2(_ctrl_neg_esc); } 
-      ps->touch_state->init = false; page_state_change_page(ps->page_state, SetupPage);
+      ps->touch_state->init = false; page_state_change_page(ps, SetupPage);
       break;
 
     // okay
@@ -1448,7 +1446,7 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
       time = (((ps->touch_state->var[4] / 10) << 4) | (ps->touch_state->var[4] % 10));
       MCP7941_WriteByte(TIC_YEAR, time);
       MEM_EEPROM_WriteSetupEntry(ps);
-      page_state_change_page(ps->page_state, SetupPage);
+      page_state_change_page(ps, SetupPage);
       break;
 
     // plus
@@ -1559,7 +1557,7 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
         ps->touch_state->touched = _ctrl_pos_esc; 
         LCD_Sym_ControlButtons(_ctrl_neg_esc);
         ps->touch_state->init = false;
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -1572,7 +1570,7 @@ void Touch_Setup_ZoneLinker(struct PlantState *ps)
         Settings_Save_Zone(ps);
         MEM_EEPROM_WriteSetupEntry(ps);
         ps->touch_state->init = false; 
-        page_state_change_page(ps->page_state, SetupPage);
+        page_state_change_page(ps, SetupPage);
       }
       break;
 
@@ -1630,10 +1628,10 @@ void Touch_Data_Matrix_PageButtonLinker(struct PlantState *ps, unsigned char tou
   switch(touch_matrix)
   {
     // main linker
-    case 0x41: ps->touch_state->init = false; page_state_change_page(ps->page_state, AutoPage); break;
-    case 0x42: ps->touch_state->init = false; page_state_change_page(ps->page_state, PinManual); LCD_PinPage_Init(ps); break;
-    case 0x43: ps->touch_state->init = false; page_state_change_page(ps->page_state, PinSetup); LCD_PinPage_Init(ps); break;
-    case 0x44: ps->touch_state->init = false; page_state_change_page(ps->page_state, DataPage); break;
+    case 0x41: ps->touch_state->init = false; page_state_change_page(ps, AutoPage); break;
+    case 0x42: ps->touch_state->init = false; page_state_change_page(ps, PinManual); break;
+    case 0x43: ps->touch_state->init = false; page_state_change_page(ps, PinSetup); break;
+    case 0x44: ps->touch_state->init = false; page_state_change_page(ps, DataPage); break;
     default: break;
   }
 }
@@ -1649,10 +1647,10 @@ void Touch_Data_Linker(struct PlantState *ps)
   switch(touch_matrix)
   {
     // auto
-    case 0x21: LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, true); page_state_change_page(ps->page_state, DataAuto); break;
-    case 0x22: LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, true); page_state_change_page(ps->page_state, DataManual); break;
-    case 0x23: LCD_Write_TextButton(9, 80, TEXT_BUTTON_setup, true); page_state_change_page(ps->page_state, DataSetup); break;
-    case 0x24: LCD_Write_TextButton(9, 120, TEXT_BUTTON_sonic, true); page_state_change_page(ps->page_state, DataSonic); break;
+    case 0x21: LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, true); page_state_change_page(ps, DataAuto); break;
+    case 0x22: LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, true); page_state_change_page(ps, DataManual); break;
+    case 0x23: LCD_Write_TextButton(9, 80, TEXT_BUTTON_setup, true); page_state_change_page(ps, DataSetup); break;
+    case 0x24: LCD_Write_TextButton(9, 120, TEXT_BUTTON_sonic, true); page_state_change_page(ps, DataSonic); break;
     default: break;
   }
 
@@ -1868,7 +1866,7 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
         if(ps->page_state->page != DataSonic){ LCD_Sym_Data_Sonic_ClearRecording(ps); }
         LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, true);
         Sonic_Data_Shot(ps);
-        page_state_change_page(ps->page_state, DataSonic);
+        page_state_change_page(ps, DataSonic);
       }
       break;
 
@@ -1880,7 +1878,7 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
         LCD_Sym_Data_Sonic_ClearRecording(ps);
         LCD_Sym_Data_Sonic_AutoText();
         Sonic_Query_Temp_Init(ps);
-        page_state_change_page(ps->page_state, DataSonicAuto);
+        page_state_change_page(ps, DataSonicAuto);
       }
       break;
 
@@ -1899,21 +1897,21 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
           LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, false);
           LCD_Sym_Data_Sonic_ClearRecording(ps);
           Sonic_Data_Boot_Off(ps);
-          page_state_change_page(ps->page_state, DataSonic); 
+          page_state_change_page(ps, DataSonic); 
           break;
         }
 
         Sonic_Data_Boot_On(ps);
-        page_state_change_page(ps->page_state, DataSonicBoot);
+        page_state_change_page(ps, DataSonicBoot);
       }
       break;
 
     case 0x14:
-      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Write_TextButton(4, 120, TEXT_BUTTON_read, true); page_state_change_page(ps->page_state, DataSonicBootR); }
+      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_plus; LCD_Write_TextButton(4, 120, TEXT_BUTTON_read, true); page_state_change_page(ps, DataSonicBootR); }
       break;
 
     case 0x24:
-      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Write_TextButton(10, 120, TEXT_BUTTON_write, true); page_state_change_page(ps->page_state, DataSonicBootW); }
+      if(!ps->touch_state->touched && ps->page_state->page == DataSonicBoot){ ps->touch_state->touched = _ctrl_pos_minus; LCD_Write_TextButton(10, 120, TEXT_BUTTON_write, true); page_state_change_page(ps, DataSonicBootW); }
       break;
 
     // reset buttons
@@ -1927,10 +1925,10 @@ void Touch_Data_SonicLinker(struct PlantState *ps)
       break;
 
     // main linker
-    case 0x41: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps->page_state, AutoPage); break;
-    case 0x42: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps->page_state, PinManual); LCD_PinPage_Init(ps); break;
-    case 0x43: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps->page_state, PinSetup); LCD_PinPage_Init(ps); break;
-    case 0x44: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps->page_state, DataPage); break;
+    case 0x41: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps, AutoPage); break;
+    case 0x42: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps, PinManual); break;
+    case 0x43: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps, PinSetup); break;
+    case 0x44: ps->touch_state->touched = _ctrl_zero; LCD_Sym_Data_Sonic_ClearRecording(ps); page_state_change_page(ps, DataPage); break;
     default: break;
   }
 }
@@ -2086,7 +2084,7 @@ void Touch_Pin_Linker(struct PlantState *ps)
         ps->modem->tele_nr_temp->id = 0; 
         ps->modem->temp_digit_pos = 0;
         for(unsigned char i = 0; i < 16; i++){ ps->modem->tele_nr_temp->nr[i] = 11; }
-        page_state_change_page(ps->page_state, DataPage);
+        page_state_change_page(ps, DataPage);
         ps->touch_state->init = false;
       }
       break;
@@ -2135,8 +2133,8 @@ void Touch_Pin_Linker(struct PlantState *ps)
       LCD_Sym_Pin_RightMessage();
       switch(ps->page_state->page)
       {
-        case PinManual: page_state_change_page(ps->page_state, ManualPage); break;
-        case PinSetup: page_state_change_page(ps->page_state, SetupPage); break;
+        case PinManual: page_state_change_page(ps, ManualPage); break;
+        case PinSetup: page_state_change_page(ps, SetupPage); break;
         default: break;
       }
       ps->touch_state->init = false;

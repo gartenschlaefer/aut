@@ -427,10 +427,17 @@ struct SettingsZone
 };
 
 
+struct StateMemory
+{
+  t_page previous_page;
+  struct PageState *auto_save_page_state;
+  struct AirCircState *air_circ_save_state;
+};
+
+
 struct PlantState
 {
   struct PageState *page_state;
-  struct PageState *auto_save_page_state;
   struct PortState *port_state;
   struct CompressorState *compressor_state;
   struct Backlight *backlight;
@@ -452,6 +459,7 @@ struct PlantState
   struct EEPROMState *eeprom_state;
   struct TouchState *touch_state;
   struct Settings *settings;
+  struct StateMemory *state_memory;
 };
 
 

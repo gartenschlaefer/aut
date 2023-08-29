@@ -3,6 +3,7 @@
 
 #include "time_state.h"
 #include "mcp7941_driver.h"
+#include "compressor_info.h"
 
 
 /* ------------------------------------------------------------------*
@@ -66,4 +67,21 @@ void TimeState_Update(struct PlantState *ps)
   {
     ps->time_state->tic_sec_update_flag = false;
   }
+
+  // time sec update
+  if(ps->time_state->tic_sec_update_flag)
+  {
+    TimeState_TicSecUpdate(ps);
+  }
+}
+
+
+/* ------------------------------------------------------------------*
+ *            tic update
+ * ------------------------------------------------------------------*/
+
+void TimeState_TicSecUpdate(struct PlantState *ps)
+{
+  // compressor info
+  Compressor_Info_TicSecUpdate(ps);
 }

@@ -446,7 +446,7 @@ void LCD_Sym_Manual_Text(struct PlantState *ps)
  *            page time
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_PageTime_Min(int min){ LCD_WriteAnyValue(f_6x8_p, 2, 17, 124, min); }
+void LCD_Sym_Manual_PageTime_Min(int min){ LCD_WriteAnyValue(f_6x8_p, (min >= 100 ? 3 : 2), 17, (min >= 100 ? 118 : 124), min); }
 void LCD_Sym_Manual_PageTime_Sec(int sec){ LCD_WriteAnyValue(f_6x8_p, 2, 17, 142, sec); }
 
 
@@ -476,8 +476,7 @@ void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps)
     // minute
     if(ps->page_state->page_time->sec == 59)
     {
-      if(ps->page_state->page_time->min >= 100){ LCD_WriteAnyValue(f_6x8_p, 3, 17, 118, ps->page_state->page_time->min); }
-      else{ LCD_Sym_Manual_PageTime_Min(ps->page_state->page_time->min); }
+      LCD_Sym_Manual_PageTime_Min(ps->page_state->page_time->min);
     }
   }
 }

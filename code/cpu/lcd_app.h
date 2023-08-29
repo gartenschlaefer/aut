@@ -18,10 +18,8 @@ void LCD_DisplayRefresh(struct PlantState *ps);
 unsigned char LCD_PageCountDown(struct PlantState *ps);
 
 // auto pages
+void LCD_AutoPage_Init(struct PlantState *ps);
 void LCD_AutoPage(struct PlantState *ps);
-void LCD_Auto_SetStateTime(struct PlantState *ps);
-void LCD_Auto_SetStateOutput(struct PlantState *ps);
-void LCD_Auto_ResetAutoSavePageState(struct PlantState *ps);
 void LCD_Auto_CountDownEndAction(struct PlantState *ps);
 
 // air state for manual and auto
@@ -38,8 +36,6 @@ void LCD_Auto_Phosphor_Update(struct PlantState *ps);
 
 // manual pages
 void LCD_ManualPage(struct PlantState *ps);
-void LCD_Manual_SetState(struct PlantState *ps);
-void LCD_Manual_ResetState(struct PlantState *ps, t_page save_page);
 
 // setup pages
 void LCD_SetupPage(struct PlantState *ps);

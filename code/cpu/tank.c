@@ -157,15 +157,15 @@ void Tank_ChangePage(struct PlantState *ps)
   switch(ps->page_state->page)
   {
     case AutoZone:
-      page_state_change_page(ps->page_state, (level_rel_mm >= level_to_set_down_mm ? AutoSetDown : AutoCirc));
+      page_state_change_page(ps, (level_rel_mm >= level_to_set_down_mm ? AutoSetDown : AutoCirc));
       break;
 
     case AutoCirc:
-      if(level_rel_mm >= level_to_air_mm){ page_state_change_page(ps->page_state, AutoAir); }
+      if(level_rel_mm >= level_to_air_mm){ page_state_change_page(ps, AutoAir); }
       break;
 
     case AutoAir:
-      if(level_rel_mm >= level_to_set_down_mm){ page_state_change_page(ps->page_state, AutoSetDown); }
+      if(level_rel_mm >= level_to_set_down_mm){ page_state_change_page(ps, AutoSetDown); }
       break;
 
     default: break;
