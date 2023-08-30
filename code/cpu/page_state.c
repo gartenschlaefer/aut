@@ -17,11 +17,16 @@ void page_state_update(struct PlantState *ps, struct View *view, struct Controll
   // change of page
   if(ps->page_state->change_page_flag)
   {
+    // reset flag
+    ps->page_state->change_page_flag = false;
+
+    // save page in case it is changed in controller
     t_page new_page = ps->page_state->page;
+
+    // updates
     Controller_ChangePage(controller, ps, new_page);
     View_ChangePage(ps, view, new_page);
     Error_ChangePage(ps);
-    ps->page_state->change_page_flag = false;
   }
 }
 
@@ -38,8 +43,11 @@ void page_state_change_page(struct PlantState *ps, t_page new_page)
   ps->state_memory->previous_page = previous_page;
   
   // save auto page state
-  if(previous_page >= AUTO_PAGE_START && previous_page <= AUTO_PAGE_END)
+  if(f_page_is_auto_page(previous_page))
   {
+    // no state copy if it is the auto page
+    if(previous_page == AutoPage){ return; }
+
     // update state memry with auto save page
     page_state_copy(ps->state_memory->auto_save_page_state, ps->page_state);
   }
@@ -200,15 +208,18 @@ void page_state_set_page_time(struct PlantState *ps, t_page new_page)
     // setup pages
     case SetupPage: case SetupMain: case SetupCirculate: case SetupAir: case SetupSetDown: case SetupPumpOff: case SetupMud: 
     case SetupCompressor: case SetupPhosphor: case SetupInflowPump: case SetupCal: case SetupCalPressure: case SetupAlarm: case SetupWatch: case SetupZone:
-      ps->page_state->page_time->min = 5;
-      ps->page_state->page_time->sec = 60;
+      *p_min = 5;
+      *p_sec = 60;
       break;
 
     // data pages
     case DataPage: case DataMain: case DataAuto: case DataManual: case DataSetup: case DataSonic: 
     case DataSonicAuto: case DataSonicBoot: case DataSonicBootR: case DataSonicBootW:
-      ps->page_state->page_time->min = 5;
+      *p_min = 5;
       break;
+
+    // pin pages
+    case PinManual: case PinSetup: *p_min = 5; break;
 
     default: break;
   }

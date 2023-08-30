@@ -156,7 +156,7 @@ void Error_Detection_Update(struct PlantState *ps)
         // reset error
         ps->error_state->error_on_counter[i] = 0;
         Error_Off(ps);
-        LCD_Sym_Auto_SetManager(ps);
+        LCD_Sym_Auto_SetManager(ps, ps->page_state->page);
         ps->error_state->reset_error_indicator &= ~(1 << i);
       }
     }

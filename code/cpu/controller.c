@@ -194,7 +194,6 @@ void Controller_ChangePage(struct Controller *controller, struct PlantState *ps,
 
     case ManualMain: case ManualCirc: case ManualAir: case ManualSetDown: case ManualPumpOff: case ManualPumpOff_On: case ManualMud:
     case ManualCompressor: case ManualPhosphor: case ManualInflowPump: case ManualValveTest:
-      LCD_Sym_Manual_PageTime_Print(ps);
       controller->f_controller_update = &LCD_ManualPage;
       break;
 
@@ -210,7 +209,7 @@ void Controller_ChangePage(struct Controller *controller, struct PlantState *ps,
       break;
 
     // pin-pages
-    case PinManual: case PinSetup: LCD_PinPage_Init(ps); controller->f_controller_update = &LCD_PinPage_Main; break;
+    case PinManual: case PinSetup: controller->f_controller_update = &LCD_PinPage_Main; break;
 
     default: controller->f_controller_update = &LCD_AutoPage; break;
   }

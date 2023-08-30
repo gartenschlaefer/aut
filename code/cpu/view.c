@@ -63,40 +63,35 @@ void View_ChangePage(struct PlantState *ps, struct View *view, t_page new_page)
 {
   // segment pages
   // auto pages
-  if(new_page >= AUTO_PAGE_START && new_page <= AUTO_PAGE_END)
+  if(f_page_is_auto_page(new_page))
   {
     // set symbols
-    LCD_Sym_Auto_SetManager(ps);
+    LCD_Sym_Auto_SetManager(ps, new_page);
 
     // update view
     view->f_main_page_view_update = &View_AutoPages; 
   }
 
   // manual pages
-  else if(new_page >= MANUAL_PAGE_START && new_page <= MANUAL_PAGE_END)
+  else if(f_page_is_manual_page(new_page))
   {
     switch(new_page)
     {
       case ManualMain: LCD_Sym_Manual_Main(ps); break;
-
-      case ManualPumpOff:
-        LCD_Sym_Manual_PumpOff_OkButton(true);
-        LCD_Sym_Manual_PageTime_Print(ps);
-        break;
-
-      case ManualPumpOff_On:
-        LCD_Sym_Manual_PumpOff_OkButton_Clr();
-        LCD_Sym_Manual_Text(ps);
-        break;
+      case ManualPumpOff: LCD_Sym_Manual_PumpOff_OkButton(true); break;
+      case ManualPumpOff_On: LCD_Sym_Manual_PumpOff_OkButton_Clr(); LCD_Sym_Manual_Text(ps); break;
       default: break;
     }
+
+    // page time
+    LCD_Sym_Manual_PageTime_Print(ps);
 
     // update
     view->f_main_page_view_update = &View_ManualPages;
   }
 
   // setup pages
-  else if(new_page >= SETUP_PAGE_START && new_page <= SETUP_PAGE_END)
+  else if(f_page_is_setup_page(new_page))
   {
     // update
     view->f_main_page_view_update = &View_SetupPages;
@@ -126,7 +121,7 @@ void View_ChangePage(struct PlantState *ps, struct View *view, t_page new_page)
   }
 
   // data pages
-  else if(new_page >= DATA_PAGE_START && new_page <= DATA_PAGE_END)
+  else if(f_page_is_data_page(new_page))
   {
     switch(new_page)
     {
@@ -140,8 +135,14 @@ void View_ChangePage(struct PlantState *ps, struct View *view, t_page new_page)
     view->f_main_page_view_update = &View_DataPages;
   }
 
+  // all other pages
   else
   {
+    switch(new_page)
+    {
+      case PinManual: case PinSetup: LCD_Sym_PinPage(); break;
+      default: break;
+    }
     view->f_main_page_view_update = &View_DataPages;
   }
 }

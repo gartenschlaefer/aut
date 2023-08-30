@@ -325,6 +325,12 @@ typedef enum
 #define DATA_PAGE_START (DataPage)
 #define DATA_PAGE_END (DataSonicBootW)
 
+// page segment function for easy access
+#define f_page_is_auto_page(x) ( x >= AUTO_PAGE_START && x <= AUTO_PAGE_END )
+#define f_page_is_manual_page(x) ( x >= MANUAL_PAGE_START && x <= MANUAL_PAGE_END )
+#define f_page_is_setup_page(x) ( x >= SETUP_PAGE_START && x <= SETUP_PAGE_END )
+#define f_page_is_data_page(x) ( x >= DATA_PAGE_START && x <= DATA_PAGE_END )
+
 
 /* ------------------------------------------------------------------*
  *            memory enums

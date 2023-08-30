@@ -41,10 +41,10 @@ void LCD_Sym_Clr_DataEntrySpace(void){ LCD_ClrSpace(4, 1, LCD_SPEC_MAX_PAG - 8, 
  *            auto symbol set manager
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Auto_SetManager(struct PlantState *ps)
+void LCD_Sym_Auto_SetManager(struct PlantState *ps, t_page new_page)
 {
   // page dependend symbols
-  switch(ps->page_state->page)
+  switch(new_page)
   {
     case AutoPage: LCD_Sym_Auto_Main(); break;
     case AutoZone: LCD_Sym_Auto_Zone(); break;
@@ -1566,7 +1566,7 @@ void LCD_PinButtons(bool negative, unsigned char pin)
   LCD_WriteAnySymbol(row, col, any_symbol);
 
   // write number if it is one
-  if(num < 0x20){ LCD_WriteAnyFont(f_8x16_p, row + 1, col + 13, num); }
+  if(num < 0x20){ LCD_WriteAnyFont((negative ? f_8x16_n : f_8x16_p), row + 1, col + 13, num); }
 }
 
 

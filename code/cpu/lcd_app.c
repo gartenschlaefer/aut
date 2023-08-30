@@ -30,6 +30,7 @@
 
 void LCD_DisplayRefresh(struct PlantState *ps)
 {
+  // todo: integrate this
   switch(ps->page_state->page)
   {
     case AutoPage:
@@ -38,7 +39,7 @@ void LCD_DisplayRefresh(struct PlantState *ps)
       if(ps->frame_counter->lcd_reset == 600){ LCD_Init(); }
       else if(ps->frame_counter->lcd_reset == 1200){ LCD_Sym_MarkTextButton(TEXT_BUTTON_auto); }
       else if(ps->frame_counter->lcd_reset == 1800){ LCD_Sym_Logo(); }
-      else if(ps->frame_counter->lcd_reset > 2400){ LCD_Sym_Auto_SetManager(ps); ps->frame_counter->lcd_reset = 0; }
+      else if(ps->frame_counter->lcd_reset > 2400){ LCD_Sym_Auto_SetManager(ps, ps->page_state->page); ps->frame_counter->lcd_reset = 0; }
       break;
 
     default: break;
@@ -92,9 +93,6 @@ unsigned char LCD_PageCountDown(struct PlantState *ps)
 
 void LCD_AutoPage_Init(struct PlantState *ps)
 {
-  // set auto page
-  LCD_Sym_Auto_Main();
-
   // get previous state and time or start page
   if(ps->state_memory->auto_save_page_state->page != NonePage)
   { 
@@ -672,18 +670,6 @@ unsigned char LCD_Data_EEP_Minus(t_text_buttons data, unsigned char eep, unsigne
   }
 
   return eep;
-}
-
-
-/* ------------------------------------------------------------------*
- *            pin page init
- * ------------------------------------------------------------------*/
-
-void LCD_PinPage_Init(struct PlantState *ps)
-{
-  LCD_Sym_PinPage(); 
-  ps->page_state->page_time->min = 5; 
-  ps->page_state->page_time->sec = 0;
 }
 
 

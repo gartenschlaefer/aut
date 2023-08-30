@@ -24,7 +24,7 @@ void LCD_Sym_Clr_DataEntrySpace(void);
  * ------------------------------------------------------------------*/
 
 // set symbols
-void LCD_Sym_Auto_SetManager(struct PlantState *ps);
+void LCD_Sym_Auto_SetManager(struct PlantState *ps, t_page new_page);
 
 // time and text
 void LCD_Sym_Auto_PageTime_Print(struct Tms *tms);

@@ -51,7 +51,6 @@ unsigned char LCD_Data_EEP_Minus(t_text_buttons data, unsigned char eep, unsigne
 
 // pin page
 void LCD_PinPage_Main(struct PlantState *ps);
-void LCD_PinPage_Init(struct PlantState *ps);
 
 // calibration (only in init)
 void LCD_Calibration(void);
