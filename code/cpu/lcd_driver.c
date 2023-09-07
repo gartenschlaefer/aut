@@ -370,8 +370,8 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
       break;
 
     // 29 x 17 [20]
-    case _n_setDown: case _n_alarm: case _n_air: case _n_sensor: case _n_watch: case _n_compressor: case _n_circulate: case _n_cal: case _n_zone: case _n_level:
-    case _p_setDown: case _p_alarm: case _p_air: case _p_sensor: case _p_watch: case _p_compressor: case _p_circulate: case _p_cal: case _p_zone: case _p_level:
+    case _n_set_down: case _n_alarm: case _n_air: case _n_sensor: case _n_watch: case _n_compressor: case _n_circulate: case _n_cal: case _n_zone: case _n_level:
+    case _p_set_down: case _p_alarm: case _p_air: case _p_sensor: case _p_watch: case _p_compressor: case _p_circulate: case _p_cal: case _p_zone: case _p_level:
       symbol_pointer = Symbols_29x17_bmp;
       offset = _p_pump2 + 1;
       break;

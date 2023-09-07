@@ -263,7 +263,7 @@ void Touch_Manual_Linker(struct PlantState *ps)
   {
     case 0x11: if(ps->page_state->page != ManualCirc){ Touch_Manual_Linker_Select(ps, _n_circulate); } break;
     case 0x12: if(ps->page_state->page != ManualAir){ Touch_Manual_Linker_Select(ps, _n_air); } break;
-    case 0x13: if(ps->page_state->page != ManualSetDown){ Touch_Manual_Linker_Select(ps, _n_setDown); } break;
+    case 0x13: if(ps->page_state->page != ManualSetDown){ Touch_Manual_Linker_Select(ps, _n_set_down); } break;
     case 0x14: if(ps->page_state->page != ManualPumpOff){ Touch_Manual_Linker_Select(ps, _n_pump_off); } break;
 
     case 0x21: if(ps->page_state->page != ManualMud){ Touch_Manual_Linker_Select(ps, _n_mud); } break;
@@ -294,6 +294,10 @@ void Touch_Manual_Linker(struct PlantState *ps)
 
 void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym)
 {
+  //*-*
+  // todo:
+  //*** remove this
+  
   // new symbol select
   ps->touch_state->var[0] = sym;
 
@@ -301,18 +305,18 @@ void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym)
   PORT_Backlight_On(ps->backlight);
 
   // select
-  LCD_Sym_Manual_Draw(sym);
+  //LCD_Sym_Manual_Draw(sym);
 
   // new page
   if(!ps->port_state->valve_action_flag)
   {
     // deselect old state
-    LCD_Sym_Manual_Draw(LCD_Sym_GetAntiSymbol(ps->touch_state->var[1]));
+    //LCD_Sym_Manual_Draw(LCD_Sym_GetAntiSymbol(ps->touch_state->var[1]));
     switch(sym)
     {
       case _n_circulate: page_state_change_page(ps, ManualCirc); break;
       case _n_air: page_state_change_page(ps, ManualAir); break;
-      case _n_setDown: page_state_change_page(ps, ManualSetDown); break;
+      case _n_set_down: page_state_change_page(ps, ManualSetDown); break;
       case _n_pump_off: page_state_change_page(ps, ManualPumpOff); break;
       case _n_mud: page_state_change_page(ps, ManualMud); break;
       case _n_compressor: page_state_change_page(ps, ManualCompressor); break;
@@ -406,7 +410,7 @@ void Touch_Setup_Linker(struct PlantState *ps)
   {
     case 0x11: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[0] = SetupCirculate; ps->touch_state->var[1] = _n_circulate; } break;
     case 0x12: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[0] = SetupAir; ps->touch_state->var[1] = _n_air; } break;
-    case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[0] = SetupSetDown; ps->touch_state->var[1] = _n_setDown; } break;
+    case 0x13: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[0] = SetupSetDown; ps->touch_state->var[1] = _n_set_down; } break;
     case 0x14: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[0] = SetupPumpOff; ps->touch_state->var[1] = _n_pump_off; } break;
 
     case 0x21: if(!ps->touch_state->touched){ ps->touch_state->touched = _ctrl_none; ps->touch_state->var[0] = SetupMud; ps->touch_state->var[1] = _n_mud; } break;

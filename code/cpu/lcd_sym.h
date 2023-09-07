@@ -75,6 +75,7 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps);
 
 struct RowColPos LCD_Sym_Manual_GetSymbolPosition(t_any_symbol sym);
 void LCD_Sym_Manual_Draw(t_any_symbol sym);
+void LCD_Sym_Manual_PageDraw(t_page page, bool negative);
 void LCD_Sym_Manual_AllSymbols(void);
 
 void LCD_Sym_Manual_Main(struct PlantState *ps);

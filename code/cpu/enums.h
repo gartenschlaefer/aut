@@ -85,8 +85,8 @@ typedef enum
   _n_pump_off, _n_mud, _n_inflow_pump, _n_pump2, _p_pump_off, _p_mud, _p_inflow_pump, _p_pump2,
 
   // 29 x 17 [20]
-  _n_setDown, _n_alarm, _n_air, _n_sensor, _n_watch, _n_compressor, _n_circulate, _n_cal, _n_zone, _n_level,
-  _p_setDown, _p_alarm, _p_air, _p_sensor, _p_watch, _p_compressor, _p_circulate, _p_cal, _p_zone, _p_level,
+  _n_set_down, _n_alarm, _n_air, _n_sensor, _n_watch, _n_compressor, _n_circulate, _n_cal, _n_zone, _n_level,
+  _p_set_down, _p_alarm, _p_air, _p_sensor, _p_watch, _p_compressor, _p_circulate, _p_cal, _p_zone, _p_level,
 
   // 19 x 19 [23]
   _n_phosphor, _n_pump, _n_esc, _n_plus, _n_minus, _n_arrow_up, _n_arrow_down, _n_ok, _n_grad, _n_sonic, _n_arrow_redo,
@@ -108,7 +108,7 @@ typedef enum
   _none_symbol,
 
   // valve symbol
-   _n_valve, _p_valve
+  _n_valve, _p_valve
 
 }t_any_symbol;
 

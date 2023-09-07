@@ -41,8 +41,12 @@ void page_state_change_page(struct PlantState *ps, t_page new_page)
 
   // update previous page
   ps->state_memory->previous_page = previous_page;
+
+  // new page
+  ps->page_state->page = new_page;
+  ps->page_state->change_page_flag = true;
   
-  // save auto page state
+  // save auto page state to state memory
   if(f_page_is_auto_page(previous_page))
   {
     // no state copy if it is the auto page
@@ -51,10 +55,6 @@ void page_state_change_page(struct PlantState *ps, t_page new_page)
     // update state memry with auto save page
     page_state_copy(ps->state_memory->auto_save_page_state, ps->page_state);
   }
-
-  // new page
-  ps->page_state->page = new_page;
-  ps->page_state->change_page_flag = true;
 }
 
 

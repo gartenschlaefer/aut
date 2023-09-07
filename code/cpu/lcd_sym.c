@@ -229,7 +229,7 @@ void LCD_Sym_Auto_Zone(void)
 void LCD_Sym_Auto_SetDown(void)
 {
   LCD_Sym_Auto_ClrActualCycleSpace();
-  LCD_WriteAnySymbol(6, 0, _n_setDown);
+  LCD_WriteAnySymbol(6, 0, _n_set_down);
   LCD_Sym_Auto_Compressor(false);
 }
 
@@ -373,8 +373,8 @@ struct RowColPos LCD_Sym_Manual_GetSymbolPosition(t_any_symbol sym)
     case _n_circulate: position.row = 3; position.col = 0; break;
     case _p_air:
     case _n_air: position.row = 3; position.col = 40; break;
-    case _p_setDown:
-    case _n_setDown: position.row = 3; position.col = 80; break;
+    case _p_set_down:
+    case _n_set_down: position.row = 3; position.col = 80; break;
     case _p_pump_off:
     case _n_pump_off: position.row = 2; position.col = 120; break;
     case _p_mud:
@@ -405,12 +405,38 @@ void LCD_Sym_Manual_Draw(t_any_symbol sym)
 
 
 /* ------------------------------------------------------------------*
+ *            Mark manual Select
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Manual_PageDraw(t_page page, bool negative)
+{
+  t_any_symbol sym = _none_symbol;
+  switch(page)
+  {
+    case ManualMain:  break;
+    case ManualCirc: sym = (negative ? _n_circulate : _p_circulate); break;
+    case ManualAir: sym = (negative ? _n_air : _p_air); break;
+    case ManualSetDown: sym = (negative ? _n_set_down : _p_set_down); break;
+    case ManualPumpOff: sym = (negative ? _n_pump_off : _p_pump_off); break;
+    case ManualPumpOff_On: break;
+    case ManualMud: sym = (negative ? _n_mud : _p_mud); break;
+    case ManualCompressor: sym = (negative ? _n_compressor : _p_compressor); break;
+    case ManualPhosphor: sym = (negative ? _n_phosphor : _p_phosphor); break;
+    case ManualInflowPump: sym = (negative ? _n_inflow_pump : _p_inflow_pump); break;
+    case ManualValveTest: sym = (negative ? _n_valve : _p_valve); break;
+    default: break;
+  }
+  LCD_Sym_Manual_Draw(sym);
+}
+
+
+/* ------------------------------------------------------------------*
  *            all manual symbols
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Manual_AllSymbols(void)
 {
-  t_any_symbol symbols[9] = { _p_circulate, _p_air, _p_setDown, _p_pump_off, _p_mud, _p_compressor, _p_phosphor, _p_inflow_pump, _p_valve };
+  t_any_symbol symbols[9] = { _p_circulate, _p_air, _p_set_down, _p_pump_off, _p_mud, _p_compressor, _p_phosphor, _p_inflow_pump, _p_valve };
   for(unsigned char i = 0; i < 9; i++){ LCD_Sym_Manual_Draw(symbols[i]); }
 }
 
@@ -521,8 +547,8 @@ struct RowColPos LCD_Sym_Setup_GetSymbolPosition(t_any_symbol sym)
     case _n_circulate: position.row = 3; position.col = 0; break;
     case _p_air:
     case _n_air: position.row = 3; position.col = 40; break;
-    case _p_setDown:
-    case _n_setDown: position.row = 3; position.col = 80; break;
+    case _p_set_down:
+    case _n_set_down: position.row = 3; position.col = 80; break;
     case _p_pump_off:
     case _n_pump_off: position.row = 2; position.col = 120; break;
     case _p_mud:
@@ -600,7 +626,7 @@ void LCD_Sym_Setup_Draw_Sub(t_any_symbol sym)
 
 void LCD_Sym_Setup_AllSymbols(void)
 {
-  t_any_symbol symbols[12] = { _p_circulate, _p_air, _p_setDown, _p_pump_off, _p_mud, _p_compressor, _p_phosphor, _p_inflow_pump, _p_cal, _p_alarm, _p_watch, _p_zone };
+  t_any_symbol symbols[12] = { _p_circulate, _p_air, _p_set_down, _p_pump_off, _p_mud, _p_compressor, _p_phosphor, _p_inflow_pump, _p_cal, _p_alarm, _p_watch, _p_zone };
   for(unsigned char i = 0; i < 12; i++){ LCD_Sym_Setup_Draw(symbols[i]); }
 }
 
@@ -712,7 +738,7 @@ void LCD_Sym_Setup_Air_Change_Values(unsigned char select, struct SettingsAir *s
 void LCD_Sym_Setup_SetDown(void)
 {
   LCD_Sym_Clr_InfoSpace();
-  LCD_Sym_Setup_Draw_Sub(_n_setDown);
+  LCD_Sym_Setup_Draw_Sub(_n_set_down);
   LCD_Sym_WriteCtrlButton();
   LCD_WriteAnyStringFont(f_6x8_n, 11, 0, "Time:  '");
 }
@@ -983,7 +1009,7 @@ void LCD_Sym_Setup_Zone_LevelToAir_Value(bool negative, int value){ LCD_WriteAny
 void LCD_Sym_Setup_Zone_LevelToSetDown_Value(bool negative, int value){ LCD_WriteAnyValue((negative ? f_6x8_n : f_6x8_p), 3, 16, 40, value); }
 void LCD_Sym_Setup_Zone_Sonic(bool negative){ LCD_WriteAnySymbol(3, 47, (negative ? _n_sonic : _p_sonic)); }
 void LCD_Sym_Setup_Zone_Air(bool negative){ LCD_WriteAnySymbol(9, 0, (negative ? _n_air : _p_air)); }
-void LCD_Sym_Setup_Zone_SetDown(bool negative){ LCD_WriteAnySymbol(14, 0, (negative ? _n_setDown : _p_setDown)); }
+void LCD_Sym_Setup_Zone_SetDown(bool negative){ LCD_WriteAnySymbol(14, 0, (negative ? _n_set_down : _p_set_down)); }
 
 
 /* ------------------------------------------------------------------*
@@ -1944,7 +1970,7 @@ t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
     case _n_mud: return _p_mud;
     case _n_inflow_pump: return _p_inflow_pump;
     case _n_pump2: return _p_pump2;
-    case _n_setDown: return _p_setDown; 
+    case _n_set_down: return _p_set_down; 
     case _n_alarm: return _p_alarm; 
     case _n_air: return _p_air;
     case _n_sensor: return _p_sensor;
@@ -1975,7 +2001,7 @@ t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym)
     case _p_mud: return _n_mud;
     case _p_inflow_pump: return _n_inflow_pump;
     case _p_pump2: return _n_pump2;
-    case _p_setDown: return _n_setDown; 
+    case _p_set_down: return _n_set_down; 
     case _p_alarm: return _n_alarm; 
     case _p_air: return _n_air;
     case _p_sensor: return _n_sensor;

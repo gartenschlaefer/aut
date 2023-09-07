@@ -83,6 +83,10 @@ void View_ChangePage(struct PlantState *ps, struct View *view, t_page new_page)
       default: break;
     }
 
+    // page draw
+    LCD_Sym_Manual_PageDraw(new_page, true);
+    LCD_Sym_Manual_PageDraw(ps->state_memory->previous_page, false);
+
     // page time
     LCD_Sym_Manual_PageTime_Print(ps);
 
