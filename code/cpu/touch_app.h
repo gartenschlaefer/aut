@@ -41,7 +41,7 @@ void Touch_SelectLinker(struct PlantState *ps);
 
 void Touch_Auto_Linker(struct PlantState *ps);
 void Touch_Manual_Linker(struct PlantState *ps);
-void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym);
+void Touch_Manual_Linker_Select(struct PlantState *ps, t_page new_page);
 void Touch_Setup_Matrix_MinusPlus(struct PlantState *ps, unsigned char touch_matrix);
 void Touch_Setup_Matrix_PageButtonLinker(struct PlantState *ps, unsigned char touch_matrix);
 void Touch_Setup_Linker(struct PlantState *ps);

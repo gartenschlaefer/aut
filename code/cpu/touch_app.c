@@ -46,47 +46,47 @@ unsigned char Touch_Matrix(struct TouchState *touch_state)
   if(touch_state->state == _touch_ready)
   {
     // collect data
-    if(touch_state->chunk < 2)
+    if(touch_state->chunk <= 1)
     {
       touch_state->y_data[touch_state->chunk] = touch_state->y;
       touch_state->x_data[touch_state->chunk] = touch_state->x;
       touch_state->chunk++;
+      return 0x66;
     }
 
+    // --
     // interpret data
-    if(touch_state->chunk >= 2)
-    {
-      // reset chunk pos
-      touch_state->chunk = 0;
 
-      // too much diffs, reject sample
-      if((touch_state->x_data[0] < touch_state->x_data[1] - 10) || (touch_state->x_data[0] > touch_state->x_data[1] + 10)){ return 0x66; }
-      if((touch_state->y_data[0] < touch_state->y_data[1] - 10) || (touch_state->y_data[0] > touch_state->y_data[1] + 10)){ return 0x66; }
+    // reset chunk pos
+    touch_state->chunk = 0;
 
-      // average data
-      float x_av = (touch_state->x_data[0] + touch_state->x_data[1]) / 2.0;
-      float y_av = (touch_state->y_data[0] + touch_state->y_data[1]) / 2.0;
+    // too much diffs, reject sample
+    if((touch_state->x_data[0] < touch_state->x_data[1] - 10) || (touch_state->x_data[0] > touch_state->x_data[1] + 10)){ return 0x66; }
+    if((touch_state->y_data[0] < touch_state->y_data[1] - 10) || (touch_state->y_data[0] > touch_state->y_data[1] + 10)){ return 0x66; }
 
-      // calibrate with average
-      int x_av_cal = Touch_Cal_X_Value(x_av);
-      int y_av_cal = Touch_Cal_Y_Value(y_av);
+    // average data
+    float x_av = (touch_state->x_data[0] + touch_state->x_data[1]) / 2.0;
+    float y_av = (touch_state->y_data[0] + touch_state->y_data[1]) / 2.0;
 
-      // x-matrix
-      if(x_av_cal < 16){ lx = 0; }
-      else if(x_av_cal > 16 && x_av_cal < 35){ lx = 1; }
-      else if(x_av_cal > 47 && x_av_cal < 70){ lx = 2; }
-      else if(x_av_cal > 80 && x_av_cal < 105){ lx = 3; }
-      else if(x_av_cal > 115 && x_av_cal < 145){ lx = 4; }
-      else{ lx = 5; }
+    // calibrate with average
+    int x_av_cal = Touch_Cal_X_Value(x_av);
+    int y_av_cal = Touch_Cal_Y_Value(y_av);
 
-      // y-matrix
-      if(y_av_cal < 16){ hy = 0; }
-      else if(y_av_cal > 18 && y_av_cal < 37){ hy = 1; }
-      else if(y_av_cal > 45 && y_av_cal < 58){ hy = 2; }
-      else if(y_av_cal > 65 && y_av_cal < 77){ hy = 3; }
-      else if(y_av_cal > 85 && y_av_cal < 105){ hy = 4; }
-      else{ hy = 5; }
-    }
+    // x-matrix
+    if(x_av_cal < 16){ lx = 0; }
+    else if(x_av_cal > 16 && x_av_cal < 35){ lx = 1; }
+    else if(x_av_cal > 47 && x_av_cal < 70){ lx = 2; }
+    else if(x_av_cal > 80 && x_av_cal < 105){ lx = 3; }
+    else if(x_av_cal > 115 && x_av_cal < 145){ lx = 4; }
+    else{ lx = 5; }
+
+    // y-matrix
+    if(y_av_cal < 16){ hy = 0; }
+    else if(y_av_cal > 18 && y_av_cal < 37){ hy = 1; }
+    else if(y_av_cal > 45 && y_av_cal < 58){ hy = 2; }
+    else if(y_av_cal > 65 && y_av_cal < 77){ hy = 3; }
+    else if(y_av_cal > 85 && y_av_cal < 105){ hy = 4; }
+    else{ hy = 5; }
   }
 
   //*** debug ps->touch_state->touched matrix
@@ -261,17 +261,17 @@ void Touch_Manual_Linker(struct PlantState *ps)
   unsigned char touch_matrix = Touch_Matrix(ps->touch_state);
   switch(touch_matrix)
   {
-    case 0x11: if(ps->page_state->page != ManualCirc){ Touch_Manual_Linker_Select(ps, _n_circulate); } break;
-    case 0x12: if(ps->page_state->page != ManualAir){ Touch_Manual_Linker_Select(ps, _n_air); } break;
-    case 0x13: if(ps->page_state->page != ManualSetDown){ Touch_Manual_Linker_Select(ps, _n_set_down); } break;
-    case 0x14: if(ps->page_state->page != ManualPumpOff){ Touch_Manual_Linker_Select(ps, _n_pump_off); } break;
+    case 0x11: if(ps->page_state->page != ManualCirc){ Touch_Manual_Linker_Select(ps, ManualCirc); } break;
+    case 0x12: if(ps->page_state->page != ManualAir){ Touch_Manual_Linker_Select(ps, ManualAir); } break;
+    case 0x13: if(ps->page_state->page != ManualSetDown){ Touch_Manual_Linker_Select(ps, ManualSetDown); } break;
+    case 0x14: if(ps->page_state->page != ManualPumpOff){ Touch_Manual_Linker_Select(ps, ManualPumpOff); } break;
 
-    case 0x21: if(ps->page_state->page != ManualMud){ Touch_Manual_Linker_Select(ps, _n_mud); } break;
-    case 0x22: if(ps->page_state->page != ManualCompressor){ Touch_Manual_Linker_Select(ps, _n_compressor); } break;
-    case 0x23: if(ps->page_state->page != ManualPhosphor){ Touch_Manual_Linker_Select(ps, _n_phosphor); } break;
-    case 0x24: if(ps->page_state->page != ManualInflowPump){ Touch_Manual_Linker_Select(ps, _n_inflow_pump); } break;
+    case 0x21: if(ps->page_state->page != ManualMud){ Touch_Manual_Linker_Select(ps, ManualMud); } break;
+    case 0x22: if(ps->page_state->page != ManualCompressor){ Touch_Manual_Linker_Select(ps, ManualCompressor); } break;
+    case 0x23: if(ps->page_state->page != ManualPhosphor){ Touch_Manual_Linker_Select(ps, ManualPhosphor); } break;
+    case 0x24: if(ps->page_state->page != ManualInflowPump){ Touch_Manual_Linker_Select(ps, ManualInflowPump); } break;
 
-    case 0x31: if(ps->page_state->page != ManualValveTest){ Touch_Manual_Linker_Select(ps, _n_valve); } break;
+    case 0x31: if(ps->page_state->page != ManualValveTest){ Touch_Manual_Linker_Select(ps, ManualValveTest); } break;
     case 0x33: if(ps->page_state->page == ManualPumpOff){ LCD_Sym_Manual_PumpOff_OkButton(false); page_state_change_page(ps, ManualPumpOff_On); } break;
 
     // no touch
@@ -292,46 +292,15 @@ void Touch_Manual_Linker(struct PlantState *ps)
  *            select stuff
  * ------------------------------------------------------------------*/
 
-void Touch_Manual_Linker_Select(struct PlantState *ps, t_any_symbol sym)
+void Touch_Manual_Linker_Select(struct PlantState *ps, t_page new_page)
 {
-  //*-*
-  // todo:
-  //*** remove this
-  
-  // new symbol select
-  ps->touch_state->var[0] = sym;
-
   // backlight
   PORT_Backlight_On(ps->backlight);
-
-  // select
-  //LCD_Sym_Manual_Draw(sym);
 
   // new page
   if(!ps->port_state->valve_action_flag)
   {
-    // deselect old state
-    //LCD_Sym_Manual_Draw(LCD_Sym_GetAntiSymbol(ps->touch_state->var[1]));
-    switch(sym)
-    {
-      case _n_circulate: page_state_change_page(ps, ManualCirc); break;
-      case _n_air: page_state_change_page(ps, ManualAir); break;
-      case _n_set_down: page_state_change_page(ps, ManualSetDown); break;
-      case _n_pump_off: page_state_change_page(ps, ManualPumpOff); break;
-      case _n_mud: page_state_change_page(ps, ManualMud); break;
-      case _n_compressor: page_state_change_page(ps, ManualCompressor); break;
-      case _n_phosphor: page_state_change_page(ps, ManualPhosphor); break;
-      case _n_inflow_pump: page_state_change_page(ps, ManualInflowPump); break;
-      case _n_valve: page_state_change_page(ps, ManualValveTest); break;
-      default: break;  
-    }
-    // keep old symbol
-    ps->touch_state->var[1] = ps->touch_state->var[0];
-  }
-  else
-  {
-    // deselect later
-    ps->touch_state->var[2] = LCD_Sym_GetAntiSymbol(ps->touch_state->var[0]);
+    page_state_change_page(ps, new_page);
   }
 }
 

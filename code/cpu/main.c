@@ -65,7 +65,7 @@ int main(void)
   struct TankState tank_state = { .level_mm = 0, .level_abs_zero_mm = 0, .level_perc = 0, .new_level_flag = false, .change_page_flag = false, .f_tank_level_measure = &Tank_Level_Measure_MPX };
   struct PhosphorState phosphor_state = { .ph_tms = &ph_tms, .ph_state = _ph_off, .init_flag = false };
   struct InflowPumpState inflow_pump_state = { .ip_thms = &ip_thms, .ip_state = _ip_off, .ip_active_pump_id = 0, .init_flag = false };
-  struct AirCircState air_circ_state = { .air_tms = &air_tms };
+  struct AirCircState air_circ_state = { .air_tms = &air_tms, .ac_state = _ac_on };
   struct CANState can_state = { .mcp2525_ok_flag = true, .rxb0_buffer = { 0x00 }, .rxb0_data_av = 0 };
   struct TWIState twi_state = { .twid_rx_buffer = { 0x00, 0xFF } };
   struct TempSensor temp_sensor = { .actual_temp = 0, .new_temp_flag = false };

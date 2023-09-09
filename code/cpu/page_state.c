@@ -6,6 +6,7 @@
 #include "error_func.h"
 #include "controller.h"
 #include "output_app.h"
+#include "lcd_app.h"
 
 
 /* ------------------------------------------------------------------*
@@ -96,11 +97,10 @@ void page_state_set_output(struct PlantState *ps, t_page new_page)
 
     // manual pages
     case ManualMain: OUT_Valve_Init(ps); break;
-    case ManualCirc: if(ps->air_circ_state->ac_state == _ac_on){ OUT_Set_Air(ps); } break;
+    case ManualCirc: LCD_AirState_Init(ps); if(ps->air_circ_state->ac_state == _ac_on){ OUT_Set_Air(ps); } break;
     case ManualAir: OUT_Set_Air(ps); break;
     case ManualSetDown: OUT_SetDown(ps); break;
-    case ManualPumpOff_On: OUT_Set_PumpOff(ps);
-
+    case ManualPumpOff_On: OUT_Set_PumpOff(ps); break;
     case ManualMud: OUT_Set_Mud(ps); break;
     case ManualCompressor: OUT_Set_Compressor(ps); break;
     case ManualPhosphor: OUT_Set_Phosphor(); break;

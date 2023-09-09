@@ -177,7 +177,15 @@ void LCD_Auto_CountDownEndAction(struct PlantState *ps)
 
 void LCD_AirState_Init(struct PlantState *ps)
 {
-  ;
+  ps->air_circ_state->ac_state = _ac_on;
+  switch(ps->page_state->page)
+  {
+    case AutoAir: ps->air_circ_state->air_tms->min = ps->settings->settings_air->on_min; break;
+    case AutoCirc:
+    case ManualCirc: ps->air_circ_state->air_tms->min = ps->settings->settings_circulate->on_min; break;
+    default: ps->air_circ_state->air_tms->min = ps->settings->settings_circulate->on_min; break;
+  }
+  ps->air_circ_state->air_tms->sec = 0;
 }
 
 
