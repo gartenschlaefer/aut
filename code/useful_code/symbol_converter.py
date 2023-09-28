@@ -182,17 +182,53 @@ def bmp_to_symbols(cfg):
   symbol_names = np.unique([re.split(r'-[0-9]+\.pbm', Path(f).name)[0] for f in bmp_files])
 
   # symbol dict
-  symbols_dict = {s: [f for f in bmp_files if s == re.split(r'-[0-9]+\.pbm', Path(f).name)[0]] for s in symbol_names} 
+  symbols_dict = {s: {'mem_size': 0, 'dim': (0, 0), 'files': [f for f in bmp_files if s == re.split(r'-[0-9]+\.pbm', Path(f).name)[0]]} for s in symbol_names}
+
+  # check and update dim and memory size
+  for symbol_name, symbol_dict in symbols_dict.items():
+
+    # check if there are files
+    assert len(symbol_dict['files'])
+
+    # init
+    dim = (0, 0)
+    mem_size = 2
+
+    print("\ncheck files of symbol files: {}".format(symbol_name))
+    for symbol_file in symbol_dict['files']:
+
+      # read image
+      img = cv2.imread(symbol_file, cv2.IMREAD_GRAYSCALE)
+
+      # check dimensions
+      if not all(dim): dim = img.shape
+      else: assert dim == img.shape
+
+      # add memory space
+      mem_size += (int(img.shape[0] / 8) + (1 if img.shape[0] % 8 else 0)) * img.shape[1]
+      print("dim: {} cum. mem size: {}".format(img.shape, mem_size))
+
+    # update meta data
+    symbols_dict[symbol_name]['dim'] = dim
+    symbols_dict[symbol_name]['mem_size'] = mem_size
 
   # out text
   out_text = ''
 
   # go through each file
-  for symbol_name, symbol_files in symbols_dict.items():
-    print("\nsymbol name: ", symbol_name)
-    symbol_text = '\nunsigned char {}[{}_LEN] =\n{{'.format(symbol_name, symbol_name)
+  for symbol_name, symbol_dict in symbols_dict.items():
+    print("\nextract data of: ", symbol_name)
 
-    for symbol_file in symbol_files:
+    # mem allocation size
+    symbol_text = '\n#define {}_LEN {}'.format(symbol_name, symbol_dict['mem_size'])
+
+    # variable definition
+    symbol_text += '\nunsigned char {}[{}_LEN] =\n{{'.format(symbol_name, symbol_name)
+
+    # dimension
+    symbol_text += '\n\t// size\n\t{}, {},'.format(symbol_dict['dim'][1], symbol_dict['dim'][0])
+
+    for symbol_file in symbol_dict['files']:
       print("file: ", symbol_file)
       symbol_text += '\n\n\t// {}'.format(Path(symbol_file).name)
 
@@ -204,8 +240,6 @@ def bmp_to_symbols(cfg):
 
       # get image
       bin_img = convert_bmp_to_vertical_binary(img)
-      print(bin_img)
-      print(dim)
 
       # symbol data
       for row_data in bin_img:
@@ -217,11 +251,14 @@ def bmp_to_symbols(cfg):
     symbol_text += '\n};\n'
     out_text += symbol_text
 
-  print(out_text)
+  # debug
+  #print(out_text)
 
   # write file
   with open(cfg["output_file"], 'w') as f:
     f.write(out_text)
+
+  print("\n--\nfile: {} written, sucess.\n".format(cfg["output_file"]))
 
 
 if __name__ == '__main__':

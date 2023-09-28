@@ -1,6 +1,7 @@
 #define Symbols_29x17_bmp_LEN   1742
 unsigned char Symbols_29x17_bmp[Symbols_29x17_bmp_LEN] =
 {
+  // size
   29, 17,
 
   // negative
@@ -24,6 +25,7 @@ unsigned char Symbols_29x17_bmp[Symbols_29x17_bmp_LEN] =
 #define Symbols_29x17_bmp_LEN   1742
 unsigned char Symbols_29x17_bmp_new[Symbols_29x17_bmp_LEN] =
 {
+  // size
   29, 17,
 
   // negative
