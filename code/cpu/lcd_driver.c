@@ -270,9 +270,9 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
     default: return 0;
   }
 
-  // get length and height
+  // get length and height (height in bytes)
   unsigned char len = symbol_pointer[0];
-  unsigned char height = symbol_pointer[1];
+  unsigned char height = (unsigned char)(symbol_pointer[1] / 8) + (symbol_pointer[1] % 8 ? 1 : 0);
 
   // allocate memory
   unsigned char *lcd_data = malloc(2 * len);
@@ -421,9 +421,9 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
     default: return;
   }
 
-  // get length and height
+  // get length and height (height in bytes)
   unsigned char len = symbol_pointer[0];
-  unsigned char height = symbol_pointer[1];
+  unsigned char height = (unsigned char)(symbol_pointer[1] / 8) + (symbol_pointer[1] % 8 ? 1 : 0);
 
   // set frame
   LCD_WP_SetFrame(row, col, 2 * height, len);

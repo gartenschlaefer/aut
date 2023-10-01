@@ -2,17 +2,17 @@
 // symbol data
 
 // include guard
-#ifndef SYMBOLS_H   
+#ifndef SYMBOLS_H
 #define SYMBOLS_H
 
 /* ==================================================================*
  *            Fonts
  * ==================================================================*/
 
-#define Font_6X8_LEN  584
+#define Font_6X8_LEN 584
 unsigned char Font_6X8[Font_6X8_LEN] =
 {
-  6, 1,
+  6, 8,
 
   // positive
   0, 0, 0, 0, 0, 0,
@@ -114,11 +114,10 @@ unsigned char Font_6X8[Font_6X8_LEN] =
 };
 
 
-
-#define FontNumbers_4X6_Neg_LEN  67
+#define FontNumbers_4X6_Neg_LEN 67
 unsigned char FontNumbers_4X6_Neg[FontNumbers_4X6_Neg_LEN] =
 {
-  4, 1,
+  4, 6,
 
   // 0 - 9
   32, 46, 32, 63,
@@ -140,10 +139,11 @@ unsigned char FontNumbers_4X6_Neg[FontNumbers_4X6_Neg_LEN] =
   31, 31, 31, 0,
 };
 
-#define FontNumbers_4X6_LEN  110
+
+#define FontNumbers_4X6_LEN 110
 unsigned char FontNumbers_4X6[FontNumbers_4X6_LEN] =
 {
-  4, 1,
+  4, 6,
 
   // 0-9
   31, 17, 31, 0,
@@ -184,10 +184,10 @@ unsigned char FontNumbers_4X6[FontNumbers_4X6_LEN] =
 
 
 
-#define Font_Numbers_8X16_LEN  162
+#define Font_Numbers_8X16_LEN 162
 unsigned char Font_Numbers_8X16[Font_Numbers_8X16_LEN] =
 {
-  8, 2,
+  8, 16,
 
   // positive
   0, 248, 252, 12, 140, 252, 248, 0, 0, 31, 63, 49, 48, 63, 31, 0,
@@ -215,7 +215,7 @@ unsigned char Font_Numbers_8X16[Font_Numbers_8X16_LEN] =
 #define Symbols_35x23_bmp_LEN  842
 unsigned char Symbols_35x23_bmp[Symbols_35x23_bmp_LEN] =
 {
-  35, 3,
+  35, 23,
 
   // negative
   // pumpOff
@@ -305,7 +305,7 @@ unsigned char Symbols_35x23_bmp[Symbols_35x23_bmp_LEN] =
 #define Symbols_29x17_bmp_LEN   1742
 unsigned char Symbols_29x17_bmp[Symbols_29x17_bmp_LEN] =
 {
-  29, 3,
+  29, 17,
 
   // negative
   // setDown
@@ -485,7 +485,7 @@ unsigned char Symbols_29x17_bmp[Symbols_29x17_bmp_LEN] =
 #define Symbols_19x19_bmp_LEN   1313
 unsigned char Symbols_19x19_bmp[Symbols_19x19_bmp_LEN] =
 {
-  19, 3,
+  19, 19,
 
   // negative
   // phosphor
@@ -642,7 +642,7 @@ unsigned char Symbols_19x19_bmp[Symbols_19x19_bmp_LEN] =
 #define Symbols_34x21_bmp_LEN  614
 unsigned char Symbols_34x21_bmp[Symbols_34x21_bmp_LEN] =
 {
-  34, 3,
+  34, 21,
 
   // positive
   // frame
@@ -709,7 +709,7 @@ unsigned char Symbols_34x21_bmp[Symbols_34x21_bmp_LEN] =
 #define Symbols_39x16_bmp_LEN  158
 unsigned char Symbols_39x16_bmp[Symbols_39x16_bmp_LEN] =
 {
-  39, 2,
+  39, 16,
 
   //text black
   255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -735,7 +735,7 @@ unsigned char Symbols_39x16_bmp[Symbols_39x16_bmp_LEN] =
 #define Symbol_HECS_LEN  78
 unsigned char Symbol_HECS[Symbol_HECS_LEN] =
 {
-  38, 2,
+  38, 16,
   252, 252, 252, 128, 128, 128, 128, 252, 252, 252, 0, 0, 248, 252, 252, 156,
   156, 156, 156, 156, 0, 0, 248, 252, 252, 28, 28, 28, 28, 0, 0, 248,
   252, 252, 156, 156, 156, 156, 127, 127, 127, 3, 3, 3, 3, 127, 127, 127,
@@ -751,7 +751,7 @@ unsigned char Symbol_HECS[Symbol_HECS_LEN] =
 #define Symbol_Purator_LEN  158
 unsigned char Symbol_Purator[Symbol_Purator_LEN] =
 {
-  78, 2,
+  78, 16,
   192, 224, 96, 224, 192, 0, 224, 224, 0, 224, 224, 0, 192, 224, 96, 96,
   0, 192, 224, 96, 224, 192, 0, 0, 192, 224, 96, 96, 0, 252, 252, 96,
   224, 192, 0, 192, 224, 96, 96, 0, 192, 224, 96, 224, 192, 0, 192, 224,

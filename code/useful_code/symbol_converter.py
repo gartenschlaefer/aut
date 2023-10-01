@@ -46,7 +46,7 @@ def extract_symbols_to_dict(file_data):
   """
 
   # get sym data
-  symbol_vars = re.findall(r'unsigned char[\w\s\[\]]*\=\s*\{[\w\s, /]*\}\s*;', file_data)
+  symbol_vars = re.findall(r'unsigned char[\w\s\[\]]*\=\s*\{[\w\s, \:\-|/\+\.%]*\}\s*;', file_data)
 
   # symbold dictionary
   symbols_dict = {}
@@ -55,13 +55,16 @@ def extract_symbols_to_dict(file_data):
   for symbol_var in symbol_vars:
 
     # extract symbol name
-    symbol_name = re.match(r'(?P<var_name>unsigned char) (?P<vn>\w+)', symbol_var).group('vn')
+    symbol_name = re.match(r'(?P<data_type>unsigned char) (?P<symbol_name>\w+)', symbol_var).group('symbol_name')
+
+    # select specific symbol
+    #if not symbol_name == 'FontNumbers_4X6': continue
 
     # get symbol data
-    symbol_data = re.match(r'([\w\s\[\]]*\=\s*\{)([\w\s, /]*)(\};)', symbol_var).group(2)
+    symbol_data = re.match(r'([\w\s\[\]]*\=\s*\{)([\w\s, \:\-|/\+\.%]*)(\};)', symbol_var).group(2)
 
     # remove comments
-    symbol_data = re.sub(r'/+\s\w+', '', symbol_data)
+    symbol_data = re.sub(r'/+[\w, \:\-|/\+\.%]*\n', '', symbol_data)
 
     # remove whitespaces
     symbol_data = re.sub(r'\s', '', symbol_data)
@@ -88,8 +91,6 @@ def convert_vertical_binary_to_bmp(symbol_dict):
 
   # separate binary imgs
   bin_imgs = np.array(symbol_dict['data']).reshape((-1, math.ceil(symbol_dict['dim'][1] / 8), symbol_dict['dim'][0]))
-  print(bin_imgs)
-  print(bin_imgs.shape)
 
   # create bitmap
   bitmap_imgs = np.zeros((len(bin_imgs), symbol_dict['dim'][1], symbol_dict['dim'][0]), dtype='int')
@@ -113,9 +114,10 @@ def convert_vertical_binary_to_bmp(symbol_dict):
           if y >= symbol_dict['dim'][1]: continue
 
           # set bit
-          bitmap_imgs[bin_img_idx, y, x] = int(bool(bin_img[y_part * symbol_dict['dim'][0] + x] & (1 << j)))
+          bitmap_imgs[bin_img_idx, y, x] = 1 - int(bool(bin_img[y_part * symbol_dict['dim'][0] + x] & (1 << j)))
           #print("x: {}, y: {}, data: {}".format(x, y, bitmap_img[y, x]))
 
+    # print("image: ", bitmap_imgs[bin_img_idx])
   return bitmap_imgs
 
 
@@ -125,10 +127,10 @@ def convert_bmp_to_vertical_binary(img):
   """
 
   # bitmap
-  img = np.array(np.array(img, dtype=bool), dtype=int)
+  img = np.array(~np.array(img, dtype=bool), dtype=int)
 
   # pad in x dim
-  p = 8 - img.shape[0] % 8
+  p = (0 if not img.shape[0] % 8 else 8 - img.shape[0] % 8)
 
   # pad image and reshape
   img_t = np.pad(img, ((0, p), (0, 0))).reshape((-1, 8, img.shape[1]))
@@ -154,15 +156,21 @@ def symbols_to_bmp(cfg):
   # extract symbols
   symbols_dict = extract_symbols_to_dict(file_data)
 
+  print("\n--\nSymbols to bmp:\n")
+
   for symbol_name, symbol_dict in symbols_dict.items():
-    print("\nnew symbol: [{}] with dim: [{}] ".format(symbol_name, symbol_dict['dim']))
-    print(symbol_dict['data'])
+    
+    # select specific symbol
+    #if not symbol_name == 'FontNumbers_4X6': continue
+
+    print("new symbol: [{}] with dim: [{}] ".format(symbol_name, symbol_dict['dim']))
+    #print(symbol_dict['data'])
 
     # bmp conversion
     bitmap_imgs = convert_vertical_binary_to_bmp(symbol_dict)
 
     # write images
-    [cv2.imwrite("{}img_{}-{}.pbm".format(cfg["dirs"]["out_pgm"], symbol_name, i), bitmap_img, (cv2.IMWRITE_PXM_BINARY, 0)) for i, bitmap_img in enumerate(bitmap_imgs)]
+    [cv2.imwrite("{}{}-{:02d}.pbm".format(cfg["dirs"]["out_pgm"], symbol_name, i), bitmap_img, (cv2.IMWRITE_PXM_BINARY, 1)) for i, bitmap_img in enumerate(bitmap_imgs)]
 
     # plot image
     #plot_image(bitmap_img)
@@ -176,7 +184,7 @@ def bmp_to_symbols(cfg):
   # bitmaps to vertical binary format
   bmp_files = sorted(glob(cfg["dirs"]["in_pgm"] + '*.pbm'))
 
-  print(bmp_files)
+  print("\n--\nbmp to symbols:")
 
   # get symbol names
   symbol_names = np.unique([re.split(r'-[0-9]+\.pbm', Path(f).name)[0] for f in bmp_files])
@@ -204,6 +212,11 @@ def bmp_to_symbols(cfg):
       if not all(dim): dim = img.shape
       else: assert dim == img.shape
 
+      # # scale and save
+      # scaled_path = cfg["dirs"]["out_pgm"] + 'scaled/'
+      # if not os.path.isdir(scaled_path): os.makedirs(scaled_path)
+      # cv2.imwrite("{}{}".format(scaled_path, Path(symbol_file).name), cv2.resize(img, tuple([int(x * 16) for x in img.shape[::-1]]), interpolation=cv2.INTER_LINEAR), (cv2.IMWRITE_PXM_BINARY, 1))
+
       # add memory space
       mem_size += (int(img.shape[0] / 8) + (1 if img.shape[0] % 8 else 0)) * img.shape[1]
       print("dim: {} cum. mem size: {}".format(img.shape, mem_size))
@@ -213,24 +226,29 @@ def bmp_to_symbols(cfg):
     symbols_dict[symbol_name]['mem_size'] = mem_size
 
   # out text
-  out_text = ''
+  out_text_c = '//--\n// symbol data\n\n#include "{}"\n'.format(Path(cfg["output_file_h"]).name)
+  out_text_h = '//--\n// symbol data\n\n//include guard\n#ifndef SYMBOLS_H\n#define SYMBOLS_H\n'
 
   # go through each file
   for symbol_name, symbol_dict in symbols_dict.items():
     print("\nextract data of: ", symbol_name)
 
-    # mem allocation size
-    symbol_text = '\n#define {}_LEN {}'.format(symbol_name, symbol_dict['mem_size'])
+    # select symbol (debug)
+    #if not symbol_name == 'Font_6X8': continue
+
+    # mem allocation size and var declaration
+    out_text_h += '\n#define {}_LEN {}'.format(symbol_name, symbol_dict['mem_size'])
+    out_text_h += '\nextern const unsigned char {};\n'.format(symbol_name)
 
     # variable definition
-    symbol_text += '\nunsigned char {}[{}_LEN] =\n{{'.format(symbol_name, symbol_name)
+    out_text_c += '\nconst unsigned char {}[{}_LEN] =\n{{'.format(symbol_name, symbol_name)
 
     # dimension
-    symbol_text += '\n\t// size\n\t{}, {},'.format(symbol_dict['dim'][1], symbol_dict['dim'][0])
+    out_text_c += '\n\t// size\n\t{}, {},'.format(symbol_dict['dim'][1], symbol_dict['dim'][0])
 
     for symbol_file in symbol_dict['files']:
       print("file: ", symbol_file)
-      symbol_text += '\n\n\t// {}'.format(Path(symbol_file).name)
+      out_text_c += '\n\n\t// {}'.format(Path(symbol_file).name)
 
       # read image
       img = cv2.imread(symbol_file, cv2.IMREAD_GRAYSCALE)
@@ -243,22 +261,27 @@ def bmp_to_symbols(cfg):
 
       # symbol data
       for row_data in bin_img:
-        symbol_text += '\n\t'
+        out_text_c += '\n\t'
         for d in row_data:
-          symbol_text += '{}, '.format(d)
+          out_text_c += '{}, '.format(d)
 
     # add end and add to overall text
-    symbol_text += '\n};\n'
-    out_text += symbol_text
+    out_text_c += '\n};\n'
+
+  # end text
+  out_text_h += '\n#endif'
 
   # debug
   #print(out_text)
 
   # write file
-  with open(cfg["output_file"], 'w') as f:
-    f.write(out_text)
+  with open(cfg["output_file_c"], 'w') as f:
+    f.write(out_text_c)
 
-  print("\n--\nfile: {} written, sucess.\n".format(cfg["output_file"]))
+  with open(cfg["output_file_h"], 'w') as f:
+    f.write(out_text_h)
+
+  print("\n--\nfile: {} and {} written, sucess.\n".format(cfg["output_file_c"], cfg["output_file_h"]))
 
 
 if __name__ == '__main__':
@@ -272,10 +295,11 @@ if __name__ == '__main__':
   cfg = yaml.safe_load(open("./config.yaml"))["symbol_converter"]
   print("config: ", cfg)
 
+  # create folders
   create_folder(cfg['dirs'])
 
   # symbols to bitmaps
-  #symbols_to_bmp(cfg)
+  symbols_to_bmp(cfg)
 
   # bitmaps to symbols
   bmp_to_symbols(cfg)
