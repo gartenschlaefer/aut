@@ -212,14 +212,18 @@ def bmp_to_symbols(cfg):
       if not all(dim): dim = img.shape
       else: assert dim == img.shape
 
-      # # scale and save
-      # scaled_path = cfg["dirs"]["out_pgm"] + 'scaled/'
-      # if not os.path.isdir(scaled_path): os.makedirs(scaled_path)
-      # cv2.imwrite("{}{}".format(scaled_path, Path(symbol_file).name), cv2.resize(img, tuple([int(x * 16) for x in img.shape[::-1]]), interpolation=cv2.INTER_LINEAR), (cv2.IMWRITE_PXM_BINARY, 1))
-
       # add memory space
       mem_size += (int(img.shape[0] / 8) + (1 if img.shape[0] % 8 else 0)) * img.shape[1]
       print("dim: {} cum. mem size: {}".format(img.shape, mem_size))
+
+      # scale flag?
+      if not cfg['print_scaled_img']: continue
+
+      # scale and save
+      scaled_path = cfg["dirs"]["out_pgm"] + 'scaled/'
+      if not os.path.isdir(scaled_path): os.makedirs(scaled_path)
+      img_ = cv2.resize(img, tuple([int(x * 16) for x in img.shape[::-1]]), interpolation=cv2.INTER_NEAREST)
+      cv2.imwrite("{}{}".format(scaled_path, Path(symbol_file).name), img_, (cv2.IMWRITE_PXM_BINARY, 1))
 
     # update meta data
     symbols_dict[symbol_name]['dim'] = dim
