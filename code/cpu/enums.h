@@ -89,11 +89,16 @@ typedef enum
   _p_set_down, _p_alarm, _p_air, _p_sensor, _p_watch, _p_compressor, _p_circulate, _p_cal, _p_zone, _p_level,
 
   // 19 x 19 [23]
-  _n_phosphor, _n_pump, _n_esc, _n_plus, _n_minus, _n_arrow_up, _n_arrow_down, _n_ok, _n_grad, _n_sonic, _n_arrow_redo,
-  _p_phosphor, _p_pump, _p_esc, _p_plus, _p_minus, _p_arrow_up, _p_arrow_down, _p_ok, _p_grad, _p_sonic, _p_arrow_redo, _line,
+  _n_phosphor, _n_esc, _n_plus, _n_minus, _n_arrow_up, _n_arrow_down, _n_ok, _n_grad, _n_sonic, _n_arrow_redo,
+  _p_phosphor, _p_esc, _p_plus, _p_minus, _p_arrow_up, _p_arrow_down, _p_ok, _p_grad, _p_sonic, _p_arrow_redo,
+
+  // 19 x 24
+  _n_pump,
+  _p_pump,
 
   // 34 x 21 [6]
-  _p_frame, _p_escape, _p_del, _n_frame, _n_escape, _n_del,
+  _p_frame, _p_escape, _p_del, 
+  _n_frame, _n_escape, _n_del,
 
   // 39 x 16 [2]
   _n_text_frame, _p_text_frame,

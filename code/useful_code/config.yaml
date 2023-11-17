@@ -9,4 +9,7 @@ symbol_converter:
     out_pgm: "./ignore/out/"
     in_pgm: "./ignore/out/"
 
-  print_scaled_img: False
+  print_scaled_img: True
+
+  symbol_to_bmp: True
+  bmp_to_symbol: True

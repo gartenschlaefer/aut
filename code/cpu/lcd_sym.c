@@ -1192,7 +1192,7 @@ void LCD_Sym_Data_Setup(void)
 void LCD_Sym_Data_Arrows(void)
 {
   LCD_Sym_Data_Arrow_Up(false);
-  LCD_WriteAnySymbol(8, 140, _line);
+  LCD_FillSpace(8, 150, 3, 3);
   LCD_Sym_Data_Arrow_Down(false);
 }
 

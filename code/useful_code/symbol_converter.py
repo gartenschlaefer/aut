@@ -149,6 +149,8 @@ def symbols_to_bmp(cfg):
   symbols to bitmaps
   """
 
+  if not cfg['symbol_to_bmp']: return
+
   # read input file
   with open(cfg["input_file"]) as f:
     file_data = f.read()
@@ -180,6 +182,8 @@ def bmp_to_symbols(cfg):
   """
   bitmaps to symbols
   """
+
+  if not cfg['bmp_to_symbol']: return
 
   # bitmaps to vertical binary format
   bmp_files = sorted(glob(cfg["dirs"]["in_pgm"] + '*.pbm'))
@@ -285,7 +289,8 @@ def bmp_to_symbols(cfg):
   with open(cfg["output_file_h"], 'w') as f:
     f.write(out_text_h)
 
-  print("\n--\nfile: {} and {} written, sucess.\n".format(cfg["output_file_c"], cfg["output_file_h"]))
+  # success message 
+  print("\n--\nfile: {} and {} written, success.\n".format(cfg["output_file_c"], cfg["output_file_h"]))
 
 
 if __name__ == '__main__':

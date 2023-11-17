@@ -290,7 +290,7 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
       int pos = term + c + len * (p + word * height);
 
       // get font symbol
-      unsigned char font_symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos] );
+      unsigned char font_symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos]);
 
       // convert data for window programming
       lcd_data[c] = LCD_WP_ConvertData(font_symbol & 0x0F);
@@ -354,41 +354,53 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
 
 void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol)
 {
-  unsigned char symbol = 0;
   unsigned char offset = 0;
+  bool negative = false;
 
   unsigned char *symbol_pointer = NULL;
+  const unsigned char *inv_mask = NULL;
 
   // get correct symbol pointer
   switch(any_symbol)
   {
-    // 35 x 23 [8]
+    // 35 x 23
     case _n_pump_off: case _n_mud: case _n_inflow_pump: case _n_pump2:
     case _p_pump_off: case _p_mud: case _p_inflow_pump: case _p_pump2: 
       symbol_pointer = Symbols_35x23_bmp;
-      offset = 0;
+      offset = _n_pump_off;
       break;
 
-    // 29 x 17 [20]
+    // 29 x 17
     case _n_set_down: case _n_alarm: case _n_air: case _n_sensor: case _n_watch: case _n_compressor: case _n_circulate: case _n_cal: case _n_zone: case _n_level:
     case _p_set_down: case _p_alarm: case _p_air: case _p_sensor: case _p_watch: case _p_compressor: case _p_circulate: case _p_cal: case _p_zone: case _p_level:
       symbol_pointer = Symbols_29x17_bmp;
-      offset = _p_pump2 + 1;
+      offset = _n_set_down;
       break;
 
-    // 19 x 19 [23]
-    case _n_phosphor: case _n_pump: case _n_esc: case _n_plus: case _n_minus: case _n_arrow_up: case _n_arrow_down: case _n_ok: case _n_grad: case _n_sonic: case _n_arrow_redo:
-    case _p_phosphor: case _p_pump: case _p_esc: case _p_plus: case _p_minus: case _p_arrow_up: case _p_arrow_down: case _p_ok: case _p_grad: case _p_sonic: case _p_arrow_redo: 
-    case _line:
+    // 19 x 19
+    case _n_phosphor: case _n_esc: case _n_plus: case _n_minus: case _n_arrow_up: case _n_arrow_down: case _n_ok: case _n_grad: case _n_sonic: case _n_arrow_redo: negative = true;
+    case _p_phosphor: case _p_esc: case _p_plus: case _p_minus: case _p_arrow_up: case _p_arrow_down: case _p_ok: case _p_grad: case _p_sonic: case _p_arrow_redo: 
       symbol_pointer = Symbols_19x19_bmp;
-      offset = _p_level + 1;
+      offset = _p_phosphor;
+      if(negative)
+      { 
+        inv_mask = Symbols_19x19_bmp_inv_mask;
+        offset = _n_phosphor;
+      }
       break;
 
-    // 34 x 21 [6]
+    // 19 x 24
+    case _n_pump: negative = true;
+    case _p_pump:
+      symbol_pointer = Symbols_15x24_bmp;
+      offset = any_symbol;
+      break;
+
+    // 34 x 21
     case _p_frame: case _p_escape: case _p_del: 
     case _n_frame: case _n_escape: case _n_del:
       symbol_pointer = Symbols_34x21_bmp;
-      offset = _line + 1;
+      offset = _p_frame;
       break;
 
     // 39 x 16 [2]
@@ -437,8 +449,20 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
     // columns
     for(unsigned char c = 0; c < len; c++)
     {
+
+      // get position
+      int r_pos = 2 + c + len * p;
+      int pos = r_pos + (len * height * (any_symbol - offset));
+      //int pos = 2 + c + len * (p + (any_symbol - offset) * height);
+
+      // get font symbol
+      unsigned char symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos]);
+
+      // inversion mask
+      if(inv_mask){ symbol = (inv_mask[r_pos] ? symbol : symbol_pointer[pos]); }
+
       // get symbol
-      symbol = symbol_pointer[2 + c + len * (p + (any_symbol - offset) * height)];
+      //symbol = symbol_pointer[2 + c + len * (p + (any_symbol - offset) * height)];
 
       // convert data for window programming
       lcd_data[c] = LCD_WP_ConvertData(symbol & 0x0F);
