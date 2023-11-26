@@ -12,7 +12,8 @@ BINDIR = ./bin
 OBJDIR = ./obj
 TARGET = $(BINDIR)/control_code
 EXTRAINCDIRS = /usr/avr/include
-SUBMISSION = ./archiv/control_code_S1.3.1.zip
+#SUBMISSION = ./archiv/control_code_S1.3.1.zip
+SUBMISSION = ./archiv/control_code_S1.4.0.zip
 
 # Create object files directory, 2>/dev/null -> error supression
 $(shell mkdir $(OBJDIR) 2>/dev/null)

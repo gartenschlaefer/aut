@@ -74,7 +74,7 @@ void LCD_Sym_Auto_SonicVal(struct PlantState *ps);
  * ------------------------------------------------------------------*/
 
 struct RowColPos LCD_Sym_Manual_GetSymbolPosition(t_any_symbol sym);
-void LCD_Sym_Manual_Draw(t_any_symbol sym);
+void LCD_Sym_Manual_Draw(t_any_symbol sym, bool negative);
 void LCD_Sym_Manual_PageDraw(t_page page, bool negative);
 void LCD_Sym_Manual_AllSymbols(void);
 
@@ -84,7 +84,7 @@ void LCD_Sym_Manual_PageTime_Min(int min);
 void LCD_Sym_Manual_PageTime_Sec(int sec);
 void LCD_Sym_Manual_PageTime_Print(struct PlantState *ps);
 void LCD_Sym_Manual_PageTime_Update(struct PlantState *ps);
-void LCD_Sym_Manual_PumpOff_OkButton(bool p_sym);
+void LCD_Sym_Manual_PumpOff_OkButton(bool negative);
 void LCD_Sym_Manual_PumpOff_OkButton_Clr(void);
 void LCD_Sym_Manual_MPX_AverageValue(int value);
 void LCD_Sym_Manual_Tank_LevelPerc(int value);
@@ -96,8 +96,8 @@ void LCD_Sym_Manual_Tank_LevelPerc(int value);
 
 struct RowColPos LCD_Sym_Setup_GetSymbolPosition(t_any_symbol sym);
 struct RowColPos LCD_Sym_Setup_GetSymbolPosition_Sub(t_any_symbol sym);
-void LCD_Sym_Setup_Draw(t_any_symbol sym);
-void LCD_Sym_Setup_Draw_Sub(t_any_symbol sym);
+void LCD_Sym_Setup_Draw(t_any_symbol sym, bool negative);
+void LCD_Sym_Setup_Draw_Sub(t_any_symbol sym, bool negative);
 void LCD_Sym_Setup_AllSymbols(void);
 
 void LCD_Sym_Setup_Page(void);
@@ -159,7 +159,7 @@ void LCD_Sym_Setup_Alarm_TempValue(bool negative, int value);
 void LCD_Sym_Setup_Alarm_Compressor(bool negative);
 void LCD_Sym_Setup_Alarm_Sensor(bool negative);
 void LCD_Sym_Setup_Watch_Mark(t_DateTime time, unsigned char *p_dT);
-void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value);
+void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value, bool negative);
 void LCD_Sym_Setup_Watch(void);
 void LCD_Sym_Setup_Zone(void);
 void LCD_Sym_Setup_Zone_LevelToAir_Value(bool negative, int value);
@@ -226,8 +226,8 @@ void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos);
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_TextButton(t_text_buttons text, bool negative);
-void LCD_Sym_ControlButtons(t_CtrlButtons ctrl);
-void LCD_Sym_ControlButtons2(t_CtrlButtons ctrl);
+void LCD_Sym_ControlButtons(t_CtrlButtons ctrl, bool negative);
+void LCD_Sym_ControlButtons2(t_CtrlButtons ctrl, bool negative);
 void LCD_Sym_Pin_OkButton(unsigned char select);
 
 
@@ -278,6 +278,5 @@ void LCD_Sym_Auto_Date(struct PlantState *ps);
 void LCD_Sym_Data_EndText(void);
 void LCD_Sym_Modem_Data_SLED(bool show);
 void LCD_Sym_Modem_Pin_SLED(bool show);
-t_any_symbol LCD_Sym_GetAntiSymbol(t_any_symbol sym);
 
 #endif

@@ -81,39 +81,39 @@ typedef enum
 
 typedef enum
 {
-  // 35 x 23 [8]
-  _n_pump_off, _n_mud, _n_inflow_pump, _n_pump2, _p_pump_off, _p_mud, _p_inflow_pump, _p_pump2,
+  // 35 x 23
+  _s_pump_off, _s_inflow_pump, _s_pump2, 
 
-  // 29 x 17 [20]
-  _n_set_down, _n_alarm, _n_air, _n_sensor, _n_watch, _n_compressor, _n_circulate, _n_cal, _n_zone, _n_level,
-  _p_set_down, _p_alarm, _p_air, _p_sensor, _p_watch, _p_compressor, _p_circulate, _p_cal, _p_zone, _p_level,
+  // 29 x 17
+  //_s_set_down, _s_alarm, _s_air, _s_sensor, _s_watch, _s_compressor, _s_circulate, _s_cal, _s_zone, _s_level,
+  _s_set_down, _s_circulate, _s_air, _s_zone, _s_level, _s_cal, _s_watch, _s_alarm, _s_sensor, _s_compressor,
 
-  // 19 x 19 [23]
-  _n_phosphor, _n_esc, _n_plus, _n_minus, _n_arrow_up, _n_arrow_down, _n_ok, _n_grad, _n_sonic, _n_arrow_redo,
-  _p_phosphor, _p_esc, _p_plus, _p_minus, _p_arrow_up, _p_arrow_down, _p_ok, _p_grad, _p_sonic, _p_arrow_redo,
+  // 29 x 23
+  _s_mud,
+
+  // 19 x 19
+  _s_phosphor, _s_esc, _s_plus, _s_minus, _s_arrow_up, _s_arrow_down, _s_ok, _s_grad, _s_sonic, _s_arrow_redo,
 
   // 19 x 24
-  _n_pump,
-  _p_pump,
+  _s_pump,
 
-  // 34 x 21 [6]
-  _p_frame, _p_escape, _p_del, 
-  _n_frame, _n_escape, _n_del,
+  // 34 x 21
+  _s_frame, _s_escape, _s_del,
 
-  // 39 x 16 [2]
-  _n_text_frame, _p_text_frame,
+  // 39 x 16
+  _s_text_frame,
 
-  // hecs [1]
-  _logo_hecs,
+  // hecs
+  _s_logo_hecs,
 
-  // purator [1]
-  _logo_purator,
+  // purator
+  _s_logo_purator,
 
   // no symbol
-  _none_symbol,
+  _s_none_symbol,
 
   // valve symbol
-  _n_valve, _p_valve
+  _s_valve,
 
 }t_any_symbol;
 
@@ -160,8 +160,7 @@ typedef enum
 {
   _ctrl_zero,
   _ctrl_auto, _ctrl_manual, _ctrl_setup, _ctrl_data,
-  _ctrl_neg_plus, _ctrl_neg_minus, _ctrl_neg_esc, _ctrl_neg_ok,
-  _ctrl_pos_plus, _ctrl_pos_minus, _ctrl_pos_esc, _ctrl_pos_ok,
+  _ctrl_plus, _ctrl_minus, _ctrl_esc, _ctrl_ok,
   _ctrl_on, _ctrl_off, _ctrl_time, _ctrl_sensor, _ctrl_compressor,
   _ctrl_open_valve, _ctrl_cal, _ctrl_level, _ctrl_redo,
   _ctrl_shot, _ctrl_sonic_auto, _ctrl_sonic, _ctrl_bootloader,
@@ -176,8 +175,7 @@ typedef enum
 
 typedef enum
 {
-  _n_h, _n_min, _n_day, _n_month, _n_year,
-  _p_h, _p_min, _p_day, _p_month, _p_year
+  _dt_hou, _dt_min, _dt_day, _dt_month, _dt_year
 }t_DateTime;
 
 

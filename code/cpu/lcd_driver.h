@@ -96,12 +96,14 @@ void LCD_ClrSpace(unsigned char row, unsigned char col, unsigned char height, un
 void LCD_FillOrClrSpace(bool fill, unsigned char row, unsigned char col, unsigned char height, unsigned char len);
 void LCD_Clean(void);
 
-unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word);
 void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char *string);
 void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value);
 
-void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol);
+unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned char letter, bool negative);
+void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol, bool negative);
 void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, bool negative);
 void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col);
+
+void LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, bool negative);
 
 #endif

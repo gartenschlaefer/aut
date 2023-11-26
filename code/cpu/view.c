@@ -78,7 +78,7 @@ void View_ChangePage(struct PlantState *ps, struct View *view, t_page new_page)
     switch(new_page)
     {
       case ManualMain: LCD_Sym_Manual_Main(ps); break;
-      case ManualPumpOff: LCD_Sym_Manual_PumpOff_OkButton(true); break;
+      case ManualPumpOff: LCD_Sym_Manual_PumpOff_OkButton(false); break;
       case ManualPumpOff_On: LCD_Sym_Manual_PumpOff_OkButton_Clr(); LCD_Sym_Manual_Text(ps); break;
       default: break;
     }

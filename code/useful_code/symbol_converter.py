@@ -234,8 +234,8 @@ def bmp_to_symbols(cfg):
     symbols_dict[symbol_name]['mem_size'] = mem_size
 
   # out text
-  out_text_c = '//--\n// symbol data\n\n#include "{}"\n'.format(Path(cfg["output_file_h"]).name)
-  out_text_h = '//--\n// symbol data\n\n//include guard\n#ifndef SYMBOLS_H\n#define SYMBOLS_H\n'
+  out_text_c = '// --\n// symbol data\n\n#include "{}"\n'.format(Path(cfg["output_file_h"]).name)
+  out_text_h = '// --\n// symbol data\n\n// include guard\n#ifndef SYMBOLS_H\n#define SYMBOLS_H\n'
 
   # go through each file
   for symbol_name, symbol_dict in symbols_dict.items():
@@ -246,7 +246,7 @@ def bmp_to_symbols(cfg):
 
     # mem allocation size and var declaration
     out_text_h += '\n#define {}_LEN {}'.format(symbol_name, symbol_dict['mem_size'])
-    out_text_h += '\nextern const unsigned char {};\n'.format(symbol_name)
+    out_text_h += '\nextern const unsigned char {}[{}_LEN];\n'.format(symbol_name, symbol_name)
 
     # variable definition
     out_text_c += '\nconst unsigned char {}[{}_LEN] =\n{{'.format(symbol_name, symbol_name)

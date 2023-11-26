@@ -250,67 +250,10 @@ void LCD_Clean(void){ LCD_ClrSpace(0, 0, LCD_SPEC_MAX_PAG, LCD_SPEC_MAX_COL); }
 
 
 /*-------------------------------------------------------------------*
- *  write any font with window programming
- * ------------------------------------------------------------------*/
-
-unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned short word)
-{
-  unsigned char *symbol_pointer = NULL;
-  bool negative = false;
-  unsigned char term = 2;
-
-  switch(font_type)
-  {
-    case f_6x8_p: symbol_pointer = Font_6X8; term = 8; break;
-    case f_6x8_n: symbol_pointer = Font_6X8; negative = true; term = 8; break;
-    case f_4x6_p: symbol_pointer = FontNumbers_4X6; break;
-    case f_4x6_n: symbol_pointer = FontNumbers_4X6_Neg; break;
-    case f_8x16_p: symbol_pointer = Font_Numbers_8X16; break;
-    case f_8x16_n: symbol_pointer = Font_Numbers_8X16; negative = true; break;
-    default: return 0;
-  }
-
-  // get length and height (height in bytes)
-  unsigned char len = symbol_pointer[0];
-  unsigned char height = (unsigned char)(symbol_pointer[1] / 8) + (symbol_pointer[1] % 8 ? 1 : 0);
-
-  // allocate memory
-  unsigned char *lcd_data = malloc(2 * len);
-
-  // set frame
-  LCD_WP_SetFrame(row, col, 2 * height, len);
-
-  // pages
-  for(unsigned char p = 0; p < height; p++)
-  {
-    // columns
-    for(unsigned char c = 0; c < len; c++)
-    {
-      // get position
-      int pos = term + c + len * (p + word * height);
-
-      // get font symbol
-      unsigned char font_symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos]);
-
-      // convert data for window programming
-      lcd_data[c] = LCD_WP_ConvertData(font_symbol & 0x0F);
-      lcd_data[c + len] = LCD_WP_ConvertData((font_symbol & 0xF0) >> 4);
-    }
-
-    // send data
-    LCD_SendData(lcd_data, 2 * len);
-  }
-  free(lcd_data);
-  LCD_WP_Disable();
-  return len;
-}
-
-
-/*-------------------------------------------------------------------*
  *  write any string fonts with window programming
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char *string)
+void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char *string, bool negative)
 {
   unsigned char len = 0;
   const unsigned char char_offset = ((font_type == f_4x6_p || font_type == f_4x6_n) ? 48 : 33);
@@ -318,7 +261,7 @@ void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned cha
   // write each character of the string
   while(*string)
   {  
-    len = LCD_WriteAnyFont(font_type, y, x, (*string - char_offset));
+    len = LCD_WriteAnyFont(font_type, y, x, (*string - char_offset), negative);
     x += len;
     string++;
   }
@@ -349,131 +292,148 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
 
 
 /*-------------------------------------------------------------------*
- *  write any symbol
+ *  write any font with window programming
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol)
+unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned char letter, bool negative)
 {
   unsigned char offset = 0;
-  bool negative = false;
+  const unsigned char *symbol_pointer = NULL;
+  const unsigned char *inv_mask_pointer = NULL;
 
-  unsigned char *symbol_pointer = NULL;
-  const unsigned char *inv_mask = NULL;
+  switch(font_type)
+  {
+    case f_6x8: symbol_pointer = Font_6x8; term = 8; break;
+    case f_4x6_p: symbol_pointer = Font_Numbers_4x6; break;
+    case f_4x6_n: symbol_pointer = Font_Numbers_4x6_Neg; break;
+    case f_8x16_p: symbol_pointer = Font_Numbers_6x12; break;
+    case f_8x16_n: symbol_pointer = Font_Numbers_6x12; negative = true; break;
+    default: return 0;
+  }
+
+  // send data
+  LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, letter, negative);
+
+  // // get length and height (height in bytes)
+  // unsigned char len = symbol_pointer[0];
+  // unsigned char height = (unsigned char)(symbol_pointer[1] / 8) + (symbol_pointer[1] % 8 ? 1 : 0);
+
+  // // allocate memory
+  // unsigned char *lcd_data = malloc(2 * len);
+
+  // // set frame
+  // LCD_WP_SetFrame(row, col, 2 * height, len);
+
+  // // pages
+  // for(unsigned char p = 0; p < height; p++)
+  // {
+  //   // columns
+  //   for(unsigned char c = 0; c < len; c++)
+  //   {
+  //     // get position
+  //     int pos = term + c + len * (p + letter * height);
+
+  //     // get font symbol
+  //     unsigned char font_symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos]);
+
+  //     // convert data for window programming
+  //     lcd_data[c] = LCD_WP_ConvertData(font_symbol & 0x0F);
+  //     lcd_data[c + len] = LCD_WP_ConvertData((font_symbol & 0xF0) >> 4);
+  //   }
+
+  //   // send data
+  //   LCD_SendData(lcd_data, 2 * len);
+  // }
+  // free(lcd_data);
+  // LCD_WP_Disable();
+  return len;
+}
+
+
+/*-------------------------------------------------------------------*
+ *            write any symbol
+ * ------------------------------------------------------------------*/
+
+void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol, bool negative)
+{
+  unsigned char offset = 0;
+  const unsigned char *symbol_pointer = NULL;
+  const unsigned char *inv_mask_pointer = NULL;
 
   // get correct symbol pointer
   switch(any_symbol)
   {
     // 35 x 23
-    case _n_pump_off: case _n_mud: case _n_inflow_pump: case _n_pump2:
-    case _p_pump_off: case _p_mud: case _p_inflow_pump: case _p_pump2: 
-      symbol_pointer = Symbols_35x23_bmp;
-      offset = _n_pump_off;
+    case _s_pump_off:  case _s_inflow_pump: case _s_pump2:
+      symbol_pointer = Symbols_35x23;
+      offset = _s_pump_off;
       break;
 
-    // 29 x 17
-    case _n_set_down: case _n_alarm: case _n_air: case _n_sensor: case _n_watch: case _n_compressor: case _n_circulate: case _n_cal: case _n_zone: case _n_level:
-    case _p_set_down: case _p_alarm: case _p_air: case _p_sensor: case _p_watch: case _p_compressor: case _p_circulate: case _p_cal: case _p_zone: case _p_level:
-      symbol_pointer = Symbols_29x17_bmp;
-      offset = _n_set_down;
+    // 29 x 16
+    case _s_set_down: case _s_circulate: case _s_air: case _s_zone: case _s_cal: case _s_watch: case _s_alarm: case _s_sensor: case _s_compressor:
+      symbol_pointer = Symbols_29x16;
+      offset = _s_set_down;
+      break;
+
+    // 29 x 23
+    case _s_mud: case _s_level:
+      symbol_pointer = Symbols_29x23;
+      offset = _s_mud;
       break;
 
     // 19 x 19
-    case _n_phosphor: case _n_esc: case _n_plus: case _n_minus: case _n_arrow_up: case _n_arrow_down: case _n_ok: case _n_grad: case _n_sonic: case _n_arrow_redo: negative = true;
-    case _p_phosphor: case _p_esc: case _p_plus: case _p_minus: case _p_arrow_up: case _p_arrow_down: case _p_ok: case _p_grad: case _p_sonic: case _p_arrow_redo: 
-      symbol_pointer = Symbols_19x19_bmp;
-      offset = _p_phosphor;
-      if(negative)
-      { 
-        inv_mask = Symbols_19x19_bmp_inv_mask;
-        offset = _n_phosphor;
-      }
+    case _s_phosphor: case _s_esc: case _s_plus: case _s_minus: case _s_arrow_up: case _s_arrow_down: case _s_ok: case _s_grad: case _s_sonic: case _s_arrow_redo:
+      symbol_pointer = Symbols_19x19;
+      offset = _s_phosphor;
+      inv_mask_pointer = (negative ? Symbols_19x19_inv_mask : NULL);
       break;
 
     // 19 x 24
-    case _n_pump: negative = true;
-    case _p_pump:
-      symbol_pointer = Symbols_15x24_bmp;
-      offset = any_symbol;
+    case _s_pump:
+      symbol_pointer = Symbols_15x24;
+      offset = _s_pump;
       break;
 
     // 34 x 21
-    case _p_frame: case _p_escape: case _p_del: 
-    case _n_frame: case _n_escape: case _n_del:
-      symbol_pointer = Symbols_34x21_bmp;
-      offset = _p_frame;
+    // 33 x 20
+    case _s_frame: case _s_escape: case _s_del:
+      //symbol_pointer = Symbols_34x21;
+      //inv_mask_pointer = (negative ? Symbols_34x21_inv_mask : NULL);
+      symbol_pointer = Symbols_33x20;
+      inv_mask_pointer = (negative ? Symbols_33x20_inv_mask : NULL);
+      offset = _s_frame;
       break;
 
     // 39 x 16 [2]
-    case _n_text_frame: 
-    case _p_text_frame:
-      symbol_pointer = Symbols_39x16_bmp;
-      offset = _n_del + 1;
+    case _s_text_frame: 
+      symbol_pointer = Symbols_39x16;
+      offset = _s_text_frame;
       break;
 
     // hecs [1]
-    case _logo_hecs:
+    case _s_logo_hecs:
       symbol_pointer = Symbol_HECS;
-      offset = _logo_hecs;
+      offset = _s_logo_hecs;
       break;
 
     // purator [1]
-    case _logo_purator:
+    case _s_logo_purator:
       symbol_pointer = Symbol_Purator;
-      offset = _logo_purator;
+      offset = _s_logo_purator;
       break;
 
     // todo:
     // valve symbol
-    case _n_valve:
-    case _p_valve: 
-      symbol_pointer = Symbols_35x23_bmp;
-      offset = _logo_purator + 1;
+    case _s_valve:
+      symbol_pointer = Symbols_35x23;
+      offset = _s_valve;
       break;
 
     default: return;
   }
 
-  // get length and height (height in bytes)
-  unsigned char len = symbol_pointer[0];
-  unsigned char height = (unsigned char)(symbol_pointer[1] / 8) + (symbol_pointer[1] % 8 ? 1 : 0);
-
-  // set frame
-  LCD_WP_SetFrame(row, col, 2 * height, len);
-
-  // allocate memory
-  unsigned char *lcd_data = malloc(2 * len);
-
-  // pages
-  for(unsigned char p = 0; p < height; p++)
-  {
-    // columns
-    for(unsigned char c = 0; c < len; c++)
-    {
-
-      // get position
-      int r_pos = 2 + c + len * p;
-      int pos = r_pos + (len * height * (any_symbol - offset));
-      //int pos = 2 + c + len * (p + (any_symbol - offset) * height);
-
-      // get font symbol
-      unsigned char symbol = (negative ? 255 - symbol_pointer[pos] : symbol_pointer[pos]);
-
-      // inversion mask
-      if(inv_mask){ symbol = (inv_mask[r_pos] ? symbol : symbol_pointer[pos]); }
-
-      // get symbol
-      //symbol = symbol_pointer[2 + c + len * (p + (any_symbol - offset) * height)];
-
-      // convert data for window programming
-      lcd_data[c] = LCD_WP_ConvertData(symbol & 0x0F);
-      lcd_data[c + len] = LCD_WP_ConvertData((symbol & 0xF0) >> 4);
-    }
-
-    // send data
-    LCD_SendData(lcd_data, 2 * len);
-  }
-  free(lcd_data);
-  LCD_WP_Disable();
+  // send data
+  LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, (any_symbol - offset), negative);
 }
 
 
@@ -486,7 +446,7 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons t
   char t[7] = "";
 
   // write frame
-  LCD_WriteAnySymbol(row, col, (negative ? _n_text_frame : _p_text_frame));
+  LCD_WriteAnySymbol(row, col, _s_text_frame, negative);
 
   switch(text)
   {
@@ -515,4 +475,62 @@ void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col)
 {
   if(ps->frame_counter->frame < TC_FPS_HALF){ LCD_FillSpace(row, col, 1, 4); }
   else{ LCD_ClrSpace(row, col, 1, 4); }
+}
+
+
+/*-------------------------------------------------------------------*
+ *            send data from pointer
+ * ------------------------------------------------------------------*/
+
+void LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, bool negative)
+{
+  // get length and height (height in bytes)
+  unsigned char l_px = *symbol_pointer++;
+  unsigned char h_px = *symbol_pointer++;
+  unsigned char h_page = (unsigned char)(h_px / 4) + (h_px % 4 ? 1 : 0);
+  unsigned char h_byte = (unsigned char)(h_px / 8) + (h_px % 8 ? 1 : 0);
+
+  // set frame
+  LCD_WP_SetFrame(row, col, h_page, l_px);
+
+  // allocate memory (for writing two pages)
+  unsigned char *lcd_data = malloc(2 * l_px);
+
+  // get to symbol position in array
+  symbol_pointer += (l_px * h_byte * symbol_pos);
+  if(inv_mask_pointer){ inv_mask_pointer += 2; }
+
+  // pages
+  for(unsigned char p = 0; p < h_byte; p++)
+  {
+    bool send_two_pages = ((p * 2 + 2) <= h_page ? true : false);
+
+    // columns
+    for(unsigned char c = 0; c < l_px; c++)
+    {
+      // symbol
+      unsigned char symbol = *symbol_pointer++;
+
+      // inversion?
+      if(negative)
+      {
+        // with mask or without
+        if(inv_mask_pointer){ symbol ^= *inv_mask_pointer; inv_mask_pointer++; }
+        else{ symbol = ~symbol; }
+      }
+
+      // convert data for window programming
+      lcd_data[c] = LCD_WP_ConvertData(symbol & 0x0F);
+
+      // send other page
+      if(send_two_pages){ lcd_data[c + l_px] = LCD_WP_ConvertData((symbol & 0xF0) >> 4); }
+    }
+
+    // send data
+    LCD_SendData(lcd_data, (send_two_pages ? 2 : 1) * l_px);
+  }
+  
+  // free allocated memory
+  free(lcd_data);
+  LCD_WP_Disable();
 }
