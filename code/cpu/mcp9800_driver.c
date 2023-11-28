@@ -95,27 +95,3 @@ void MCP9800_SendByte(unsigned char byte, unsigned char sData)
   unsigned char send[] = {byte, sData};
   TWI_D_Master_WriteString(MCP_ADDR, send, 2);
 }
-
-
-/*-------------------------------------------------------------------*
- *            write temperature
- * ------------------------------------------------------------------*/
-
-void MCP9800_WriteTemp(struct TWIState *twi_state)
-{
-  // read temperature
-  unsigned char temp = MCP9800_ReceiveByte(twi_state, 0x00);
-
-  // indicate minus
-  if(temp & 0x80)
-  {
-    LCD_WriteAnyStringFont(f_6x8_p, 17, 84, "-");
-    temp = -temp;
-  }
-
-  // clear minus sign
-  else{ LCD_ClrSpace(17, 84, 2, 6); }
-
-  // write temperature
-  LCD_WriteAnyValue(f_6x8_p, 2, 17, 90, (temp & 0x7F));
-}

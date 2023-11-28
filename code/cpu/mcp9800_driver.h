@@ -69,6 +69,5 @@ void MCP9800_Temp_Update(struct PlantState *ps);
 void MCP9800_OneShot(void);
 unsigned char MCP9800_ReceiveByte(struct TWIState *twi_state, unsigned char byte);
 void MCP9800_SendByte(unsigned char byte, unsigned char sData);
-void MCP9800_WriteTemp(struct TWIState *twi_state);
 
 #endif

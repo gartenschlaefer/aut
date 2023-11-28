@@ -613,7 +613,7 @@ unsigned char Sonic_ReadProgram(struct PlantState *ps, unsigned char state)
     // 32 pages = 4kB
     for(int page = 0; page < 32; page++)
     {
-      LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
+      LCD_Sym_Data_Sonic_ReadProgramPage(page);
 
       // fill buffer page 128
       for(int byte8 = 0; byte8 < 128; byte8 += 8)
@@ -691,7 +691,7 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
     for(int page = 0; page < 32; page++)  //32Pages = 4kB
     {
       WDT_RESET;
-      LCD_WriteAnyValue(f_4x6_p, 3, 17, 50, page);
+      LCD_Sym_Data_Sonic_ReadProgramPage(page);
       //--------------------------------------------Write1EEPage
       for(int byte8 = 0; byte8 < 128; byte8 += 8)
       {

@@ -256,7 +256,7 @@ void LCD_Clean(void){ LCD_ClrSpace(0, 0, LCD_SPEC_MAX_PAG, LCD_SPEC_MAX_COL); }
 void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned char x, char *string, bool negative)
 {
   unsigned char len = 0;
-  const unsigned char char_offset = ((font_type == f_4x6_p || font_type == f_4x6_n) ? 48 : 33);
+  const unsigned char char_offset = ((font_type == _f_4x6) ? 48 : 33);
 
   // write each character of the string
   while(*string)
@@ -272,7 +272,7 @@ void LCD_WriteAnyStringFont(t_font_type font_type, unsigned char y, unsigned cha
  *            write any value maximum is defined below
  * ------------------------------------------------------------------*/
 
-void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value)
+void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y, unsigned char x, int value, bool negative)
 {
   char v[6] = {0x00};
 
@@ -287,7 +287,7 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
   }
 
   // write symbol
-  LCD_WriteAnyStringFont(font_type, y, x, v);
+  LCD_WriteAnyStringFont(font_type, y, x, v, negative);
 }
 
 
@@ -297,22 +297,33 @@ void LCD_WriteAnyValue(t_font_type font_type, unsigned char num, unsigned char y
 
 unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigned char col, unsigned char letter, bool negative)
 {
-  unsigned char offset = 0;
   const unsigned char *symbol_pointer = NULL;
   const unsigned char *inv_mask_pointer = NULL;
 
   switch(font_type)
   {
-    case f_6x8: symbol_pointer = Font_6x8; term = 8; break;
-    case f_4x6_p: symbol_pointer = Font_Numbers_4x6; break;
-    case f_4x6_n: symbol_pointer = Font_Numbers_4x6_Neg; break;
-    case f_8x16_p: symbol_pointer = Font_Numbers_6x12; break;
-    case f_8x16_n: symbol_pointer = Font_Numbers_6x12; negative = true; break;
+    // 6x8
+    case _f_6x8: 
+      symbol_pointer = Font_6x8; 
+      letter += 1; 
+      break;
+
+    // 4x6
+    case _f_4x6: 
+      symbol_pointer = Font_Numbers_4x6;
+      inv_mask_pointer = (negative ? Font_Numbers_4x6_inv_mask : NULL);
+      break;
+
+    // 8x16
+    case _f_8x16: 
+      symbol_pointer = Font_Numbers_6x12; 
+      break;
+
     default: return 0;
   }
 
-  // send data
-  LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, letter, negative);
+  // send data and get length
+  unsigned char len = LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, letter, negative);
 
   // // get length and height (height in bytes)
   // unsigned char len = symbol_pointer[0];
@@ -463,7 +474,7 @@ void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons t
   }
 
   // write text
-  LCD_WriteAnyStringFont((negative ? f_6x8_n : f_6x8_p), row, col, t);
+  LCD_WriteAnyStringFont(_f_6x8, row, col, t, negative);
 }
 
 
@@ -482,7 +493,7 @@ void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col)
  *            send data from pointer
  * ------------------------------------------------------------------*/
 
-void LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, bool negative)
+unsigned char LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, bool negative)
 {
   // get length and height (height in bytes)
   unsigned char l_px = *symbol_pointer++;
@@ -533,4 +544,6 @@ void LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, con
   // free allocated memory
   free(lcd_data);
   LCD_WP_Disable();
+
+  return l_px;
 }

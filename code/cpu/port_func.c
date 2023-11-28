@@ -126,7 +126,7 @@ void PORT_Bootloader(void)
   if(!(PORTD.IN & PIN5_bm))
   {
     LCD_Clean();
-    LCD_WriteAnyStringFont(f_6x8_p, 1, 1, "Bootloader-Mode");
+    LCD_WriteAnyStringFont(_f_6x8, 1, 1, "Bootloader-Mode", false);
     asm volatile("jmp 0x20000");
   }
 }
@@ -255,8 +255,8 @@ void PORT_Debug(struct PlantState *ps)
     // print register names
     if(ps->frame_counter->sixty_sec_counter % 2)
     {
-      LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve");
-      LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 0, "V: Ai Mu Cl Re");
+      LCD_WriteAnyStringFont(_f_6x8, y_pos_r, 0, "R: I1 I2 Ph Ex Co Cl Al Ve", true);
+      LCD_WriteAnyStringFont(_f_6x8, y_pos_v, 0, "V: Ai Mu Cl Re", true);
     }
     
     // print register states
@@ -265,15 +265,15 @@ void PORT_Debug(struct PlantState *ps)
       // relays
       for(int relais = 0; relais < 8; relais++)
       {
-        if(P_RELAIS.OUT & (1 << relais)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "1 "); }
-        else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_r, 18 + 18 * relais, "0 "); }
+        if(P_RELAIS.OUT & (1 << relais)){ LCD_WriteAnyStringFont(_f_6x8, y_pos_r, 18 + 18 * relais, "1 ", true); }
+        else{ LCD_WriteAnyStringFont(_f_6x8, y_pos_r, 18 + 18 * relais, "0 ", true); }
       }
 
       // valves
       for(int valve = 0; valve < 4; valve++)
       {
-        if(ps->port_state->valve_state & (1 << valve)){ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "1 "); }
-        else{ LCD_WriteAnyStringFont(f_6x8_n, y_pos_v, 18 + 18 * valve, "0 "); }
+        if(ps->port_state->valve_state & (1 << valve)){ LCD_WriteAnyStringFont(_f_6x8, y_pos_v, 18 + 18 * valve, "1 ", true); }
+        else{ LCD_WriteAnyStringFont(_f_6x8, y_pos_v, 18 + 18 * valve, "0 ", true); }
       }
     }
   }

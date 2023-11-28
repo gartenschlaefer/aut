@@ -71,7 +71,7 @@ typedef enum
 
 typedef enum
 {
-  f_6x8_p, f_6x8_n, f_4x6_p, f_4x6_n, f_8x16_p, f_8x16_n
+  _f_6x8, _f_4x6, _f_8x16
 }t_font_type;
 
 

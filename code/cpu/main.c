@@ -107,10 +107,10 @@ int main(void)
     if(DEBUG)
     {
       if(DEB_PORT){ PORT_Debug(ps); }
-      LCD_WriteAnyValue(f_6x8_p, 2, 0, 70, ps->page_state->page);
+      LCD_WriteAnyValue(_f_6x8, 2, 0, 70, ps->page_state->page, false);
 
       // fps
-      LCD_WriteAnyValue(f_4x6_p, 3, 18, 0, (int)ps->frame_counter->fps);
+      LCD_WriteAnyValue(_f_4x6, 3, 18, 0, (int)ps->frame_counter->fps, false);
     }
 
     // handles page changes

@@ -219,7 +219,7 @@ void Modem_Call(struct PlantState *ps, unsigned char id)
   USART_WriteByte(CHAR_CR);
 
   // wait and hang up
-  LCD_WriteAnyFont(f_4x6_p, 16, 119, tele_nr->id);
+  LCD_WriteAnyFont(_f_4x6, 16, 119, tele_nr->id, false);
   TCC0_wait_sec(1);
   unsigned char point_pos = 0;
   for(unsigned char i = 0; i < MO_HANG_UP_TIME; i++)
@@ -230,7 +230,7 @@ void Modem_Call(struct PlantState *ps, unsigned char id)
     if(point_pos > 5){ point_pos = 0; LCD_ClrSpace(16, 119, 2, 41); }
 
     // ...
-    LCD_WriteAnyFont(f_4x6_p, 16, 123 + point_pos * 4, 22);
+    LCD_WriteAnyFont(_f_4x6, 16, 123 + point_pos * 4, 22, false);
     point_pos++;
     TCC0_wait_sec(1);
   }
@@ -367,9 +367,9 @@ void Modem_SendTest(void)
 void Modem_Test(struct PlantState *ps)
 {
   // some text
-  LCD_WriteAnyStringFont(f_6x8_p, 1, 10, "Modem");
-  LCD_WriteAnyStringFont(f_6x8_p, 4, 30, "PWR");
-  LCD_WriteAnyStringFont(f_6x8_p, 12, 30, "CTS");
+  LCD_WriteAnyStringFont(_f_6x8, 1, 10, "Modem", false);
+  LCD_WriteAnyStringFont(_f_6x8, 4, 30, "PWR", false);
+  LCD_WriteAnyStringFont(_f_6x8, 12, 30, "CTS", false);
 
   // timers
   TCC0_wait_sec(1);
@@ -411,7 +411,7 @@ void Modem_Test(struct PlantState *ps)
         if(wait_var == 5)
         {
           // send something
-          LCD_WriteAnyStringFont(f_6x8_p, 15, 30, "sent");
+          LCD_WriteAnyStringFont(_f_6x8, 15, 30, "sent", false);
           Modem_SendTest();
         }
 
@@ -425,12 +425,12 @@ void Modem_Test(struct PlantState *ps)
           p_rec++;
 
           // print length
-          LCD_WriteAnyValue(f_6x8_p, 2, 20, 5, len);
+          LCD_WriteAnyValue(_f_6x8, 2, 20, 5, len, false);
 
           // print message
           while(len)
           {
-            LCD_WriteAnyValue(f_6x8_p, 3, i*2, 70+30*j, *p_rec);
+            LCD_WriteAnyValue(_f_6x8, 3, i*2, 70+30*j, *p_rec, false);
             p_rec++;
             len--;
             i++;

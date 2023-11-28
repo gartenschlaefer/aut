@@ -92,8 +92,8 @@ unsigned char Touch_Matrix(struct TouchState *touch_state)
   //*** debug ps->touch_state->touched matrix
   // if(DEBUG)
   // {
-  //   if(hy != 6){ LCD_WriteAnyValue(f_4x6_p, 2, 22, 152, hy); }
-  //   if(lx != 6){ LCD_WriteAnyValue(f_4x6_p, 2, 24, 152, lx); }
+  //   if(hy != 6){ LCD_WriteAnyValue(_f_4x6, 2, 22, 152, hy, false); }
+  //   if(lx != 6){ LCD_WriteAnyValue(_f_4x6, 2, 24, 152, lx, false); }
   // }
   
   return ((hy << 4) | lx);
@@ -1469,7 +1469,7 @@ void Touch_Setup_WatchLinker(struct PlantState *ps)
   if(ps->touch_state->touched)
   {
     unsigned char value = ps->touch_state->var[ps->touch_state->select];
-    LCD_Sym_Setup_Watch_DateTime(ps->touch_state->select, ps->touch_state->var[0], true);
+    LCD_Sym_Setup_Watch_DateTime(ps->touch_state->select, value, true);
   }
 }
 

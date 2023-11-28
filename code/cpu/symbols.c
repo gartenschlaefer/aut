@@ -857,3 +857,12 @@ const unsigned char Font_Numbers_6x12[Font_Numbers_6x12_LEN] =
   30, 63, 51, 51, 255, 254, 
   0, 12, 12, 14, 7, 3, 
 };
+
+const unsigned char Font_Numbers_4x6_inv_mask[Font_Numbers_4x6_inv_mask_LEN] =
+{
+  // size
+  4, 8,
+
+  // Font_Numbers_4x6_inv_mask-00.pbm
+  63, 63, 63, 63, 
+};

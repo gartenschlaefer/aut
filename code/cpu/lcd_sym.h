@@ -199,6 +199,7 @@ void LCD_Sym_Data_Sonic_BootNoData(void);
 void LCD_Sym_Data_Sonic_BootError(void);
 void LCD_Sym_Data_Sonic_BootNone(void);
 void LCD_Sym_Data_Sonic_BootSucess(void);
+void LCD_Sym_Data_Sonic_ReadProgramPage(int page);
 
 void LCD_Sym_Data_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigned char entry);
 void LCD_Sym_Data_WriteManualEntry(unsigned char pa, unsigned char eePage, unsigned char entry);
@@ -278,5 +279,6 @@ void LCD_Sym_Auto_Date(struct PlantState *ps);
 void LCD_Sym_Data_EndText(void);
 void LCD_Sym_Modem_Data_SLED(bool show);
 void LCD_Sym_Modem_Pin_SLED(bool show);
+void LCD_Sym_Setup_Alarm_MCP9800_WriteTemp(unsigned char temp);
 
 #endif

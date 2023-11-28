@@ -62,4 +62,7 @@ extern const unsigned char Symbols_39x16[Symbols_39x16_LEN];
 #define Font_Numbers_6x12_LEN 122
 extern const unsigned char Font_Numbers_6x12[Font_Numbers_6x12_LEN];
 
+#define Font_Numbers_4x6_inv_mask_LEN 6
+extern const unsigned char Font_Numbers_4x6_inv_mask[Font_Numbers_4x6_inv_mask_LEN];
+
 #endif

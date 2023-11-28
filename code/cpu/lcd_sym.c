@@ -95,15 +95,15 @@ void LCD_Sym_Auto_PageTime_Print(struct Tms *tms)
   unsigned char row = 13;
   int h = tms->min / 60;
   int min = tms->min % 60;
-  LCD_WriteAnyValue(f_4x6, 2, row, col, h, false);
+  LCD_WriteAnyValue(_f_4x6, 2, row, col, h, false);
   col += 8;
-  LCD_WriteAnyFont(f_4x6, row, col, 10, false);
+  LCD_WriteAnyFont(_f_4x6, row, col, 10, false);
   col += 4;
-  LCD_WriteAnyValue(f_4x6, 2, row, col, min, false);
+  LCD_WriteAnyValue(_f_4x6, 2, row, col, min, false);
   col += 8;
-  LCD_WriteAnyFont(f_4x6, row, col, 10, false);
+  LCD_WriteAnyFont(_f_4x6, row, col, 10, false);
   col += 4;
-  LCD_WriteAnyValue(f_4x6, 2, row, col, tms->sec, false);
+  LCD_WriteAnyValue(_f_4x6, 2, row, col, tms->sec, false);
 }
 
 
@@ -115,11 +115,11 @@ void LCD_Sym_Auto_AirTime_Print(struct Tms *tms)
 {
   unsigned char col = 12;
   unsigned char row = 11;
-  LCD_WriteAnyValue(f_4x6, 2, row, col, tms->min, false);
+  LCD_WriteAnyValue(_f_4x6, 2, row, col, tms->min, false);
   col += 8;
-  LCD_WriteAnyFont(f_4x6, row, col, 10, false);
+  LCD_WriteAnyFont(_f_4x6, row, col, 10, false);
   col += 4;
-  LCD_WriteAnyValue(f_4x6, 2, row, col, tms->sec, false);
+  LCD_WriteAnyValue(_f_4x6, 2, row, col, tms->sec, false);
 }
 
 
@@ -131,21 +131,21 @@ void LCD_Sym_Auto_Tank_LevelPerc(bool enabled, int level_perc)
 {
   unsigned char row = 15;
   unsigned char col = 0;
-  if(enabled){ LCD_WriteAnyValue(f_4x6, 3, row, col, level_perc, false); }
-  else{ for(unsigned char i = col; i < (col + 12); i += 4){ LCD_WriteAnyFont(f_4x6, row, i, 11, false); } }
+  if(enabled){ LCD_WriteAnyValue(_f_4x6, 3, row, col, level_perc, false); }
+  else{ for(unsigned char i = col; i < (col + 12); i += 4){ LCD_WriteAnyFont(_f_4x6, row, i, 11, false); } }
   col += 12;
-  LCD_WriteAnyFont(f_4x6, row, col, 19, false);
+  LCD_WriteAnyFont(_f_4x6, row, col, 19, false);
 }
 
 void LCD_Sym_Auto_Tank_SonicDmm(int value)
 {
   unsigned char row = 17;
   unsigned char col = 0;
-  LCD_WriteAnyValue(f_4x6, 4, row, col, value, false);
+  LCD_WriteAnyValue(_f_4x6, 4, row, col, value, false);
   col += 16;
-  LCD_WriteAnyFont(f_4x6, row, col, 13, false);
+  LCD_WriteAnyFont(_f_4x6, row, col, 13, false);
   col += 4;
-  LCD_WriteAnyFont(f_4x6, row, col, 13, false);
+  LCD_WriteAnyFont(_f_4x6, row, col, 13, false);
 }
 
 
@@ -158,12 +158,12 @@ void LCD_Sym_Auto_MPX_AverageValue(int value)
   unsigned char row = 13;
   unsigned char col = 43;
   // negative / positive pressure
-  if(value < 0){ value = -value; LCD_WriteAnyFont(f_4x6, row, col - 4, 11, false); }
+  if(value < 0){ value = -value; LCD_WriteAnyFont(_f_4x6, row, col - 4, 11, false); }
   else{ LCD_ClrSpace(row, col - 4, 2, 4); }
-  LCD_WriteAnyValue(f_4x6, 3, 13, 43, value, false);
+  LCD_WriteAnyValue(_f_4x6, 3, 13, 43, value, false);
 }
 
-void LCD_Sym_Auto_MPX_AverageValue_Mbar(void){ for(unsigned char i = 0; i < 4; i++){ LCD_WriteAnyFont(f_4x6, 13, 57 + i * 4, 13 + i, false); } }
+void LCD_Sym_Auto_MPX_AverageValue_Mbar(void){ for(unsigned char i = 0; i < 4; i++){ LCD_WriteAnyFont(_f_4x6, 13, 57 + i * 4, 13 + i, false); } }
 
 
 /* ------------------------------------------------------------------*
@@ -199,7 +199,7 @@ void LCD_Sym_Auto_Main(void)
  * ------------------------------------------------------------------*/
 
 void LCD_Sym_Auto_Compressor(bool negative){ LCD_WriteAnySymbol(6, 45, _s_compressor, negative); }
-void LCD_Sym_Auto_Compressor_OpHours(int value){ LCD_WriteAnyValue(f_4x6, 5, 15, 43, value, false); LCD_WriteAnyFont(f_4x6, 15, 69, 17, false); }
+void LCD_Sym_Auto_Compressor_OpHours(int value){ LCD_WriteAnyValue(_f_4x6, 5, 15, 43, value, false); LCD_WriteAnyFont(_f_4x6, 15, 69, 17, false); }
 
 
 /* ------------------------------------------------------------------*
@@ -218,7 +218,7 @@ void LCD_Sym_Auto_Zone(void)
   LCD_Sym_Auto_ClrActualCycleSpace();
   LCD_WriteAnySymbol(6, 0, _s_circulate, true);
   LCD_Sym_Auto_Compressor(true);
-  LCD_WriteAnyStringFont(f_6x8_n, 8, 1, "z");
+  LCD_WriteAnyStringFont(_f_6x8, 8, 1, "z", true);
 }
 
 
@@ -323,11 +323,11 @@ void LCD_Sym_Auto_InflowPump_Pump2(bool negative){ LCD_WriteAnySymbol(5, 90, _s_
 void LCD_Sym_Auto_Ip_Time(unsigned char cho, struct Thms *t_hms)
 {
   // sec, min, h
-  if(cho & 0x01){ LCD_WriteAnyValue(f_4x6, 2, 13, 109, t_hms->sec, false); }
-  LCD_WriteAnyFont(f_4x6, 13, 105, 10, false);
-  if(cho & 0x02){ LCD_WriteAnyValue(f_4x6, 2, 13, 97, t_hms->min, false); }
-  LCD_WriteAnyFont(f_4x6, 13, 93, 10, false);
-  if(cho & 0x04){ LCD_WriteAnyValue(f_4x6, 2, 13, 85, t_hms->hou, false); }
+  if(cho & 0x01){ LCD_WriteAnyValue(_f_4x6, 2, 13, 109, t_hms->sec, false); }
+  LCD_WriteAnyFont(_f_4x6, 13, 105, 10, false);
+  if(cho & 0x02){ LCD_WriteAnyValue(_f_4x6, 2, 13, 97, t_hms->min, false); }
+  LCD_WriteAnyFont(_f_4x6, 13, 93, 10, false);
+  if(cho & 0x04){ LCD_WriteAnyValue(_f_4x6, 2, 13, 85, t_hms->hou, false); }
 }
 
 
@@ -351,12 +351,12 @@ void LCD_Sym_Auto_Phosphor_Symbol(bool negative){ LCD_WriteAnySymbol(6, 134, _s_
 void LCD_Sym_Auto_Ph_Time(struct Tms *tms)
 {
   LCD_Sym_Auto_Ph_Time_Min(tms->min);
-  LCD_WriteAnyFont(f_4x6, 13, 143, 10, false);
+  LCD_WriteAnyFont(_f_4x6, 13, 143, 10, false);
   LCD_Sym_Auto_Ph_Time_Sec(tms->sec);
 }
 
-void LCD_Sym_Auto_Ph_Time_Min(int min){ LCD_WriteAnyValue(f_4x6, 2, 13, 135, min, false); }
-void LCD_Sym_Auto_Ph_Time_Sec(int sec){ LCD_WriteAnyValue(f_4x6, 2, 13, 147, sec, false); }
+void LCD_Sym_Auto_Ph_Time_Min(int min){ LCD_WriteAnyValue(_f_4x6, 2, 13, 135, min, false); }
+void LCD_Sym_Auto_Ph_Time_Sec(int sec){ LCD_WriteAnyValue(_f_4x6, 2, 13, 147, sec, false); }
 
 
 /* ------------------------------------------------------------------*
@@ -454,8 +454,8 @@ void LCD_Sym_Manual_Main(struct PlantState *ps)
 void LCD_Sym_Manual_Text(struct PlantState *ps)
 {
   LCD_Sym_Manual_PageTime_Print(ps);
-  LCD_WriteAnyStringFont(f_6x8, 17, 136, ":", false);
-  LCD_WriteAnyStringFont(f_6x8, 17, 61, "mbar", false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 136, ":", false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 61, "mbar", false);
 }
 
 
@@ -463,8 +463,8 @@ void LCD_Sym_Manual_Text(struct PlantState *ps)
  *            page time
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Manual_PageTime_Min(int min){ LCD_WriteAnyValue(f_6x8, (min >= 100 ? 3 : 2), 17, (min >= 100 ? 118 : 124), min, false); }
-void LCD_Sym_Manual_PageTime_Sec(int sec){ LCD_WriteAnyValue(f_6x8, 2, 17, 142, sec, false); }
+void LCD_Sym_Manual_PageTime_Min(int min){ LCD_WriteAnyValue(_f_6x8, (min >= 100 ? 3 : 2), 17, (min >= 100 ? 118 : 124), min, false); }
+void LCD_Sym_Manual_PageTime_Sec(int sec){ LCD_WriteAnyValue(_f_6x8, 2, 17, 142, sec, false); }
 
 
 /* ------------------------------------------------------------------*
@@ -516,12 +516,12 @@ void LCD_Sym_Manual_MPX_AverageValue(int value)
   unsigned char row = 17;
   unsigned char col = 42;
   // negative / positive pressure
-  if(value < 0){ value = -value; LCD_WriteAnyStringFont(f_6x8, row, col - 6, "-", false); }
+  if(value < 0){ value = -value; LCD_WriteAnyStringFont(_f_6x8, row, col - 6, "-", false); }
   else{ LCD_ClrSpace(row, col - 6, 2, 6); }
-  LCD_WriteAnyValue(f_6x8, 3, row, col, value, false);
+  LCD_WriteAnyValue(_f_6x8, 3, row, col, value, false);
 }
 
-void LCD_Sym_Manual_Tank_LevelPerc(int value){ LCD_WriteAnyValue(f_6x8, 3, 17, 2, value, false); LCD_WriteAnyStringFont(f_6x8, 17, 22, "%", false); }
+void LCD_Sym_Manual_Tank_LevelPerc(int value){ LCD_WriteAnyValue(_f_6x8, 3, 17, 2, value, false); LCD_WriteAnyStringFont(_f_6x8, 17, 22, "%", false); }
 
 
 /* ------------------------------------------------------------------*
@@ -629,15 +629,15 @@ void LCD_Sym_Setup_Circulate(void)
  *            circulate values and texts
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_General_TimeText(bool negative){ LCD_FillOrClrSpace(negative, 15, 39, 4, 31); LCD_WriteAnyStringFont(f_6x8, 16, 40, "Time:", negative); }
-void LCD_Sym_Setup_General_TimeValue(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 3, 16, 72, value, negative); }
+void LCD_Sym_Setup_General_TimeText(bool negative){ LCD_FillOrClrSpace(negative, 15, 39, 4, 31); LCD_WriteAnyStringFont(_f_6x8, 16, 40, "Time:", negative); }
+void LCD_Sym_Setup_General_TimeValue(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 3, 16, 72, value, negative); }
 
-void LCD_Sym_Setup_General_OnText(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 1, "On:  '"); }
-void LCD_Sym_Setup_General_OnValue(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 10, 19, value, negative); }
+void LCD_Sym_Setup_General_OnText(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 1, "On:  '", negative); }
+void LCD_Sym_Setup_General_OnValue(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 10, 19, value, negative); }
 void LCD_Sym_Setup_General_OnTextValue(bool negative, int value){ LCD_Sym_Setup_General_OnText(negative); LCD_Sym_Setup_General_OnValue(negative, value); }
 
-void LCD_Sym_Setup_General_OffText(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 40, "Off:  '"); }
-void LCD_Sym_Setup_General_OffValue(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 10, 64, value, negative); }
+void LCD_Sym_Setup_General_OffText(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 40, "Off:  '", negative); }
+void LCD_Sym_Setup_General_OffValue(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 10, 64, value, negative); }
 void LCD_Sym_Setup_General_OffTextValue(bool negative, int value){ LCD_Sym_Setup_General_OffText(negative); LCD_Sym_Setup_General_OffValue(negative, value); }
 
 
@@ -710,10 +710,10 @@ void LCD_Sym_Setup_SetDown(void)
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Setup_Draw_Sub(_s_set_down, false);
   LCD_Sym_WriteCtrlButton();
-  LCD_WriteAnyStringFont(f_6x8, 11, 0, "Time:  '", true);
+  LCD_WriteAnyStringFont(_f_6x8, 11, 0, "Time:  '", true);
 }
 
-void LCD_Sym_Setup_SetDown_TimeValue(int value){ LCD_WriteAnyValue(f_6x8, 2, 11, 30, value, true); }
+void LCD_Sym_Setup_SetDown_TimeValue(int value){ LCD_WriteAnyValue(_f_6x8, 2, 11, 30, value, true); }
 
 
 /* ------------------------------------------------------------------*
@@ -740,15 +740,15 @@ void LCD_Sym_Setup_Mud(void)
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Setup_Draw_Sub(_s_mud, false);
   LCD_Sym_WriteCtrlButton();
-  LCD_WriteAnyStringFont(f_6x8, 10, 1, "On:", true);
+  LCD_WriteAnyStringFont(_f_6x8, 10, 1, "On:", true);
   LCD_Sym_Setup_Mud_MinText(true);
   LCD_Sym_Setup_Mud_SecText(false);
 }
 
-void LCD_Sym_Setup_Mud_Min(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 10, 19, value, negative); }
-void LCD_Sym_Setup_Mud_Sec(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 10, 40, value, negative); }
-void LCD_Sym_Setup_Mud_MinText(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 31, "'", negative); }
-void LCD_Sym_Setup_Mud_SecText(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 52, "''", negative); }
+void LCD_Sym_Setup_Mud_Min(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 10, 19, value, negative); }
+void LCD_Sym_Setup_Mud_Sec(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 10, 40, value, negative); }
+void LCD_Sym_Setup_Mud_MinText(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 31, "'", negative); }
+void LCD_Sym_Setup_Mud_SecText(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 52, "''", negative); }
 
 
 /* ------------------------------------------------------------------*
@@ -758,14 +758,14 @@ void LCD_Sym_Setup_Mud_SecText(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10,
 void LCD_Sym_Setup_Compressor(void)
 {
   LCD_Sym_Clr_InfoSpace();
-  LCD_WriteAnyStringFont(f_6x8, 11, 28, "mbar min.", false);
-  LCD_WriteAnyStringFont(f_6x8, 16, 28, "mbar max.", false);
+  LCD_WriteAnyStringFont(_f_6x8, 11, 28, "mbar min.", false);
+  LCD_WriteAnyStringFont(_f_6x8, 16, 28, "mbar max.", false);
   LCD_Sym_Setup_Draw_Sub(_s_compressor, false);
   LCD_Sym_WriteCtrlButton();
 }
 
-void LCD_Sym_Setup_Compressor_MinP(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 3, 11, 7, value, negative); }
-void LCD_Sym_Setup_Compressor_MaxP(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 3, 16, 7, value, negative); }
+void LCD_Sym_Setup_Compressor_MinP(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 3, 11, 7, value, negative); }
+void LCD_Sym_Setup_Compressor_MaxP(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 3, 16, 7, value, negative); }
 
 
 /* ------------------------------------------------------------------*
@@ -810,9 +810,9 @@ void LCD_Sym_Setup_InflowPump_Values(unsigned char select, struct SettingsInflow
   LCD_Sym_Setup_InflowPump_ValuesOffHou((select == 2), settings_inflow_pump->off_hou);
 }
 
-void LCD_Sym_Setup_InflowPump_ValuesOffHou(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 5, 47, value, negative); }
-void LCD_Sym_Setup_InflowPump_ValuesOffMin(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 10, 47, value, negative); }
-void LCD_Sym_Setup_InflowPump_ValuesOnMin(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 2, 10, 19, value, negative); }
+void LCD_Sym_Setup_InflowPump_ValuesOffHou(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 5, 47, value, negative); }
+void LCD_Sym_Setup_InflowPump_ValuesOffMin(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 10, 47, value, negative); }
+void LCD_Sym_Setup_InflowPump_ValuesOnMin(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 2, 10, 19, value, negative); }
 
 
 /* ------------------------------------------------------------------*
@@ -828,11 +828,11 @@ void LCD_Sym_Setup_InflowPump_Text(unsigned char select)
   LCD_Sym_Setup_InflowPump_TextOff((select == 1) | (select == 2));
 }
 
-void LCD_Sym_Setup_InflowPump_TextOffHou(bool negative){ LCD_WriteAnyStringFont(f_6x8, 5, 59, "h", negative); }
-void LCD_Sym_Setup_InflowPump_TextOnMin(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 31, "'", negative); }
-void LCD_Sym_Setup_InflowPump_TextOffMin(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 59, "'", negative); }
-void LCD_Sym_Setup_InflowPump_TextOn(bool negative){ LCD_WriteAnyStringFont(f_6x8, 10, 1, "On:", negative); }
-void LCD_Sym_Setup_InflowPump_TextOff(bool negative){ LCD_WriteAnyStringFont(f_6x8, 1, 47, "Off:", negative); }
+void LCD_Sym_Setup_InflowPump_TextOffHou(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 5, 59, "h", negative); }
+void LCD_Sym_Setup_InflowPump_TextOnMin(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 31, "'", negative); }
+void LCD_Sym_Setup_InflowPump_TextOffMin(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 59, "'", negative); }
+void LCD_Sym_Setup_InflowPump_TextOn(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 10, 1, "On:", negative); }
+void LCD_Sym_Setup_InflowPump_TextOff(bool negative){ LCD_WriteAnyStringFont(_f_6x8, 1, 47, "Off:", negative); }
 
 
 /* ------------------------------------------------------------------*
@@ -848,7 +848,7 @@ void LCD_Sym_Setup_Cal(struct PlantState *ps)
   LCD_Sym_ControlButtons(_ctrl_ok, false);
   LCD_Sym_Setup_Cal_OpenValveButton(false);
   LCD_Sym_Setup_Cal_Button(false);
-  LCD_WriteAnyStringFont(f_6x8, 10, 1, "mbar:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 10, 1, "mbar:", false);
 
   bool sonic_flag = (bool)ps->settings->settings_zone->sonic_on;
   LCD_Sym_Setup_Cal_Sonic_Sym(sonic_flag);
@@ -880,9 +880,9 @@ void LCD_Sym_Setup_Cal_Button(bool negative){ LCD_WriteAnySymbol(9, 125, _s_cal,
 void LCD_Sym_Setup_Cal_MPX_AverageValue(int value)
 {
   // negative / positive pressure
-  if(value < 0){ value = -value; LCD_WriteAnyStringFont(f_6x8, 10, 34, "-", false); }
+  if(value < 0){ value = -value; LCD_WriteAnyStringFont(_f_6x8, 10, 34, "-", false); }
   else{ LCD_ClrSpace(10, 34, 2, 5); }
-  LCD_WriteAnyValue(f_6x8, 3, 10, 40, value, false);
+  LCD_WriteAnyValue(_f_6x8, 3, 10, 40, value, false);
 }
 
 
@@ -892,17 +892,17 @@ void LCD_Sym_Setup_Cal_MPX_AverageValue(int value)
 
 void LCD_Sym_Setup_Cal_Level_Sonic(int level_cal)
 { 
-  LCD_WriteAnyValue(f_6x8, 4, 17, 40, level_cal, false); 
-  LCD_WriteAnyStringFont(f_6x8_p, 17, 66, "mm");
+  LCD_WriteAnyValue(_f_6x8, 4, 17, 40, level_cal, false); 
+  LCD_WriteAnyStringFont(_f_6x8, 17, 66, "mm", false);
 }
 
 void LCD_Sym_Setup_Cal_Level_MPX(int level_cal)
 { 
-  LCD_WriteAnyValue(f_6x8, 3, 17, 40, level_cal, false);
-  LCD_WriteAnyStringFont(f_6x8_p, 17, 60, "mbar");
+  LCD_WriteAnyValue(_f_6x8, 3, 17, 40, level_cal, false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 60, "mbar", false);
 }
 
-void LCD_Sym_Setup_Cal_MPXCountDown(int sec){ LCD_WriteAnyValue(f_6x8, 2, 17, 100, sec, false); }
+void LCD_Sym_Setup_Cal_MPXCountDown(int sec){ LCD_WriteAnyValue(_f_6x8, 2, 17, 100, sec, false); }
 void LCD_Sym_Setup_Cal_Clr_MPXCountDown(void){ LCD_ClrSpace(17, 100, 2, 12); }
 
 
@@ -914,22 +914,22 @@ void LCD_Sym_Setup_Alarm(struct PlantState *ps)
 {
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Setup_Draw_Sub(_s_alarm, false);
-  LCD_WriteAnyStringFont(f_6x8_n, 10, 3, "T:");
+  LCD_WriteAnyStringFont(_f_6x8, 10, 3, "T:", true);
 
   // degree symbol
-  LCD_WriteAnyFont(f_6x8_n, 10, 32, 94);
-  LCD_WriteAnyStringFont(f_6x8_n, 10, 38, "C");
+  LCD_WriteAnyFont(_f_6x8, 10, 32, 94, true);
+  LCD_WriteAnyStringFont(_f_6x8, 10, 38, "C", true);
 
   // temp
-  MCP9800_WriteTemp(ps->twi_state);
+  LCD_Sym_Setup_Alarm_MCP9800_WriteTemp(ps->temp_sensor->actual_temp);
 
   // degree symbol
-  LCD_WriteAnyFont(f_6x8_p, 17, 104, 94);
-  LCD_WriteAnyStringFont(f_6x8_p, 17, 110, "C");
+  LCD_WriteAnyFont(_f_6x8, 17, 104, 94, false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 110, "C", false);
   LCD_Sym_WriteCtrlButton();
 }
 
-void LCD_Sym_Setup_Alarm_TempValue(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 3, 10, 15, value, negative); }
+void LCD_Sym_Setup_Alarm_TempValue(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 3, 10, 15, value, negative); }
 void LCD_Sym_Setup_Alarm_Compressor(bool negative){ LCD_WriteAnySymbol(15, 40, _s_compressor, negative); }
 void LCD_Sym_Setup_Alarm_Sensor(bool negative){ LCD_WriteAnySymbol(15, 0, _s_sensor, negative); }
 
@@ -944,16 +944,16 @@ void LCD_Sym_Setup_Watch(void)
   LCD_Sym_Setup_Draw_Sub(_s_watch, false);
   LCD_Sym_WriteCtrlButton2();
 
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 10, "hh");
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 50, "mm");
-  LCD_WriteAnyStringFont(f_6x8_p, 17, 10, "dd");
-  LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "mm");
-  LCD_WriteAnyStringFont(f_6x8_p, 17, 96, "yy");
+  LCD_WriteAnyStringFont(_f_6x8, 11, 10, "hh", false);
+  LCD_WriteAnyStringFont(_f_6x8, 11, 50, "mm", false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 10, "dd", false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 50, "mm", false);
+  LCD_WriteAnyStringFont(_f_6x8, 17, 96, "yy", false);
 
-  LCD_WriteAnyStringFont(f_6x8_p, 9, 33, ":");
-  LCD_WriteAnyStringFont(f_6x8_p, 15, 33, "/");
-  LCD_WriteAnyStringFont(f_6x8_p, 15, 70, "/");
-  LCD_WriteAnyStringFont(f_6x8_p, 15, 84, "20");
+  LCD_WriteAnyStringFont(_f_6x8, 9, 33, ":", false);
+  LCD_WriteAnyStringFont(_f_6x8, 15, 33, "/", false);
+  LCD_WriteAnyStringFont(_f_6x8, 15, 70, "/", false);
+  LCD_WriteAnyStringFont(_f_6x8, 15, 84, "20", false);
 }
 
 
@@ -966,8 +966,8 @@ void LCD_Sym_Setup_Zone(void)
   LCD_Sym_Clr_InfoSpace();
   LCD_Sym_Setup_Draw_Sub(_s_zone, false);
   LCD_Sym_WriteCtrlButton();
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 60, "cm");
-  LCD_WriteAnyStringFont(f_6x8_p, 16, 60, "cm");
+  LCD_WriteAnyStringFont(_f_6x8, 11, 60, "cm", false);
+  LCD_WriteAnyStringFont(_f_6x8, 16, 60, "cm", false);
 }
 
 
@@ -975,8 +975,8 @@ void LCD_Sym_Setup_Zone(void)
  *            zone symbols
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Setup_Zone_LevelToAir_Value(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 3, 11, 40, value, negative); }
-void LCD_Sym_Setup_Zone_LevelToSetDown_Value(bool negative, int value){ LCD_WriteAnyValue(f_6x8, 3, 16, 40, value, negative); }
+void LCD_Sym_Setup_Zone_LevelToAir_Value(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 3, 11, 40, value, negative); }
+void LCD_Sym_Setup_Zone_LevelToSetDown_Value(bool negative, int value){ LCD_WriteAnyValue(_f_6x8, 3, 16, 40, value, negative); }
 void LCD_Sym_Setup_Zone_Sonic(bool negative){ LCD_WriteAnySymbol(3, 47, _s_sonic, negative); }
 void LCD_Sym_Setup_Zone_Air(bool negative){ LCD_WriteAnySymbol(9, 0, _s_air, negative); }
 void LCD_Sym_Setup_Zone_SetDown(bool negative){ LCD_WriteAnySymbol(14, 0, _s_set_down, negative); }
@@ -1013,11 +1013,11 @@ void LCD_Sym_Setup_Watch_DateTime(t_DateTime time, unsigned char value, bool neg
 {
   switch(time)
   {
-    case _dt_hou: LCD_WriteAnyValue(f_6x8, 2, 9, 10, value, negative); break;
-    case _dt_min: LCD_WriteAnyValue(f_6x8, 2, 9, 50, value, negative); break;
-    case _dt_day: LCD_WriteAnyValue(f_6x8, 2, 15, 10, value, negative); break;
-    case _dt_month: LCD_WriteAnyValue(f_6x8, 2, 15, 50, value, negative); break;
-    case _dt_year: LCD_WriteAnyValue(f_6x8, 2, 15, 96, value, negative); break;
+    case _dt_hou: LCD_WriteAnyValue(_f_6x8, 2, 9, 10, value, negative); break;
+    case _dt_min: LCD_WriteAnyValue(_f_6x8, 2, 9, 50, value, negative); break;
+    case _dt_day: LCD_WriteAnyValue(_f_6x8, 2, 15, 10, value, negative); break;
+    case _dt_month: LCD_WriteAnyValue(_f_6x8, 2, 15, 50, value, negative); break;
+    case _dt_year: LCD_WriteAnyValue(_f_6x8, 2, 15, 96, value, negative); break;
     default: break;
   }
 }
@@ -1033,19 +1033,19 @@ void LCD_Sym_Data_Page(struct PlantState *ps)
   LCD_Sym_Clr_InfoSpace();
 
   // Sx.x.x
-  LCD_WriteAnyFont(f_4x6_p, 1, 0, 21);
-  LCD_WriteAnyFont(f_4x6_p, 1, 8, SV1);
-  LCD_WriteAnyFont(f_4x6_p, 1, 16, SV2);
-  LCD_WriteAnyFont(f_4x6_p, 1, 24, SV3);
-  LCD_WriteAnyFont(f_4x6_p, 1, 4, 22);
-  LCD_WriteAnyFont(f_4x6_p, 1, 12, 22);
-  LCD_WriteAnyFont(f_4x6_p, 1, 20, 22);
+  LCD_WriteAnyFont(_f_4x6, 1, 0, 21, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 8, SV1, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 16, SV2, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 24, SV3, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 4, 22, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 12, 22, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 20, 22, false);
 
   // time and date
   LCD_Sym_Auto_WorldTime_Print(ps);
   LCD_Sym_Auto_Date(ps);
 
-  LCD_WriteAnyStringFont(f_6x8_p, 6, 0, "choose data:");
+  LCD_WriteAnyStringFont(_f_6x8, 6, 0, "choose data:", false);
 
   LCD_Write_TextButton(9, 0, TEXT_BUTTON_auto, false);
   LCD_Write_TextButton(9, 40, TEXT_BUTTON_manual, false);
@@ -1058,8 +1058,8 @@ void LCD_Sym_Data_Page(struct PlantState *ps)
  *            actual page num
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Data_ActualPageNum(int page_num){ LCD_WriteAnyValue(f_4x6_p, 2, 1, 140, page_num); }
-void LCD_Sym_Data_TotalPageNum(int page_num){ LCD_WriteAnyFont(f_4x6_p, 1, 148, 11); LCD_WriteAnyValue(f_4x6_p, 2, 1, 152, page_num); }
+void LCD_Sym_Data_ActualPageNum(int page_num){ LCD_WriteAnyValue(_f_4x6, 2, 1, 140, page_num, false); }
+void LCD_Sym_Data_TotalPageNum(int page_num){ LCD_WriteAnyFont(_f_4x6, 1, 148, 11, false); LCD_WriteAnyValue(_f_4x6, 2, 1, 152, page_num, false); }
 
 /* ------------------------------------------------------------------*
  *            set data auto
@@ -1071,13 +1071,13 @@ void LCD_Sym_Data_Auto(void)
 
   // header
   LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 73, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 85, "O2");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 103, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 113, "Err");
+  LCD_WriteAnyStringFont(_f_6x8, 1, 1, "Date", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 37, "|", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 45, "Time", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 73, "|", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 85, "O2", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 103, "|", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 113, "Err", true);
 
   LCD_Write_TextButton(22, 0, TEXT_BUTTON_auto, true);
   LCD_Sym_Data_Arrows();
@@ -1098,11 +1098,11 @@ void LCD_Sym_Data_Manual(void)
   
   // header
   LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Begin");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 77, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 88, "End");
+  LCD_WriteAnyStringFont(_f_6x8, 1, 1, "Date", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 37, "|", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 45, "Begin", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 77, "|", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 88, "End", true);
 
   LCD_Write_TextButton(22, 40, TEXT_BUTTON_manual, true);
   LCD_Sym_Data_Arrows();
@@ -1122,9 +1122,9 @@ void LCD_Sym_Data_Setup(void)
   LCD_Sym_Clr_InfoSpace();
 
   LCD_FillSpace(0, 0, 4, 137);
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 1, "Date");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 37, "|");
-  LCD_WriteAnyStringFont(f_6x8_n, 1, 45, "Time");
+  LCD_WriteAnyStringFont(_f_6x8, 1, 1, "Date", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 37, "|", true);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 45, "Time", true);
 
   LCD_Write_TextButton(22, 80, TEXT_BUTTON_setup, true);
   LCD_Sym_Data_Arrows();
@@ -1158,11 +1158,11 @@ void LCD_Sym_Data_Sonic(struct PlantState *ps)
 {
   LCD_Sym_Clr_InfoSpace();
   Sonic_Data_Boot_Off(ps);
-  LCD_WriteAnyStringFont(f_6x8_p, 1, 91, "[ C]");
+  LCD_WriteAnyStringFont(_f_6x8, 1, 91, "[ C]", false);
 
   // degree symbol
-  LCD_WriteAnyFont(f_6x8_p, 1, 97, 94);
-  LCD_WriteAnyStringFont(f_6x8_p, 1, 124, "[mm]");
+  LCD_WriteAnyFont(_f_6x8, 1, 97, 94, false);
+  LCD_WriteAnyStringFont(_f_6x8, 1, 124, "[mm]", false);
   LCD_Write_TextButton(4, 0, TEXT_BUTTON_shot, false);
   LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, false);
   LCD_Write_TextButton(16, 0, TEXT_BUTTON_boot, false);
@@ -1184,17 +1184,17 @@ void LCD_Sym_Data_Sonic_ReadSversion(struct PlantState *ps)
   // application version
   switch(ps->sonic_state->app_type)
   {
-    case SONIC_APP_75kHz: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "75kHz"); break;
-    case SONIC_APP_125kHz: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "125kHz"); break;
-    case SONIC_APP_boot: LCD_WriteAnyStringFont(f_6x8_p, 1, 2, "Boot  "); break;
+    case SONIC_APP_75kHz: LCD_WriteAnyStringFont(_f_6x8, 1, 2, "75kHz", false); break;
+    case SONIC_APP_125kHz: LCD_WriteAnyStringFont(_f_6x8, 1, 2, "125kHz", false); break;
+    case SONIC_APP_boot: LCD_WriteAnyStringFont(_f_6x8, 1, 2, "Boot  ", false); break;
     default: break;
   }
 
   // write software version Sx.x
-  LCD_WriteAnyFont(f_4x6_p, 1, 52, 21);
-  LCD_WriteAnyFont(f_4x6_p, 1, 57, ((ps->sonic_state->software_version & 0xF0) >> 4));
-  LCD_WriteAnyFont(f_4x6_p, 1, 61, 22);
-  LCD_WriteAnyFont(f_4x6_p, 1, 65, (ps->sonic_state->software_version & 0x0F));
+  LCD_WriteAnyFont(_f_4x6, 1, 52, 21, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 57, ((ps->sonic_state->software_version & 0xF0) >> 4), false);
+  LCD_WriteAnyFont(_f_4x6, 1, 61, 22, false);
+  LCD_WriteAnyFont(_f_4x6, 1, 65, (ps->sonic_state->software_version & 0x0F), false);
 }
 
 
@@ -1225,7 +1225,7 @@ void LCD_Sym_Data_Sonic_ClearRecording(struct PlantState *ps)
 
 void LCD_Sym_Data_Sonic_SingleShot(struct PlantState *ps)
 {
-  LCD_WriteAnyValue(f_4x6_p, 5, ps->sonic_state->record_position, 126, ps->sonic_state->d_mm);
+  LCD_WriteAnyValue(_f_4x6, 5, ps->sonic_state->record_position, 126, ps->sonic_state->d_mm, false);
   ps->sonic_state->record_position += 3;
 }
 
@@ -1236,7 +1236,7 @@ void LCD_Sym_Data_Sonic_SingleShot(struct PlantState *ps)
 
 void LCD_Sym_Data_Sonic_SequentialShots(struct PlantState *ps)
 {
-  LCD_WriteAnyValue(f_4x6_p, 5, 5, 126, ps->sonic_state->d_mm);
+  LCD_WriteAnyValue(_f_4x6, 5, 5, 126, ps->sonic_state->d_mm, false);
 
   // could not meassure a distance
   if(ps->sonic_state->d_mm <= 0){ return; }
@@ -1253,12 +1253,12 @@ void LCD_Sym_Data_Sonic_SequentialShots(struct PlantState *ps)
   if(ps->sonic_state->d_mm > ps->sonic_state->d_mm_max)
   {
     ps->sonic_state->d_mm_max = ps->sonic_state->d_mm;
-    LCD_WriteAnyValue(f_4x6_p, 5, 11, 126, ps->sonic_state->d_mm_max);
+    LCD_WriteAnyValue(_f_4x6, 5, 11, 126, ps->sonic_state->d_mm_max, false);
   }
   if(ps->sonic_state->d_mm < ps->sonic_state->d_mm_min)
   {
     ps->sonic_state->d_mm_min = ps->sonic_state->d_mm;
-    LCD_WriteAnyValue(f_4x6_p, 5, 17, 126, ps->sonic_state->d_mm_min);
+    LCD_WriteAnyValue(_f_4x6, 5, 17, 126, ps->sonic_state->d_mm_min, false);
   }
 }
 
@@ -1278,12 +1278,12 @@ void LCD_Sym_Data_Sonic_SingleTemp(struct PlantState *ps)
   {
     ps->sonic_state->temp &= 0x7FFF;
     //-
-    LCD_WriteAnyFont(f_4x6_p, ps->sonic_state->record_position, 91, 11);
+    LCD_WriteAnyFont(_f_4x6, ps->sonic_state->record_position, 91, 11, false);
   }
   //.
-  LCD_WriteAnyFont(f_4x6_p, ps->sonic_state->record_position, 102, 22);
-  LCD_WriteAnyValue(f_4x6_p, 2, ps->sonic_state->record_position, 105, (ps->sonic_state->temp & 0x00FF));
-  LCD_WriteAnyValue(f_4x6_p, 2, ps->sonic_state->record_position, 95, ((ps->sonic_state->temp >> 8) & 0x00FF));
+  LCD_WriteAnyFont(_f_4x6, ps->sonic_state->record_position, 102, 22, false);
+  LCD_WriteAnyValue(_f_4x6, 2, ps->sonic_state->record_position, 105, (ps->sonic_state->temp & 0x00FF), false);
+  LCD_WriteAnyValue(_f_4x6, 2, ps->sonic_state->record_position, 95, ((ps->sonic_state->temp >> 8) & 0x00FF), false);
 }
 
 
@@ -1300,27 +1300,27 @@ void LCD_Sym_Data_Sonic_SequentialTemp(struct PlantState *ps)
     ps->sonic_state->temp &= 0x7FFF;
 
     //-
-    LCD_WriteAnyFont(f_4x6_p, 5, 91, 11);
+    LCD_WriteAnyFont(_f_4x6, 5, 91, 11, false);
   }
-  LCD_WriteAnyValue(f_4x6_p, 2, 5, 105, (ps->sonic_state->temp & 0x00FF));
-  LCD_WriteAnyValue(f_4x6_p, 2, 5, 95, ((ps->sonic_state->temp >> 8) & 0x00FF));
+  LCD_WriteAnyValue(_f_4x6, 2, 5, 105, (ps->sonic_state->temp & 0x00FF), false);
+  LCD_WriteAnyValue(_f_4x6, 2, 5, 95, ((ps->sonic_state->temp >> 8) & 0x00FF), false);
   if(ps->sonic_state->temp > ps->sonic_state->temp_max)
   {
     ps->sonic_state->temp_max = ps->sonic_state->temp;
 
     //-
-    if(minus_sign){ LCD_WriteAnyFont(f_4x6_p, 11, 91, 11); }
-    LCD_WriteAnyValue(f_4x6_p, 2, 11, 105, (ps->sonic_state->temp_max & 0x00FF));
-    LCD_WriteAnyValue(f_4x6_p, 2, 11, 95, ((ps->sonic_state->temp_max >> 8) & 0x00FF));
+    if(minus_sign){ LCD_WriteAnyFont(_f_4x6, 11, 91, 11, false); }
+    LCD_WriteAnyValue(_f_4x6, 2, 11, 105, (ps->sonic_state->temp_max & 0x00FF), false);
+    LCD_WriteAnyValue(_f_4x6, 2, 11, 95, ((ps->sonic_state->temp_max >> 8) & 0x00FF), false);
   }
   if(ps->sonic_state->temp < ps->sonic_state->temp_min)
   {
     ps->sonic_state->temp_min = ps->sonic_state->temp;
 
     //-
-    if(minus_sign){ LCD_WriteAnyFont(f_4x6_p, 17, 91, 11); }
-    LCD_WriteAnyValue(f_4x6_p, 2, 17, 105, (ps->sonic_state->temp_min & 0x00FF));
-    LCD_WriteAnyValue(f_4x6_p, 2, 17, 95, ((ps->sonic_state->temp_min >> 8) & 0x00FF));
+    if(minus_sign){ LCD_WriteAnyFont(_f_4x6, 17, 91, 11, false); }
+    LCD_WriteAnyValue(_f_4x6, 2, 17, 105, (ps->sonic_state->temp_min & 0x00FF), false);
+    LCD_WriteAnyValue(_f_4x6, 2, 17, 95, ((ps->sonic_state->temp_min >> 8) & 0x00FF), false);
   }
 }
 
@@ -1334,19 +1334,19 @@ void LCD_Sym_Data_Sonic_AutoText(void)
   LCD_Write_TextButton(10, 0, TEXT_BUTTON_auto, true);
 
   // max
-  LCD_WriteAnyFont(f_4x6_p, 9, 113, 13);
-  LCD_WriteAnyFont(f_4x6_p, 9, 117, 15);
-  LCD_WriteAnyFont(f_4x6_p, 9, 121, 25);
+  LCD_WriteAnyFont(_f_4x6, 9, 113, 13, false);
+  LCD_WriteAnyFont(_f_4x6, 9, 117, 15, false);
+  LCD_WriteAnyFont(_f_4x6, 9, 121, 25, false);
 
   // min
-  LCD_WriteAnyFont(f_4x6_p, 15, 113, 13);
-  LCD_WriteAnyFont(f_4x6_p, 15, 117, 23);
-  LCD_WriteAnyFont(f_4x6_p, 15, 121, 24);
+  LCD_WriteAnyFont(_f_4x6, 15, 113, 13, false);
+  LCD_WriteAnyFont(_f_4x6, 15, 117, 23, false);
+  LCD_WriteAnyFont(_f_4x6, 15, 121, 24, false);
 
   // ...
-  LCD_WriteAnyFont(f_4x6_p, 17, 102, 22);
-  LCD_WriteAnyFont(f_4x6_p, 11, 102, 22);
-  LCD_WriteAnyFont(f_4x6_p, 5, 102, 22);
+  LCD_WriteAnyFont(_f_4x6, 17, 102, 22, false);
+  LCD_WriteAnyFont(_f_4x6, 11, 102, 22, false);
+  LCD_WriteAnyFont(_f_4x6, 5, 102, 22, false);
 }
 
 
@@ -1354,12 +1354,13 @@ void LCD_Sym_Data_Sonic_AutoText(void)
  *            data sonic boot text
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Data_Sonic_NoUs(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoUS"); }
-void LCD_Sym_Data_Sonic_BootOk(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "OK...Cycle Power!"); }
-void LCD_Sym_Data_Sonic_BootNoData(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoData"); }
-void LCD_Sym_Data_Sonic_BootError(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Error"); }
-void LCD_Sym_Data_Sonic_BootNone(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "NoBoot"); }
-void LCD_Sym_Data_Sonic_BootSucess(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 50, "Success"); }
+void LCD_Sym_Data_Sonic_NoUs(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 50, "NoUS", false); }
+void LCD_Sym_Data_Sonic_BootOk(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 50, "OK...Cycle Power!", false); }
+void LCD_Sym_Data_Sonic_BootNoData(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 50, "NoData", false); }
+void LCD_Sym_Data_Sonic_BootError(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 50, "Error", false); }
+void LCD_Sym_Data_Sonic_BootNone(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 50, "NoBoot", false); }
+void LCD_Sym_Data_Sonic_BootSucess(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 50, "Success", false); }
+void LCD_Sym_Data_Sonic_ReadProgramPage(int page){ LCD_WriteAnyValue(_f_4x6, 3, 17, 50, page, false); }
 
 
 /*-------------------------------------------------------------------*
@@ -1379,47 +1380,47 @@ void LCD_Sym_Data_WriteAutoEntry(unsigned char pa, unsigned char eePage, unsigne
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
   {
     // 11: -
-    for(i = 1; i < 130; i = i + 4){ LCD_WriteAnyFont(f_4x6_p, pa, i, 11); }
+    for(i = 1; i < 130; i = i + 4){ LCD_WriteAnyFont(_f_4x6, pa, i, 11, false); }
   }
 
   // write data
   else
   {
     // day - month
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 1, varEnt[0]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 9, 11);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 13, varEnt[1]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 1, varEnt[0], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 9, 11, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 13, varEnt[1], false);
 
     // - year |
-    LCD_WriteAnyFont(f_4x6_p, pa, 21, 11);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 25, varEnt[2]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 38, 12);
+    LCD_WriteAnyFont(_f_4x6, pa, 21, 11, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 25, varEnt[2], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 38, 12, false);
 
     // hour : minutes
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 47, varEnt[3]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 55, 10);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 59, varEnt[4]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 47, varEnt[3], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 55, 10, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 59, varEnt[4], false);
 
     // | 02 in min |
-    LCD_WriteAnyFont(f_4x6_p, pa, 74, 12);
-    LCD_WriteAnyValue(f_4x6_p, 3, pa, 85, o2);
-    LCD_WriteAnyFont(f_4x6_p, pa, 104, 12);
+    LCD_WriteAnyFont(_f_4x6, pa, 74, 12, false);
+    LCD_WriteAnyValue(_f_4x6, 3, pa, 85, o2, false);
+    LCD_WriteAnyFont(_f_4x6, pa, 104, 12, false);
 
     // alarm code
-    if(varEnt[7] & 0x01){ LCD_WriteAnyFont(f_4x6_p, pa, 113, 1); }
-    else{ LCD_WriteAnyFont(f_4x6_p, pa, 113, 0); }
+    if(varEnt[7] & 0x01){ LCD_WriteAnyFont(_f_4x6, pa, 113, 1, false); }
+    else{ LCD_WriteAnyFont(_f_4x6, pa, 113, 0, false); }
 
-    if(varEnt[7] & 0x02){ LCD_WriteAnyFont(f_4x6_p, pa, 117, 2); }
-    else{ LCD_WriteAnyFont(f_4x6_p, pa, 117, 0); }
+    if(varEnt[7] & 0x02){ LCD_WriteAnyFont(_f_4x6, pa, 117, 2, false); }
+    else{ LCD_WriteAnyFont(_f_4x6, pa, 117, 0, false); }
 
-    if(varEnt[7] & 0x04){ LCD_WriteAnyFont(f_4x6_p, pa, 121, 3); }
-    else{ LCD_WriteAnyFont(f_4x6_p, pa, 121, 0); }
+    if(varEnt[7] & 0x04){ LCD_WriteAnyFont(_f_4x6, pa, 121, 3, false); }
+    else{ LCD_WriteAnyFont(_f_4x6, pa, 121, 0, false); }
 
-    if(varEnt[7] & 0x08){ LCD_WriteAnyFont(f_4x6_p, pa, 125, 4); }
-    else{ LCD_WriteAnyFont(f_4x6_p, pa, 125, 0); }
+    if(varEnt[7] & 0x08){ LCD_WriteAnyFont(_f_4x6, pa, 125, 4, false); }
+    else{ LCD_WriteAnyFont(_f_4x6, pa, 125, 0, false); }
 
-    if(varEnt[7] & 0x10){ LCD_WriteAnyFont(f_4x6_p, pa, 129, 5); }
-    else{ LCD_WriteAnyFont(f_4x6_p, pa, 129, 0); }
+    if(varEnt[7] & 0x10){ LCD_WriteAnyFont(_f_4x6, pa, 129, 5, false); }
+    else{ LCD_WriteAnyFont(_f_4x6, pa, 129, 0, false); }
   }
 }
 
@@ -1438,34 +1439,34 @@ void LCD_Sym_Data_WriteManualEntry(unsigned char pa, unsigned char eePage, unsig
   // no data
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
   {
-    for(i = 1; i < 108; i = i + 4){ LCD_WriteAnyFont(f_4x6_p, pa, i, 11); }
+    for(i = 1; i < 108; i = i + 4){ LCD_WriteAnyFont(_f_4x6, pa, i, 11, false); }
   }
 
   // write data
   else
   {
     // day - month
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 1, varEnt[0]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 9, 11);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 13, varEnt[1]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 1, varEnt[0], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 9, 11, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 13, varEnt[1], false);
 
     // - year |
-    LCD_WriteAnyFont(f_4x6_p, pa, 21, 11);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 25, varEnt[2]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 38, 12);
+    LCD_WriteAnyFont(_f_4x6, pa, 21, 11, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 25, varEnt[2], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 38, 12, false);
 
     // hour : minutes
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 47, varEnt[3]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 55, 10);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 59, varEnt[4]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 47, varEnt[3], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 55, 10, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 59, varEnt[4], false);
 
     // |
-    LCD_WriteAnyFont(f_4x6_p, pa, 78, 12);
+    LCD_WriteAnyFont(_f_4x6, pa, 78, 12, false);
 
     // hour : minutes
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 88, varEnt[5]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 96, 10);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 100, varEnt[6]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 88, varEnt[5], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 96, 10, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 100, varEnt[6], false);
   }
 }
 
@@ -1485,26 +1486,26 @@ void LCD_Sym_Data_WriteSetupEntry(unsigned char pa, unsigned char eePage, unsign
   if(!varEnt[0] && !varEnt[1] && !varEnt[2])
   {
     //--------
-    for(i = 1; i < 68; i = i + 4){ LCD_WriteAnyFont(f_4x6_p, pa, i, 11); }
+    for(i = 1; i < 68; i = i + 4){ LCD_WriteAnyFont(_f_4x6, pa, i, 11, false); }
   }
 
   // write data
   else
   {
     // day - month
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 1, varEnt[0]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 9, 11);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 13, varEnt[1]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 1, varEnt[0], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 9, 11, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 13, varEnt[1], false);
 
     // - year |
-    LCD_WriteAnyFont(f_4x6_p, pa, 21, 11);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 25, varEnt[2]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 38, 12);
+    LCD_WriteAnyFont(_f_4x6, pa, 21, 11, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 25, varEnt[2], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 38, 12, false);
 
     // hour : minutes
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 47, varEnt[3]);
-    LCD_WriteAnyFont(f_4x6_p, pa, 55, 10);
-    LCD_WriteAnyValue(f_4x6_p, 2, pa, 59, varEnt[4]);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 47, varEnt[3], false);
+    LCD_WriteAnyFont(_f_4x6, pa, 55, 10, false);
+    LCD_WriteAnyValue(_f_4x6, 2, pa, 59, varEnt[4], false);
   }
 }
 
@@ -1543,7 +1544,7 @@ void LCD_PinButtons(bool negative, unsigned char pin)
   LCD_WriteAnySymbol(row, col, any_symbol, negative);
 
   // write number if it is one
-  if(num < 0x20){ LCD_WriteAnyFont((negative ? f_8x16_n : f_8x16_p), row + 1, col + 13, num); }
+  if(num < 0x20){ LCD_WriteAnyFont(_f_8x16, row + 1, col + 13, num, negative); }
 }
 
 
@@ -1563,16 +1564,16 @@ void LCD_Sym_PinPage(void)
  *            pin page messages and texts
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Pin_RightMessage(void){ LCD_WriteAnyStringFont(f_6x8_p, 6, 125, "right!"); }
+void LCD_Sym_Pin_RightMessage(void){ LCD_WriteAnyStringFont(_f_6x8, 6, 125, "right!", false); }
 
 void LCD_Sym_Pin_WrongMessage(void)
 {
-  LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "wrong!");
-  LCD_WriteAnyStringFont(f_6x8_p, 9, 119, "try");
-  LCD_WriteAnyStringFont(f_6x8_p, 11, 119, "again");
+  LCD_WriteAnyStringFont(_f_6x8, 6, 119, "wrong!", false);
+  LCD_WriteAnyStringFont(_f_6x8, 9, 119, "try", false);
+  LCD_WriteAnyStringFont(_f_6x8, 11, 119, "again", false);
 }
 
-void LCD_Sym_Pin_OpHoursMessage(void){ LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "OP"); }
+void LCD_Sym_Pin_OpHoursMessage(void){ LCD_WriteAnyStringFont(_f_6x8, 6, 119, "OP", false); }
 
 
 /* ------------------------------------------------------------------*
@@ -1586,7 +1587,7 @@ void LCD_Sym_Pin_ClearPinCode(void){ LCD_ClrSpace(6, 119, 25, 41); }
  *  delete written digits
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Pin_DelDigits(void){ LCD_WriteAnyStringFont(f_6x8_p, 3, 125, "xxxx"); }
+void LCD_Sym_Pin_DelDigits(void){ LCD_WriteAnyStringFont(_f_6x8, 3, 125, "xxxx", false); }
 
 
 /* ------------------------------------------------------------------*
@@ -1596,21 +1597,21 @@ void LCD_Sym_Pin_DelDigits(void){ LCD_WriteAnyStringFont(f_6x8_p, 3, 125, "xxxx"
 void LCD_Sym_Pin_PrintWholeTelNumber(struct TeleNr *tele_nr)
 {
   // telx:
-  LCD_WriteAnyStringFont(f_6x8_p, 6, 119, "Tel");
-  LCD_WriteAnyFont(f_6x8_p, 6, 137, tele_nr->id + 14);
-  LCD_WriteAnyStringFont(f_6x8_p, 6, 143, ":");
+  LCD_WriteAnyStringFont(_f_6x8, 6, 119, "Tel", false);
+  LCD_WriteAnyFont(_f_6x8, 6, 137, tele_nr->id + 14, false);
+  LCD_WriteAnyStringFont(_f_6x8, 6, 143, ":", false);
 
   // +
-  LCD_WriteAnyFont(f_4x6_p, 9, 119, 20);
+  LCD_WriteAnyFont(_f_4x6, 9, 119, 20, false);
 
   // 43
-  for(unsigned char i = 0; i < 2; i++){ LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * i, tele_nr->nr[i]); }
+  for(unsigned char i = 0; i < 2; i++){ LCD_WriteAnyFont(_f_4x6, 9, 123 + 4 * i, tele_nr->nr[i], false); }
 
   // 680
-  for(unsigned char i = 2; i < 5; i++){ LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (i - 2), tele_nr->nr[i]); }
+  for(unsigned char i = 2; i < 5; i++){ LCD_WriteAnyFont(_f_4x6, 9, 135 + 4 * (i - 2), tele_nr->nr[i], false); }
 
   // number
-  for(unsigned char i = 5; i < 14; i++){ LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (i - 5), tele_nr->nr[i]); }
+  for(unsigned char i = 5; i < 14; i++){ LCD_WriteAnyFont(_f_4x6, 11, 119 + 4 * (i - 5), tele_nr->nr[i], false); }
 }
 
 
@@ -1623,24 +1624,24 @@ void LCD_Sym_Pin_PrintOneTelNumberDigit(unsigned char digit, unsigned char pos)
   LCD_PinButtons(true, digit);
   if(pos < 2)
   {
-    LCD_WriteAnyFont(f_4x6_p, 9, 123 + 4 * pos, digit);
+    LCD_WriteAnyFont(_f_4x6, 9, 123 + 4 * pos, digit, false);
     pos++;
-    if(pos < 2){ LCD_WriteAnyFont(f_4x6_n, 9, 127, 14); }
-    else{ LCD_WriteAnyFont(f_4x6_n, 9, 135, 14); }
+    if(pos < 2){ LCD_WriteAnyFont(_f_4x6, 9, 127, 14, true); }
+    else{ LCD_WriteAnyFont(_f_4x6, 9, 135, 14, true); }
   }
 
   else if((pos > 1) && (pos < 5))
   {
-    LCD_WriteAnyFont(f_4x6_p, 9, 135 + 4 * (pos - 2), digit);
+    LCD_WriteAnyFont(_f_4x6, 9, 135 + 4 * (pos - 2), digit, false);
     pos++;
-    if(pos < 5){ LCD_WriteAnyFont(f_4x6_n, 9, 135 + 4 * (pos - 2), 14); }
-    else{ LCD_WriteAnyFont(f_4x6_n, 11, 119, 14); }
+    if(pos < 5){ LCD_WriteAnyFont(_f_4x6, 9, 135 + 4 * (pos - 2), 14, true); }
+    else{ LCD_WriteAnyFont(_f_4x6, 11, 119, 14, true); }
   }
   else
   {
-    LCD_WriteAnyFont(f_4x6_p, 11, 119 + 4 * (pos - 5), digit);
+    LCD_WriteAnyFont(_f_4x6, 11, 119 + 4 * (pos - 5), digit, false);
     pos++;
-    if(pos < 14){ LCD_WriteAnyFont(f_4x6_n, 11, 119 + 4 * (pos - 5), 14); }
+    if(pos < 14){ LCD_WriteAnyFont(_f_4x6, 11, 119 + 4 * (pos - 5), 14, true); }
   }
 }
 
@@ -1652,7 +1653,7 @@ void LCD_Sym_Pin_PrintOneTelNumberDigit(unsigned char digit, unsigned char pos)
 void LCD_Sym_Pin_WriteDigit(unsigned char pin, unsigned char code_pos)
 {
   LCD_PinButtons(true, pin);
-  LCD_WriteAnyFont(f_6x8_p, 3, 125 + 6 * code_pos, pin + 15);
+  LCD_WriteAnyFont(_f_6x8, 3, 125 + 6 * code_pos, pin + 15, false);
 }
 
 
@@ -1701,7 +1702,6 @@ void LCD_Sym_ControlButtons2(t_CtrlButtons ctrl, bool negative)
     case _ctrl_minus: LCD_WriteAnySymbol(15, 130, _s_minus, negative); break;
     case _ctrl_plus: LCD_WriteAnySymbol(9, 130, _s_plus, negative); break;
 
-
     default: break;
   }
 }
@@ -1733,7 +1733,7 @@ void LCD_Sym_MarkTextButton(t_text_buttons text){ for(unsigned char i = 0; i < 4
  *            can messages
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_CAN_MCPFail(void){ LCD_WriteAnyStringFont(f_6x8_p, 17, 100, "MCP-fail"); }
+void LCD_Sym_CAN_MCPFail(void){ LCD_WriteAnyStringFont(_f_6x8, 17, 100, "MCP-fail", false); }
 
 
 /* ------------------------------------------------------------------*
@@ -1788,7 +1788,7 @@ void LCD_Sym_Sonic_NoUS_Message(struct PlantState *ps)
 {
   // get postion regarding page
   struct RowColPos pos = LCD_Sym_Sonic_NoUS_Pos(ps->page_state->page);
-  LCD_WriteAnyStringFont(f_6x8_p, pos.row, pos.col, "noUS");
+  LCD_WriteAnyStringFont(_f_6x8, pos.row, pos.col, "noUS", false);
 }
 
 
@@ -1854,13 +1854,13 @@ void LCD_Sym_Error(unsigned char error_id)
 void LCD_Sym_Auto_WorldTime_Print(struct PlantState *ps)
 {
   // : symbol
-  LCD_WriteAnyFont(f_4x6_p, 2, 128, 10);
-  LCD_WriteAnyFont(f_4x6_p, 2, 140, 10);
+  LCD_WriteAnyFont(_f_4x6, 2, 128, 10, false);
+  LCD_WriteAnyFont(_f_4x6, 2, 140, 10, false);
 
   // time
-  LCD_WriteAnyValue(f_4x6_p, 2, 2, 120, (int)ps->time_state->tic_hou);
-  LCD_WriteAnyValue(f_4x6_p, 2, 2, 132, (int)ps->time_state->tic_min);
-  LCD_WriteAnyValue(f_4x6_p, 2, 2, 144, (int)ps->time_state->tic_sec);
+  LCD_WriteAnyValue(_f_4x6, 2, 2, 120, (int)ps->time_state->tic_hou, false);
+  LCD_WriteAnyValue(_f_4x6, 2, 2, 132, (int)ps->time_state->tic_min, false);
+  LCD_WriteAnyValue(_f_4x6, 2, 2, 144, (int)ps->time_state->tic_sec, false);
 }
 
 
@@ -1871,16 +1871,16 @@ void LCD_Sym_Auto_WorldTime_Print(struct PlantState *ps)
 void LCD_Sym_Auto_Date(struct PlantState *ps)
 {
   // - symbol
-  LCD_WriteAnyFont(f_4x6_p, 0, 128, 11);
-  LCD_WriteAnyFont(f_4x6_p, 0, 140, 11);
+  LCD_WriteAnyFont(_f_4x6, 0, 128, 11, false);
+  LCD_WriteAnyFont(_f_4x6, 0, 140, 11, false);
 
   // year 20xx
-  LCD_WriteAnyStringFont(f_4x6_p, 0, 144, "20");
+  LCD_WriteAnyStringFont(_f_4x6, 0, 144, "20", false);
 
   // date
-  LCD_WriteAnyValue(f_4x6_p, 2, 0, 120, MCP7941_ReadTime(ps->twi_state, TIC_DATE));
-  LCD_WriteAnyValue(f_4x6_p, 2, 0, 132, MCP7941_ReadTime(ps->twi_state, TIC_MONTH));
-  LCD_WriteAnyValue(f_4x6_p, 2, 0, 152, MCP7941_ReadTime(ps->twi_state, TIC_YEAR));
+  LCD_WriteAnyValue(_f_4x6, 2, 0, 120, MCP7941_ReadTime(ps->twi_state, TIC_DATE), false);
+  LCD_WriteAnyValue(_f_4x6, 2, 0, 132, MCP7941_ReadTime(ps->twi_state, TIC_MONTH), false);
+  LCD_WriteAnyValue(_f_4x6, 2, 0, 152, MCP7941_ReadTime(ps->twi_state, TIC_YEAR), false);
 }
 
 
@@ -1888,12 +1888,33 @@ void LCD_Sym_Auto_Date(struct PlantState *ps)
  *            end text sym
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Data_EndText(void){ LCD_WriteAnyStringFont(f_6x8_p, 15, 1, "End"); }
+void LCD_Sym_Data_EndText(void){ LCD_WriteAnyStringFont(_f_6x8, 15, 1, "End", false); }
 
 
 /* ------------------------------------------------------------------*
  *            modem sym
  * ------------------------------------------------------------------*/
 
-void LCD_Sym_Modem_Data_SLED(bool show){ (show ? LCD_WriteAnyFont(f_4x6_p, 0, 105, 26) : LCD_ClrSpace(0, 105, 2, 4)); }
-void LCD_Sym_Modem_Pin_SLED(bool show){ (show ? LCD_WriteAnyFont(f_4x6_p, 18, 137, 26) : LCD_ClrSpace(18, 137, 2, 4)); }
+void LCD_Sym_Modem_Data_SLED(bool show){ (show ? LCD_WriteAnyFont(_f_4x6, 0, 105, 26, false) : LCD_ClrSpace(0, 105, 2, 4)); }
+void LCD_Sym_Modem_Pin_SLED(bool show){ (show ? LCD_WriteAnyFont(_f_4x6, 18, 137, 26, false) : LCD_ClrSpace(18, 137, 2, 4)); }
+
+
+/* ------------------------------------------------------------------*
+ *            temp
+ * ------------------------------------------------------------------*/
+
+void LCD_Sym_Setup_Alarm_MCP9800_WriteTemp(unsigned char temp)
+{
+  // indicate minus
+  if(temp & 0x80)
+  {
+    LCD_WriteAnyStringFont(_f_6x8, 17, 84, "-", false);
+    temp = -temp;
+  }
+
+  // clear minus sign
+  else{ LCD_ClrSpace(17, 84, 2, 6); }
+
+  // write temperature
+  LCD_WriteAnyValue(_f_6x8, 2, 17, 90, (temp & 0x7F), false);
+}

@@ -21,8 +21,8 @@ void Touch_Cal_Main(void)
 
   //-----------------------------------------------NoTouchValue-----
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Do not touch!");
-  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "If touched, restart!");
+  LCD_WriteAnyStringFont(_f_6x8, 2, 0, "Do not touch!", false);
+  LCD_WriteAnyStringFont(_f_6x8, 5, 0, "If touched, restart!", false);
 
   // save no touch value to EEPROM
   MEM_EEPROM_WriteVar(TOUCH_X_min, (Touch_Cal_X_ReadData() >> 4));
@@ -36,7 +36,7 @@ void Touch_Cal_Main(void)
 
   //-----------------------------------------------TouchValue-----
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touch me!");
+  LCD_WriteAnyStringFont(_f_6x8, 2, 0, "Touch me!", false);
   while(!(TCD0_Wait_Query()));
 
   // x, y calibration
@@ -50,8 +50,8 @@ void Touch_Cal_Main(void)
   MEM_EEPROM_WriteVar(TOUCH_Y_max, (calY >> 4));
 
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touchpanel Calibrated");
-  LCD_WriteAnyStringFont(f_6x8_p, 5, 0, "EEPROM written");
+  LCD_WriteAnyStringFont(_f_6x8, 2, 0, "Touchpanel Calibrated", false);
+  LCD_WriteAnyStringFont(_f_6x8, 5, 0, "EEPROM written", false);
   TCD0_Stop();
 }
 
@@ -67,7 +67,7 @@ int Touch_Cal_X_Init(void)
 
   Touch_Clean();
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touchpanel X-Calibrating");
+  LCD_WriteAnyStringFont(_f_6x8, 2, 0, "Touchpanel X-Calibrating", false);
   TCC0_Touch_Wait();
 
   for(int i = 0; i < CAL_READS; i++)
@@ -92,7 +92,7 @@ int Touch_Cal_Y_Init(void)
 
   Touch_Clean();
   LCD_Clean();
-  LCD_WriteAnyStringFont(f_6x8_p, 2, 0, "Touchpanel Y-Calibrating");
+  LCD_WriteAnyStringFont(_f_6x8, 2, 0, "Touchpanel Y-Calibrating", false);
   TCC0_Touch_Wait();
 
   for(int i = 0; i < CAL_READS; i++)

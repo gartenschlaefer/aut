@@ -492,7 +492,7 @@ void LCD_SetupPage(struct PlantState *ps)
       }
     }
   }
-  else if((ps->page_state->page == SetupAlarm)){ MCP9800_WriteTemp(ps->twi_state); }
+  else if((ps->page_state->page == SetupAlarm)){ LCD_Sym_Setup_Alarm_MCP9800_WriteTemp(ps->temp_sensor->actual_temp); }
 
   // countdown
   if(LCD_PageCountDown(ps)){ page_state_change_page(ps, AutoPage); }
@@ -629,7 +629,7 @@ void LCD_Data_WriteSetupEntryPage(unsigned char page)
 void LCD_Data_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half)
 {
   //*** debug eep page
-  if(DEBUG){ LCD_WriteAnyValue(f_6x8, 2, 0, 0, eep, false); }
+  if(DEBUG){ LCD_WriteAnyValue(_f_6x8, 2, 0, 0, eep, false); }
 
   // get start end page
   struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
@@ -718,17 +718,17 @@ void LCD_Calibration(void)
   Touch_Cal_Main();
   LCD_Clean();
 
-  LCD_WriteAnyStringFont(f_6x8, 2, 0, "X-Cal:", false);
-  LCD_WriteAnyStringFont(f_6x8, 5, 0, "Y-Cal:", false);
-  LCD_WriteAnyStringFont(f_6x8, 10, 0, "X-Value:", false);
-  LCD_WriteAnyStringFont(f_6x8, 13, 0, "Y-Value:", false);
-  LCD_WriteAnyStringFont(f_6x8, 18, 0, "X-Value-Cal:", false);
-  LCD_WriteAnyStringFont(f_6x8, 21, 0, "Y-Value-Cal:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 2, 0, "X-Cal:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 5, 0, "Y-Cal:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 10, 0, "X-Value:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 13, 0, "Y-Value:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 18, 0, "X-Value-Cal:", false);
+  LCD_WriteAnyStringFont(_f_6x8, 21, 0, "Y-Value-Cal:", false);
 
-  LCD_WriteAnyValue(f_6x8, 3, 2, 60, MEM_EEPROM_ReadVar(TOUCH_X_min), false);
-  LCD_WriteAnyValue(f_6x8, 3, 5, 60, MEM_EEPROM_ReadVar(TOUCH_Y_min), false);
-  LCD_WriteAnyValue(f_6x8, 3, 2, 100, MEM_EEPROM_ReadVar(TOUCH_X_max), false);
-  LCD_WriteAnyValue(f_6x8, 3, 5, 100, MEM_EEPROM_ReadVar(TOUCH_Y_max), false);
+  LCD_WriteAnyValue(_f_6x8, 3, 2, 60, MEM_EEPROM_ReadVar(TOUCH_X_min), false);
+  LCD_WriteAnyValue(_f_6x8, 3, 5, 60, MEM_EEPROM_ReadVar(TOUCH_Y_min), false);
+  LCD_WriteAnyValue(_f_6x8, 3, 2, 100, MEM_EEPROM_ReadVar(TOUCH_X_max), false);
+  LCD_WriteAnyValue(_f_6x8, 3, 5, 100, MEM_EEPROM_ReadVar(TOUCH_Y_max), false);
 
   while(1)
   {
@@ -739,9 +739,9 @@ void LCD_Calibration(void)
     y = Touch_Cal_Y_Value(yRead);
     x = Touch_Cal_X_Value(xRead);
 
-    LCD_WriteAnyValue(f_6x8, 3, 10, 100, xRead, false);
-    LCD_WriteAnyValue(f_6x8, 3, 13, 100, yRead, false);
-    LCD_WriteAnyValue(f_6x8, 3, 18, 100, x, false);
-    LCD_WriteAnyValue(f_6x8, 3, 21, 100, y, false);
+    LCD_WriteAnyValue(_f_6x8, 3, 10, 100, xRead, false);
+    LCD_WriteAnyValue(_f_6x8, 3, 13, 100, yRead, false);
+    LCD_WriteAnyValue(_f_6x8, 3, 18, 100, x, false);
+    LCD_WriteAnyValue(_f_6x8, 3, 21, 100, y, false);
   }
 }
