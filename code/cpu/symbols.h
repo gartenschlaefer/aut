@@ -8,9 +8,6 @@
 #define Font_Numbers_4x6_LEN 110
 extern const unsigned char Font_Numbers_4x6[Font_Numbers_4x6_LEN];
 
-#define Font_Numbers_4x6_Neg_LEN 62
-extern const unsigned char Font_Numbers_4x6_Neg[Font_Numbers_4x6_Neg_LEN];
-
 #define Font_6x8_LEN 578
 extern const unsigned char Font_6x8[Font_6x8_LEN];
 
@@ -37,6 +34,12 @@ extern const unsigned char Symbols_29x16[Symbols_29x16_LEN];
 
 #define Symbols_29x17_LEN 1742
 extern const unsigned char Symbols_29x17[Symbols_29x17_LEN];
+
+#define Symbols_29x20_LEN 872
+extern const unsigned char Symbols_29x20[Symbols_29x20_LEN];
+
+#define Symbols_29x24_LEN 89
+extern const unsigned char Symbols_29x24[Symbols_29x24_LEN];
 
 #define Symbols_29x23_LEN 176
 extern const unsigned char Symbols_29x23[Symbols_29x23_LEN];

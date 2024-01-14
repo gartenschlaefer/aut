@@ -86,7 +86,7 @@ typedef enum
 
   // 29 x 17
   //_s_set_down, _s_alarm, _s_air, _s_sensor, _s_watch, _s_compressor, _s_circulate, _s_cal, _s_zone, _s_level,
-  _s_set_down, _s_circulate, _s_air, _s_zone, _s_level, _s_cal, _s_watch, _s_alarm, _s_sensor, _s_compressor,
+  _s_set_down, _s_circulate, _s_air, _s_zone, _s_cal, _s_watch, _s_alarm, _s_sensor, _s_compressor, _s_level,
 
   // 29 x 23
   _s_mud,

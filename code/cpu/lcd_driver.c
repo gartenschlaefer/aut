@@ -381,14 +381,16 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
       break;
 
     // 29 x 16
-    case _s_set_down: case _s_circulate: case _s_air: case _s_zone: case _s_cal: case _s_watch: case _s_alarm: case _s_sensor: case _s_compressor:
-      symbol_pointer = Symbols_29x16;
+    case _s_set_down: case _s_circulate: case _s_air: case _s_zone: case _s_cal: case _s_watch: case _s_alarm: case _s_sensor: case _s_compressor: case _s_level:
+      //symbol_pointer = Symbols_29x16;
+      symbol_pointer = Symbols_29x20;
       offset = _s_set_down;
       break;
 
     // 29 x 23
-    case _s_mud: case _s_level:
-      symbol_pointer = Symbols_29x23;
+    case _s_mud:
+      //symbol_pointer = Symbols_29x23;
+      symbol_pointer = Symbols_29x24;
       offset = _s_mud;
       break;
 
