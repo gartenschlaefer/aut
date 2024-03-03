@@ -256,7 +256,7 @@ def bmp_to_symbols(cfg):
 
     for symbol_file in symbol_dict['files']:
       print("file: ", symbol_file)
-      out_text_c += '\n\n\t// {}'.format(Path(symbol_file).name)
+      out_text_c += '\n\n\t// ...-{}'.format((Path(symbol_file).name).split("-")[-1])
 
       # read image
       img = cv2.imread(symbol_file, cv2.IMREAD_GRAYSCALE)
@@ -281,16 +281,18 @@ def bmp_to_symbols(cfg):
 
   # debug
   #print(out_text)
+  out_file_c = Path(cfg["dirs"]["out_sym"] + cfg["output_file_c"])
+  out_file_h = Path(cfg["dirs"]["out_sym"] + cfg["output_file_h"])
 
-  # write file
-  with open(cfg["output_file_c"], 'w') as f:
+  # write files
+  with open(out_file_c, 'w') as f:
     f.write(out_text_c)
 
-  with open(cfg["output_file_h"], 'w') as f:
+  with open(out_file_h, 'w') as f:
     f.write(out_text_h)
 
   # success message 
-  print("\n--\nfile: {} and {} written, success.\n".format(cfg["output_file_c"], cfg["output_file_h"]))
+  print("\n--\nfile: {} and {} written, success.\n".format(out_file_c, out_file_h))
 
 
 if __name__ == '__main__':

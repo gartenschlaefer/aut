@@ -314,7 +314,7 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
       inv_mask_pointer = (negative ? Font_Numbers_4x6_inv_mask : NULL);
       break;
 
-    // 8x16
+    // 6x12
     case _f_8x16: 
       symbol_pointer = Font_Numbers_6x12; 
       break;
@@ -412,8 +412,8 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
 
     // 19x19
     case _s_phosphor: case _s_esc: case _s_plus: case _s_minus: case _s_arrow_up: case _s_arrow_down: case _s_ok: case _s_grad: case _s_sonic: case _s_arrow_redo:
-      symbol_pointer = Symbols_19x19;
-      inv_mask_pointer = (negative ? Symbols_19x19_inv_mask : NULL);
+      symbol_pointer = Symbols_19x20;
+      inv_mask_pointer = (negative ? Symbols_19x20_inv_mask : NULL);
       offset = _s_phosphor;
       break;
 
@@ -451,7 +451,7 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
     // todo:
     // valve symbol
     case _s_valve:
-      symbol_pointer = Symbols_35x23;
+      symbol_pointer = Symbols_29x20;
       offset = _s_valve;
       break;
 

@@ -7,11 +7,13 @@ symbol_converter:
   # files and dirs
   #input_file: "./test_symbols.h"
   input_file: "/world/dekutree/git/aut/code/cpu/symbols.c"
-  output_file_c: "./ignore/out/out_symbols.c"
-  output_file_h: "./ignore/out/out_symbols.h"
   dirs:
     out_pgm: "./ignore/out/"
     in_pgm: "./ignore/out/"
+    out_sym: "./ignore/out/symbols/"
+
+  output_file_c: "symbols.c"
+  output_file_h: "symbols.h"
 
   # print scaled
   print_scaled_img: True
