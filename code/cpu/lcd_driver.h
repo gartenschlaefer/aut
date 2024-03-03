@@ -104,6 +104,6 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
 void LCD_Write_TextButton(unsigned char row, unsigned char col, t_text_buttons text, bool negative);
 void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col);
 
-unsigned char LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, bool negative);
+unsigned char LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, unsigned char inv_mask_pos, bool negative);
 
 #endif

@@ -270,7 +270,7 @@ unsigned char TWI_D_Master_WriteString(unsigned char address, unsigned char *sen
   while((TWID.MASTER.STATUS & TWI_MASTER_BUSSTATE_gm) != TWI_MASTER_BUSSTATE_IDLE_gc)
   {
     if(TCC1_Wait_Query()){ TWI_D_Master_Init(); TCC1_WaitMilliSec_Init(10); error++; }
-    if(error > 3) return E_TWI_NO_SENT;
+    if(error > 3){ return E_TWI_NO_SENT; }
   }
 
   // send address

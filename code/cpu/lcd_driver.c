@@ -323,7 +323,7 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
   }
 
   // send data and get length
-  unsigned char len = LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, letter, negative);
+  unsigned char len = LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, letter, 0, negative);
 
   // // get length and height (height in bytes)
   // unsigned char len = symbol_pointer[0];
@@ -368,56 +368,69 @@ unsigned char LCD_WriteAnyFont(t_font_type font_type, unsigned char row, unsigne
 void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_symbol, bool negative)
 {
   unsigned char offset = 0;
+  unsigned char inv_mask_pos = 0;
   const unsigned char *symbol_pointer = NULL;
   const unsigned char *inv_mask_pointer = NULL;
 
   // get correct symbol pointer
   switch(any_symbol)
   {
-    // 35 x 23
+    // 35x24
     case _s_pump_off:  case _s_inflow_pump: case _s_pump2:
-      symbol_pointer = Symbols_35x23;
+      symbol_pointer = Symbols_35x24;
+      inv_mask_pointer = (negative && any_symbol != _s_pump2 ? Symbols_35x24_inv_mask : NULL);
       offset = _s_pump_off;
       break;
 
-    // 29 x 16
-    case _s_set_down: case _s_circulate: case _s_air: case _s_zone: case _s_cal: case _s_watch: case _s_alarm: case _s_sensor: case _s_compressor: case _s_level:
-      //symbol_pointer = Symbols_29x16;
+    // 29x20
+    case _s_set_down: case _s_circulate: case _s_air: case _s_zone:
+      symbol_pointer = Symbols_29x20;
+      inv_mask_pointer = (negative ? Symbols_29x20_inv_mask : NULL);
+      offset = _s_set_down;
+      break;
+
+    // 29x20
+    case _s_cal: case _s_watch: case _s_alarm:
+      symbol_pointer = Symbols_29x20;
+      inv_mask_pointer = (negative ? Symbols_29x20_inv_mask : NULL);
+      inv_mask_pos = 1;
+      offset = _s_set_down;
+      break;
+
+    // 29x20
+    case _s_sensor: case _s_compressor: case _s_level:
       symbol_pointer = Symbols_29x20;
       offset = _s_set_down;
       break;
 
-    // 29 x 23
+    // 29x24
     case _s_mud:
-      //symbol_pointer = Symbols_29x23;
       symbol_pointer = Symbols_29x24;
+      inv_mask_pointer = (negative ? Symbols_29x24_inv_mask : NULL);
       offset = _s_mud;
       break;
 
-    // 19 x 19
+    // 19x19
     case _s_phosphor: case _s_esc: case _s_plus: case _s_minus: case _s_arrow_up: case _s_arrow_down: case _s_ok: case _s_grad: case _s_sonic: case _s_arrow_redo:
       symbol_pointer = Symbols_19x19;
-      offset = _s_phosphor;
       inv_mask_pointer = (negative ? Symbols_19x19_inv_mask : NULL);
+      offset = _s_phosphor;
       break;
 
-    // 19 x 24
+    // 19x24
     case _s_pump:
       symbol_pointer = Symbols_15x24;
       offset = _s_pump;
       break;
 
-    // 34 x 21
-    // 33 x 20
+    // 33x20
     case _s_frame: case _s_escape: case _s_del:
-      //symbol_pointer = Symbols_34x21;
-      //inv_mask_pointer = (negative ? Symbols_34x21_inv_mask : NULL);
       symbol_pointer = Symbols_33x20;
       inv_mask_pointer = (negative ? Symbols_33x20_inv_mask : NULL);
       offset = _s_frame;
       break;
 
-    // 39 x 16 [2]
+    // 39x16 [2]
     case _s_text_frame: 
       symbol_pointer = Symbols_39x16;
       offset = _s_text_frame;
@@ -446,7 +459,7 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
   }
 
   // send data
-  LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, (any_symbol - offset), negative);
+  LCD_send_symbol_data_from_pointer(row, col, symbol_pointer, inv_mask_pointer, (any_symbol - offset), inv_mask_pos, negative);
 }
 
 
@@ -495,7 +508,7 @@ void LCD_DeathMan(struct PlantState *ps, unsigned char row, unsigned char col)
  *            send data from pointer
  * ------------------------------------------------------------------*/
 
-unsigned char LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, bool negative)
+unsigned char LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char col, const unsigned char *symbol_pointer, const unsigned char *inv_mask_pointer, unsigned char symbol_pos, unsigned char inv_mask_pos, bool negative)
 {
   // get length and height (height in bytes)
   unsigned char l_px = *symbol_pointer++;
@@ -511,7 +524,13 @@ unsigned char LCD_send_symbol_data_from_pointer(unsigned char row, unsigned char
 
   // get to symbol position in array
   symbol_pointer += (l_px * h_byte * symbol_pos);
-  if(inv_mask_pointer){ inv_mask_pointer += 2; }
+
+  // inv mask pointer
+  if(inv_mask_pointer)
+  { 
+    inv_mask_pointer += 2;
+    if(inv_mask_pos){ inv_mask_pointer += inv_mask_pos * (l_px * h_byte); }
+  }
 
   // pages
   for(unsigned char p = 0; p < h_byte; p++)

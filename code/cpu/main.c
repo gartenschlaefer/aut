@@ -98,6 +98,9 @@ int main(void)
   // frame timer (for fixed fps time)
   TCF1_FrameTimer_Init();
 
+  //*-* debug loop twi
+  //debug_loog_twi_rpi();
+
   while(1)
   {
     // watchdog
