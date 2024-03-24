@@ -525,159 +525,69 @@ void LCD_DataPage(struct PlantState *ps)
 
 
 /* ------------------------------------------------------------------*
- *            auto entry
+ *            Data log entries
  * ------------------------------------------------------------------*/
 
-void LCD_Data_WriteAutoEntryPage(unsigned char page)
+void LCD_Data_WriteLogEntries(unsigned char entry_page, t_eeprom_memory_section eeprom_mem_section)
 {
-  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_auto);
+  struct MemoryEntryPos latest = MEM_FindLatestEntry(eeprom_mem_section);
 
   // clear display section
   LCD_Sym_Clr_DataEntrySpace();
 
   // page num
-  LCD_Sym_Data_ActualPageNum((int)(page + 1));
+  LCD_Sym_Data_ActualPageNum((int)(entry_page + 1));
 
   // get right eep
-  unsigned char wep = LCD_Data_EEP_Minus(TEXT_BUTTON_auto, latest.page, (2 * page));
-
-  // write corresponding page
-  if(page >= DATA_PAGE_NUM_AUTO)
-  {
-    // half page
-    LCD_Data_wPage(TEXT_BUTTON_auto, wep, latest.entry, true);
-    LCD_Sym_Data_EndText();
-  }
-  else
-  {
-    // full page
-    LCD_Data_wPage(TEXT_BUTTON_auto, wep, latest.entry, false);
-  }
-}
-
-
-
-/* ------------------------------------------------------------------*
- *            data manual entry page
- * ------------------------------------------------------------------*/
-
-void LCD_Data_WriteManualEntryPage(unsigned char page)
-{
-  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_manual);
-
-  // clear display section
-  LCD_Sym_Clr_DataEntrySpace();
-
-  // page number
-  LCD_Sym_Data_ActualPageNum((int)(page + 1));
-
-  // get right latest page
-  unsigned char wep = LCD_Data_EEP_Minus(TEXT_BUTTON_manual, latest.page, (2 * page));
-
-  // write corresponding page
-  if(page >= DATA_PAGE_NUM_MANUAL)
-  {
-    // half page
-    LCD_Data_wPage(TEXT_BUTTON_manual, wep, latest.entry, true);
-    LCD_Sym_Data_EndText();
-  }
-  else
-  {
-    // full page
-    LCD_Data_wPage(TEXT_BUTTON_manual, wep, latest.entry, false);
-  }
-}
-
-
-
-/* ------------------------------------------------------------------*
- *            data setup entry page
- * ------------------------------------------------------------------*/
-
-void LCD_Data_WriteSetupEntryPage(unsigned char page)
-{
-  struct MemoryEntryPos latest = MEM_FindLatestEntry(TEXT_BUTTON_setup);
-
-  // clear display section
-  LCD_Sym_Clr_DataEntrySpace();
-
-  // page number
-  LCD_Sym_Data_ActualPageNum((int)(page + 1));
-
-  // get right eep
-  unsigned char wep = LCD_Data_EEP_Minus(TEXT_BUTTON_setup, latest.page, (2 * page));
-
-  // write corresponding page
-  if(page >= DATA_PAGE_NUM_MANUAL)
-  {
-    // half page
-    LCD_Data_wPage(TEXT_BUTTON_setup, wep, latest.entry, true);
-    LCD_Sym_Data_EndText();
-  }
-  else
-  {
-    // full page
-    LCD_Data_wPage(TEXT_BUTTON_setup, wep, latest.entry, false);
-  }
-}
-
-
-/*-------------------------------------------------------------------*
- *            write data entry page
- * ------------------------------------------------------------------*/
-
-void LCD_Data_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half)
-{
-  //*** debug eep page
-  if(DEBUG){ LCD_WriteAnyValue(_f_6x8, 2, 0, 0, eep, false); }
+  unsigned char eep = latest.page;
 
   // get start end page
-  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
-
-  // write the data page to display
-  for(unsigned char i = 0; i < 8; i++)
-  {
-    // write entry
-    switch(data)
-    {
-      case TEXT_BUTTON_auto: LCD_Sym_Data_WriteAutoEntry(5 + (2 * i), eep, entry); break;
-      case TEXT_BUTTON_manual: LCD_Sym_Data_WriteManualEntry(5 + (2 * i), eep, entry); break;
-      case TEXT_BUTTON_setup: LCD_Sym_Data_WriteSetupEntry(5 + (2 * i), eep, entry); break;
-      default: break;
-    }
-
-    // update
-    if(entry < 1)
-    {
-      entry = 4;
-      eep--;
-      if(eep < msep.start_page){ eep = msep.end_page; }
-    }
-    entry--;
-
-    // return if only half page needed
-    if(i >= 4 && half){ return; }
-  }
-}
-
-
-/* ------------------------------------------------------------------*
- *            mem pages eep minus
- * ------------------------------------------------------------------*/
-
-unsigned char LCD_Data_EEP_Minus(t_text_buttons data, unsigned char eep, unsigned char cnt)
-{
-  // get start end page
-  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(eeprom_mem_section);
 
   // get right EEPROM page
-  for(unsigned char i = 0; i < cnt; i++)
+  for(unsigned char i = 0; i < (2 * entry_page); i++)
   {
     eep--;
     if(eep < msep.start_page){ eep = msep.end_page; }
   }
 
-  return eep;
+  // determine half page
+  bool half_page_flag = entry_page >= (eeprom_mem_section == _eeprom_section_auto ? DATA_PAGE_NUM_AUTO : (eeprom_mem_section == _eeprom_section_manual ? DATA_PAGE_NUM_MANUAL : DATA_PAGE_NUM_SETUP));
+
+  //*** debug eep page
+  if(DEBUG){ LCD_WriteAnyValue(_f_6x8, 2, 0, 0, eep, false); }
+
+  // get start end page
+  //struct MemoryStartEndPage msep = MEM_GetStartEndPage(eeprom_mem_section);
+
+  // write the data page to display
+  for(unsigned char i = 0; i < 8; i++)
+  {
+    // write entry
+    switch(eeprom_mem_section)
+    {
+      case _eeprom_section_auto: LCD_Sym_Data_WriteAutoEntry(5 + (2 * i), eep, latest.entry); break;
+      case _eeprom_section_manual: LCD_Sym_Data_WriteManualEntry(5 + (2 * i), eep, latest.entry); break;
+      case _eeprom_section_setup: LCD_Sym_Data_WriteSetupEntry(5 + (2 * i), eep, latest.entry); break;
+      default: break;
+    }
+
+    // update
+    if(latest.entry < 1)
+    {
+      latest.entry = 4;
+      eep--;
+      if(eep < msep.start_page){ eep = msep.end_page; }
+    }
+    latest.entry--;
+
+    // write end and return if only half page needed
+    if(i >= 4 && half_page_flag)
+    { 
+      LCD_Sym_Data_EndText();
+      return;
+    }
+  }
 }
 
 

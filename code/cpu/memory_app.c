@@ -177,52 +177,52 @@ void MEM_EEPROM_WriteVar(t_eeprom_var var, unsigned char eeData)
 {
   switch(var)
   {
-    case ON_circ:       MEM_EEPROM_WriteByte(1, 0, eeData); break;
-    case OFF_circ:      MEM_EEPROM_WriteByte(1, 1, eeData); break;
-    case ON_air:        MEM_EEPROM_WriteByte(1, 2, eeData); break;
-    case OFF_air:       MEM_EEPROM_WriteByte(1, 3, eeData); break;
-    case TIME_setDown:  MEM_EEPROM_WriteByte(1, 4, eeData); break;
-    case ON_pumpOff:    MEM_EEPROM_WriteByte(1, 5, eeData); break;
-    case PUMP_pumpOff:  MEM_EEPROM_WriteByte(1, 6, eeData); break;
-    case ON_MIN_mud:    MEM_EEPROM_WriteByte(1, 7, eeData); break;
-    case ON_SEC_mud:    MEM_EEPROM_WriteByte(1, 8, eeData); break;
-    case ON_phosphor:   MEM_EEPROM_WriteByte(1, 9, eeData); break;
-    case OFF_phosphor:    MEM_EEPROM_WriteByte(1, 10, eeData); break;
-    case ON_inflowPump:   MEM_EEPROM_WriteByte(1, 11, eeData); break;
-    case OFF_inflowPump:  MEM_EEPROM_WriteByte(1, 12, eeData); break;
+    case ON_circ: MEM_EEPROM_WriteByte(1, 0, eeData); break;
+    case OFF_circ: MEM_EEPROM_WriteByte(1, 1, eeData); break;
+    case ON_air: MEM_EEPROM_WriteByte(1, 2, eeData); break;
+    case OFF_air: MEM_EEPROM_WriteByte(1, 3, eeData); break;
+    case TIME_setDown: MEM_EEPROM_WriteByte(1, 4, eeData); break;
+    case ON_pumpOff: MEM_EEPROM_WriteByte(1, 5, eeData); break;
+    case PUMP_pumpOff: MEM_EEPROM_WriteByte(1, 6, eeData); break;
+    case ON_MIN_mud: MEM_EEPROM_WriteByte(1, 7, eeData); break;
+    case ON_SEC_mud: MEM_EEPROM_WriteByte(1, 8, eeData); break;
+    case ON_phosphor: MEM_EEPROM_WriteByte(1, 9, eeData); break;
+    case OFF_phosphor: MEM_EEPROM_WriteByte(1, 10, eeData); break;
+    case ON_inflowPump: MEM_EEPROM_WriteByte(1, 11, eeData); break;
+    case OFF_inflowPump: MEM_EEPROM_WriteByte(1, 12, eeData); break;
     case PUMP_inflowPump: MEM_EEPROM_WriteByte(1, 13, eeData); break;
-    case SENSOR_inTank:   MEM_EEPROM_WriteByte(1, 14, eeData); break;
-    case SENSOR_outTank:  MEM_EEPROM_WriteByte(1, 15, eeData); break;
-    case TIME_H_circ:   MEM_EEPROM_WriteByte(1, 16, eeData); break;
-    case TIME_L_circ:   MEM_EEPROM_WriteByte(1, 17, eeData); break;
-    case TIME_H_air:    MEM_EEPROM_WriteByte(1, 18, eeData); break;
-    case TIME_L_air:    MEM_EEPROM_WriteByte(1, 19, eeData); break;
-    case MIN_H_pressure:   MEM_EEPROM_WriteByte(1, 20, eeData); break;
-    case MIN_L_pressure:   MEM_EEPROM_WriteByte(1, 21, eeData); break;
-    case MAX_H_pressure:   MEM_EEPROM_WriteByte(1, 22, eeData); break;
-    case MAX_L_pressure:   MEM_EEPROM_WriteByte(1, 23, eeData); break;
-    case ALARM_temp:    MEM_EEPROM_WriteByte(1, 24, eeData); break;
-    case ALARM_comp:    MEM_EEPROM_WriteByte(1, 25, eeData); break;
-    case ALARM_sensor:  MEM_EEPROM_WriteByte(1, 26, eeData); break;
-    case CAL_ZeroOffsetPressure_H:   MEM_EEPROM_WriteByte(1, 27, eeData); break;
-    case CAL_ZeroOffsetPressure_L:   MEM_EEPROM_WriteByte(1, 28, eeData); break;
-    case TANK_LV_Sonic_H:    MEM_EEPROM_WriteByte(1, 29, eeData); break;
-    case TANK_LV_Sonic_L:    MEM_EEPROM_WriteByte(1, 30, eeData); break;
-    case SONIC_on:      MEM_EEPROM_WriteByte(1, 31, eeData); break;
+    case SENSOR_inTank: MEM_EEPROM_WriteByte(1, 14, eeData); break;
+    case SENSOR_outTank: MEM_EEPROM_WriteByte(1, 15, eeData); break;
+    case TIME_H_circ: MEM_EEPROM_WriteByte(1, 16, eeData); break;
+    case TIME_L_circ: MEM_EEPROM_WriteByte(1, 17, eeData); break;
+    case TIME_H_air: MEM_EEPROM_WriteByte(1, 18, eeData); break;
+    case TIME_L_air: MEM_EEPROM_WriteByte(1, 19, eeData); break;
+    case MIN_H_pressure: MEM_EEPROM_WriteByte(1, 20, eeData); break;
+    case MIN_L_pressure: MEM_EEPROM_WriteByte(1, 21, eeData); break;
+    case MAX_H_pressure: MEM_EEPROM_WriteByte(1, 22, eeData); break;
+    case MAX_L_pressure: MEM_EEPROM_WriteByte(1, 23, eeData); break;
+    case ALARM_temp: MEM_EEPROM_WriteByte(1, 24, eeData); break;
+    case ALARM_comp: MEM_EEPROM_WriteByte(1, 25, eeData); break;
+    case ALARM_sensor: MEM_EEPROM_WriteByte(1, 26, eeData); break;
+    case CAL_ZeroOffsetPressure_H: MEM_EEPROM_WriteByte(1, 27, eeData); break;
+    case CAL_ZeroOffsetPressure_L: MEM_EEPROM_WriteByte(1, 28, eeData); break;
+    case TANK_LV_Sonic_H: MEM_EEPROM_WriteByte(1, 29, eeData); break;
+    case TANK_LV_Sonic_L: MEM_EEPROM_WriteByte(1, 30, eeData); break;
+    case SONIC_on: MEM_EEPROM_WriteByte(1, 31, eeData); break;
 
-    case TOUCH_X_max:   MEM_EEPROM_WriteByte(0, 0, eeData); break;
-    case TOUCH_Y_max:   MEM_EEPROM_WriteByte(0, 1, eeData); break;
-    case TOUCH_X_min:   MEM_EEPROM_WriteByte(0, 2, eeData); break;
-    case TOUCH_Y_min:   MEM_EEPROM_WriteByte(0, 3, eeData); break;
-    case TANK_LV_MinPressure_H:   MEM_EEPROM_WriteByte(0, 4, eeData); break;
-    case TANK_LV_MinPressure_L:   MEM_EEPROM_WriteByte(0, 5, eeData); break;
-    case TANK_LV_LevelToAir_H:   MEM_EEPROM_WriteByte(0, 6, eeData); break;
-    case TANK_LV_LevelToAir_L:   MEM_EEPROM_WriteByte(0, 7, eeData); break;
-    case TANK_LV_LevelToSetDown_H:     MEM_EEPROM_WriteByte(0, 8, eeData); break;
-    case TANK_LV_LevelToSetDown_L:     MEM_EEPROM_WriteByte(0, 9, eeData); break;
-    case CAL_Redo_on:   MEM_EEPROM_WriteByte(0, 10, eeData); break;
-    case T_IP_off_h:    MEM_EEPROM_WriteByte(0, 11, eeData); break;
-    default:                                                break;
+    case TOUCH_X_max: MEM_EEPROM_WriteByte(0, 0, eeData); break;
+    case TOUCH_Y_max: MEM_EEPROM_WriteByte(0, 1, eeData); break;
+    case TOUCH_X_min: MEM_EEPROM_WriteByte(0, 2, eeData); break;
+    case TOUCH_Y_min: MEM_EEPROM_WriteByte(0, 3, eeData); break;
+    case TANK_LV_MinPressure_H: MEM_EEPROM_WriteByte(0, 4, eeData); break;
+    case TANK_LV_MinPressure_L: MEM_EEPROM_WriteByte(0, 5, eeData); break;
+    case TANK_LV_LevelToAir_H: MEM_EEPROM_WriteByte(0, 6, eeData); break;
+    case TANK_LV_LevelToAir_L: MEM_EEPROM_WriteByte(0, 7, eeData); break;
+    case TANK_LV_LevelToSetDown_H: MEM_EEPROM_WriteByte(0, 8, eeData); break;
+    case TANK_LV_LevelToSetDown_L: MEM_EEPROM_WriteByte(0, 9, eeData); break;
+    case CAL_Redo_on: MEM_EEPROM_WriteByte(0, 10, eeData); break;
+    case T_IP_off_h: MEM_EEPROM_WriteByte(0, 11, eeData); break;
+    default: break;
   }
 }
 
@@ -257,8 +257,8 @@ unsigned char MEM_EEPROM_ReadData(unsigned char page, unsigned char entry, t_dat
 void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps)
 {
   unsigned char data[8] = {0x00};
-  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(TEXT_BUTTON_auto);
-  struct MemoryEntryPos old = MEM_FindOldestEntry(TEXT_BUTTON_auto);
+  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(_eeprom_section_auto);
+  struct MemoryEntryPos old = MEM_FindOldestEntry(_eeprom_section_auto);
 
   // time
   data[0] = ps->time_state->tic_dat;
@@ -295,8 +295,8 @@ void MEM_EEPROM_WriteAutoEntry(struct PlantState *ps)
 void MEM_EEPROM_WriteManualEntry(struct PlantState *ps)
 {
   unsigned char data[7] = {0x00};
-  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(TEXT_BUTTON_manual);
-  struct MemoryEntryPos old = MEM_FindOldestEntry(TEXT_BUTTON_manual);
+  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(_eeprom_section_manual);
+  struct MemoryEntryPos old = MEM_FindOldestEntry(_eeprom_section_manual);
 
   // time and o2
   data[0] = ps->time_state->tic_dat;
@@ -327,8 +327,8 @@ void MEM_EEPROM_WriteManualEntry(struct PlantState *ps)
 void MEM_EEPROM_WriteSetupEntry(struct PlantState *ps)
 {
   unsigned char data[7] = {0x00};
-  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(TEXT_BUTTON_setup);
-  struct MemoryEntryPos old = MEM_FindOldestEntry(TEXT_BUTTON_setup);
+  struct MemoryEntryPos no_entry_pos = MEM_FindNoEntry(_eeprom_section_setup);
+  struct MemoryEntryPos old = MEM_FindOldestEntry(_eeprom_section_setup);
 
   // time
   data[0] = ps->time_state->tic_dat;
@@ -386,56 +386,56 @@ void MEM_EEPROM_LoadData(unsigned char entry, t_data byte, unsigned char eeData)
     case 0:
       switch(byte)
       {
-        case DATA_day:    MEM_EEPROM_LoadPageBuffer(0, eeData); break;
-        case DATA_month:  MEM_EEPROM_LoadPageBuffer(1, eeData); break;
-        case DATA_year:   MEM_EEPROM_LoadPageBuffer(2, eeData); break;
-        case DATA_hour:   MEM_EEPROM_LoadPageBuffer(3, eeData); break;
+        case DATA_day: MEM_EEPROM_LoadPageBuffer(0, eeData); break;
+        case DATA_month: MEM_EEPROM_LoadPageBuffer(1, eeData); break;
+        case DATA_year: MEM_EEPROM_LoadPageBuffer(2, eeData); break;
+        case DATA_hour: MEM_EEPROM_LoadPageBuffer(3, eeData); break;
         case DATA_minute: MEM_EEPROM_LoadPageBuffer(4, eeData); break;
-        case DATA_H_O2:   MEM_EEPROM_LoadPageBuffer(5, eeData); break;
-        case DATA_L_O2:   MEM_EEPROM_LoadPageBuffer(6, eeData); break;
-        case DATA_ERROR:  MEM_EEPROM_LoadPageBuffer(7, eeData); break;
+        case DATA_H_O2: MEM_EEPROM_LoadPageBuffer(5, eeData); break;
+        case DATA_L_O2: MEM_EEPROM_LoadPageBuffer(6, eeData); break;
+        case DATA_ERROR: MEM_EEPROM_LoadPageBuffer(7, eeData); break;
         default: break;
       } break;
 
     case 1:
       switch(byte)
       {
-        case DATA_day:    MEM_EEPROM_LoadPageBuffer(8, eeData); break;
-        case DATA_month:  MEM_EEPROM_LoadPageBuffer(9, eeData); break;
-        case DATA_year:   MEM_EEPROM_LoadPageBuffer(10, eeData); break;
-        case DATA_hour:   MEM_EEPROM_LoadPageBuffer(11, eeData); break;
+        case DATA_day: MEM_EEPROM_LoadPageBuffer(8, eeData); break;
+        case DATA_month: MEM_EEPROM_LoadPageBuffer(9, eeData); break;
+        case DATA_year: MEM_EEPROM_LoadPageBuffer(10, eeData); break;
+        case DATA_hour: MEM_EEPROM_LoadPageBuffer(11, eeData); break;
         case DATA_minute: MEM_EEPROM_LoadPageBuffer(12, eeData); break;
-        case DATA_H_O2:   MEM_EEPROM_LoadPageBuffer(13, eeData); break;
-        case DATA_L_O2:   MEM_EEPROM_LoadPageBuffer(14, eeData); break;
-        case DATA_ERROR:  MEM_EEPROM_LoadPageBuffer(15, eeData); break;
+        case DATA_H_O2: MEM_EEPROM_LoadPageBuffer(13, eeData); break;
+        case DATA_L_O2: MEM_EEPROM_LoadPageBuffer(14, eeData); break;
+        case DATA_ERROR: MEM_EEPROM_LoadPageBuffer(15, eeData); break;
         default: break;
       } break;
 
     case 2:
       switch(byte)
       {
-        case DATA_day:    MEM_EEPROM_LoadPageBuffer(16, eeData); break;
-        case DATA_month:  MEM_EEPROM_LoadPageBuffer(17, eeData); break;
-        case DATA_year:   MEM_EEPROM_LoadPageBuffer(18, eeData); break;
-        case DATA_hour:   MEM_EEPROM_LoadPageBuffer(19, eeData); break;
+        case DATA_day: MEM_EEPROM_LoadPageBuffer(16, eeData); break;
+        case DATA_month: MEM_EEPROM_LoadPageBuffer(17, eeData); break;
+        case DATA_year: MEM_EEPROM_LoadPageBuffer(18, eeData); break;
+        case DATA_hour: MEM_EEPROM_LoadPageBuffer(19, eeData); break;
         case DATA_minute: MEM_EEPROM_LoadPageBuffer(20, eeData); break;
-        case DATA_H_O2:   MEM_EEPROM_LoadPageBuffer(21, eeData); break;
-        case DATA_L_O2:   MEM_EEPROM_LoadPageBuffer(22, eeData); break;
-        case DATA_ERROR:  MEM_EEPROM_LoadPageBuffer(23, eeData); break;
+        case DATA_H_O2: MEM_EEPROM_LoadPageBuffer(21, eeData); break;
+        case DATA_L_O2: MEM_EEPROM_LoadPageBuffer(22, eeData); break;
+        case DATA_ERROR: MEM_EEPROM_LoadPageBuffer(23, eeData); break;
         default: break;
       } break;
 
     case 3:
       switch(byte)
       {
-        case DATA_day:    MEM_EEPROM_LoadPageBuffer(24, eeData); break;
-        case DATA_month:  MEM_EEPROM_LoadPageBuffer(25, eeData); break;
-        case DATA_year:   MEM_EEPROM_LoadPageBuffer(26, eeData); break;
-        case DATA_hour:   MEM_EEPROM_LoadPageBuffer(27, eeData); break;
+        case DATA_day: MEM_EEPROM_LoadPageBuffer(24, eeData); break;
+        case DATA_month: MEM_EEPROM_LoadPageBuffer(25, eeData); break;
+        case DATA_year: MEM_EEPROM_LoadPageBuffer(26, eeData); break;
+        case DATA_hour: MEM_EEPROM_LoadPageBuffer(27, eeData); break;
         case DATA_minute: MEM_EEPROM_LoadPageBuffer(28, eeData); break;
-        case DATA_H_O2:   MEM_EEPROM_LoadPageBuffer(29, eeData); break;
-        case DATA_L_O2:   MEM_EEPROM_LoadPageBuffer(30, eeData); break;
-        case DATA_ERROR:  MEM_EEPROM_LoadPageBuffer(31, eeData); break;
+        case DATA_H_O2: MEM_EEPROM_LoadPageBuffer(29, eeData); break;
+        case DATA_L_O2: MEM_EEPROM_LoadPageBuffer(30, eeData); break;
+        case DATA_ERROR: MEM_EEPROM_LoadPageBuffer(31, eeData); break;
         default: break;
       } break;
   }
@@ -446,13 +446,13 @@ void MEM_EEPROM_LoadData(unsigned char entry, t_data byte, unsigned char eeData)
  *            finds out the the placement of a no entry, return position
  * ------------------------------------------------------------------*/
 
-struct MemoryEntryPos MEM_FindNoEntry(t_text_buttons data)
+struct MemoryEntryPos MEM_FindNoEntry(t_eeprom_memory_section eeprom_mem_section)
 {
   struct MemoryEntryPos no_entry_pos = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
   unsigned char stop = 0;
 
   // get start end page
-  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(eeprom_mem_section);
 
   // start page
   no_entry_pos.page = msep.start_page;
@@ -491,7 +491,7 @@ struct MemoryEntryPos MEM_FindNoEntry(t_text_buttons data)
  *          old entry
  * ---------------------------------------------------------------*/
 
-struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data)
+struct MemoryEntryPos MEM_FindOldestEntry(t_eeprom_memory_section eeprom_mem_section)
 {
   struct MemoryEntryPos old = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
 
@@ -502,7 +502,7 @@ struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data)
   unsigned char min = 59;
 
   // get start end page
-  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(eeprom_mem_section);
 
   // start page
   old.page = msep.start_page;
@@ -540,7 +540,7 @@ struct MemoryEntryPos MEM_FindOldestEntry(t_text_buttons data)
  *          latest entry
  * ---------------------------------------------------------------*/
 
-struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data)
+struct MemoryEntryPos MEM_FindLatestEntry(t_eeprom_memory_section eeprom_mem_section)
 {
   struct MemoryEntryPos latest = { .page = MEM_AUTO_START_SECTION, .entry = 0, .null_flag = false };
 
@@ -551,7 +551,7 @@ struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data)
   unsigned char min = 0;
 
   // get start end page
-  struct MemoryStartEndPage msep = MEM_GetStartEndPage(data);
+  struct MemoryStartEndPage msep = MEM_GetStartEndPage(eeprom_mem_section);
 
   // start page
   latest.page = msep.start_page;
@@ -588,16 +588,16 @@ struct MemoryEntryPos MEM_FindLatestEntry(t_text_buttons data)
  *          start end page
  * ---------------------------------------------------------------*/
 
-struct MemoryStartEndPage MEM_GetStartEndPage(t_text_buttons data)
+struct MemoryStartEndPage MEM_GetStartEndPage(t_eeprom_memory_section eeprom_mem_section)
 {
   struct MemoryStartEndPage msep = { .start_page = 0, .end_page = 0 };
 
   // determine start and end page
-  switch(data)
+  switch(eeprom_mem_section)
   {
-    case TEXT_BUTTON_auto: msep.start_page = MEM_AUTO_START_SECTION; msep.end_page = MEM_AUTO_END_SECTION; break;
-    case TEXT_BUTTON_manual: msep.start_page = MEM_MANUAL_START_SECTION; msep.end_page = MEM_MANUAL_END_SECTION; break;
-    case TEXT_BUTTON_setup: msep.start_page = MEM_SETUP_START_SECTION; msep.end_page = MEM_SETUP_END_SECTION; break;
+    case _eeprom_section_auto: msep.start_page = MEM_AUTO_START_SECTION; msep.end_page = MEM_AUTO_END_SECTION; break;
+    case _eeprom_section_manual: msep.start_page = MEM_MANUAL_START_SECTION; msep.end_page = MEM_MANUAL_END_SECTION; break;
+    case _eeprom_section_setup: msep.start_page = MEM_SETUP_START_SECTION; msep.end_page = MEM_SETUP_END_SECTION; break;
     default: break;
   }
   return msep;

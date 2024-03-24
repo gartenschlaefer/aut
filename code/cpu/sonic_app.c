@@ -695,8 +695,7 @@ unsigned char Sonic_WriteProgram(struct PlantState *ps, unsigned char state)
       //--------------------------------------------Write1EEPage
       for(int byte8 = 0; byte8 < 128; byte8 += 8)
       {
-        // todo:
-        // check file
+        // todo: check file
         int adr = (((AT24C_BOOT_PAGE_OS + page) << 8) | byte8);
         unsigned char *p_data = AT24C_Read8Byte(ps->twi_state, adr);
         for(unsigned char i = 0; i < 8; i++)

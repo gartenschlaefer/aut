@@ -42,12 +42,7 @@ void LCD_SetupPage(struct PlantState *ps);
 
 // data pages
 void LCD_DataPage(struct PlantState *ps);
-void LCD_Data_WriteAutoEntryPage(unsigned char page);
-void LCD_Data_WriteManualEntryPage(unsigned char page);
-void LCD_Data_WriteSetupEntryPage(unsigned char page);
-
-void LCD_Data_wPage(t_text_buttons data, unsigned char eep, unsigned char entry, bool half);
-unsigned char LCD_Data_EEP_Minus(t_text_buttons data, unsigned char eep, unsigned char cnt);
+void LCD_Data_WriteLogEntries(unsigned char entry_page, t_eeprom_memory_section eeprom_mem_section);
 
 // pin page
 void LCD_PinPage_Main(struct PlantState *ps);

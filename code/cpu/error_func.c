@@ -93,8 +93,7 @@ void Error_Read(struct PlantState *ps)
     if(ps->mpx_state->actual_mpx_av < ps->settings->settings_compressor->min_pressure){ ps->error_state->pending_err_code |= E_UP; }
   }
 
-  // todo:
-  // max in tank
+  // todo: max in tank
   // must also consider sonic
   //if(ps->mpx_state->actual_mpx_av >= (ps->settings->settings_zone->level_to_set_down + ps->settings->settings_calibration->tank_level_min_pressure)){ ps->error_state->pending_err_code |= E_IT; }
 }

@@ -448,8 +448,7 @@ void LCD_WriteAnySymbol(unsigned char row, unsigned char col, t_any_symbol any_s
       offset = _s_logo_purator;
       break;
 
-    // todo:
-    // valve symbol
+    // todo: valve symbol
     case _s_valve:
       symbol_pointer = Symbols_29x20;
       offset = _s_valve;

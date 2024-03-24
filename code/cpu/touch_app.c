@@ -1660,16 +1660,12 @@ void Touch_Data_AutoLinker(struct PlantState *ps)
     case 0x00:
       if(ps->touch_state->touched)
       {
-        if(ps->touch_state->touched == _ctrl_arrow_up)
+        if(ps->touch_state->touched == _ctrl_arrow_up || ps->touch_state->touched == _ctrl_arrow_down)
         { 
-          LCD_Sym_Data_Arrow_Up(false);
-          LCD_Data_WriteAutoEntryPage(ps->touch_state->var[1]);
+          if(ps->touch_state->touched == _ctrl_arrow_up){ LCD_Sym_Data_Arrow_Up(false); }
+          else{ LCD_Sym_Data_Arrow_Down(false); }
+          LCD_Data_WriteLogEntries(ps->touch_state->var[1], _eeprom_section_auto);
         }
-        else if(ps->touch_state->touched == _ctrl_arrow_down)
-        {
-          LCD_Sym_Data_Arrow_Down(false);
-          LCD_Data_WriteAutoEntryPage(ps->touch_state->var[1]);
-        } 
         ps->touch_state->touched = _ctrl_zero;
       }
       break;
@@ -1724,15 +1720,11 @@ void Touch_Data_ManualLinker(struct PlantState *ps)
     case 0x00:
       if(ps->touch_state->touched)
       {
-        if(ps->touch_state->touched == _ctrl_arrow_up)
-        {
-          LCD_Sym_Data_Arrow_Up(false);
-          LCD_Data_WriteManualEntryPage(ps->touch_state->var[1]);
-        }
-        else if(ps->touch_state->touched == _ctrl_arrow_down)
+        if(ps->touch_state->touched == _ctrl_arrow_up || ps->touch_state->touched == _ctrl_arrow_down)
         { 
-          LCD_Sym_Data_Arrow_Down(false);
-          LCD_Data_WriteManualEntryPage(ps->touch_state->var[1]);
+          if(ps->touch_state->touched == _ctrl_arrow_up){ LCD_Sym_Data_Arrow_Up(false); }
+          else{ LCD_Sym_Data_Arrow_Down(false); }
+          LCD_Data_WriteLogEntries(ps->touch_state->var[1], _eeprom_section_manual);
         }
         ps->touch_state->touched = _ctrl_zero;
       }
@@ -1787,16 +1779,11 @@ void Touch_Data_SetupLinker(struct PlantState *ps)
     case 0x00:
       if(ps->touch_state->touched)
       {
-        if(ps->touch_state->touched == _ctrl_arrow_up)
-        {
-          LCD_Sym_Data_Arrow_Up(false);
-          LCD_Data_WriteSetupEntryPage(ps->touch_state->var[1]);
-        }
-
-        else if(ps->touch_state->touched == _ctrl_arrow_down)
-        {
-          LCD_Sym_Data_Arrow_Down(false);
-          LCD_Data_WriteSetupEntryPage(ps->touch_state->var[1]);
+        if(ps->touch_state->touched == _ctrl_arrow_up || ps->touch_state->touched == _ctrl_arrow_down)
+        { 
+          if(ps->touch_state->touched == _ctrl_arrow_up){ LCD_Sym_Data_Arrow_Up(false); }
+          else{ LCD_Sym_Data_Arrow_Down(false); }
+          LCD_Data_WriteLogEntries(ps->touch_state->var[1], _eeprom_section_setup);
         }
         ps->touch_state->touched = _ctrl_zero;
       }

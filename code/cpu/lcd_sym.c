@@ -997,7 +997,7 @@ void LCD_Sym_Setup_Pump(unsigned char mark)
 /* ------------------------------------------------------------------*
  *            first clear, then mark
  * ------------------------------------------------------------------*/
-// todo: do this better
+
 void LCD_Sym_Setup_Watch_Mark(t_DateTime time, unsigned char *p_dT)
 {
   // time positive
@@ -1084,7 +1084,7 @@ void LCD_Sym_Data_Auto(void)
 
   LCD_Sym_Data_ActualPageNum(1);
   LCD_Sym_Data_TotalPageNum(16);
-  LCD_Data_WriteAutoEntryPage(0);
+  LCD_Data_WriteLogEntries(0, _eeprom_section_auto);
 }
 
 
@@ -1109,7 +1109,7 @@ void LCD_Sym_Data_Manual(void)
 
   LCD_Sym_Data_ActualPageNum(1);
   LCD_Sym_Data_TotalPageNum(3);
-  LCD_Data_WriteManualEntryPage(0);
+  LCD_Data_WriteLogEntries(0, _eeprom_section_manual);
 }
 
 
@@ -1131,7 +1131,7 @@ void LCD_Sym_Data_Setup(void)
 
   LCD_Sym_Data_ActualPageNum(1);
   LCD_Sym_Data_TotalPageNum(3);
-  LCD_Data_WriteSetupEntryPage(0);
+  LCD_Data_WriteLogEntries(0, _eeprom_section_setup);
 }
 
 

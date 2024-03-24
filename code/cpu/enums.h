@@ -33,7 +33,8 @@ typedef enum
  * ------------------------------------------------------------------*/
 
 typedef enum
-{ _ph_off, _ph_on, _ph_disabled
+{ 
+  _ph_off, _ph_on, _ph_disabled
 }t_phosphor_states;
 
 
@@ -42,7 +43,8 @@ typedef enum
  * ------------------------------------------------------------------*/
 
 typedef enum
-{ _ip_off, _ip_on, _ip_disabled
+{ 
+  _ip_off, _ip_on, _ip_disabled
 }t_inflow_pump_states;
 
 
@@ -50,7 +52,8 @@ typedef enum
  *            air circ states
  * ------------------------------------------------------------------*/
 typedef enum
-{ _ac_off, _ac_on
+{ 
+  _ac_off, _ac_on
 }t_air_circ_states;
 
 
@@ -135,6 +138,18 @@ typedef enum
   TEXT_BUTTON_read,
   TEXT_BUTTON_write
 }t_text_buttons;
+
+
+/* ------------------------------------------------------------------*
+ *            text in buttons enum
+ * ------------------------------------------------------------------*/
+
+typedef enum
+{
+  _eeprom_section_auto,
+  _eeprom_section_manual,
+  _eeprom_section_setup,
+}t_eeprom_memory_section;
 
 
 /* ------------------------------------------------------------------*
